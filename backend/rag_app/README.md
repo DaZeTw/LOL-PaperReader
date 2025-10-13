@@ -27,7 +27,7 @@ curl -X POST http://localhost:8000/api/qa/ask \
   -H 'Content-Type: application/json' \
   -d '{
     "question": "What is the core idea of self-attention?",
-    "embedder": "bge-small",
+    "embedder": "openai",
     "retriever": "hybrid",
     "generator": "extractive",
     "top_k": 5
