@@ -17,7 +17,7 @@ export OPENAI_API_KEY=sk-...
 3. Run server
 
 ```bash
-uvicorn backend.rag_app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 4. Ask a question
