@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Literal
 
-from .services.pipeline import QAPipeline
-from .services.config import PipelineConfig
+from services.pipeline import QAPipeline
+from services.config import PipelineConfig
 
 router = APIRouter()
 
@@ -14,6 +14,7 @@ class AskRequest(BaseModel):
     embedder: Literal["openai", "bge-small", "bge-large"] = "bge-small"
     retriever: Literal["keyword", "dense", "hybrid"] = "hybrid"
     generator: Literal["openai", "ollama", "extractive"] = "openai"
+    image_policy: Literal["none", "auto", "all"] = "auto"
     top_k: int = 5
     max_tokens: int = 512
 
@@ -40,6 +41,7 @@ async def ask(req: AskRequest):
             embedder_name=req.embedder,
             retriever_name=req.retriever,
             generator_name=req.generator,
+            image_policy=req.image_policy,
             top_k=req.top_k,
             max_tokens=req.max_tokens,
         )

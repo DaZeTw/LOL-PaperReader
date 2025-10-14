@@ -3,7 +3,8 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-import openai  # hoặc client tương tự bạn đang dùng
+from openai import OpenAI
+client = OpenAI()
 
 def gpt_generate_keywords(query: str, max_keywords: int = 5) -> List[str]:
     """
@@ -16,7 +17,7 @@ def gpt_generate_keywords(query: str, max_keywords: int = 5) -> List[str]:
     )
 
     try:
-        resp = openai.ChatCompletion.create(
+        resp = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that extracts keywords."},
@@ -25,6 +26,7 @@ def gpt_generate_keywords(query: str, max_keywords: int = 5) -> List[str]:
             temperature=0.0,
             max_tokens=50,
         )
+
         text = resp.choices[0].message.content.strip()
         keywords = [kw.strip() for kw in text.split(",") if kw.strip()]
         print(f"[DEBUG] GPT generated keywords for '{query}': {keywords}")
