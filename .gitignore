@@ -1,0 +1,78 @@
+# ======================
+# Python / FastAPI
+# ======================
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.log
+*.sqlite3
+*.db
+.env
+.env.*
+.vscode/
+.idea/
+*.bak
+*.swp
+
+# Jupyter + notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Temp files and scratch output
+tmp/
+temp/
+*.tmp
+*.out
+*.pdf
+
+# Parsed output (Docling, images, tables, etc.)
+output_parser/
+**/parsed_output/
+**/figure-*.png
+**/table-*.csv
+**/table-*.html
+
+# Virtual environments
+.venv/
+venv/
+backend/.venv/
+
+# Conda
+*.conda
+*.pkl
+conda-meta/
+*.yaml
+
+# Pip/uv
+pip-wheel-metadata/
+__pypackages__/
+uv.toml.lock
+requirements.txt
+
+# Uvicorn logs
+logs/
+*.log
+*.pid
+
+# ======================
+# Frontend (React/Vite)
+# ======================
+frontend/node_modules/
+frontend/.next/
+frontend/dist/
+frontend/.turbo/
+frontend/.env*
+frontend/coverage/
+frontend/yarn.lock
+frontend/package-lock.json
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+*.orig
+*.rej
+
+# Git backup files
+*.~*
+*.bak
+*.old
