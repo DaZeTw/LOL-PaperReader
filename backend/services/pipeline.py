@@ -47,7 +47,7 @@ class QAPipeline:
         print("[LOG] Loading parsed documents...")
         docs = load_parsed_jsons(self.config)
         print(f"[LOG] Number of documents loaded: {len(docs)}")
-        print("[DEBUG] Loaded document:", docs[1] if len(docs) > 1 else docs[0] if docs else "No documents")
+        #print("[DEBUG] Loaded document:", docs[1] if len(docs) > 1 else docs[0] if docs else "No documents")
 
         # Build a semantic splitter if the optional dependencies are present.
         semantic_splitter = None
@@ -61,10 +61,10 @@ class QAPipeline:
                 print(f"[WARNING] Failed to initialize semantic splitter: {e}. Falling back to heuristic chunking.")
 
         chunks = split_sections_into_chunks(docs, semantic_splitter=semantic_splitter)
+        print(f"[LOG] Chunks created: {chunks}")
         print(f"[LOG] Number of chunks created: {len(chunks)}")
         if len(chunks) > 0:
-            print(f"[LOG] Sample chunk text: {chunks[0].get('text', '')[:200]}")
-
+            print(f"[LOG] Chunks created: {chunks}")
         embedder = None
         if self.config.retriever_name in ("dense", "hybrid"):
             try:
@@ -83,7 +83,7 @@ class QAPipeline:
         print(f"[LOG] Store built with {len(store.metadatas)} metadatas.")
 
         retriever = get_retriever(self.config.retriever_name, store, embedder)
-        generator = get_generator(self.config.generator_name)
+        generator = get_generator(self.config.generator_name, image_policy=self.config.image_policy)
 
         self.embedder = embedder
         self.retriever = retriever
@@ -102,13 +102,85 @@ class QAPipeline:
         if len(hits) > 0:
             print(f"[LOG] Top hit text: {hits[0].get('text', '')[:200]}")
 
-        contexts = [h["text"] for h in hits]
+        # Build contexts for generation according to image_policy
+        # none: pass text-only
+        # auto/all: pass text+images (generator may select or include all)
+        contexts = []
+        supports_images = getattr(self.generator, "supports_images", False)
+        policy = getattr(self.config, "image_policy", "auto")
+        if supports_images and policy in ("auto", "all"):
+            for h in hits:
+                meta = h.get("metadata", {})
+                images = meta.get("images", []) or []
+                ctx = {"text": h.get("text", ""), "images": images}
+                contexts.append(ctx)
+        else:
+            contexts = [h.get("text", "") for h in hits]
+
         try:
             answer = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens)
         except Exception as e:
             print(f"[WARNING] Generator failed: {e}. Using ExtractiveGenerator fallback.")
             from .generators import ExtractiveGenerator
-            answer = ExtractiveGenerator().generate(question, contexts, max_tokens=self.config.max_tokens)
+            # fallback uses text-only
+            text_contexts = [h.get("text", "") for h in hits]
+            answer = ExtractiveGenerator().generate(question, text_contexts, max_tokens=self.config.max_tokens)
+
+        # If we had images in retrieval and generator supports images, append a brief Figures section to answer
+        if supports_images:
+            from pathlib import Path
+            import base64
+            import mimetypes
+
+            def ensure_static_url(p: str) -> str:
+                # If already a filesystem path under services/parser, map to /static URL
+                if p and not p.startswith("data:"):
+                    rel = p.replace("\\", "/").lstrip("/")
+                    return f"/static/{rel}"
+                # If data URL, persist to file under output_parser/generated and return URL
+                if p.startswith("data:"):
+                    try:
+                        header, b64 = p.split(",", 1)
+                        mime = header.split(":", 1)[1].split(";")[0]
+                        ext = mimetypes.guess_extension(mime) or ".png"
+                        out_dir = Path(__file__).resolve().parent / "parser" / "output_parser" / "generated"
+                        out_dir.mkdir(parents=True, exist_ok=True)
+                        # Use short hash for filename
+                        import hashlib
+                        digest = hashlib.sha1(b64.encode("ascii")).hexdigest()[:16]
+                        out_path = out_dir / f"figure_{digest}{ext}"
+                        if not out_path.exists():
+                            out_path.write_bytes(base64.b64decode(b64))
+                        rel = out_path.relative_to(Path(__file__).resolve().parent / "parser").as_posix()
+                        return f"/static/{rel}"
+                    except Exception:
+                        return ""
+                return ""
+
+            figure_lines = []
+            seen = set()  # dedupe by (caption,page,url base)
+            def _base_url(u: str) -> str:
+                return u.split("?")[0]
+            for h in hits:
+                meta = h.get("metadata", {})
+                for img in meta.get("images", []) or []:
+                    raw_path = img.get("data") or ""
+                    url = ensure_static_url(raw_path)
+                    if not url:
+                        continue
+                    cap = (img.get("caption") or "Figure").strip()
+                    fig_id = (img.get("figure_id") or "").strip()
+                    tag = fig_id if fig_id else "Figure"
+                    base = _base_url(url)
+                    page = meta.get("page")
+                    key = (cap, page, base)
+                    # Prefer artifact URLs over generated ones
+                    if (cap, page, base) in seen:
+                        continue
+                    seen.add(key)
+                    figure_lines.append(f"- {tag}: {cap} [url: {url}]")
+            if figure_lines:
+                answer = answer.rstrip() + "\n\nFigures (from retrieved contexts):\n" + "\n".join(figure_lines)
 
         try:
             run_path = Path(self.config.runs_dir) / "last_run_retrieval.json"
@@ -117,14 +189,28 @@ class QAPipeline:
         except Exception as e:
             print(f"[WARNING] Failed to save retrieval log: {e}")
 
+        # Build cited sections, de-duplicated by (title, page, normalized excerpt)
         cited = []
+        seen_citations = set()
+        import re as _re
+        def _norm_excerpt(s: str) -> str:
+            s = (s or "").strip()
+            s = _re.sub(r"\s+", " ", s)
+            return s
         for h in hits:
             meta = h.get("metadata", {})
+            title = meta.get("title")
+            page = meta.get("page")
+            excerpt = _norm_excerpt(h.get("text", ""))
+            key = (title, page, excerpt)
+            if key in seen_citations:
+                continue
+            seen_citations.add(key)
             cited.append({
                 "doc_id": meta.get("doc_id"),
-                "title": meta.get("title"),
-                "page": meta.get("page"),
-                "excerpt": h.get("text")
+                "title": title,
+                "page": page,
+                "excerpt": excerpt
             })
 
         return {
