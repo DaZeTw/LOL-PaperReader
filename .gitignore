@@ -66,6 +66,9 @@ frontend/coverage/
 frontend/yarn.lock
 frontend/package-lock.json
 
+node_modules/
+next-env.d.ts
+
 # OS & Editor files
 .DS_Store
 Thumbs.db
