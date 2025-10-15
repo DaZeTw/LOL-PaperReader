@@ -46,6 +46,12 @@ export function PDFViewer({
     }
   }, [file])
 
+  // Reset page state when file changes
+  useEffect(() => {
+    setCurrentPage(1)
+    setNumPages(0)
+  }, [file])
+
   const handlePrevPage = () => {
     jumpToPreviousPage()
   }
@@ -108,16 +114,27 @@ export function PDFViewer({
         </div>
       </div>
 
-      <div className="flex-1" style={{ height: 'calc(100vh - 200px)' }}>
+      <div className="flex-1 overflow-auto p-4 bg-muted/30">
         {pdfUrl && (
-          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-            <Viewer
-              fileUrl={pdfUrl}
-              plugins={[pageNavigationPluginInstance, zoomPluginInstance]}
-              onDocumentLoad={(e) => setNumPages(e.doc.numPages)}
-              onPageChange={(e) => setCurrentPage(e.currentPage + 1)}
-            />
-          </Worker>
+          <div className="mx-auto max-w-4xl">
+            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+              <div className="bg-white shadow-lg rounded-lg overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
+                <Viewer
+                  fileUrl={pdfUrl}
+                  plugins={[pageNavigationPluginInstance, zoomPluginInstance]}
+                  onDocumentLoad={(e) => {
+                    console.log('Document loaded:', e.doc.numPages, 'pages')
+                    setNumPages(e.doc.numPages)
+                    setCurrentPage(1)
+                  }}
+                  onPageChange={(e) => {
+                    console.log('Page changed to:', e.currentPage + 1)
+                    setCurrentPage(e.currentPage + 1)
+                  }}
+                />
+              </div>
+            </Worker>
+          </div>
         )}
       </div>
     </div>
