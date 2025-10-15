@@ -8,11 +8,10 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 
 interface PDFUploadProps {
-  onFileSelect: (file: File) => void
-  onParsedData: (data: any) => void
+  onFileSelect: (file: File, parsedData: any) => void
 }
 
-export function PDFUpload({ onFileSelect, onParsedData }: PDFUploadProps) {
+export function PDFUpload({ onFileSelect }: PDFUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const { toast } = useToast()
@@ -29,9 +28,10 @@ export function PDFUpload({ onFileSelect, onParsedData }: PDFUploadProps) {
       }
 
       setIsUploading(true)
-      onFileSelect(file)
 
       try {
+        console.log("[v0] Uploading file:", file.name)
+
         // Upload to API
         const formData = new FormData()
         formData.append("file", file)
@@ -46,7 +46,9 @@ export function PDFUpload({ onFileSelect, onParsedData }: PDFUploadProps) {
         }
 
         const data = await response.json()
-        onParsedData(data)
+        console.log("[v0] Parsed data received:", data)
+
+        onFileSelect(file, data)
 
         toast({
           title: "PDF uploaded successfully",
@@ -63,18 +65,19 @@ export function PDFUpload({ onFileSelect, onParsedData }: PDFUploadProps) {
         setIsUploading(false)
       }
     },
-    [onFileSelect, onParsedData, toast],
+    [onFileSelect, toast],
   )
 
   const handleLoadSample = useCallback(async () => {
     setIsUploading(true)
 
     try {
+      console.log("[v0] Loading sample paper")
+
       // Load the actual PDF file from public directory
       const response = await fetch("/data.pdf")
       const blob = await response.blob()
       const sampleFile = new File([blob], "data.pdf", { type: "application/pdf" })
-      onFileSelect(sampleFile)
 
       // Mock parsed data for the sample paper
       const mockParsedData = {
@@ -97,7 +100,8 @@ export function PDFUpload({ onFileSelect, onParsedData }: PDFUploadProps) {
         },
       }
 
-      onParsedData(mockParsedData)
+      console.log("[v0] Sample paper loaded, calling onFileSelect")
+      onFileSelect(sampleFile, mockParsedData)
 
       toast({
         title: "Sample paper loaded",
@@ -113,7 +117,7 @@ export function PDFUpload({ onFileSelect, onParsedData }: PDFUploadProps) {
     } finally {
       setIsUploading(false)
     }
-  }, [onFileSelect, onParsedData, toast])
+  }, [onFileSelect, toast])
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {

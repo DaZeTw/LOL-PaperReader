@@ -21,6 +21,8 @@ interface Citation {
 interface CitationSidebarProps {
   selectedCitation: Citation | null
   onCitationSelect: (citation: Citation | null) => void
+  isOpen?: boolean
+  onToggle?: () => void
 }
 
 const mockCitations: Citation[] = [
@@ -80,21 +82,40 @@ const mockCitations: Citation[] = [
   },
 ]
 
-export function CitationSidebar({ selectedCitation, onCitationSelect }: CitationSidebarProps) {
+export function CitationSidebar({ selectedCitation, onCitationSelect, isOpen = true, onToggle }: CitationSidebarProps) {
   const [expandedCitation, setExpandedCitation] = useState<string | null>(null)
 
   return (
-    <aside className="flex w-96 flex-col border-l border-border bg-sidebar">
-      {/* Header */}
-      <div className="border-b border-border px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-            <h2 className="font-mono text-sm font-medium text-foreground">References</h2>
+    <>
+      {!isOpen && onToggle && (
+        <button
+          onClick={onToggle}
+          className="absolute right-0 top-1/2 z-10 flex h-16 w-8 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-border bg-background shadow-md transition-colors hover:bg-muted"
+        >
+          <ChevronDown className="h-4 w-4 rotate-90 text-muted-foreground" />
+        </button>
+      )}
+      <aside className={cn(
+        "relative flex flex-col border-l border-border bg-sidebar transition-all duration-300",
+        isOpen ? "w-96" : "w-0 overflow-hidden"
+      )}>
+        {/* Header */}
+        <div className="border-b border-border px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-mono text-sm font-medium text-foreground">References</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs text-muted-foreground">{mockCitations.length} citations</span>
+              {onToggle && (
+                <button onClick={onToggle} className="rounded p-1.5 transition-colors hover:bg-muted">
+                  <ChevronUp className="h-4 w-4 -rotate-90 text-muted-foreground" />
+                </button>
+              )}
+            </div>
           </div>
-          <span className="font-mono text-xs text-muted-foreground">{mockCitations.length} citations</span>
         </div>
-      </div>
 
       {selectedCitation && (
         <div className="border-b border-border bg-accent/50 p-4">
@@ -196,6 +217,7 @@ export function CitationSidebar({ selectedCitation, onCitationSelect }: Citation
           ))}
         </div>
       </ScrollArea>
-    </aside>
+      </aside>
+    </>
   )
 }
