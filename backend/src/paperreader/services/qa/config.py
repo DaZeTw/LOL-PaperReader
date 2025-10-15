@@ -14,7 +14,13 @@ class PipelineConfig:
     # auto: pass images; generator will score/select
     # all: pass images and force-include all on generator side
     image_policy: Literal["none", "auto", "all"] = "auto"
-    top_k: int = 5
+    # Reranker configuration
+    # none: no reranking (default)
+    # cross-encoder: use cross-encoder model for reranking
+    # cohere: use Cohere's rerank API
+    reranker_name: Literal["none", "cross-encoder", "cohere"] = "none"
+    reranker_top_k: int = 5  # Number of results to return after reranking
+    top_k: int = 10  # Initial retrieval size (retrieve more, then rerank to reranker_top_k)
     max_tokens: int = 512
 
     data_dir: str = os.getenv(
