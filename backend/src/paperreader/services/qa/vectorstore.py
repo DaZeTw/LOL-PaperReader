@@ -1,10 +1,19 @@
-from typing import List, Dict, Any, Tuple
+import os
+from typing import Any, Dict, List, Tuple
+
 import numpy as np
+from dotenv import load_dotenv
+from openai import OpenAI
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from openai import OpenAI
+load_dotenv()
+
+if "OPENAI_API_KEY" not in os.environ:
+    raise ValueError("Missing OPENAI_API_KEY in environment!")
+
 client = OpenAI()
+
 
 def gpt_generate_keywords(query: str, max_keywords: int = 5) -> List[str]:
     """
@@ -20,7 +29,10 @@ def gpt_generate_keywords(query: str, max_keywords: int = 5) -> List[str]:
         resp = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant that extracts keywords."},
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that extracts keywords.",
+                },
                 {"role": "user", "content": prompt},
             ],
             temperature=0.0,
@@ -35,14 +47,23 @@ def gpt_generate_keywords(query: str, max_keywords: int = 5) -> List[str]:
         print(f"[WARNING] GPT keyword generation failed: {e}")
         return [query]
 
+
 class InMemoryVectorStore:
-    def __init__(self, dense_vectors: np.ndarray, metadatas: List[Dict[str, Any]], tfidf_matrix=None, tfidf_vectorizer: TfidfVectorizer | None = None) -> None:
+    def __init__(
+        self,
+        dense_vectors: np.ndarray,
+        metadatas: List[Dict[str, Any]],
+        tfidf_matrix=None,
+        tfidf_vectorizer: TfidfVectorizer | None = None,
+    ) -> None:
         self.dense_vectors = dense_vectors
         self.metadatas = metadatas
         self.tfidf_matrix = tfidf_matrix
         self.tfidf_vectorizer = tfidf_vectorizer
 
-    def dense_search(self, query_vec: np.ndarray, top_k: int = 5) -> List[Tuple[int, float]]:
+    def dense_search(
+        self, query_vec: np.ndarray, top_k: int = 5
+    ) -> List[Tuple[int, float]]:
         if self.dense_vectors.size == 0:
             return []
         sims = cosine_similarity(query_vec.reshape(1, -1), self.dense_vectors)[0]
@@ -50,7 +71,9 @@ class InMemoryVectorStore:
         print(f"[DEBUG] Dense search sims: {[(i, float(sims[i])) for i in idxs]}")
         return [(int(i), float(sims[i])) for i in idxs]
 
-    def keyword_search(self, query: str, top_k: int = 5, generated_keywords: list[str] | None = None) -> List[Tuple[int, float]]:
+    def keyword_search(
+        self, query: str, top_k: int = 5, generated_keywords: list[str] | None = None
+    ) -> List[Tuple[int, float]]:
         if self.tfidf_matrix is None or self.tfidf_vectorizer is None:
             return []
 
@@ -69,11 +92,13 @@ class InMemoryVectorStore:
         print(f"[DEBUG] Keyword search top-{top_k}: {result}")
         return result
 
-    def hybrid_search(self, query: str, query_vec: np.ndarray, top_k: int = 5, alpha: float = 0.5) -> List[Tuple[int, float]]:
+    def hybrid_search(
+        self, query: str, query_vec: np.ndarray, top_k: int = 5, alpha: float = 0.5
+    ) -> List[Tuple[int, float]]:
         print(f"[DEBUG] Starting hybrid search for query: '{query}'")
         keywords = gpt_generate_keywords(query)
-        kd = self.keyword_search(query, top_k=top_k*2, generated_keywords=keywords)
-        dd = self.dense_search(query_vec, top_k=top_k*2)
+        kd = self.keyword_search(query, top_k=top_k * 2, generated_keywords=keywords)
+        dd = self.dense_search(query_vec, top_k=top_k * 2)
 
         scores: Dict[int, float] = {}
         for i, s in kd:
