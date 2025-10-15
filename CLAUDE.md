@@ -8,7 +8,7 @@ This is a Next.js 15 web application for PDF document analysis with AI-powered q
 
 ## Development Commands
 
-```bash
+\`\`\`bash
 # Start development server (runs on http://localhost:3000)
 npm run dev
 
@@ -20,7 +20,7 @@ npm start
 
 # Run linter
 npm run lint
-```
+\`\`\`
 
 ## Architecture
 
@@ -80,10 +80,10 @@ Current implementation uses **hardcoded mock content** in PDFViewer (pages 1-2 c
 ### Path Aliases
 
 TypeScript is configured with `@/*` pointing to root directory. All imports use this pattern:
-```typescript
+\`\`\`typescript
 import { Button } from "@/components/ui/button"
 import { PDFReader } from "@/components/pdf-reader"
-```
+\`\`\`
 
 ## Key Implementation Details
 
@@ -115,9 +115,9 @@ Consider tightening these for production builds.
 ### Adding New UI Components
 
 This project uses shadcn/ui. Component definitions are in `components.json`. To add new components:
-```bash
+\`\`\`bash
 npx shadcx@latest add [component-name]
-```
+\`\`\`
 
 ### Working with Citations
 
