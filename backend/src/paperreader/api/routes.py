@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List, Optional, Literal
+from typing import List, Literal, Optional
 
-from services.pipeline import QAPipeline
-from services.config import PipelineConfig
+from fastapi import APIRouter, HTTPException
+from paperreader.services.qa.config import PipelineConfig
+from paperreader.services.qa.pipeline import QAPipeline
+from pydantic import BaseModel
 
 router = APIRouter()
 
