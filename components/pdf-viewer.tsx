@@ -1,15 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { Document, Page, pdfjs } from "react-pdf"
+import { useState, useEffect } from "react"
+import { Viewer, Worker } from "@react-pdf-viewer/core"
+import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
+import { zoomPlugin } from "@react-pdf-viewer/zoom"
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-// import "react-pdf/dist/esm/Page/AnnotationLayer.css"
-// import "react-pdf/dist/esm/Page/TextLayer.css"
-
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+import "@react-pdf-viewer/core/lib/styles/index.css"
+import "@react-pdf-viewer/page-navigation/lib/styles/index.css"
+import "@react-pdf-viewer/zoom/lib/styles/index.css"
 
 interface PDFViewerProps {
   file: File
@@ -26,29 +25,46 @@ export function PDFViewer({
   annotationMode,
   onCitationClick,
 }: PDFViewerProps) {
-  const [numPages, setNumPages] = useState<number>(0)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [zoom, setZoom] = useState(1)
   const [pdfUrl, setPdfUrl] = useState<string>("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [numPages, setNumPages] = useState(0)
+  const [scale, setScale] = useState(1)
 
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages)
-    setCurrentPage(1)
-  }
+  // Initialize plugins - these use hooks internally so call them at top level
+  const pageNavigationPluginInstance = pageNavigationPlugin()
+  const { jumpToPage, jumpToNextPage, jumpToPreviousPage } = pageNavigationPluginInstance
 
-  // Convert File to URL for react-pdf
-  useState(() => {
+  const zoomPluginInstance = zoomPlugin()
+  const { zoomTo } = zoomPluginInstance
+
+  // Convert File to URL for @react-pdf-viewer/core
+  useEffect(() => {
     if (file) {
       const url = URL.createObjectURL(file)
       setPdfUrl(url)
       return () => URL.revokeObjectURL(url)
     }
-  })
+  }, [file])
 
-  const handlePrevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1))
-  const handleNextPage = () => setCurrentPage((prev) => Math.min(numPages, prev + 1))
-  const handleZoomIn = () => setZoom((prev) => Math.min(2, prev + 0.1))
-  const handleZoomOut = () => setZoom((prev) => Math.max(0.5, prev - 0.1))
+  const handlePrevPage = () => {
+    jumpToPreviousPage()
+  }
+
+  const handleNextPage = () => {
+    jumpToNextPage()
+  }
+
+  const handleZoomIn = () => {
+    const newScale = Math.min(2, scale + 0.1)
+    setScale(newScale)
+    zoomTo(newScale)
+  }
+
+  const handleZoomOut = () => {
+    const newScale = Math.max(0.5, scale - 0.1)
+    setScale(newScale)
+    zoomTo(newScale)
+  }
 
   return (
     <div className="flex flex-1 flex-col bg-muted/30">
@@ -74,15 +90,15 @@ export function PDFViewer({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleZoomOut} disabled={zoom <= 0.5} className="h-7 w-7">
+          <Button variant="ghost" size="icon" onClick={handleZoomOut} disabled={scale <= 0.5} className="h-7 w-7">
             <ZoomOut className="h-4 w-4" />
           </Button>
 
           <span className="min-w-[3rem] text-center font-mono text-sm text-muted-foreground">
-            {Math.round(zoom * 100)}%
+            {Math.round(scale * 100)}%
           </span>
 
-          <Button variant="ghost" size="icon" onClick={handleZoomIn} disabled={zoom >= 2} className="h-7 w-7">
+          <Button variant="ghost" size="icon" onClick={handleZoomIn} disabled={scale >= 2} className="h-7 w-7">
             <ZoomIn className="h-4 w-4" />
           </Button>
 
@@ -92,43 +108,18 @@ export function PDFViewer({
         </div>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="flex min-h-full items-start justify-center p-8">
-          <div
-            className="rounded-lg border border-border bg-white shadow-lg"
-            style={{
-              transform: `scale(${zoom})`,
-              transformOrigin: "top center",
-            }}
-          >
-            {pdfUrl && (
-              <Document
-                file={pdfUrl}
-                onLoadSuccess={onDocumentLoadSuccess}
-                className="pdf-document"
-                loading={
-                  <div className="flex h-[842px] w-[595px] items-center justify-center">
-                    <p className="font-mono text-sm text-muted-foreground">Loading PDF...</p>
-                  </div>
-                }
-                error={
-                  <div className="flex h-[842px] w-[595px] items-center justify-center">
-                    <p className="font-mono text-sm text-destructive">Error loading PDF</p>
-                  </div>
-                }
-              >
-                <Page
-                  pageNumber={currentPage}
-                  width={595}
-                  className="pdf-page"
-                  renderTextLayer={true}
-                  renderAnnotationLayer={true}
-                />
-              </Document>
-            )}
-          </div>
-        </div>
-      </ScrollArea>
+      <div className="flex-1" style={{ height: 'calc(100vh - 200px)' }}>
+        {pdfUrl && (
+          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+            <Viewer
+              fileUrl={pdfUrl}
+              plugins={[pageNavigationPluginInstance, zoomPluginInstance]}
+              onDocumentLoad={(e) => setNumPages(e.doc.numPages)}
+              onPageChange={(e) => setCurrentPage(e.currentPage + 1)}
+            />
+          </Worker>
+        )}
+      </div>
     </div>
   )
 }

@@ -138,11 +138,11 @@ export function CitationSidebar({ selectedCitation, onCitationSelect }: Citation
       <ScrollArea className="flex-1">
         <div className="p-2">
           {mockCitations.map((citation) => (
-            <button
+            <div
               key={citation.id}
               onClick={() => onCitationSelect(citation)}
               className={cn(
-                "mb-2 w-full rounded-lg border p-3 text-left transition-all hover:border-primary/50 hover:bg-accent/50",
+                "mb-2 w-full rounded-lg border p-3 text-left transition-all hover:border-primary/50 hover:bg-accent/50 cursor-pointer",
                 selectedCitation?.id === citation.id ? "border-primary bg-accent" : "border-border bg-background/50",
               )}
             >
@@ -192,7 +192,7 @@ export function CitationSidebar({ selectedCitation, onCitationSelect }: Citation
                   <span>Cited by {citation.citedBy}</span>
                 </div>
               )}
-            </button>
+            </div>
           ))}
         </div>
       </ScrollArea>
