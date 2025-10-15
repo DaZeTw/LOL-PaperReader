@@ -20,6 +20,7 @@ except Exception:
 from .embeddings import get_embedder
 from .retrievers import build_corpus, build_store, get_retriever
 from .generators import get_generator
+from .rerankers import get_reranker
 
 
 @dataclass
@@ -84,10 +85,13 @@ class QAPipeline:
 
         retriever = get_retriever(self.config.retriever_name, store, embedder)
         generator = get_generator(self.config.generator_name, image_policy=self.config.image_policy)
+        reranker = get_reranker(self.config.reranker_name)
+        print(f"[LOG] Reranker '{self.config.reranker_name}' initialized.")
 
         self.embedder = embedder
         self.retriever = retriever
         self.generator = generator
+        self.reranker = reranker
         self.artifacts = PipelineArtifacts(
             chunks=chunks,
             corpus_texts=corpus.texts,
@@ -95,12 +99,21 @@ class QAPipeline:
         )
         self.store = store
 
-    async def answer(self, question: str) -> Dict[str, Any]:
+    async def answer(self, question: str, user_images: List[str] = None) -> Dict[str, Any]:
         print(f"[LOG] Retrieving hits for question: '{question}'")
         hits = self.retriever.retrieve(question, top_k=self.config.top_k)
         print(f"[LOG] Number of hits retrieved: {len(hits)}")
         if len(hits) > 0:
             print(f"[LOG] Top hit text: {hits[0].get('text', '')[:200]}")
+
+        # Apply reranking if configured
+        if self.config.reranker_name != "none":
+            print(f"[LOG] Applying reranking with '{self.config.reranker_name}' reranker")
+            hits = self.reranker.rerank(question, hits, top_k=self.config.reranker_top_k)
+            print(f"[LOG] Number of hits after reranking: {len(hits)}")
+            if len(hits) > 0:
+                print(f"[LOG] Top reranked hit text: {hits[0].get('text', '')[:200]}")
+                print(f"[LOG] Top reranked hit score: {hits[0].get('score', 0.0)}")
 
         # Build contexts for generation according to image_policy
         # none: pass text-only
@@ -118,7 +131,7 @@ class QAPipeline:
             contexts = [h.get("text", "") for h in hits]
 
         try:
-            answer = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens)
+            answer = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens, user_images=user_images)
         except Exception as e:
             print(f"[WARNING] Generator failed: {e}. Using ExtractiveGenerator fallback.")
             from .generators import ExtractiveGenerator
