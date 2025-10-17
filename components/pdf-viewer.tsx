@@ -16,6 +16,8 @@ import {
   X,
   Link as LinkIcon,
   Loader2,
+  Monitor,
+  ArrowRightToLine,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -72,6 +74,7 @@ export function PDFViewer({
   );
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [jumpToPageInput, setJumpToPageInput] = useState("");
   const viewerRef = useRef<HTMLDivElement>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
@@ -617,39 +620,104 @@ export function PDFViewer({
     zoomTo(newScale);
   };
 
+  const handleFitToWidth = () => {
+    const newScale = 1.5; // Adjusted for typical fit-to-width
+    setScale(newScale);
+    zoomTo(newScale);
+  };
+
+  const handleFitToPage = () => {
+    const newScale = 1.0; // Full page view
+    setScale(newScale);
+    zoomTo(newScale);
+  };
+
+  const handleJumpToPage = () => {
+    const pageNum = parseInt(jumpToPageInput, 10);
+    if (pageNum >= 1 && pageNum <= numPages) {
+      jumpToPage(pageNum - 1); // Plugin uses 0-based index
+      setJumpToPageInput("");
+    }
+  };
+
   return (
     <div className="flex flex-1 flex-col bg-muted/30">
-      <div className="flex items-center justify-between border-b border-border bg-background px-4 py-2">
-        <div className="flex items-center gap-2">
+      {/* Reading Progress Bar */}
+      <div className="h-1 bg-muted/50 relative">
+        <div
+          className="h-full bg-primary transition-all duration-300"
+          style={{ width: `${numPages > 0 ? (currentPage / numPages) * 100 : 0}%` }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between border-b border-border bg-background px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={handlePrevPage}
             disabled={currentPage === 1}
-            className="h-7 w-7"
+            className="h-8 w-8 hover:bg-accent transition-colors"
+            title="Previous page"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          <span className="font-mono text-sm text-foreground">
-            {currentPage}{" "}
-            <span className="text-muted-foreground">/ {numPages || "?"}</span>
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-sm font-medium text-foreground">
+              {currentPage}
+            </span>
+            <span className="text-muted-foreground text-sm">/</span>
+            <span className="font-mono text-sm text-muted-foreground">
+              {numPages || "?"}
+            </span>
+          </div>
 
           <Button
             variant="ghost"
             size="icon"
             onClick={handleNextPage}
             disabled={currentPage === numPages}
-            className="h-7 w-7"
+            className="h-8 w-8 hover:bg-accent transition-colors"
+            title="Next page"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
+
+          <div className="h-6 w-px bg-border mx-1" />
+
+          {/* Jump to Page Input */}
+          <div className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-1.5">
+            <Input
+              type="number"
+              placeholder="Page"
+              value={jumpToPageInput}
+              onChange={(e) => setJumpToPageInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleJumpToPage();
+                }
+              }}
+              min={1}
+              max={numPages}
+              className="h-7 w-16 border-none bg-transparent text-sm font-mono focus-visible:ring-0 focus-visible:ring-offset-0 text-center"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleJumpToPage}
+              disabled={!jumpToPageInput || numPages === 0}
+              className="h-7 px-2 text-xs"
+              title="Jump to page"
+            >
+              Go
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           {searchOpen ? (
-            <div className="flex items-center gap-2 bg-muted/50 rounded-md px-2 py-1">
+            <div className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-1.5 shadow-sm">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
@@ -666,7 +734,8 @@ export function PDFViewer({
                   setSearchOpen(false);
                   setSearchKeyword("");
                 }}
-                className="h-6 w-6"
+                className="h-6 w-6 hover:bg-accent/50 transition-colors"
+                title="Close search"
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -676,23 +745,28 @@ export function PDFViewer({
               variant="ghost"
               size="icon"
               onClick={() => setSearchOpen(true)}
-              className="h-7 w-7"
+              className="h-8 w-8 hover:bg-accent transition-colors"
+              title="Search in PDF"
             >
               <Search className="h-4 w-4" />
             </Button>
           )}
 
+          <div className="h-6 w-px bg-border mx-1" />
+
+          {/* Zoom Controls */}
           <Button
             variant="ghost"
             size="icon"
             onClick={handleZoomOut}
             disabled={scale <= 0.5}
-            className="h-7 w-7"
+            className="h-8 w-8 hover:bg-accent transition-colors"
+            title="Zoom out"
           >
             <ZoomOut className="h-4 w-4" />
           </Button>
 
-          <span className="min-w-[3rem] text-center font-mono text-sm text-muted-foreground">
+          <span className="min-w-[3.5rem] text-center font-mono text-sm font-medium text-foreground">
             {Math.round(scale * 100)}%
           </span>
 
@@ -701,12 +775,43 @@ export function PDFViewer({
             size="icon"
             onClick={handleZoomIn}
             disabled={scale >= 2}
-            className="h-7 w-7"
+            className="h-8 w-8 hover:bg-accent transition-colors"
+            title="Zoom in"
           >
             <ZoomIn className="h-4 w-4" />
           </Button>
 
-          <Button variant="ghost" size="icon" className="h-7 w-7">
+          <div className="h-6 w-px bg-border mx-1" />
+
+          {/* Zoom Presets */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleFitToWidth}
+            className="h-8 w-8 hover:bg-accent transition-colors"
+            title="Fit to width"
+          >
+            <ArrowRightToLine className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleFitToPage}
+            className="h-8 w-8 hover:bg-accent transition-colors"
+            title="Fit to page"
+          >
+            <Monitor className="h-4 w-4" />
+          </Button>
+
+          <div className="h-6 w-px bg-border mx-1" />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 hover:bg-accent transition-colors"
+            title="Fullscreen"
+          >
             <Maximize2 className="h-4 w-4" />
           </Button>
         </div>
