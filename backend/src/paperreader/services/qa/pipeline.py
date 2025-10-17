@@ -7,20 +7,9 @@ from typing import Dict, Any, List
 from .config import PipelineConfig
 from .loaders import load_parsed_jsons
 from .chunking import split_sections_into_chunks
-# optional import of semantic splitter factory — pipeline will pass it down
-try:
-    import torch
-    from llama_index.core.node_parser import SemanticSplitterNodeParser
-    from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-    SEMANTIC_AVAILABLE = True
-except Exception:
-    SemanticSplitterNodeParser = None
-    HuggingFaceEmbedding = None
-    SEMANTIC_AVAILABLE = False
 from .embeddings import get_embedder
 from .retrievers import build_corpus, build_store, get_retriever
 from .generators import get_generator
-from .rerankers import get_reranker
 
 
 @dataclass
@@ -50,32 +39,18 @@ class QAPipeline:
         print(f"[LOG] Number of documents loaded: {len(docs)}")
         #print("[DEBUG] Loaded document:", docs[1] if len(docs) > 1 else docs[0] if docs else "No documents")
 
-        # Build a semantic splitter if the optional dependencies are present.
+        # No external embedding for splitting; use heuristic chunking only
         semantic_splitter = None
-        if SEMANTIC_AVAILABLE:
-            try:
-                device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-                embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5", device=device)
-                semantic_splitter = SemanticSplitterNodeParser(buffer_size=1, breakpoint_percentile_threshold=95, embed_model=embed_model)
-                print("[LOG] Semantic splitter initialized and will be used for chunking.")
-            except Exception as e:
-                print(f"[WARNING] Failed to initialize semantic splitter: {e}. Falling back to heuristic chunking.")
 
         chunks = split_sections_into_chunks(docs, semantic_splitter=semantic_splitter)
-        print(f"[LOG] Chunks created: {chunks}")
+        print(f"[LOG] Chunks created: {chunks[10:20] if len(chunks) > 20 else chunks}")
         print(f"[LOG] Number of chunks created: {len(chunks)}")
-        if len(chunks) > 0:
-            print(f"[LOG] Chunks created: {chunks}")
-        embedder = None
-        if self.config.retriever_name in ("dense", "hybrid"):
-            try:
-                embedder = get_embedder(self.config.embedder_name)
-                print(f"[LOG] Embedder '{self.config.embedder_name}' loaded successfully.")
-            except Exception as e:
-                print(f"[WARNING] Failed to load embedder '{self.config.embedder_name}': {e}")
-                from .embeddings import SentenceTransformersEmbedder
-                embedder = SentenceTransformersEmbedder("BAAI/bge-small-en-v1.5")
-                print("[LOG] Fallback embedder 'BAAI/bge-small-en-v1.5' loaded.")
+
+        try:
+            embedder = get_embedder(self.config.embedder_name)
+            print("[LOG] Visualized_BGE embedder loaded successfully.")
+        except Exception as e:
+            raise RuntimeError(f"Failed to initialize Visualized_BGE embedder: {e}")
 
         corpus = build_corpus(chunks)
         print(f"[LOG] Corpus built with {len(corpus.texts)} texts.")
@@ -85,13 +60,10 @@ class QAPipeline:
 
         retriever = get_retriever(self.config.retriever_name, store, embedder)
         generator = get_generator(self.config.generator_name, image_policy=self.config.image_policy)
-        reranker = get_reranker(self.config.reranker_name)
-        print(f"[LOG] Reranker '{self.config.reranker_name}' initialized.")
 
         self.embedder = embedder
         self.retriever = retriever
         self.generator = generator
-        self.reranker = reranker
         self.artifacts = PipelineArtifacts(
             chunks=chunks,
             corpus_texts=corpus.texts,
@@ -99,21 +71,34 @@ class QAPipeline:
         )
         self.store = store
 
-    async def answer(self, question: str, user_images: List[str] = None) -> Dict[str, Any]:
+    async def answer(self, question: str, image: str | None = None, user_images: List[str] | None = None) -> Dict[str, Any]:
         print(f"[LOG] Retrieving hits for question: '{question}'")
-        hits = self.retriever.retrieve(question, top_k=self.config.top_k)
+        
+        # Determine which image to use for query and resolve path
+        query_image = image
+        if user_images and len(user_images) > 0:
+            query_image = user_images[0]  # Use first user image if available
+        
+        # Resolve query image path if provided
+        if query_image:
+            from pathlib import Path
+            query_path = Path(query_image)
+            if not query_path.is_absolute():
+                # Try relative to current working directory
+                if query_path.exists():
+                    query_image = str(query_path.resolve())
+                else:
+                    # Try relative to parser output directory
+                    parser_base = Path(__file__).resolve().parent / "parser"
+                    alt_path = parser_base / query_image
+                    if alt_path.exists():
+                        query_image = str(alt_path.resolve())
+            print(f"[LOG] Using query image: {query_image}")
+        
+        hits = self.retriever.retrieve(question, top_k=self.config.top_k, image=query_image)
         print(f"[LOG] Number of hits retrieved: {len(hits)}")
         if len(hits) > 0:
             print(f"[LOG] Top hit text: {hits[0].get('text', '')[:200]}")
-
-        # Apply reranking if configured
-        if self.config.reranker_name != "none":
-            print(f"[LOG] Applying reranking with '{self.config.reranker_name}' reranker")
-            hits = self.reranker.rerank(question, hits, top_k=self.config.reranker_top_k)
-            print(f"[LOG] Number of hits after reranking: {len(hits)}")
-            if len(hits) > 0:
-                print(f"[LOG] Top reranked hit text: {hits[0].get('text', '')[:200]}")
-                print(f"[LOG] Top reranked hit score: {hits[0].get('score', 0.0)}")
 
         # Build contexts for generation according to image_policy
         # none: pass text-only
@@ -129,15 +114,16 @@ class QAPipeline:
                 contexts.append(ctx)
         else:
             contexts = [h.get("text", "") for h in hits]
-
+        
         try:
-            answer = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens, user_images=user_images)
+            gen_out = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens, query_image=query_image)
         except Exception as e:
             print(f"[WARNING] Generator failed: {e}. Using ExtractiveGenerator fallback.")
             from .generators import ExtractiveGenerator
             # fallback uses text-only
             text_contexts = [h.get("text", "") for h in hits]
             answer = ExtractiveGenerator().generate(question, text_contexts, max_tokens=self.config.max_tokens)
+            gen_out = {"answer": answer, "citations": []}
 
         # If we had images in retrieval and generator supports images, append a brief Figures section to answer
         if supports_images:
@@ -193,7 +179,7 @@ class QAPipeline:
                     seen.add(key)
                     figure_lines.append(f"- {tag}: {cap} [url: {url}]")
             if figure_lines:
-                answer = answer.rstrip() + "\n\nFigures (from retrieved contexts):\n" + "\n".join(figure_lines)
+                gen_out["answer"] = gen_out.get("answer", "").rstrip() + "\n\nFigures (from retrieved contexts):\n" + "\n".join(figure_lines)
 
         try:
             run_path = Path(self.config.runs_dir) / "last_run_retrieval.json"
@@ -202,15 +188,27 @@ class QAPipeline:
         except Exception as e:
             print(f"[WARNING] Failed to save retrieval log: {e}")
 
-        # Build cited sections, de-duplicated by (title, page, normalized excerpt)
-        cited = []
-        seen_citations = set()
+        # Build citations ordered by [cN] markers in the answer when present
         import re as _re
+        answer_text = gen_out.get("answer", "")
+        marker_pattern = _re.compile(r"\[c(\d+)\]")
+        marker_indices = gen_out.get("citations") or [int(m.group(1)) - 1 for m in marker_pattern.finditer(answer_text)]
+        ordered_hit_indices = []
+        for idx in marker_indices:
+            if 0 <= idx < len(hits):
+                ordered_hit_indices.append(idx)
+        # Fallback to natural order for any remaining hits not cited explicitly
+        remaining = [i for i in range(len(hits)) if i not in set(ordered_hit_indices)]
+        final_order = ordered_hit_indices + remaining
+
         def _norm_excerpt(s: str) -> str:
             s = (s or "").strip()
-            s = _re.sub(r"\s+", " ", s)
-            return s
-        for h in hits:
+            return _re.sub(r"\s+", " ", s)
+
+        seen_citations = set()
+        cited = []
+        for i in final_order:
+            h = hits[i]
             meta = h.get("metadata", {})
             title = meta.get("title")
             page = meta.get("page")
@@ -228,7 +226,8 @@ class QAPipeline:
 
         return {
             "question": question,
-            "answer": answer,
+            "answer": gen_out.get("answer", ""),
+            "citations": marker_indices,
             "cited_sections": cited,
             "retriever_scores": [{"index": h["index"], "score": h["score"]} for h in hits]
         }
