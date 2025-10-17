@@ -5,7 +5,7 @@ import os
 
 class Generator(ABC):
     @abstractmethod
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None):
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None):
         ...
 
 
@@ -33,18 +33,22 @@ class OpenAIGenerator(Generator):
         env_include_all = os.getenv("RAG_GEN_IMAGE_INCLUDE_ALL", "false").lower() in {"1","true","yes","y"}
         self.image_include_all = env_include_all if image_include_all_override is None else bool(image_include_all_override)
 
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None):
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None):
         if self.client is None:
             raise RuntimeError("OPENAI_API_KEY not set")
         system = (
             "You are a helpful assistant. Answer strictly using the provided contexts (text and figures). "
             "When referencing a context, add a citation marker like [c1], [c2], ... where the number corresponds to the context index shown. "
+            "IMPORTANT: Only answer questions about images if the user has provided query images. "
+            "If the user asks about 'this image' or 'the image' but no user query images are provided, respond with 'I don't know' or 'No image was provided in your query'. "
+            "When multiple user query images are provided, analyze and compare them as requested. "
             "If unknown, say you don't know."
         )
 
         # If contexts are plain strings, fall back to text-only prompt
         plain_text_only = all(isinstance(c, str) for c in contexts)
-        if plain_text_only and not query_image:
+        has_query_images = query_image is not None or (query_images and len(query_images) > 0)
+        if plain_text_only and not has_query_images:
             prompt = (
                 "Answer the question using the contexts. When you use information from a context, append [cN] where N is the context number.\n\n" +
                 "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)]) +
@@ -99,14 +103,28 @@ class OpenAIGenerator(Generator):
         # contexts is List[Dict[str, Any]] with keys: text, images (list of {data, caption})
         user_content = []
         user_content.append({"type": "text", "text": "Answer the question using the following contexts. Append [cN] markers referencing the context number when you use it."})
-        # If user provided a query image, include it for grounding
+        # Process query images (either single query_image or multiple query_images)
+        query_images_to_process = []
         if query_image:
-            try:
-                qi_url = to_data_url(query_image)
-                user_content.append({"type": "text", "text": "[User Query Image]"})
-                user_content.append({"type": "image_url", "image_url": {"url": qi_url}})
-            except Exception:
-                pass
+            query_images_to_process.append(query_image)
+        if query_images:
+            query_images_to_process.extend(query_images)
+        
+        if query_images_to_process:
+            print(f"[LOG] Processing {len(query_images_to_process)} query images")
+            for i, img_path in enumerate(query_images_to_process):
+                try:
+                    print(f"[LOG] Processing query image {i+1}: {img_path}")
+                    qi_url = to_data_url(img_path)
+                    user_content.append({"type": "text", "text": f"[User Query Image {i+1} - This is image {i+1} that the user is asking about]"})
+                    user_content.append({"type": "image_url", "image_url": {"url": qi_url}})
+                    print(f"[LOG] Successfully added query image {i+1} to prompt")
+                except Exception as e:
+                    print(f"[WARNING] Failed to process query image {i+1} {img_path}: {e}")
+                    pass
+        else:
+            # Explicitly tell the model that no user image was provided
+            user_content.append({"type": "text", "text": "[No User Query Image provided - Only use retrieved context images for reference, not for answering image-specific questions]"})
         # First add text for each context
         ctx_texts = []
         for i, ctx in enumerate(contexts):
@@ -165,19 +183,30 @@ class OpenAIGenerator(Generator):
                 data_url = to_data_url(path)
             except Exception:
                 continue
-            user_content.append({"type": "text", "text": f"[Figure] {cap}"})
+            user_content.append({"type": "text", "text": f"[Retrieved Context Figure {i+1}] {cap}"})
             user_content.append({"type": "image_url", "image_url": {"url": data_url}})
+        # Add specific instruction about image questions when no query image is provided
+        if not has_query_images and any(keyword in question.lower() for keyword in ["this image", "the image", "image shows", "what does the image", "describe the image"]):
+            user_content.append({"type": "text", "text": "IMPORTANT: The user is asking about an image but no user query image was provided. You should respond that you don't know or that no image was provided in the query."})
+        
         user_content.append({"type": "text", "text": f"Question: {question}\nAnswer:"})
 
-        resp = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user_content},
-            ],
-            max_tokens=max_tokens,
-            temperature=0.2,
-        )
+        print(f"[LOG] Sending request to OpenAI with {len(user_content)} content items")
+        try:
+            resp = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user_content},
+                ],
+                max_tokens=max_tokens,
+                temperature=0.2,
+                timeout=60.0,  # 60 second timeout
+            )
+            print(f"[LOG] Received response from OpenAI")
+        except Exception as e:
+            print(f"[ERROR] OpenAI API call failed: {e}")
+            raise
         answer = resp.choices[0].message.content.strip()
         import re as _re
         marker_pattern = _re.compile(r"\[c(\d+)\]")
@@ -192,7 +221,7 @@ class OllamaGenerator(Generator):
         self.model = model
         self.supports_images = False
 
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512) -> str:
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None) -> str:
         prompt = (
             "You are a helpful assistant. Answer strictly using the contexts.\n\n" +
             "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)]) +
@@ -203,7 +232,7 @@ class OllamaGenerator(Generator):
 
 
 class ExtractiveGenerator(Generator):
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512) -> str:
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None) -> str:
         # naive extractive approach: return most relevant sentence from contexts
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.metrics.pairwise import cosine_similarity

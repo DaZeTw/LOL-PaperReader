@@ -77,23 +77,42 @@ class QAPipeline:
         # Determine which image to use for query and resolve path
         query_image = image
         if user_images and len(user_images) > 0:
+            print(f"[LOG] User provided {len(user_images)} images: {user_images}")
             query_image = user_images[0]  # Use first user image if available
         
         # Resolve query image path if provided
         if query_image:
             from pathlib import Path
+            print(f"[LOG] Resolving image path: {query_image}")
             query_path = Path(query_image)
             if not query_path.is_absolute():
                 # Try relative to current working directory
                 if query_path.exists():
                     query_image = str(query_path.resolve())
+                    print(f"[LOG] Found image at current dir: {query_image}")
                 else:
                     # Try relative to parser output directory
                     parser_base = Path(__file__).resolve().parent / "parser"
                     alt_path = parser_base / query_image
                     if alt_path.exists():
                         query_image = str(alt_path.resolve())
-            print(f"[LOG] Using query image: {query_image}")
+                        print(f"[LOG] Found image at parser dir: {query_image}")
+                    else:
+                        # Try relative to img_query directory
+                        img_query_dir = Path(__file__).resolve().parent / "img_query"
+                        img_query_path = img_query_dir / query_image
+                        if img_query_path.exists():
+                            query_image = str(img_query_path.resolve())
+                            print(f"[LOG] Found image at img_query dir: {query_image}")
+                        else:
+                            print(f"[WARNING] Image not found: {query_image}")
+                            query_image = None
+            else:
+                if query_path.exists():
+                    print(f"[LOG] Using absolute path: {query_image}")
+                else:
+                    print(f"[WARNING] Absolute path does not exist: {query_image}")
+                    query_image = None
         
         hits = self.retriever.retrieve(question, top_k=self.config.top_k, image=query_image)
         print(f"[LOG] Number of hits retrieved: {len(hits)}")
@@ -116,70 +135,18 @@ class QAPipeline:
             contexts = [h.get("text", "") for h in hits]
         
         try:
-            gen_out = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens, query_image=query_image)
+            gen_out = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens, query_image=query_image, query_images=user_images)
         except Exception as e:
             print(f"[WARNING] Generator failed: {e}. Using ExtractiveGenerator fallback.")
             from .generators import ExtractiveGenerator
             # fallback uses text-only
             text_contexts = [h.get("text", "") for h in hits]
-            answer = ExtractiveGenerator().generate(question, text_contexts, max_tokens=self.config.max_tokens)
+            answer = ExtractiveGenerator().generate(question, text_contexts, max_tokens=self.config.max_tokens, query_image=query_image, query_images=user_images)
             gen_out = {"answer": answer, "citations": []}
 
-        # If we had images in retrieval and generator supports images, append a brief Figures section to answer
-        if supports_images:
-            from pathlib import Path
-            import base64
-            import mimetypes
-
-            def ensure_static_url(p: str) -> str:
-                # If already a filesystem path under services/parser, map to /static URL
-                if p and not p.startswith("data:"):
-                    rel = p.replace("\\", "/").lstrip("/")
-                    return f"/static/{rel}"
-                # If data URL, persist to file under output_parser/generated and return URL
-                if p.startswith("data:"):
-                    try:
-                        header, b64 = p.split(",", 1)
-                        mime = header.split(":", 1)[1].split(";")[0]
-                        ext = mimetypes.guess_extension(mime) or ".png"
-                        out_dir = Path(__file__).resolve().parent / "parser" / "output_parser" / "generated"
-                        out_dir.mkdir(parents=True, exist_ok=True)
-                        # Use short hash for filename
-                        import hashlib
-                        digest = hashlib.sha1(b64.encode("ascii")).hexdigest()[:16]
-                        out_path = out_dir / f"figure_{digest}{ext}"
-                        if not out_path.exists():
-                            out_path.write_bytes(base64.b64decode(b64))
-                        rel = out_path.relative_to(Path(__file__).resolve().parent / "parser").as_posix()
-                        return f"/static/{rel}"
-                    except Exception:
-                        return ""
-                return ""
-
-            figure_lines = []
-            seen = set()  # dedupe by (caption,page,url base)
-            def _base_url(u: str) -> str:
-                return u.split("?")[0]
-            for h in hits:
-                meta = h.get("metadata", {})
-                for img in meta.get("images", []) or []:
-                    raw_path = img.get("data") or ""
-                    url = ensure_static_url(raw_path)
-                    if not url:
-                        continue
-                    cap = (img.get("caption") or "Figure").strip()
-                    fig_id = (img.get("figure_id") or "").strip()
-                    tag = fig_id if fig_id else "Figure"
-                    base = _base_url(url)
-                    page = meta.get("page")
-                    key = (cap, page, base)
-                    # Prefer artifact URLs over generated ones
-                    if (cap, page, base) in seen:
-                        continue
-                    seen.add(key)
-                    figure_lines.append(f"- {tag}: {cap} [url: {url}]")
-            if figure_lines:
-                gen_out["answer"] = gen_out.get("answer", "").rstrip() + "\n\nFigures (from retrieved contexts):\n" + "\n".join(figure_lines)
+        # Let the LLM decide whether to include figures in its response
+        # We don't manually append figures - the LLM will include them if needed
+        print(f"[LOG] LLM generated answer: {gen_out.get('answer', '')[:100]}...")
 
         try:
             run_path = Path(self.config.runs_dir) / "last_run_retrieval.json"
