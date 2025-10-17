@@ -5,7 +5,7 @@ import os
 
 class Generator(ABC):
     @abstractmethod
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, user_images: List[str] = None) -> str:
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None):
         ...
 
 
@@ -33,19 +33,20 @@ class OpenAIGenerator(Generator):
         env_include_all = os.getenv("RAG_GEN_IMAGE_INCLUDE_ALL", "false").lower() in {"1","true","yes","y"}
         self.image_include_all = env_include_all if image_include_all_override is None else bool(image_include_all_override)
 
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, user_images: List[str] = None) -> str:
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None):
         if self.client is None:
             raise RuntimeError("OPENAI_API_KEY not set")
         system = (
             "You are a helpful assistant. Answer strictly using the provided contexts (text and figures). "
-            "Cite spans or figure identifiers where applicable. If unknown, say you don't know."
+            "When referencing a context, add a citation marker like [c1], [c2], ... where the number corresponds to the context index shown. "
+            "If unknown, say you don't know."
         )
 
-        # If contexts are plain strings AND no user images, fall back to text-only prompt
-        plain_text_only = all(isinstance(c, str) for c in contexts) and not user_images
-        if plain_text_only:
+        # If contexts are plain strings, fall back to text-only prompt
+        plain_text_only = all(isinstance(c, str) for c in contexts)
+        if plain_text_only and not query_image:
             prompt = (
-                "Answer the question using the contexts.\n\n" +
+                "Answer the question using the contexts. When you use information from a context, append [cN] where N is the context number.\n\n" +
                 "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)]) +
                 f"\n\nQuestion: {question}\nAnswer:"
             )
@@ -58,7 +59,12 @@ class OpenAIGenerator(Generator):
                 max_tokens=max_tokens,
                 temperature=0.2,
             )
-            return resp.choices[0].message.content.strip()
+            answer = resp.choices[0].message.content.strip()
+            # extract citations [cN]
+            import re as _re
+            marker_pattern = _re.compile(r"\[c(\d+)\]")
+            citations = [int(m.group(1)) - 1 for m in marker_pattern.finditer(answer)]
+            return {"answer": answer, "citations": citations}
 
         # Otherwise, build a multimodal message with text + images
         from pathlib import Path
@@ -92,24 +98,15 @@ class OpenAIGenerator(Generator):
 
         # contexts is List[Dict[str, Any]] with keys: text, images (list of {data, caption})
         user_content = []
-        user_content.append({"type": "text", "text": "Answer the question using the following contexts."})
-
-        # Add user-uploaded images first if provided
-        if user_images:
-            user_content.append({"type": "text", "text": "\n[User-Provided Images]"})
-            for idx, img_data in enumerate(user_images):
-                user_content.append({"type": "text", "text": f"User Image {idx+1}:"})
-                # If it's already a data URL, use it directly
-                if img_data.startswith("data:"):
-                    user_content.append({"type": "image_url", "image_url": {"url": img_data}})
-                else:
-                    # Otherwise convert to data URL
-                    try:
-                        data_url = to_data_url(img_data)
-                        user_content.append({"type": "image_url", "image_url": {"url": data_url}})
-                    except Exception as e:
-                        print(f"[WARNING] Failed to process user image {idx+1}: {e}")
-
+        user_content.append({"type": "text", "text": "Answer the question using the following contexts. Append [cN] markers referencing the context number when you use it."})
+        # If user provided a query image, include it for grounding
+        if query_image:
+            try:
+                qi_url = to_data_url(query_image)
+                user_content.append({"type": "text", "text": "[User Query Image]"})
+                user_content.append({"type": "image_url", "image_url": {"url": qi_url}})
+            except Exception:
+                pass
         # First add text for each context
         ctx_texts = []
         for i, ctx in enumerate(contexts):
@@ -181,7 +178,11 @@ class OpenAIGenerator(Generator):
             max_tokens=max_tokens,
             temperature=0.2,
         )
-        return resp.choices[0].message.content.strip()
+        answer = resp.choices[0].message.content.strip()
+        import re as _re
+        marker_pattern = _re.compile(r"\[c(\d+)\]")
+        citations = [int(m.group(1)) - 1 for m in marker_pattern.finditer(answer)]
+        return {"answer": answer, "citations": citations}
 
 
 class OllamaGenerator(Generator):
@@ -191,8 +192,7 @@ class OllamaGenerator(Generator):
         self.model = model
         self.supports_images = False
 
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, user_images: List[str] = None) -> str:
-        # Ollama text-only generator, ignore user_images
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512) -> str:
         prompt = (
             "You are a helpful assistant. Answer strictly using the contexts.\n\n" +
             "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)]) +
@@ -203,9 +203,8 @@ class OllamaGenerator(Generator):
 
 
 class ExtractiveGenerator(Generator):
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, user_images: List[str] = None) -> str:
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512) -> str:
         # naive extractive approach: return most relevant sentence from contexts
-        # Note: This generator doesn't support images
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.metrics.pairwise import cosine_similarity
         import numpy as np

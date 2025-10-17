@@ -10,14 +10,10 @@ router = APIRouter()
 
 class AskRequest(BaseModel):
     question: str
-    # registries
-    embedder: Literal["openai", "bge-small", "bge-large"] = "bge-small"
     retriever: Literal["keyword", "dense", "hybrid"] = "hybrid"
     generator: Literal["openai", "ollama", "extractive"] = "openai"
     image_policy: Literal["none", "auto", "all"] = "auto"
-    # Reranking
-    reranker: Literal["none", "cross-encoder", "cohere"] = "none"
-    reranker_top_k: int = 5
+
     top_k: int = 5
     max_tokens: int = 512
     # User-uploaded images (base64 encoded or URLs)
@@ -33,11 +29,8 @@ class AskResponse(BaseModel):
 
 class BenchmarkRequest(BaseModel):
     questions: List[str]
-    embedder: Literal["openai", "bge-small", "bge-large"] = "bge-small"
     retriever: Literal["keyword", "dense", "hybrid"] = "hybrid"
     generator: Literal["openai", "ollama", "extractive"] = "openai"
-    reranker: Literal["none", "cross-encoder", "cohere"] = "none"
-    reranker_top_k: int = 5
     top_k: int = 5
 
 
@@ -45,12 +38,9 @@ class BenchmarkRequest(BaseModel):
 async def ask(req: AskRequest):
     try:
         config = PipelineConfig(
-            embedder_name=req.embedder,
             retriever_name=req.retriever,
             generator_name=req.generator,
             image_policy=req.image_policy,
-            reranker_name=req.reranker,
-            reranker_top_k=req.reranker_top_k,
             top_k=req.top_k,
             max_tokens=req.max_tokens,
         )
@@ -64,12 +54,9 @@ async def ask(req: AskRequest):
 @router.post("/ask-with-upload")
 async def ask_with_upload(
     question: str = Form(...),
-    embedder: str = Form("bge-small"),
     retriever: str = Form("hybrid"),
     generator: str = Form("openai"),
     image_policy: str = Form("auto"),
-    reranker: str = Form("none"),
-    reranker_top_k: int = Form(5),
     top_k: int = Form(5),
     max_tokens: int = Form(512),
     images: List[UploadFile] = File(None),
@@ -96,12 +83,9 @@ async def ask_with_upload(
                 user_images.append(data_url)
 
         config = PipelineConfig(
-            embedder_name=embedder,
             retriever_name=retriever,
             generator_name=generator,
             image_policy=image_policy,
-            reranker_name=reranker,
-            reranker_top_k=reranker_top_k,
             top_k=top_k,
             max_tokens=max_tokens,
         )
@@ -116,11 +100,8 @@ async def ask_with_upload(
 async def benchmark(req: BenchmarkRequest):
     try:
         config = PipelineConfig(
-            embedder_name=req.embedder,
             retriever_name=req.retriever,
             generator_name=req.generator,
-            reranker_name=req.reranker,
-            reranker_top_k=req.reranker_top_k,
             top_k=req.top_k,
         )
         pipeline = QAPipeline(config)
