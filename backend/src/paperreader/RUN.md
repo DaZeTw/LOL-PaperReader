@@ -1,9 +1,22 @@
+# PaperReader API Setup Guide
+
+## Starting the Server
+
+```bash
 cd .\backend\src
 set OPENAI_API_KEY="sk-..."  
 uvicorn paperreader.main:app --reload --host 0.0.0.0 --port 8000
-Thư mục ảnh query
-Đặt ảnh trong: \backend\src\paperreader\img_query
-Cách gọi API có 1 ảnh:
+```
+
+## Query Image Directory
+
+Place images in: `\backend\src\paperreader\img_query`
+
+## API Call Examples
+
+### API Call with Single Image
+
+```json
 {
   "question": "different of this image and method of this paper",
   "retriever": "hybrid",
@@ -12,12 +25,14 @@ Cách gọi API có 1 ảnh:
   "top_k": 5,
   "max_tokens": 512,
   "user_images": [
-    "./paperreader/img_query/a.png",
-
+    "./paperreader/img_query/a.png"
   ]
 }
+```
 
-Cách gọi API có nhiều ảnh:
+### API Call with Multiple Images
+
+```json
 {
   "question": "different of this image and method of this paper",
   "retriever": "hybrid",
@@ -30,8 +45,11 @@ Cách gọi API có nhiều ảnh:
     "./paperreader/img_query/b.png"
   ]
 }
+```
 
-Cách gọi API không có ảnh:
+### API Call without Images
+
+```json
 {
   "question": "different of this image and method of this paper",
   "retriever": "hybrid",
@@ -40,8 +58,19 @@ Cách gọi API không có ảnh:
   "top_k": 5,
   "max_tokens": 512
 }
+```
 
+## Visual Embedding Setup
 
-Để dùng visual emb cần tải https://huggingface.co/BAAI/bge-visualized/resolve/main/Visualized_m3.pth?download=true và đặt ở backend\src
+To use visual embeddings:
 
-Nếu lỗi library có thể pip install thêm thư viện trong hướng dẫn ở https://huggingface.co/BAAI/bge-visualized 
+1. Download the model file from: https://huggingface.co/BAAI/bge-visualized/resolve/main/Visualized_m3.pth?download=true
+2. Place it in: `backend\src`
+
+## Troubleshooting
+
+If you encounter library errors, install additional libraries as specified in the instructions at: https://huggingface.co/BAAI/bge-visualized
+
+```bash
+pip install <required_library>
+```
