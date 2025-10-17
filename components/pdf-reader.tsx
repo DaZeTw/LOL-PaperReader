@@ -141,6 +141,7 @@ export function PDFReader() {
                 highlightColor={highlightColor}
                 annotationMode={annotationMode}
                 onCitationClick={setSelectedCitation}
+                parsedData={activeTab.parsedData}
               />
 
               <AnnotationToolbar
@@ -150,7 +151,9 @@ export function PDFReader() {
                 onModeChange={setAnnotationMode}
               />
 
-              {qaOpen && <QAInterface pdfFile={activeTab.file} onHighlight={() => {}} onClose={() => setQaOpen(false)} />}
+              {qaOpen && (
+                <QAInterface pdfFile={activeTab.file} onHighlight={() => {}} onClose={() => setQaOpen(false)} />
+              )}
             </div>
 
             {/* Right Sidebar - Citations/References */}
