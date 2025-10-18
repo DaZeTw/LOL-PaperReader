@@ -14,6 +14,7 @@ interface QAInterfaceProps {
   pdfFile: File
   onHighlight?: (text: string | null) => void
   onClose?: () => void
+  onNewMessage?: (question: string, answer: string) => void
 }
 
 interface QAMessage {
@@ -24,7 +25,7 @@ interface QAMessage {
   timestamp: Date
 }
 
-export function QAInterface({ pdfFile, onHighlight, onClose }: QAInterfaceProps) {
+export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAInterfaceProps) {
   const [question, setQuestion] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [messages, setMessages] = useState<QAMessage[]>([])
@@ -73,6 +74,11 @@ export function QAInterface({ pdfFile, onHighlight, onClose }: QAInterfaceProps)
 
       setMessages((prev) => [...prev, newMessage])
       setShowHistory(true)
+
+      // Notify parent of new Q&A message
+      if (onNewMessage) {
+        onNewMessage(currentQuestion, data.answer)
+      }
     } catch (error) {
       console.error("[v0] QA error:", error)
       toast({

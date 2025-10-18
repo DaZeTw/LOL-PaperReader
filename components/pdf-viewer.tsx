@@ -47,6 +47,8 @@ interface PDFViewerProps {
       arxivId?: string;
     }>;
   } | null;
+  onPageChange?: (page: number) => void;
+  onHandlersReady?: (handlers: any) => void;
 }
 
 interface CitationPopup {
@@ -64,6 +66,8 @@ export function PDFViewer({
   annotationMode,
   onCitationClick,
   parsedData,
+  onPageChange,
+  onHandlersReady,
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,6 +82,7 @@ export function PDFViewer({
   const viewerRef = useRef<HTMLDivElement>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+  const pageInputRef = useRef<HTMLInputElement>(null);
 
   const pageNavigationPluginInstance = pageNavigationPlugin();
   const { jumpToPage, jumpToNextPage, jumpToPreviousPage } =
@@ -640,6 +645,39 @@ export function PDFViewer({
     }
   };
 
+  const handleJumpToPageDirect = (page: number) => {
+    if (page >= 1 && page <= numPages) {
+      jumpToPage(page - 1); // Plugin uses 0-based index
+    }
+  };
+
+  // Expose handlers to parent
+  useEffect(() => {
+    if (onHandlersReady) {
+      onHandlersReady({
+        handleNextPage,
+        handlePrevPage,
+        handleZoomIn,
+        handleZoomOut,
+        handleResetZoom: () => {
+          setScale(1.0);
+          zoomTo(1.0);
+        },
+        handleFitToWidth,
+        handleOpenSearch: () => setSearchOpen(true),
+        jumpToPage: handleJumpToPageDirect,
+        focusPageInput: () => pageInputRef.current?.focus(),
+      });
+    }
+  }, [onHandlersReady, numPages]);
+
+  // Notify parent of page changes
+  useEffect(() => {
+    if (onPageChange) {
+      onPageChange(currentPage);
+    }
+  }, [currentPage, onPageChange]);
+
   return (
     <div className="flex flex-1 flex-col bg-muted/30">
       {/* Reading Progress Bar */}
@@ -689,6 +727,7 @@ export function PDFViewer({
           {/* Jump to Page Input */}
           <div className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-1.5">
             <Input
+              ref={pageInputRef}
               type="number"
               placeholder="Page"
               value={jumpToPageInput}
