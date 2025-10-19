@@ -85,7 +85,22 @@ class QAPipeline:
             from pathlib import Path
             print(f"[LOG] Resolving image path: {query_image}")
             query_path = Path(query_image)
-            if not query_path.is_absolute():
+            
+            # Handle relative paths that start with "./paperreader/"
+            if query_image.startswith("./paperreader/"):
+                # Extract just the filename from the path
+                filename = Path(query_image).name
+                print(f"[LOG] Extracted filename: {filename}")
+                # Try in img_query directory
+                img_query_dir = Path(__file__).resolve().parent / "img_query"
+                img_query_path = img_query_dir / filename
+                if img_query_path.exists():
+                    query_image = str(img_query_path.resolve())
+                    print(f"[LOG] Found image at img_query dir: {query_image}")
+                else:
+                    print(f"[WARNING] Image not found in img_query: {img_query_path}")
+                    query_image = None
+            elif not query_path.is_absolute():
                 # Try relative to current working directory
                 if query_path.exists():
                     query_image = str(query_path.resolve())
