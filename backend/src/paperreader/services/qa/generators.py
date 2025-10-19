@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import List
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class Generator(ABC):
@@ -39,11 +43,20 @@ class OpenAIGenerator(Generator):
         system = (
             "You are a helpful assistant. Answer strictly using the provided contexts (text and figures). "
             "When referencing a context, add a citation marker like [c1], [c2], ... where the number corresponds to the context index shown. "
+
             "IMPORTANT: Only answer questions about images if the user has provided query images. "
-            "If the user asks about 'this image' or 'the image' but no user query images are provided, respond with 'I don't know' or 'No image was provided in your query'. "
-            "When multiple user query images are provided, analyze and compare them as requested. "
-            "If unknown, say you don't know."
+            "If the user asks about 'this image' or 'the image' but no user query images are provided, respond clearly with "
+            "'No image was provided in your query.' "
+
+            "If the user provides images, first check whether each image appears relevant to the provided context (e.g., diagrams, figures, tables, or related visuals). "
+            "If an image appears unrelated, unclear, or random (e.g., scenery, people, or objects not mentioned in the text), respond politely and explain: "
+            "'The image you provided does not appear related to the topic or context, so I cannot give a meaningful answer based on it.' "
+
+            "When multiple user query images are provided, analyze and compare them as requested — but ignore any that appear unrelated and mention this explicitly. "
+
+            "If you still cannot determine the answer, explain briefly *why* (e.g., insufficient context, unclear content), instead of just saying 'I don’t know.'"
         )
+
 
         # If contexts are plain strings, fall back to text-only prompt
         plain_text_only = all(isinstance(c, str) for c in contexts)
@@ -91,9 +104,18 @@ class OpenAIGenerator(Generator):
         def to_data_url(path_str: str) -> str:
             p = Path(path_str)
             if not p.exists():
-                # try resolve relative to parser directory
-                alt = Path(__file__).resolve().parent / "parser" / path_str
-                p = alt if alt.exists() else Path(path_str)
+                # Handle relative paths that start with "./paperreader/"
+                if path_str.startswith("./paperreader/"):
+                    # Extract just the filename from the path
+                    filename = Path(path_str).name
+                    # Try in img_query directory
+                    img_query_dir = Path(__file__).resolve().parent / "img_query"
+                    alt = img_query_dir / filename
+                    p = alt if alt.exists() else Path(path_str)
+                else:
+                    # try resolve relative to parser directory
+                    alt = Path(__file__).resolve().parent / "parser" / path_str
+                    p = alt if alt.exists() else Path(path_str)
             mime, _ = mimetypes.guess_type(str(p))
             mime = mime or "image/png"
             data = p.read_bytes()
