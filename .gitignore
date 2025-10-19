@@ -1,0 +1,28 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Model weights
+*.pth
+*.pt
+*.ckpt
+*.bin
+
+# Environment 
+.env
+*.key
+*.pem
+
+# Logs and runs
+logs/
+*.log
+runs/
+
+# IDE 
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
