@@ -8,7 +8,7 @@ from pathlib import Path
 class PipelineConfig:
     # Retrieval / generator configs
     embedder_name: Literal["visualized_bge"] = "visualized_bge"
-    retriever_name: Literal["dense"] = "dense"
+    retriever_name: Literal["dense", "hybrid", "keyword"] = "hybrid"
     generator_name: Literal["openai", "ollama", "extractive"] = "openai"
 
     # Image handling policy: none / auto / all

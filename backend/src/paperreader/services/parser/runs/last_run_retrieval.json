@@ -1,26 +1,20 @@
 {
-  "question": "different of this image and method of this paper",
+  "question": "What animal is shown in the image and how does it relate to the Transformer model?",
   "hits": [
     {
-      "index": 148,
-      "score": 0.35257226734727665,
-      "text": "Figure 3: An example of the attention mechanism following long-distance dependencies in the encoder self-attention in layer 5 of 6. Many of the attention heads attend to a distant dependency of the verb 'making', completing the phrase 'making...more difficult'. Attentions here shown only for the word 'making'. Different colors represent different heads.",
+      "index": 10,
+      "score": 0.42024862825367537,
+      "text": "Figure 1: The Transformer - model architecture.\n\nThe Transformer follows this overall architecture using stacked self-attention and point-wise, fully connected layers for both the encoder and decoder, shown in the left and right halves of Figure 1, respectively.",
       "metadata": {
-        "doc_id": "1706.03762v7-referenced",
-        "title": "Attention Visualizations Input-Input Layer5",
-        "page": 28,
-        "images": [
-          {
-            "data": "paperreader\\services\\parser\\output\\output\\1706.03762v7-referenced_artifacts\\image_000003_5017bbb7a096da3d7466aa7d1f8724d5efca49213d9ca6f627bef63ded605814.png",
-            "caption": "An example of the attention mechanism following long-distance dependencies in the encoder self-attention in layer 5 of 6. Many of the attention heads attend to a distant dependency of the verb 'making', completing the phrase 'making...more difficult'. Attentions here shown only for the word 'making'. Different colors represent different heads. Best viewed in color.",
-            "figure_id": "Figure 3"
-          }
-        ]
+        "doc_id": "1706.03762v7-embedded",
+        "title": "3 Model Architecture",
+        "page": 6,
+        "images": []
       }
     },
     {
       "index": 85,
-      "score": 0.3223811457299303,
+      "score": 0.4154287082793445,
       "text": "Figure 1: The Transformer - model architecture.\n\nThe Transformer follows this overall architecture using stacked self-attention and point-wise, fully connected layers for both the encoder and decoder, shown in the left and right halves of Figure 1, respectively.",
       "metadata": {
         "doc_id": "1706.03762v7-referenced",
@@ -36,52 +30,35 @@
       }
     },
     {
-      "index": 90,
-      "score": 0.2813380972009719,
-      "text": "Figure 2: (left) Scaled Dot-Product Attention. (right) Multi-Head Attention consists of several attention layers running in parallel.",
+      "index": 119,
+      "score": 0.33163791700638323,
+      "text": "On the WMT 2014 English-to-German translation task, the big transformer model (Transformer (big) in Table 2) outperforms the best previously reported models (including ensembles) by more than 2 . 0 BLEU, establishing a new state-of-the-art BLEU score of 28 . 4 . The configuration of this model is listed in the bottom line of Table 3. Training took 3 . 5 days on 8 P100 GPUs. Even our base model surpasses all previously published models and ensembles, at a fraction of the training cost of any of the competitive models.\n\nOn the WMT 2014 English-to-French translation task, our big model achieves a BLEU score of 41 . 0 , outperforming all of the previously published single models, at less than 1 / 4 the training cost of the previous state-of-the-art model. The Transformer (big) model trained for English-to-French used dropout rate P drop = 0 . 1 , instead of 0 .",
       "metadata": {
         "doc_id": "1706.03762v7-referenced",
-        "title": "Scaled Dot-Product Attention",
-        "page": 9,
-        "images": [
-          {
-            "data": "paperreader\\services\\parser\\output\\output\\1706.03762v7-referenced_artifacts\\image_000002_35b5fe76ef3c23cddd7788e62be4d03daa9e37cdae00a416b15cbfce314a544d.png",
-            "caption": "(left) Scaled Dot-Product Attention. (right) Multi-Head Attention consists of several attention layers running in parallel.",
-            "figure_id": "Figure 2"
-          }
-        ]
+        "title": "6.1 Machine Translation",
+        "page": 23,
+        "images": []
       }
     },
     {
-      "index": 149,
-      "score": 0.2604490428218995,
-      "text": "Best viewed in color.\n\nInput-Input Layer5\n\nFigure 4: Two attention heads, also in layer 5 of 6, apparently involved in anaphora resolution. Top: Full attentions for head 5. Bottom: Isolated attentions from just the word 'its' for attention heads 5 and 6. Note that the attentions are very sharp for this word.\n\nInput-Input Layer5\n\nFigure 5: Many of the attention heads exhibit behaviour that seems related to the structure of the sentence. We give two such examples above, from two different heads from the encoder self-attention at layer 5 of 6. The heads clearly learned to perform different tasks.",
-      "metadata": {
-        "doc_id": "1706.03762v7-referenced",
-        "title": "Attention Visualizations Input-Input Layer5",
-        "page": 28,
-        "images": [
-          {
-            "data": "paperreader\\services\\parser\\output\\output\\1706.03762v7-referenced_artifacts\\image_000004_bdd23a5bd56a22c91f196ea3e78377d8e7eee842e1ba64020910524801c7db64.png",
-            "caption": "Two attention heads, also in layer 5 of 6, apparently involved in anaphora resolution. Top: Full attentions for head 5. Bottom: Isolated attentions from just the word 'its' for attention heads 5 and 6. Note that the attentions are very sharp for this word.",
-            "figure_id": "Figure 4"
-          },
-          {
-            "data": "paperreader\\services\\parser\\output\\output\\1706.03762v7-referenced_artifacts\\image_000005_327640766cc26f2688c87a83103ecb39cc75036c36d13b044a9c4ad8e45a88f3.png",
-            "caption": "Many of the attention heads exhibit behaviour that seems related to the structure of the sentence. We give two such examples above, from two different heads from the encoder self-attention at layer 5 of 6. The heads clearly learned to perform different tasks.",
-            "figure_id": "Figure 5"
-          }
-        ]
-      }
-    },
-    {
-      "index": 10,
-      "score": 0.25372767726747547,
-      "text": "Figure 1: The Transformer - model architecture.\n\nThe Transformer follows this overall architecture using stacked self-attention and point-wise, fully connected layers for both the encoder and decoder, shown in the left and right halves of Figure 1, respectively.",
+      "index": 44,
+      "score": 0.33163791700638323,
+      "text": "On the WMT 2014 English-to-German translation task, the big transformer model (Transformer (big) in Table 2) outperforms the best previously reported models (including ensembles) by more than 2 . 0 BLEU, establishing a new state-of-the-art BLEU score of 28 . 4 . The configuration of this model is listed in the bottom line of Table 3. Training took 3 . 5 days on 8 P100 GPUs. Even our base model surpasses all previously published models and ensembles, at a fraction of the training cost of any of the competitive models.\n\nOn the WMT 2014 English-to-French translation task, our big model achieves a BLEU score of 41 . 0 , outperforming all of the previously published single models, at less than 1 / 4 the training cost of the previous state-of-the-art model. The Transformer (big) model trained for English-to-French used dropout rate P drop = 0 . 1 , instead of 0 .",
       "metadata": {
         "doc_id": "1706.03762v7-embedded",
-        "title": "3 Model Architecture",
-        "page": 6,
+        "title": "6.1 Machine Translation",
+        "page": 23,
+        "images": []
+      }
+    },
+    {
+      "index": 80,
+      "score": 0.30537248562876407,
+      "text": "The fundamental constraint of sequential computation, however, remains.\n\nAttention mechanisms have become an integral part of compelling sequence modeling and transduction models in various tasks, allowing modeling of dependencies without regard to their distance in the input or output sequences [2, 19]. In all but a few cases [27], however, such attention mechanisms are used in conjunction with a recurrent network.\n\nIn this work we propose the Transformer, a model architecture eschewing recurrence and instead relying entirely on an attention mechanism to draw global dependencies between input and output. The Transformer allows for significantly more parallelization and can reach a new state of the art in translation quality after being trained for as little as twelve hours on eight P100 GPUs.",
+      "metadata": {
+        "doc_id": "1706.03762v7-referenced",
+        "title": "1 Introduction",
+        "page": 4,
         "images": []
       }
     }
