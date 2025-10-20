@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional, Dict, Any
 import os
 from dotenv import load_dotenv
 
@@ -9,7 +9,7 @@ load_dotenv()
 
 class Generator(ABC):
     @abstractmethod
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None):
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None, chat_history: Optional[List[Dict[str, str]]] = None):
         ...
 
 
@@ -37,7 +37,7 @@ class OpenAIGenerator(Generator):
         env_include_all = os.getenv("RAG_GEN_IMAGE_INCLUDE_ALL", "false").lower() in {"1","true","yes","y"}
         self.image_include_all = env_include_all if image_include_all_override is None else bool(image_include_all_override)
 
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None):
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None, chat_history: Optional[List[Dict[str, str]]] = None):
         if self.client is None:
             raise RuntimeError("OPENAI_API_KEY not set")
         system = (
@@ -58,6 +58,18 @@ class OpenAIGenerator(Generator):
         )
 
 
+        # Build messages list with chat history
+        messages = [{"role": "system", "content": system}]
+        
+        # Add chat history if provided
+        if chat_history:
+            for msg in chat_history:
+                if isinstance(msg, dict) and "role" in msg and "content" in msg:
+                    messages.append({
+                        "role": msg["role"],
+                        "content": msg["content"]
+                    })
+        
         # If contexts are plain strings, fall back to text-only prompt
         plain_text_only = all(isinstance(c, str) for c in contexts)
         has_query_images = query_image is not None or (query_images and len(query_images) > 0)
@@ -67,12 +79,11 @@ class OpenAIGenerator(Generator):
                 "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)]) +
                 f"\n\nQuestion: {question}\nAnswer:"
             )
+            messages.append({"role": "user", "content": prompt})
+            
             resp = self.client.chat.completions.create(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": prompt},
-                ],
+                messages=messages,
                 max_tokens=max_tokens,
                 temperature=0.2,
             )
@@ -215,12 +226,12 @@ class OpenAIGenerator(Generator):
 
         print(f"[LOG] Sending request to OpenAI with {len(user_content)} content items")
         try:
+            # Add the multimodal user content to messages
+            messages.append({"role": "user", "content": user_content})
+            
             resp = self.client.chat.completions.create(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user_content},
-                ],
+                messages=messages,
                 max_tokens=max_tokens,
                 temperature=0.2,
                 timeout=60.0,  # 60 second timeout
@@ -243,7 +254,7 @@ class OllamaGenerator(Generator):
         self.model = model
         self.supports_images = False
 
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None) -> str:
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None, chat_history: Optional[List[Dict[str, str]]] = None) -> str:
         prompt = (
             "You are a helpful assistant. Answer strictly using the contexts.\n\n" +
             "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)]) +
@@ -254,7 +265,7 @@ class OllamaGenerator(Generator):
 
 
 class ExtractiveGenerator(Generator):
-    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None) -> str:
+    def generate(self, question: str, contexts: List[str], max_tokens: int = 512, query_image: str | None = None, query_images: List[str] | None = None, chat_history: Optional[List[Dict[str, str]]] = None) -> str:
         # naive extractive approach: return most relevant sentence from contexts
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.metrics.pairwise import cosine_similarity

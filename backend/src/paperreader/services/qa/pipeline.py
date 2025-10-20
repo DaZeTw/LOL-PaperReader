@@ -71,7 +71,7 @@ class QAPipeline:
         )
         self.store = store
 
-    async def answer(self, question: str, image: str | None = None, user_images: List[str] | None = None) -> Dict[str, Any]:
+    async def answer(self, question: str, image: str | None = None, user_images: List[str] | None = None, chat_history: List[Dict[str, str]] | None = None) -> Dict[str, Any]:
         print(f"[LOG] Retrieving hits for question: '{question}'")
         
         # Determine which image to use for query and resolve path
@@ -150,13 +150,13 @@ class QAPipeline:
             contexts = [h.get("text", "") for h in hits]
         
         try:
-            gen_out = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens, query_image=query_image, query_images=user_images)
+            gen_out = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens, query_image=query_image, query_images=user_images, chat_history=chat_history)
         except Exception as e:
             print(f"[WARNING] Generator failed: {e}. Using ExtractiveGenerator fallback.")
             from .generators import ExtractiveGenerator
             # fallback uses text-only
             text_contexts = [h.get("text", "") for h in hits]
-            answer = ExtractiveGenerator().generate(question, text_contexts, max_tokens=self.config.max_tokens, query_image=query_image, query_images=user_images)
+            answer = ExtractiveGenerator().generate(question, text_contexts, max_tokens=self.config.max_tokens, query_image=query_image, query_images=user_images, chat_history=chat_history)
             gen_out = {"answer": answer, "citations": []}
 
         # Let the LLM decide whether to include figures in its response

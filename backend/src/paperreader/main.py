@@ -9,6 +9,10 @@ from fastapi.staticfiles import StaticFiles
 # Import routers
 from paperreader.api import pdf_routes  # main backend routes
 from paperreader.api.routes import router as qa_router  # QA RAG routes
+from paperreader.api.chat_routes import router as chat_router  # Chat routes
+
+# Import database connection
+from paperreader.database.mongodb import mongodb
 
 load_dotenv()
 
@@ -40,6 +44,7 @@ def create_app() -> FastAPI:
     # ------------------------
     app.include_router(pdf_routes.router, prefix="/api/pdf", tags=["PDF"])
     app.include_router(qa_router, prefix="/api/qa", tags=["QA"])
+    app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
 
     # ------------------------
     # Static files (for parsed figures)
@@ -47,6 +52,28 @@ def create_app() -> FastAPI:
     static_dir = Path(__file__).resolve().parent / "services" / "parser"
     if static_dir.exists():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+    # ------------------------
+    # Startup and Shutdown events
+    # ------------------------
+    @app.on_event("startup")
+    async def startup_event():
+        """Initialize database connection on startup"""
+        try:
+            await mongodb.connect()
+            print("✅ MongoDB connection established")
+        except Exception as e:
+            print(f"❌ Failed to connect to MongoDB: {e}")
+            # Don't raise exception to allow app to start without DB for testing
+
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        """Close database connection on shutdown"""
+        try:
+            await mongodb.disconnect()
+            print("✅ MongoDB connection closed")
+        except Exception as e:
+            print(f"❌ Error closing MongoDB connection: {e}")
 
     # ------------------------
     # Health and Root routes
