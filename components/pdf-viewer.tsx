@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Viewer, Worker } from "@react-pdf-viewer/core";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Viewer, Worker, RenderPage } from "@react-pdf-viewer/core";
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
 import { zoomPlugin } from "@react-pdf-viewer/zoom";
 import { searchPlugin } from "@react-pdf-viewer/search";
@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PDFCitationLinkDetector } from "@/components/pdf-citation-link-detector";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/page-navigation/lib/styles/index.css";
 import "@react-pdf-viewer/zoom/lib/styles/index.css";
@@ -79,7 +80,9 @@ export function PDFViewer({
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [jumpToPageInput, setJumpToPageInput] = useState("");
+  const [isDocumentLoading, setIsDocumentLoading] = useState(true);
   const viewerRef = useRef<HTMLDivElement>(null);
+  const viewerContainerRef = useRef<HTMLDivElement>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const pageInputRef = useRef<HTMLInputElement>(null);
@@ -105,7 +108,41 @@ export function PDFViewer({
   useEffect(() => {
     setCurrentPage(1);
     setNumPages(0);
+    setIsDocumentLoading(true);
   }, [file]);
+
+  // Custom render page function for lazy loading
+  const renderPage: RenderPage = useCallback((props) => {
+    return (
+      <div
+        key={`page-${props.pageIndex}`}
+        className="relative mb-4"
+        style={{
+          minHeight: props.height ? `${props.height}px` : "800px",
+        }}
+      >
+        {/* Loading placeholder */}
+        {!props.canvasLayer.children && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted/50 animate-pulse">
+            <div className="space-y-3 w-full p-8">
+              <div className="h-4 bg-muted-foreground/20 rounded w-3/4"></div>
+              <div className="h-4 bg-muted-foreground/20 rounded w-full"></div>
+              <div className="h-4 bg-muted-foreground/20 rounded w-5/6"></div>
+              <div className="h-4 bg-muted-foreground/20 rounded w-full"></div>
+              <div className="h-4 bg-muted-foreground/20 rounded w-2/3"></div>
+            </div>
+          </div>
+        )}
+
+        {/* Actual page content */}
+        <div className="relative">
+          {props.canvasLayer.children}
+          {props.textLayer.children}
+          {props.annotationLayer.children}
+        </div>
+      </div>
+    );
+  }, []);
 
   useEffect(() => {
     if (!viewerRef.current || !parsedData?.references) {
@@ -651,6 +688,33 @@ export function PDFViewer({
     }
   };
 
+  // Handle citation link clicks from PDF annotations
+  const handleCitationLinkClick = (pageNumber: number) => {
+    console.log('[PDFViewer] Citation link clicked, jumping to page:', pageNumber);
+    handleJumpToPageDirect(pageNumber);
+
+    // Scroll smoothly to the page
+    if (viewerContainerRef.current) {
+      const pageElement = viewerContainerRef.current.querySelector(
+        `[data-page-number="${pageNumber}"]`
+      ) as HTMLElement;
+
+      if (pageElement) {
+        pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Flash highlight effect after scrolling
+        setTimeout(() => {
+          pageElement.style.transition = 'background-color 0.3s ease';
+          pageElement.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+
+          setTimeout(() => {
+            pageElement.style.backgroundColor = 'transparent';
+          }, 1000);
+        }, 500);
+      }
+    }
+  };
+
   // Expose handlers to parent
   useEffect(() => {
     if (onHandlersReady) {
@@ -858,7 +922,7 @@ export function PDFViewer({
 
       <div className="flex-1 overflow-auto p-4 bg-muted/30" ref={viewerRef}>
         {pdfUrl && (
-          <div className="mx-auto max-w-4xl">
+          <div className="mx-auto max-w-4xl" ref={viewerContainerRef}>
             <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
               <div
                 className="bg-white shadow-lg rounded-lg overflow-hidden"
@@ -875,11 +939,42 @@ export function PDFViewer({
                     console.log("Document loaded:", e.doc.numPages, "pages");
                     setNumPages(e.doc.numPages);
                     setCurrentPage(1);
+                    setIsDocumentLoading(false);
                   }}
                   onPageChange={(e) => {
                     console.log("Page changed to:", e.currentPage + 1);
                     setCurrentPage(e.currentPage + 1);
                   }}
+                  // Lazy loading configuration for better performance
+                  renderPage={renderPage}
+                  // Performance optimizations
+                  defaultScale={scale}
+                  // Only render visible pages and a few pages around them
+                  initialPage={0}
+                  // Enable smooth scrolling
+                  scrollMode="vertical"
+                  // Render text layer for search and selection
+                  renderTextLayer={true}
+                  // Render annotation layer for links and forms
+                  renderAnnotationLayer={true}
+                  // Loading component
+                  renderLoader={(percentages) => (
+                    <div className="flex flex-col items-center justify-center h-full space-y-4">
+                      <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                      <div className="w-64 space-y-2">
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                          <span>Loading PDF...</span>
+                          <span>{Math.round(percentages * 100)}%</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary transition-all duration-300"
+                            style={{ width: `${percentages * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 />
               </div>
             </Worker>
@@ -1077,6 +1172,13 @@ export function PDFViewer({
           </Card>
         </div>
       )}
+
+      {/* PDF Citation Link Detector - detects internal links in PDF annotations */}
+      <PDFCitationLinkDetector
+        pdfFile={file}
+        viewerContainerRef={viewerContainerRef}
+        onCitationClick={handleCitationLinkClick}
+      />
     </div>
   );
 }

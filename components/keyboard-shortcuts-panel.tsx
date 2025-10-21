@@ -76,6 +76,7 @@ const shortcuts: KeyboardShortcut[] = [
     shortcuts: [
       { keys: ["?"], description: "Show shortcuts", action: "showShortcuts" },
       { keys: ["Ctrl", "E"], description: "Export annotations", action: "exportAnnotations" },
+      { keys: ["I"], description: "Show image gallery", action: "showImageGallery" },
     ],
   },
 ]
@@ -224,6 +225,7 @@ export function useKeyboardShortcuts({
   onShowShortcuts,
   onExportAnnotations,
   onGoToPage,
+  onShowImageGallery,
 }: {
   onNextPage?: () => void
   onPrevPage?: () => void
@@ -241,6 +243,7 @@ export function useKeyboardShortcuts({
   onShowShortcuts?: () => void
   onExportAnnotations?: () => void
   onGoToPage?: () => void
+  onShowImageGallery?: () => void
 }) {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -322,6 +325,9 @@ export function useKeyboardShortcuts({
       } else if (key === "e" && ctrl) {
         e.preventDefault()
         onExportAnnotations?.()
+      } else if (key === "i" && !ctrl) {
+        e.preventDefault()
+        onShowImageGallery?.()
       }
     }
 
@@ -344,5 +350,6 @@ export function useKeyboardShortcuts({
     onShowShortcuts,
     onExportAnnotations,
     onGoToPage,
+    onShowImageGallery,
   ])
 }
