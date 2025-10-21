@@ -14,6 +14,7 @@ import { QAInterface } from "@/components/qa-interface"
 import { BookmarkPanel, type BookmarkItem } from "@/components/bookmark-panel"
 import { KeyboardShortcutsPanel, useKeyboardShortcuts } from "@/components/keyboard-shortcuts-panel"
 import { ExportDialog } from "@/components/export-dialog"
+import { ImageGallery, mockImages } from "@/components/image-gallery"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -42,6 +43,7 @@ export function PDFReader() {
   const [bookmarkPanelOpen, setBookmarkPanelOpen] = useState(false)
   const [shortcutsPanelOpen, setShortcutsPanelOpen] = useState(false)
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
+  const [imageGalleryOpen, setImageGalleryOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pdfViewerHandlers, setPdfViewerHandlers] = useState<any>(null)
 
@@ -148,6 +150,7 @@ export function PDFReader() {
     onShowShortcuts: () => setShortcutsPanelOpen(true),
     onExportAnnotations: () => setExportDialogOpen(true),
     onGoToPage: () => pdfViewerHandlers?.focusPageInput?.(),
+    onShowImageGallery: () => setImageGalleryOpen(!imageGalleryOpen),
   })
 
   console.log("[v0] Render - tabs:", tabs.length, "activeTab:", activeTab?.file.name)
@@ -322,6 +325,14 @@ export function PDFReader() {
               bookmarks={activeTab.bookmarks}
               pdfFileName={activeTab.file.name}
               qaHistory={activeTab.qaHistory}
+            />
+
+            {/* Image Gallery */}
+            <ImageGallery
+              images={mockImages}
+              isOpen={imageGalleryOpen}
+              onToggle={() => setImageGalleryOpen(!imageGalleryOpen)}
+              onJumpToPage={(page) => pdfViewerHandlers?.jumpToPage?.(page)}
             />
           </>
         )}
