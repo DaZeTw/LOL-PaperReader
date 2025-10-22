@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Viewer, Worker, RenderPage } from "@react-pdf-viewer/core";
+import { Viewer, Worker, SpecialZoomLevel } from "@react-pdf-viewer/core";
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
 import { zoomPlugin } from "@react-pdf-viewer/zoom";
 import { searchPlugin } from "@react-pdf-viewer/search";
@@ -27,6 +27,7 @@ import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/page-navigation/lib/styles/index.css";
 import "@react-pdf-viewer/zoom/lib/styles/index.css";
 import "@react-pdf-viewer/search/lib/styles/index.css";
+import "./pdf-viewer-custom.css";
 
 interface PDFViewerProps {
   file: File;
@@ -73,7 +74,7 @@ export function PDFViewer({
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(0);
-  const [scale, setScale] = useState(1);
+  const [currentZoom, setCurrentZoom] = useState<number>(1);
   const [citationPopup, setCitationPopup] = useState<CitationPopup | null>(
     null
   );
@@ -92,7 +93,7 @@ export function PDFViewer({
     pageNavigationPluginInstance;
 
   const zoomPluginInstance = zoomPlugin();
-  const { zoomTo } = zoomPluginInstance;
+  const { zoomTo, CurrentScale } = zoomPluginInstance;
 
   const searchPluginInstance = searchPlugin();
   const { highlight } = searchPluginInstance;
@@ -109,40 +110,8 @@ export function PDFViewer({
     setCurrentPage(1);
     setNumPages(0);
     setIsDocumentLoading(true);
+    setCurrentZoom(1);
   }, [file]);
-
-  // Custom render page function for lazy loading
-  const renderPage: RenderPage = useCallback((props) => {
-    return (
-      <div
-        key={`page-${props.pageIndex}`}
-        className="relative mb-4"
-        style={{
-          minHeight: props.height ? `${props.height}px` : "800px",
-        }}
-      >
-        {/* Loading placeholder */}
-        {!props.canvasLayer.children && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/50 animate-pulse">
-            <div className="space-y-3 w-full p-8">
-              <div className="h-4 bg-muted-foreground/20 rounded w-3/4"></div>
-              <div className="h-4 bg-muted-foreground/20 rounded w-full"></div>
-              <div className="h-4 bg-muted-foreground/20 rounded w-5/6"></div>
-              <div className="h-4 bg-muted-foreground/20 rounded w-full"></div>
-              <div className="h-4 bg-muted-foreground/20 rounded w-2/3"></div>
-            </div>
-          </div>
-        )}
-
-        {/* Actual page content */}
-        <div className="relative">
-          {props.canvasLayer.children}
-          {props.textLayer.children}
-          {props.annotationLayer.children}
-        </div>
-      </div>
-    );
-  }, []);
 
   useEffect(() => {
     if (!viewerRef.current || !parsedData?.references) {
@@ -635,6 +604,34 @@ export function PDFViewer({
     return () => document.removeEventListener("click", handleClickOutside);
   }, [citationPopup]);
 
+  // Keyboard shortcuts - simplified
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't interfere with inputs
+      if (e.target instanceof HTMLInputElement) return;
+
+      // Zoom shortcuts
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "+" || e.key === "=") {
+          e.preventDefault();
+          handleZoomIn();
+        } else if (e.key === "-" || e.key === "_") {
+          e.preventDefault();
+          handleZoomOut();
+        } else if (e.key === "0") {
+          e.preventDefault();
+          handleActualSize();
+        } else if (e.key === "f") {
+          e.preventDefault();
+          setSearchOpen(true);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [currentZoom]);
+
   // Handle search
   useEffect(() => {
     if (searchKeyword) {
@@ -643,35 +640,42 @@ export function PDFViewer({
   }, [searchKeyword, highlight]);
 
   const handlePrevPage = () => {
-    jumpToPreviousPage();
+    if (currentPage > 1) {
+      jumpToPreviousPage();
+    }
   };
 
   const handleNextPage = () => {
-    jumpToNextPage();
+    if (currentPage < numPages) {
+      jumpToNextPage();
+    }
   };
 
   const handleZoomIn = () => {
-    const newScale = Math.min(2, scale + 0.1);
-    setScale(newScale);
-    zoomTo(newScale);
+    const newZoom = Math.min(3, currentZoom + 0.25);
+    setCurrentZoom(newZoom);
+    zoomTo(newZoom);
   };
 
   const handleZoomOut = () => {
-    const newScale = Math.max(0.5, scale - 0.1);
-    setScale(newScale);
-    zoomTo(newScale);
+    const newZoom = Math.max(0.5, currentZoom - 0.25);
+    setCurrentZoom(newZoom);
+    zoomTo(newZoom);
   };
 
   const handleFitToWidth = () => {
-    const newScale = 1.5; // Adjusted for typical fit-to-width
-    setScale(newScale);
-    zoomTo(newScale);
+    zoomTo(SpecialZoomLevel.PageWidth);
+    setCurrentZoom(1.5); // Approximate for display
   };
 
   const handleFitToPage = () => {
-    const newScale = 1.0; // Full page view
-    setScale(newScale);
-    zoomTo(newScale);
+    zoomTo(SpecialZoomLevel.PageFit);
+    setCurrentZoom(1.0); // Reset display
+  };
+
+  const handleActualSize = () => {
+    setCurrentZoom(1.0);
+    zoomTo(1.0);
   };
 
   const handleJumpToPage = () => {
@@ -723,10 +727,7 @@ export function PDFViewer({
         handlePrevPage,
         handleZoomIn,
         handleZoomOut,
-        handleResetZoom: () => {
-          setScale(1.0);
-          zoomTo(1.0);
-        },
+        handleResetZoom: handleActualSize,
         handleFitToWidth,
         handleOpenSearch: () => setSearchOpen(true),
         jumpToPage: handleJumpToPageDirect,
@@ -743,16 +744,16 @@ export function PDFViewer({
   }, [currentPage, onPageChange]);
 
   return (
-    <div className="flex flex-1 flex-col bg-muted/30">
+    <div className="pdf-viewer-main-container">
       {/* Reading Progress Bar */}
-      <div className="h-1 bg-muted/50 relative">
+      <div className="h-1 bg-muted/50 relative flex-shrink-0">
         <div
           className="h-full bg-primary transition-all duration-300"
           style={{ width: `${numPages > 0 ? (currentPage / numPages) * 100 : 0}%` }}
         />
       </div>
 
-      <div className="flex items-center justify-between border-b border-border bg-background px-4 py-3 shadow-sm">
+      <div className="flex items-center justify-between border-b border-border bg-background px-4 py-3 shadow-sm flex-shrink-0">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -862,24 +863,30 @@ export function PDFViewer({
             variant="ghost"
             size="icon"
             onClick={handleZoomOut}
-            disabled={scale <= 0.5}
+            disabled={currentZoom <= 0.5}
             className="h-8 w-8 hover:bg-accent transition-colors"
-            title="Zoom out"
+            title="Zoom out (Ctrl + -)"
           >
             <ZoomOut className="h-4 w-4" />
           </Button>
 
-          <span className="min-w-[3.5rem] text-center font-mono text-sm font-medium text-foreground">
-            {Math.round(scale * 100)}%
-          </span>
+          <div className="flex items-center gap-1 min-w-[4rem]">
+            <CurrentScale>
+              {(props) => (
+                <span className="text-center font-mono text-sm font-medium text-foreground">
+                  {Math.round(props.scale * 100)}%
+                </span>
+              )}
+            </CurrentScale>
+          </div>
 
           <Button
             variant="ghost"
             size="icon"
             onClick={handleZoomIn}
-            disabled={scale >= 2}
+            disabled={currentZoom >= 3}
             className="h-8 w-8 hover:bg-accent transition-colors"
-            title="Zoom in"
+            title="Zoom in (Ctrl + +)"
           >
             <ZoomIn className="h-4 w-4" />
           </Button>
@@ -887,6 +894,16 @@ export function PDFViewer({
           <div className="h-6 w-px bg-border mx-1" />
 
           {/* Zoom Presets */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleActualSize}
+            className="h-8 w-8 hover:bg-accent transition-colors"
+            title="Actual size (100%)"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </Button>
+
           <Button
             variant="ghost"
             size="icon"
@@ -906,78 +923,36 @@ export function PDFViewer({
           >
             <Monitor className="h-4 w-4" />
           </Button>
-
-          <div className="h-6 w-px bg-border mx-1" />
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-accent transition-colors"
-            title="Fullscreen"
-          >
-            <Maximize2 className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 bg-muted/30" ref={viewerRef}>
-        {pdfUrl && (
-          <div className="mx-auto max-w-4xl" ref={viewerContainerRef}>
+      <div className="flex-1 overflow-hidden relative" ref={viewerRef}>
+        {pdfUrl ? (
+          <div className="pdf-viewer-container" ref={viewerContainerRef}>
             <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-              <div
-                className="bg-white shadow-lg rounded-lg overflow-hidden"
-                style={{ height: "calc(100vh - 200px)" }}
-              >
-                <Viewer
-                  fileUrl={pdfUrl}
-                  plugins={[
-                    pageNavigationPluginInstance,
-                    zoomPluginInstance,
-                    searchPluginInstance,
-                  ]}
-                  onDocumentLoad={(e) => {
-                    console.log("Document loaded:", e.doc.numPages, "pages");
-                    setNumPages(e.doc.numPages);
-                    setCurrentPage(1);
-                    setIsDocumentLoading(false);
-                  }}
-                  onPageChange={(e) => {
-                    console.log("Page changed to:", e.currentPage + 1);
-                    setCurrentPage(e.currentPage + 1);
-                  }}
-                  // Lazy loading configuration for better performance
-                  renderPage={renderPage}
-                  // Performance optimizations
-                  defaultScale={scale}
-                  // Only render visible pages and a few pages around them
-                  initialPage={0}
-                  // Enable smooth scrolling
-                  scrollMode="vertical"
-                  // Render text layer for search and selection
-                  renderTextLayer={true}
-                  // Render annotation layer for links and forms
-                  renderAnnotationLayer={true}
-                  // Loading component
-                  renderLoader={(percentages) => (
-                    <div className="flex flex-col items-center justify-center h-full space-y-4">
-                      <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                      <div className="w-64 space-y-2">
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                          <span>Loading PDF...</span>
-                          <span>{Math.round(percentages * 100)}%</span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all duration-300"
-                            style={{ width: `${percentages * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                />
-              </div>
+              <Viewer
+                fileUrl={pdfUrl}
+                plugins={[
+                  pageNavigationPluginInstance,
+                  zoomPluginInstance,
+                  searchPluginInstance,
+                ]}
+                onDocumentLoad={(e) => {
+                  setNumPages(e.doc.numPages);
+                  setCurrentPage(1);
+                  setIsDocumentLoading(false);
+                }}
+                onPageChange={(e) => {
+                  setCurrentPage(e.currentPage + 1);
+                }}
+                defaultScale={SpecialZoomLevel.PageWidth}
+                initialPage={0}
+              />
             </Worker>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         )}
       </div>

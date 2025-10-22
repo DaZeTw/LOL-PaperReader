@@ -15,13 +15,15 @@ export async function POST(request: NextRequest) {
     // Convert file to ArrayBuffer for PDF.js
     const arrayBuffer = await file.arrayBuffer();
 
-    // Extract references from PDF
+    // Extract references from PDF (clone buffer to avoid detachment)
     console.log("[PDF Upload] Extracting references...");
-    const references = await extractReferencesFromPDF(arrayBuffer);
+    const refBuffer = arrayBuffer.slice(0);
+    const references = await extractReferencesFromPDF(refBuffer);
 
-    // Extract sections from PDF
+    // Extract sections from PDF (clone buffer to avoid detachment)
     console.log("[PDF Upload] Extracting sections...");
-    const sections = await extractSectionsFromPDF(arrayBuffer);
+    const sectBuffer = arrayBuffer.slice(0);
+    const sections = await extractSectionsFromPDF(sectBuffer);
 
     // Fallback to mock sections if none found
     const finalSections = sections.length > 0 ? sections : [

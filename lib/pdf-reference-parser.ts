@@ -100,16 +100,21 @@ function groupTextIntoLines(items: any[]): TextLine[] {
 
     const y = item.transform[5];
     const x = item.transform[4];
+    const text = item.str;
 
     // Find existing line at this Y position (within 3px tolerance)
     const existingLine = lines.find(l => Math.abs(l.y - y) < 3);
 
     if (existingLine) {
-      // Add to existing line (maintaining X order)
-      existingLine.text += item.str;
+      // Add space if the previous text doesn't end with space/hyphen
+      const needsSpace = !existingLine.text.endsWith(' ') &&
+                         !existingLine.text.endsWith('-') &&
+                         !text.startsWith(' ');
+
+      existingLine.text += (needsSpace ? ' ' : '') + text;
     } else {
       // Create new line
-      lines.push({ text: item.str, y, x });
+      lines.push({ text: text, y, x });
     }
   });
 
@@ -154,25 +159,52 @@ function parseReferencesFromLines(
 
       // Collect continuation lines (multi-line references)
       let j = i + 1;
+      let consecutiveEmptyLines = 0;
+
       while (j < lines.length) {
         const nextLine = lines[j];
+        const trimmedNext = nextLine.text.trim();
 
-        // Stop if next line starts a new reference
-        if (/^\[?\d+\]?\.?\s/.test(nextLine.text)) break;
+        // Stop if next line starts a new reference (very clear patterns)
+        if (/^\[\d+\]/.test(trimmedNext) || /^\d+\.\s+[A-Z]/.test(trimmedNext)) {
+          break;
+        }
 
-        // Stop if next line looks like a section heading (single capitalized word)
-        if (/^[A-Z][a-z]+$/.test(nextLine.text.trim()) && nextLine.text.trim().length < 20) break;
+        // Stop if we hit a clear section heading (all caps or short capitalized)
+        if (/^[A-Z\s]+$/.test(trimmedNext) && trimmedNext.length < 30) {
+          break;
+        }
 
-        // Stop if line is mostly whitespace
-        if (nextLine.text.trim().length < 3) break;
+        // Handle empty/whitespace lines - allow up to 2 consecutive empty lines
+        if (trimmedNext.length < 3) {
+          consecutiveEmptyLines++;
+          if (consecutiveEmptyLines >= 2) break;
+          j++;
+          continue;
+        }
 
-        // Add continuation line
-        refText += ' ' + nextLine.text;
+        // Reset empty line counter
+        consecutiveEmptyLines = 0;
+
+        // Add continuation line with space
+        const needsSpace = !refText.endsWith(' ') &&
+                           !refText.endsWith('-') &&
+                           !trimmedNext.startsWith(' ');
+
+        refText += (needsSpace ? ' ' : '') + nextLine.text;
         j++;
+
+        // Safety limit: stop after collecting ~20 lines (very long reference)
+        if (j - i > 20) break;
       }
 
       // Clean up reference text
       refText = refText.trim().replace(/\s+/g, ' ');
+
+      // Debug: Log first few references to verify extraction
+      if (number <= 3) {
+        console.log(`[Reference Parser] Ref ${number}: "${refText.substring(0, 100)}..."`);
+      }
 
       // Extract metadata from reference text
       const metadata = extractReferenceMetadata(refText);

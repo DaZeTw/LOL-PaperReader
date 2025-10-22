@@ -1,0 +1,56 @@
+/* PDF Viewer Custom Styles - Simplified for Performance */
+
+/* Main container */
+.pdf-viewer-main-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Scrolling container - simple and fast */
+.pdf-viewer-container {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+/* Wrapper - minimal styling */
+.pdf-viewer-wrapper {
+  height: 100%;
+  width: 100%;
+}
+
+/* Fix page sizing issues */
+.rpv-core__inner-page {
+  max-width: 100% !important;
+}
+
+.rpv-core__canvas-layer canvas {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Simple scrollbar */
+.pdf-viewer-container::-webkit-scrollbar {
+  width: 10px;
+}
+
+.pdf-viewer-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+}
+
+.pdf-viewer-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Search highlights */
+.rpv-search__highlight {
+  background-color: rgba(255, 255, 0, 0.4);
+}
+
+.rpv-search__highlight--current {
+  background-color: rgba(255, 153, 0, 0.6);
+}
