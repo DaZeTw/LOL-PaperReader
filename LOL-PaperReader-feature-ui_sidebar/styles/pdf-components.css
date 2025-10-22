@@ -1,0 +1,263 @@
+/* PDF Components Styling */
+
+/* Ensure proper scroll behavior for PDF viewer */
+.rpv-core__viewer {
+  height: 100% !important;
+  overflow: auto !important;
+}
+
+/* Outline container styling */
+.outline-container {
+  max-height: none;
+  overflow: visible;
+}
+
+.outline-container .rpv-bookmark__container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.outline-container .rpv-bookmark__item {
+  margin: 0 0 4px 0 !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.outline-container .rpv-bookmark__item:hover {
+  background-color: hsl(var(--muted)) !important;
+}
+
+.outline-container .rpv-bookmark__item--current {
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border: 1px solid hsl(var(--primary) / 0.2) !important;
+}
+
+.outline-container .rpv-bookmark__title {
+  color: hsl(var(--foreground)) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Thumbnails container styling */
+.thumbnails-container {
+  max-height: none;
+  overflow: visible;
+}
+
+.thumbnails-container .rpv-thumbnail__container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.thumbnails-container .rpv-thumbnail__item {
+  margin: 0 0 8px 0 !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.thumbnails-container .rpv-thumbnail__item:hover {
+  background-color: hsl(var(--muted)) !important;
+  border-color: hsl(var(--primary) / 0.3) !important;
+}
+
+.thumbnails-container .rpv-thumbnail__item--selected {
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+.thumbnails-container .rpv-thumbnail__cover {
+  border-radius: 4px !important;
+  overflow: hidden !important;
+}
+
+.thumbnails-container .rpv-thumbnail__label {
+  color: hsl(var(--foreground)) !important;
+  font-size: 0.75rem !important;
+  text-align: center !important;
+  margin-top: 4px !important;
+}
+
+/* Ensure proper flexbox behavior */
+.pdf-viewer-container {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pdf-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Fix scroll area styling */
+.scroll-area-viewport {
+  height: 100% !important;
+}
+
+/* Prevent text overflow in bookmarks */
+.rpv-bookmark__title {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+}
+
+/* Ensure proper height for main PDF viewer */
+.rpv-core__inner-page {
+  min-height: auto !important;
+}
+
+.rpv-core__inner-pages {
+  padding: 16px !important;
+}
+
+/* Custom scrollbar for better UX */
+.rpv-core__viewer::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.rpv-core__viewer::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+.rpv-core__viewer::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+.rpv-core__viewer::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Citation Plugin Styles */
+.inline-citation {
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  padding: 1px 2px !important;
+  border-radius: 3px !important;
+  font-weight: 500 !important;
+}
+
+.inline-citation:hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Citation link styling in annotation layer */
+a[data-citation="true"] {
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+
+a[data-citation="true"]:hover {
+  transform: translateY(-1px) !important;
+}
+
+.citation-reference {
+  border-bottom: 1px dotted #dc2626 !important;
+  color: #dc2626 !important;
+}
+
+.citation-inline {
+  border-bottom: 1px dotted #2563eb !important;
+  color: #2563eb !important;
+}
+
+.citation-doi {
+  border-bottom: 1px dotted #059669 !important;
+  color: #059669 !important;
+}
+
+.citation-url {
+  border-bottom: 1px dotted #7c3aed !important;
+  color: #7c3aed !important;
+}
+
+/* Enhanced Citation popup styling */
+.citation-popup {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  border: 1px solid #e5e7eb !important;
+  background: #ffffff !important;
+  color: #374151 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  backdrop-filter: blur(8px) !important;
+  animation: citationPopupAppear 0.2s ease-out !important;
+}
+
+@keyframes citationPopupAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Citation popup override for PDF viewer context */
+.citation-popup {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  border: 1px solid hsl(var(--border)) !important;
+  background: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Ensure citation highlights are visible in dark mode */
+@media (prefers-color-scheme: dark) {
+  .citation-popup {
+    background: #1f2937 !important;
+    color: #f9fafb !important;
+    border-color: #374151 !important;
+  }
+  
+  .citation-popup .citation-header {
+    border-bottom-color: #4b5563 !important;
+  }
+  
+  .citation-popup .citation-btn {
+    background: #374151 !important;
+    color: #f9fafb !important;
+    border-color: #4b5563 !important;
+  }
+  
+  .citation-popup .citation-btn:hover {
+    background: #4b5563 !important;
+    border-color: #6b7280 !important;
+  }
+  
+  .citation-reference {
+    color: #f87171 !important;
+    border-bottom-color: #f87171 !important;
+  }
+  
+  .citation-inline {
+    color: #60a5fa !important;
+    border-bottom-color: #60a5fa !important;
+  }
+  
+  .citation-doi {
+    color: #34d399 !important;
+    border-bottom-color: #34d399 !important;
+  }
+  
+  .citation-url {
+    color: #a78bfa !important;
+    border-bottom-color: #a78bfa !important;
+  }
+}

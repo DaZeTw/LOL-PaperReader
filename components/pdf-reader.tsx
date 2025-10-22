@@ -110,9 +110,10 @@ export function PDFReader() {
     })
   }
 
-  const handleSectionSelect = (sectionId: string) => {
+  const handleSectionSelect = (section: any) => {
     if (!activeTabId) return
-    setTabs((prev) => prev.map((tab) => (tab.id === activeTabId ? { ...tab, selectedSection: sectionId } : tab)))
+    // Update selected section with the section title
+    setTabs((prev) => prev.map((tab) => (tab.id === activeTabId ? { ...tab, selectedSection: section.title } : tab)))
   }
 
   // Bookmark handlers
