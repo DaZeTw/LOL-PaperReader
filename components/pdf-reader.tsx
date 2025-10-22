@@ -8,7 +8,6 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { SemanticHTMLViewer } from "@/components/semantic-html-viewer"
-import { ParsedSidebar } from "@/components/parsed-sidebar"
 import { CitationSidebar } from "@/components/citation-sidebar"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { QAInterface } from "@/components/qa-interface"
@@ -50,7 +49,6 @@ export function PDFReader() {
   const [selectedCitation, setSelectedCitation] = useState<any>(null)
   const [highlightColor, setHighlightColor] = useState("#fef08a")
   const [annotationMode, setAnnotationMode] = useState<"highlight" | "erase" | null>(null)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
   const [citationSidebarOpen, setCitationSidebarOpen] = useState(true)
   const [qaOpen, setQaOpen] = useState(false)
   const [bookmarkPanelOpen, setBookmarkPanelOpen] = useState(false)
@@ -172,7 +170,7 @@ export function PDFReader() {
     onAddBookmark: () => setBookmarkPanelOpen(true),
     onShowBookmarks: () => setBookmarkPanelOpen(!bookmarkPanelOpen),
     onOpenQA: () => setQaOpen(!qaOpen),
-    onToggleLeftSidebar: () => setSidebarOpen(!sidebarOpen),
+    onToggleLeftSidebar: () => {},
     onToggleRightSidebar: () => setCitationSidebarOpen(!citationSidebarOpen),
     onShowShortcuts: () => setShortcutsPanelOpen(true),
     onExportAnnotations: () => setExportDialogOpen(true),
@@ -279,28 +277,15 @@ export function PDFReader() {
           <PDFUpload onFileSelect={handleFileSelect} />
         ) : (
           <>
-            <ParsedSidebar
-              parsedData={activeTab.parsedData}
-              selectedSection={activeTab.selectedSection}
-              onSectionSelect={handleSectionSelect}
-              isOpen={sidebarOpen}
-              onToggle={() => setSidebarOpen(!sidebarOpen)}
-            />
-
             {/* Center - PDF Viewer or Semantic HTML Viewer with Annotation Toolbar */}
             <div className="relative flex flex-1 flex-col">
               {viewMode === "pdf" ? (
                 <PDFViewer
                   file={activeTab.file}
                   selectedSection={activeTab.selectedSection}
-                  highlightColor={highlightColor}
-                  annotationMode={annotationMode}
                   onCitationClick={setSelectedCitation}
-                  parsedData={activeTab.parsedData}
                   onPageChange={setCurrentPage}
-                  onHandlersReady={setPdfViewerHandlers}
-                  viewState={activeTab.viewState}
-                  onViewStateChange={handleUpdateViewState}
+                  onSectionSelect={handleSectionSelect}
                 />
               ) : (
                 <SemanticHTMLViewer
