@@ -1,0 +1,2034 @@
+[
+    {
+        "str": "Here is what Docling delivers today:",
+        "dir": "ltr",
+        "width": 145.97201520000002,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            710.037
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "• Converts PDF documents to JSON or Markdown format, stable and lightning fast",
+        "dir": "ltr",
+        "width": 332.99990499999996,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            135.397,
+            688.744
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "• Understands detailed page layout, reading order, locates figures and recovers table struc-",
+        "dir": "ltr",
+        "width": 368.6062373999999,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            135.397,
+            673.88
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "tures",
+        "dir": "ltr",
+        "width": 19.3672944,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            143.86599999999999,
+            662.971
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "• Extracts metadata from the document, such as title, authors, references and language",
+        "dir": "ltr",
+        "width": 345.45315500000004,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            135.397,
+            648.107
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "• Optionally applies OCR, e.g. for scanned PDFs",
+        "dir": "ltr",
+        "width": 198.0664506000001,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            135.397,
+            633.2429999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "• Can be configured to be optimal for batch-mode (i.e high throughput, low time-to-solution)",
+        "dir": "ltr",
+        "width": 368.6062373999997,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            135.397,
+            618.3799999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "or interactive mode (compromise on efficiency, low time-to-solution)",
+        "dir": "ltr",
+        "width": 275.0076104000002,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            143.86599999999999,
+            607.4709999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "• Can leverage different accelerators (GPU, MPS, etc).",
+        "dir": "ltr",
+        "width": 220.01405840000012,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            135.397,
+            592.6069999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108,
+            564.2409999999999
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": true
+    },
+    {
+        "str": "2",
+        "dir": "ltr",
+        "width": 5.9776,
+        "height": 11.9552,
+        "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108,
+            564.2409999999999
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 11.955200000000005,
+        "height": 0,
+        "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            113.9776,
+            564.2409999999999
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": false
+    },
+    {
+        "str": "Getting Started",
+        "dir": "ltr",
+        "width": 79.3586176,
+        "height": 11.9552,
+        "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            125.9328,
+            564.2409999999999
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            541.1549999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "To use Docling, you can simply install the",
+        "dir": "ltr",
+        "width": 164.81129180000005,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            541.1549999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 2.015708199999949,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            272.81129180000005,
+            541.1549999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "docling",
+        "dir": "ltr",
+        "width": 29.887800000000006,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            274.827,
+            541.1549999999999
+        ],
+        "fontName": "g_d0_f3",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 2.019200000000126,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            304.71479999999985,
+            541.1549999999999
+        ],
+        "fontName": "g_d0_f3",
+        "hasEOL": false
+    },
+    {
+        "str": "package from PyPI. Documentation and examples",
+        "dir": "ltr",
+        "width": 197.2694426000001,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            306.734,
+            541.1549999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "are available in our GitHub repository at github.com/DS4SD/docling. All required model assets",
+        "dir": "ltr",
+        "width": 377.71205379999964,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999997,
+            530.2459999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "1",
+        "dir": "ltr",
+        "width": 3.4869,
+        "height": 6.9738,
+        "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            485.711,
+            533.8609999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 2.6381000000000085,
+        "height": 0,
+        "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            489.1979,
+            533.8609999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "are",
+        "dir": "ltr",
+        "width": 12.1643346,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            491.836,
+            530.2459999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "downloaded to a local huggingface datasets cache on first use, unless you choose to pre-install the",
+        "dir": "ltr",
+        "width": 396.00338739999984,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            519.3369999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "model assets in advance.",
+        "dir": "ltr",
+        "width": 98.25116120000001,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            508.4279999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "Docling provides an easy code interface to convert PDF documents from file system, URLs or binary",
+        "dir": "ltr",
+        "width": 396.0033873999998,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            492.0389999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "streams, and retrieve the output in either JSON or Markdown format. For convenience, separate",
+        "dir": "ltr",
+        "width": 396.00338739999995,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            481.1299999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "methods are offered to convert single documents or batches of documents. A basic usage example",
+        "dir": "ltr",
+        "width": 396.0033873999997,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            470.2209999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "is illustrated below. Further examples are available in the Doclign code repository.",
+        "dir": "ltr",
+        "width": 327.99867980000005,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            459.3119999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            108.753,
+            443.4329999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": true
+    },
+    {
+        "str": "from",
+        "dir": "ltr",
+        "width": 21.088972800000004,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            108.753,
+            443.4329999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.226918399999988,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            129.84197279999998,
+            443.4329999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "docling . document_converter",
+        "dir": "ltr",
+        "width": 145.14808319999997,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            137.06889119999997,
+            443.4329999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.352447999999981,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            282.21697439999986,
+            443.4329999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "import",
+        "dir": "ltr",
+        "width": 32.2790400000001,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            289.56942239999984,
+            443.4329999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.343481600000018,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            321.8484623999999,
+            443.4329999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "DocumentConverter",
+        "dir": "ltr",
+        "width": 94.2547968000003,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            329.1919439999999,
+            443.4329999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": true
+    },
+    {
+        "str": "source",
+        "dir": "ltr",
+        "width": 32.27904,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            108.807,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.922060799999997,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            141.08603999999997,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "=",
+        "dir": "ltr",
+        "width": 4.70736,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            148.00810079999997,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.590304000000003,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            152.71546079999996,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "\" https :// arxiv . org / pdf /2206.01062 \"",
+        "dir": "ltr",
+        "width": 191.11881599999995,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            159.30576479999996,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 12.239135999999974,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            350.42458079999983,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "#",
+        "dir": "ltr",
+        "width": 4.70736,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            362.6637167999998,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.832396800000026,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            367.3710767999998,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "PDF",
+        "dir": "ltr",
+        "width": 15.529804799999983,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            374.2034735999998,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.110355200000015,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            389.7332783999998,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "path",
+        "dir": "ltr",
+        "width": 21.088972800000047,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            396.8436335999998,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.029657600000007,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            417.9326063999998,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "or",
+        "dir": "ltr",
+        "width": 10.042368000000023,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            424.96226399999983,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.984825600000022,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            435.00463199999984,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "URL",
+        "dir": "ltr",
+        "width": 15.529804799999983,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            441.98945759999987,
+            423.5069999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": true
+    },
+    {
+        "str": "converter",
+        "dir": "ltr",
+        "width": 49.14483840000007,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            108.84700000000001,
+            413.5449999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.966892800000011,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            157.99183840000003,
+            413.5449999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "=",
+        "dir": "ltr",
+        "width": 4.70736,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            164.95873120000005,
+            413.5449999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.011724799999996,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            169.66609120000004,
+            413.5449999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "DocumentConverter ()",
+        "dir": "ltr",
+        "width": 105.80352,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            176.67781600000004,
+            413.5449999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": true
+    },
+    {
+        "str": "result",
+        "dir": "ltr",
+        "width": 32.27904,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            108.807,
+            403.5819999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.922060799999997,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            141.08603999999997,
+            403.5819999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "=",
+        "dir": "ltr",
+        "width": 4.70736,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            148.00810079999997,
+            403.5819999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.966892800000011,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            152.71546079999996,
+            403.5819999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "converter . convert_single ( source )",
+        "dir": "ltr",
+        "width": 179.44456320000023,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            159.68235359999997,
+            403.5819999999999
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": true
+    },
+    {
+        "str": "print ( result . render_as_markdown () )",
+        "dir": "ltr",
+        "width": 190.8049919999998,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            108.785,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 12.239135999999974,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            299.58999199999977,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "#",
+        "dir": "ltr",
+        "width": 4.70736,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            311.82912799999974,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.922060799999997,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            316.53648799999974,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "output :",
+        "dir": "ltr",
+        "width": 38.26859520000009,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            323.45854879999973,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.823430400000007,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            361.7271439999998,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "\"##",
+        "dir": "ltr",
+        "width": 15.538771199999946,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            368.5505743999998,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.200019199999986,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            384.0893455999997,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "DocLayNet :",
+        "dir": "ltr",
+        "width": 55.17025919999998,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            391.2893647999997,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.590304000000003,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            446.4596239999996,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "A",
+        "dir": "ltr",
+        "width": 4.70736,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            453.0499279999996,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.904128000000014,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            457.7572879999996,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "Large",
+        "dir": "ltr",
+        "width": 26.67504,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            464.66141599999963,
+            393.61899999999986
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": true
+    },
+    {
+        "str": "Human - Annotated",
+        "dir": "ltr",
+        "width": 83.2081920000001,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            128.59799999999998,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.325548800000007,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            211.806192,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "Dataset",
+        "dir": "ltr",
+        "width": 37.89200640000003,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            219.13174080000002,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.182086400000003,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            257.0237472,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "for",
+        "dir": "ltr",
+        "width": 15.529804799999983,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            264.2058336,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.110355200000015,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            279.73563839999997,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "Document - Layout",
+        "dir": "ltr",
+        "width": 83.17232640000016,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            286.8459936,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.289683200000013,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            370.0183200000001,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "Analysis",
+        "dir": "ltr",
+        "width": 43.52290560000005,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            377.3080032000001,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 7.289683200000013,
+        "height": 0,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            420.8309088000001,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "[...]\"",
+        "dir": "ltr",
+        "width": 32.2790400000001,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            428.1205920000001,
+            383.65699999999987
+        ],
+        "fontName": "g_d0_f6",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999999,
+            361.3509999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "Optionally, you can configure custom pipeline features and runtime options, such as turning on or",
+        "dir": "ltr",
+        "width": 396.0033873999998,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999999,
+            361.3509999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "off features (e.g. OCR, table structure recognition), enforcing limits on the input document size, and",
+        "dir": "ltr",
+        "width": 396.0033873999997,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999999,
+            350.4419999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "defining the budget of CPU threads. Advanced usage examples and options are documented in the",
+        "dir": "ltr",
+        "width": 396.0033873999999,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999999,
+            339.5329999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "README file. Docling also provides a",
+        "dir": "ltr",
+        "width": 158.40534000000008,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999999,
+            328.6239999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 2.686659999999904,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            266.4053400000001,
+            328.6239999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "Dockerfile",
+        "dir": "ltr",
+        "width": 41.195350999999995,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            269.092,
+            328.6239999999999
+        ],
+        "fontName": "g_d0_f3",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 2.6816490000001068,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            310.2873509999999,
+            328.6239999999999
+        ],
+        "fontName": "g_d0_f3",
+        "hasEOL": false
+    },
+    {
+        "str": "to demonstrate how to install and run it inside a",
+        "dir": "ltr",
+        "width": 191.0328550000003,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            312.969,
+            328.6239999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "container.",
+        "dir": "ltr",
+        "width": 39.0135416,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            317.7149999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108,
+            289.34899999999993
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": true
+    },
+    {
+        "str": "3",
+        "dir": "ltr",
+        "width": 5.9776,
+        "height": 11.9552,
+        "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108,
+            289.34899999999993
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 11.955200000000005,
+        "height": 0,
+        "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            113.9776,
+            289.34899999999993
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": false
+    },
+    {
+        "str": "Processing pipeline",
+        "dir": "ltr",
+        "width": 97.75767040000002,
+        "height": 11.9552,
+        "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            125.9328,
+            289.34899999999993
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            266.2629999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "Docling implements a linear pipeline of operations, which execute sequentially on each given docu-",
+        "dir": "ltr",
+        "width": 396.0033873999997,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            266.2629999999999
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "ment (see Fig. 1). Each document is first parsed by a PDF backend, which retrieves the programmatic",
+        "dir": "ltr",
+        "width": 396.0033874,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            255.35399999999993
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "text tokens, consisting of string content and its coordinates on the page, and also renders a bitmap",
+        "dir": "ltr",
+        "width": 396.00338739999984,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            244.44499999999994
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "image of each page to support downstream operations. Then, the standard model pipeline applies a",
+        "dir": "ltr",
+        "width": 396.00338739999967,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            233.53599999999994
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "sequence of AI models independently on every page in the document to extract features and content,",
+        "dir": "ltr",
+        "width": 396.0033873999999,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            222.62699999999995
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "such as layout and table structures. Finally, the results from all pages are aggregated and passed",
+        "dir": "ltr",
+        "width": 396.0033873999997,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            211.71799999999996
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "through a post-processing stage, which augments metadata, detects the document language, infers",
+        "dir": "ltr",
+        "width": 396.0033873999997,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            200.80899999999997
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "reading-order and eventually assembles a typed document object which can be serialized to JSON",
+        "dir": "ltr",
+        "width": 396.00338739999967,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            189.89999999999998
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "or Markdown.",
+        "dir": "ltr",
+        "width": 56.7469696,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            178.98999999999998
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            154.55999999999997
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": true
+    },
+    {
+        "str": "3.1",
+        "dir": "ltr",
+        "width": 12.45325,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            154.55999999999997
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 9.962599999999995,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            120.45325000000001,
+            154.55999999999997
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": false
+    },
+    {
+        "str": "PDF backends",
+        "dir": "ltr",
+        "width": 61.618680999999995,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            130.41585,
+            154.55999999999997
+        ],
+        "fontName": "g_d0_f1",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            134.58499999999998
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "Two basic requirements to process PDF documents in our pipeline are a) to retrieve all text content",
+        "dir": "ltr",
+        "width": 396.0033873999998,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            134.58499999999998
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "and their geometric coordinates on each page and b) to render the visual representation of each",
+        "dir": "ltr",
+        "width": 396.0033873999999,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            123.67499999999998
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "page as it would appear in a PDF viewer. Both these requirements are encapsulated in Docling’s",
+        "dir": "ltr",
+        "width": 396.00338739999967,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            112.76599999999998
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "PDF backend interface.",
+        "dir": "ltr",
+        "width": 95.95976320000003,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            101.85699999999997
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": " ",
+        "dir": "ltr",
+        "width": 6.645054200000004,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            203.95976320000005,
+            101.85699999999997
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "While there are several open-source PDF parsing libraries available for",
+        "dir": "ltr",
+        "width": 293.39856999999995,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            210.60481740000006,
+            101.85699999999997
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "python, we faced major obstacles with all of them for different reasons, among which were restrictive",
+        "dir": "ltr",
+        "width": 396.0033873999999,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            90.94799999999996
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            5.9776,
+            0,
+            0,
+            5.9776,
+            120.653,
+            75.809
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "1",
+        "dir": "ltr",
+        "width": 2.9888,
+        "height": 5.9776,
+        "transform": [
+            5.9776,
+            0,
+            0,
+            5.9776,
+            120.653,
+            75.809
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "see huggingface.co/ds4sd/docling-models/",
+        "dir": "ltr",
+        "width": 152.3212032,
+        "height": 8.9664,
+        "transform": [
+            8.9664,
+            0,
+            0,
+            8.9664,
+            124.14,
+            72
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    },
+    {
+        "str": "",
+        "dir": "ltr",
+        "width": 0,
+        "height": 0,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            303.509,
+            42.111999999999995
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": true
+    },
+    {
+        "str": "2",
+        "dir": "ltr",
+        "width": 4.9813,
+        "height": 9.9626,
+        "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            303.509,
+            42.111999999999995
+        ],
+        "fontName": "g_d0_f2",
+        "hasEOL": false
+    }
+]

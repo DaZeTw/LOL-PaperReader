@@ -1,0 +1,143 @@
+/* PDF Components Styling */
+
+/* Ensure proper scroll behavior for PDF viewer */
+.rpv-core__viewer {
+  height: 100% !important;
+  overflow: auto !important;
+}
+
+/* Outline container styling */
+.outline-container {
+  max-height: none;
+  overflow: visible;
+}
+
+.outline-container .rpv-bookmark__container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.outline-container .rpv-bookmark__item {
+  margin: 0 0 4px 0 !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.outline-container .rpv-bookmark__item:hover {
+  background-color: hsl(var(--muted)) !important;
+}
+
+.outline-container .rpv-bookmark__item--current {
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border: 1px solid hsl(var(--primary) / 0.2) !important;
+}
+
+.outline-container .rpv-bookmark__title {
+  color: hsl(var(--foreground)) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Thumbnails container styling */
+.thumbnails-container {
+  max-height: none;
+  overflow: visible;
+}
+
+.thumbnails-container .rpv-thumbnail__container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.thumbnails-container .rpv-thumbnail__item {
+  margin: 0 0 8px 0 !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.thumbnails-container .rpv-thumbnail__item:hover {
+  background-color: hsl(var(--muted)) !important;
+  border-color: hsl(var(--primary) / 0.3) !important;
+}
+
+.thumbnails-container .rpv-thumbnail__item--selected {
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+.thumbnails-container .rpv-thumbnail__cover {
+  border-radius: 4px !important;
+  overflow: hidden !important;
+}
+
+.thumbnails-container .rpv-thumbnail__label {
+  color: hsl(var(--foreground)) !important;
+  font-size: 0.75rem !important;
+  text-align: center !important;
+  margin-top: 4px !important;
+}
+
+/* Ensure proper flexbox behavior */
+.pdf-viewer-container {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pdf-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Fix scroll area styling */
+.scroll-area-viewport {
+  height: 100% !important;
+}
+
+/* Prevent text overflow in bookmarks */
+.rpv-bookmark__title {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+}
+
+/* Ensure proper height for main PDF viewer */
+.rpv-core__inner-page {
+  min-height: auto !important;
+}
+
+.rpv-core__inner-pages {
+  padding: 16px !important;
+}
+
+/* Custom scrollbar for better UX */
+.rpv-core__viewer::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.rpv-core__viewer::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+.rpv-core__viewer::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+.rpv-core__viewer::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
