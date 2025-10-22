@@ -6,6 +6,7 @@ import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
 import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail"
 import { bookmarkPlugin } from "@react-pdf-viewer/bookmark"
+import { useCitationPlugin } from "@/hooks/useCitatioPlugin";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -24,6 +25,7 @@ interface PDFViewerProps {
   navigationTarget?: { page: number; yPosition: number } | undefined
   onPageChange?: (page: number) => void
   onSectionSelect?: (bookmark: any) => void
+  onCitationClick?: (citation: any, event: MouseEvent) => void
 }
 
 export function PDFViewer({
@@ -32,6 +34,7 @@ export function PDFViewer({
   navigationTarget,
   onPageChange,
   onSectionSelect,
+  onCitationClick,
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
   const [numPages, setNumPages] = useState(0)
@@ -46,6 +49,9 @@ export function PDFViewer({
   const zoomPluginInstance = zoomPlugin()
   const thumbnailPluginInstance = thumbnailPlugin()
   const bookmarkPluginInstance = bookmarkPlugin()
+  const citationPluginInstance = useCitationPlugin({
+    onCitationClick: onCitationClick
+  });
 
   const { jumpToNextPage, jumpToPreviousPage } = pageNavigationPluginInstance
   const { zoomTo } = zoomPluginInstance
@@ -203,6 +209,7 @@ export function PDFViewer({
                       zoomPluginInstance,
                       thumbnailPluginInstance,
                       bookmarkPluginInstance,
+                      citationPluginInstance
                     ]}
                     onDocumentLoad={(e) => {
                       setNumPages(e.doc.numPages)
