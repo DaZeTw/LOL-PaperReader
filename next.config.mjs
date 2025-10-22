@@ -18,7 +18,12 @@ const nextConfig = {
       'pdfjs-dist/build/pdf.mjs': 'pdfjs-dist/build/pdf.js',
     }
 
-    if (!isServer) {
+    // Externalize pdfjs-dist on server to avoid worker issues
+    if (isServer) {
+      config.externals = config.externals || []
+      // Don't try to bundle pdfjs-dist on server
+      config.externals.push('pdfjs-dist')
+    } else {
       config.externals = config.externals || []
       config.externals.push({
         canvas: 'canvas',

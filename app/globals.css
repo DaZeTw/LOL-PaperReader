@@ -136,3 +136,76 @@
     --rpv-core__annotation--link-hover-background-color: oklch(0.75 0.08 250 / 0.15) !important;
   }
 }
+
+/* Warm tone theme for eye protection (Semantic HTML View) */
+:root {
+  /* Warm beige/cream base for reduced eye strain */
+  --warm-bg: oklch(0.96 0.015 70); /* Soft warm cream */
+  --warm-surface: oklch(0.98 0.01 65); /* Very light warm */
+  --warm-foreground: oklch(0.25 0.03 45); /* Dark warm brown for text */
+  --warm-heading: oklch(0.2 0.04 40); /* Darker warm brown for headings */
+  --warm-muted-foreground: oklch(0.5 0.02 50); /* Medium warm gray */
+  --warm-accent: oklch(0.5 0.12 35); /* Warm orange/terracotta */
+  --warm-accent-foreground: oklch(0.98 0.01 65);
+  --warm-border: oklch(0.85 0.02 60); /* Soft warm border */
+  --warm-highlight: oklch(0.92 0.03 80); /* Warm yellow highlight */
+}
+
+.dark {
+  /* Dark mode warm tones - amber/brown instead of blue */
+  --warm-bg: oklch(0.18 0.02 50); /* Dark warm brown */
+  --warm-surface: oklch(0.22 0.02 45); /* Slightly lighter warm */
+  --warm-foreground: oklch(0.9 0.015 70); /* Light warm cream text */
+  --warm-heading: oklch(0.95 0.02 65); /* Lighter warm for headings */
+  --warm-muted-foreground: oklch(0.6 0.02 60); /* Medium warm */
+  --warm-accent: oklch(0.65 0.15 50); /* Warm orange accent */
+  --warm-accent-foreground: oklch(0.15 0.02 45);
+  --warm-border: oklch(0.3 0.02 45); /* Dark warm border */
+  --warm-highlight: oklch(0.3 0.05 60); /* Dark warm highlight */
+}
+
+@theme inline {
+  --color-warm-bg: var(--warm-bg);
+  --color-warm-surface: var(--warm-surface);
+  --color-warm-foreground: var(--warm-foreground);
+  --color-warm-heading: var(--warm-heading);
+  --color-warm-muted-foreground: var(--warm-muted-foreground);
+  --color-warm-accent: var(--warm-accent);
+  --color-warm-accent-foreground: var(--warm-accent-foreground);
+  --color-warm-border: var(--warm-border);
+  --color-warm-highlight: var(--warm-highlight);
+}
+
+/* Prose styling for warm theme */
+.prose-warm {
+  --tw-prose-body: var(--warm-foreground);
+  --tw-prose-headings: var(--warm-heading);
+  --tw-prose-links: var(--warm-accent);
+  --tw-prose-bold: var(--warm-heading);
+  --tw-prose-quotes: var(--warm-muted-foreground);
+  --tw-prose-code: var(--warm-accent);
+}
+
+.prose-warm p {
+  margin-bottom: 1em;
+  color: var(--warm-foreground);
+}
+
+.prose-warm strong {
+  color: var(--warm-heading);
+  font-weight: 600;
+}
+
+.prose-warm em {
+  font-style: italic;
+}
+
+.prose-warm a {
+  color: var(--warm-accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(from var(--warm-accent) r g b / 0.3);
+}
+
+.prose-warm a:hover {
+  text-decoration-color: var(--warm-accent);
+}

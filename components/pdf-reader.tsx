@@ -3,10 +3,11 @@
 import type React from "react"
 
 import { useState } from "react"
-import { FileText, MessageSquare, X, Plus, Download, Keyboard } from "lucide-react"
+import { FileText, MessageSquare, X, Plus, Download, Keyboard, FileType, BookOpen } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
 import { PDFViewer } from "@/components/pdf-viewer"
+import { SemanticHTMLViewer } from "@/components/semantic-html-viewer"
 import { ParsedSidebar } from "@/components/parsed-sidebar"
 import { CitationSidebar } from "@/components/citation-sidebar"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
@@ -29,6 +30,18 @@ interface PDFTab {
     answer: string
     timestamp: Date
   }>
+  // Reading state persistence
+  viewState: {
+    // PDF viewer state
+    pdfScrollTop?: number
+    pdfScrollLeft?: number
+    pdfZoom?: number
+    pdfCurrentPage?: number
+    // Semantic viewer state
+    semanticScrollTop?: number
+    semanticFontSize?: number
+    semanticZoom?: number
+  }
 }
 
 export function PDFReader() {
@@ -46,6 +59,7 @@ export function PDFReader() {
   const [imageGalleryOpen, setImageGalleryOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pdfViewerHandlers, setPdfViewerHandlers] = useState<any>(null)
+  const [viewMode, setViewMode] = useState<"pdf" | "semantic">("pdf")
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
 
@@ -60,6 +74,7 @@ export function PDFReader() {
       selectedSection: null,
       bookmarks: [],
       qaHistory: [],
+      viewState: {},
     }
 
     setTabs((prev) => {
@@ -69,6 +84,17 @@ export function PDFReader() {
     })
     setActiveTabId(newTab.id)
     console.log("[v0] Set active tab to:", newTab.id)
+  }
+
+  const handleUpdateViewState = (updates: Partial<PDFTab['viewState']>) => {
+    if (!activeTabId) return
+    setTabs((prev) =>
+      prev.map((tab) =>
+        tab.id === activeTabId
+          ? { ...tab, viewState: { ...tab.viewState, ...updates } }
+          : tab
+      )
+    )
   }
 
   const handleCloseTab = (tabId: string, e: React.MouseEvent) => {
@@ -168,6 +194,28 @@ export function PDFReader() {
         <div className="flex items-center gap-2">
           {activeTab && (
             <>
+              <div className="flex items-center rounded-lg border border-border bg-muted/30 p-1">
+                <Button
+                  variant={viewMode === "pdf" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("pdf")}
+                  className="gap-2 h-7"
+                  title="PDF View"
+                >
+                  <FileType className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline text-xs">PDF</span>
+                </Button>
+                <Button
+                  variant={viewMode === "semantic" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("semantic")}
+                  className="gap-2 h-7"
+                  title="Semantic HTML View (Eye Protection)"
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline text-xs">Semantic</span>
+                </Button>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
@@ -238,25 +286,39 @@ export function PDFReader() {
               onToggle={() => setSidebarOpen(!sidebarOpen)}
             />
 
-            {/* Center - PDF Viewer with Annotation Toolbar */}
+            {/* Center - PDF Viewer or Semantic HTML Viewer with Annotation Toolbar */}
             <div className="relative flex flex-1 flex-col">
-              <PDFViewer
-                file={activeTab.file}
-                selectedSection={activeTab.selectedSection}
-                highlightColor={highlightColor}
-                annotationMode={annotationMode}
-                onCitationClick={setSelectedCitation}
-                parsedData={activeTab.parsedData}
-                onPageChange={setCurrentPage}
-                onHandlersReady={setPdfViewerHandlers}
-              />
+              {viewMode === "pdf" ? (
+                <PDFViewer
+                  file={activeTab.file}
+                  selectedSection={activeTab.selectedSection}
+                  highlightColor={highlightColor}
+                  annotationMode={annotationMode}
+                  onCitationClick={setSelectedCitation}
+                  parsedData={activeTab.parsedData}
+                  onPageChange={setCurrentPage}
+                  onHandlersReady={setPdfViewerHandlers}
+                  viewState={activeTab.viewState}
+                  onViewStateChange={handleUpdateViewState}
+                />
+              ) : (
+                <SemanticHTMLViewer
+                  parsedData={activeTab.parsedData}
+                  selectedSection={activeTab.selectedSection}
+                  onCitationClick={setSelectedCitation}
+                  viewState={activeTab.viewState}
+                  onViewStateChange={handleUpdateViewState}
+                />
+              )}
 
-              <AnnotationToolbar
-                highlightColor={highlightColor}
-                onColorChange={setHighlightColor}
-                annotationMode={annotationMode}
-                onModeChange={setAnnotationMode}
-              />
+              {viewMode === "pdf" && (
+                <AnnotationToolbar
+                  highlightColor={highlightColor}
+                  onColorChange={setHighlightColor}
+                  annotationMode={annotationMode}
+                  onModeChange={setAnnotationMode}
+                />
+              )}
 
               {qaOpen && (
                 <QAInterface
