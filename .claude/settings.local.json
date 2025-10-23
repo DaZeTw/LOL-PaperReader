@@ -7,7 +7,13 @@
       "Bash(npm run dev)",
       "Bash(find:*)",
       "Bash(git checkout:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(python:*)",
+      "Bash(pip show:*)",
+      "Bash(mineru --help:*)",
+      "Bash(dir:*)",
+      "Bash(mineru:*)",
+      "Bash(pip install:*)"
     ],
     "deny": [],
     "ask": []

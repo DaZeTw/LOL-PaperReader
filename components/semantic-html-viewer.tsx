@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
-import { ZoomIn, ZoomOut, RotateCcw, Type, FileText } from "lucide-react"
+import { ZoomIn, ZoomOut, RotateCcw, Type, FileText, Loader2, AlertCircle } from "lucide-react"
 import { DefinitionPopup } from "@/components/definition-popup"
 import { cn } from "@/lib/utils"
 
@@ -61,6 +61,20 @@ interface DefinitionPopupState {
   position: { x: number; y: number }
 }
 
+// Constants
+const MIN_FONT_SIZE = 12
+const MAX_FONT_SIZE = 32
+const DEFAULT_FONT_SIZE = 16
+const MIN_ZOOM = 0.5
+const MAX_ZOOM = 2.0
+const DEFAULT_ZOOM = 1.0
+const ZOOM_STEP = 0.1
+const FONT_STEP = 2
+const DEFAULT_LINE_HEIGHT = 1.8
+const SCROLL_THROTTLE_MS = 150
+const SCROLL_RESTORE_DELAY_MS = 100
+const MIN_TERM_LENGTH = 2
+
 export function SemanticHTMLViewer({
   parsedData,
   htmlContent,
@@ -71,18 +85,44 @@ export function SemanticHTMLViewer({
   viewState,
   onViewStateChange,
 }: SemanticHTMLViewerProps) {
-  const [fontSize, setFontSize] = useState(viewState?.semanticFontSize || 16)
-  const [zoom, setZoom] = useState(viewState?.semanticZoom || 1.0)
-  const [lineHeight, setLineHeight] = useState(1.8)
+  const [fontSize, setFontSize] = useState(viewState?.semanticFontSize || DEFAULT_FONT_SIZE)
+  const [zoom, setZoom] = useState(viewState?.semanticZoom || DEFAULT_ZOOM)
+  const [lineHeight, setLineHeight] = useState(DEFAULT_LINE_HEIGHT)
   const [definitionPopup, setDefinitionPopup] = useState<DefinitionPopupState | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({})
   const contentRef = useRef<HTMLDivElement>(null)
   const scrollViewportRef = useRef<HTMLDivElement | null>(null)
   const isRestoringScroll = useRef(false)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>()
 
   // Determine which mode we're in
   const isPdf2HtmlMode = !!htmlContent
+
+  // Sanitize HTML content for security (client-side only)
+  const sanitizedHtmlContent = useMemo(() => {
+    if (!htmlContent) return ""
+
+    // Only sanitize in browser environment
+    if (typeof window === "undefined") return htmlContent
+
+    try {
+      // Dynamically import DOMPurify for client-side
+      const DOMPurify = require("dompurify")
+      return DOMPurify.sanitize(htmlContent, {
+        ADD_TAGS: ["style"],
+        ADD_ATTR: ["style", "class", "id", "data-page-no"],
+        ALLOW_DATA_ATTR: true,
+      })
+    } catch (err) {
+      console.error("Failed to sanitize HTML:", err)
+      setError("Failed to sanitize HTML content")
+      return htmlContent // Fallback to unsanitized if DOMPurify fails
+    }
+  }, [htmlContent])
 
   // Get scroll viewport reference
   useEffect(() => {
@@ -112,31 +152,29 @@ export function SemanticHTMLViewer({
     }
   }, [viewState?.semanticScrollTop])
 
-  // Save scroll position when scrolling
+  // Save scroll position when scrolling (memoized handler)
+  const handleScrollThrottled = useCallback(() => {
+    if (isRestoringScroll.current || !onViewStateChange || !scrollViewportRef.current) return
+
+    const scrollTop = scrollViewportRef.current.scrollTop
+    onViewStateChange({ semanticScrollTop: scrollTop })
+  }, [onViewStateChange])
+
   useEffect(() => {
     const viewport = scrollViewportRef.current
     if (!viewport || !onViewStateChange) return
 
-    const handleScroll = () => {
-      if (isRestoringScroll.current) return
-
-      const scrollTop = viewport.scrollTop
-      onViewStateChange({ semanticScrollTop: scrollTop })
-    }
-
-    // Throttle scroll events
-    let timeoutId: NodeJS.Timeout
     const throttledScroll = () => {
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(handleScroll, 150)
+      clearTimeout(scrollTimeoutRef.current)
+      scrollTimeoutRef.current = setTimeout(handleScrollThrottled, SCROLL_THROTTLE_MS)
     }
 
-    viewport.addEventListener('scroll', throttledScroll)
+    viewport.addEventListener("scroll", throttledScroll, { passive: true })
     return () => {
-      viewport.removeEventListener('scroll', throttledScroll)
-      clearTimeout(timeoutId)
+      viewport.removeEventListener("scroll", throttledScroll)
+      clearTimeout(scrollTimeoutRef.current)
     }
-  }, [onViewStateChange])
+  }, [onViewStateChange, handleScrollThrottled])
 
   // Scroll to selected section (takes priority over saved scroll position)
   useEffect(() => {
@@ -170,72 +208,80 @@ export function SemanticHTMLViewer({
     }
   }, [cssContent, isPdf2HtmlMode])
 
-  // Handle citation clicks in pdf2htmlEX HTML
-  useEffect(() => {
-    if (isPdf2HtmlMode && contentRef.current && onCitationClick) {
-      const handleClick = (e: MouseEvent) => {
-        const target = e.target as HTMLElement
-        // Look for citation links (pdf2htmlEX typically uses <a> tags)
-        const citationLink = target.closest('a[href^="#"]')
-        if (citationLink) {
-          e.preventDefault()
-          const href = citationLink.getAttribute("href")
-          if (href) {
-            onCitationClick({ id: href, element: citationLink })
-          }
+  // Handle citation clicks in pdf2htmlEX HTML (memoized handler)
+  const handleCitationClick = useCallback(
+    (e: MouseEvent) => {
+      if (!onCitationClick) return
+
+      const target = e.target as HTMLElement
+      // Look for citation links (pdf2htmlEX typically uses <a> tags)
+      const citationLink = target.closest('a[href^="#"]')
+      if (citationLink) {
+        e.preventDefault()
+        const href = citationLink.getAttribute("href")
+        if (href) {
+          onCitationClick({ id: href, element: citationLink })
         }
       }
+    },
+    [onCitationClick]
+  )
 
-      contentRef.current.addEventListener("click", handleClick)
+  useEffect(() => {
+    if (isPdf2HtmlMode && contentRef.current && onCitationClick) {
+      const container = contentRef.current
+      container.addEventListener("click", handleCitationClick)
       return () => {
-        contentRef.current?.removeEventListener("click", handleClick)
+        container.removeEventListener("click", handleCitationClick)
       }
     }
-  }, [isPdf2HtmlMode, onCitationClick])
+  }, [isPdf2HtmlMode, onCitationClick, handleCitationClick])
 
-  // Handle term selection for definitions (ScholarPhi-style)
+  // Handle term selection for definitions (ScholarPhi-style) - memoized
+  const handleDoubleClick = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement
+
+    // Don't show definition popup if clicking on citation links
+    if (target.closest('a[href^="#"]')) {
+      return
+    }
+
+    // Get selected text
+    const selection = window.getSelection()
+    const selectedText = selection?.toString().trim()
+
+    if (!selectedText || selectedText.length < MIN_TERM_LENGTH) return
+
+    // Filter out non-word selections (like punctuation only)
+    if (!/[a-zA-Z]/.test(selectedText)) return
+
+    // Clean the selected term (remove punctuation at start/end)
+    const cleanedTerm = selectedText.replace(/^[^\w]+|[^\w]+$/g, "")
+
+    if (cleanedTerm.length < MIN_TERM_LENGTH) return
+
+    // Get selection position for popup
+    const range = selection?.getRangeAt(0)
+    if (!range) return
+
+    const rect = range.getBoundingClientRect()
+
+    setDefinitionPopup({
+      term: cleanedTerm,
+      position: {
+        x: rect.left + rect.width / 2,
+        y: rect.top - 10,
+      },
+    })
+
+    // Clear text selection after a brief delay to ensure popup shows
+    setTimeout(() => {
+      selection?.removeAllRanges()
+    }, 50)
+  }, [])
+
   useEffect(() => {
     if (!contentRef.current) return
-
-    const handleDoubleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-
-      // Don't show definition popup if clicking on citation links
-      if (target.closest('a[href^="#"]')) {
-        return
-      }
-
-      // Get selected text
-      const selection = window.getSelection()
-      const selectedText = selection?.toString().trim()
-
-      if (!selectedText || selectedText.length < 2) return
-
-      // Filter out non-word selections (like punctuation only)
-      if (!/[a-zA-Z]/.test(selectedText)) return
-
-      // Clean the selected term (remove punctuation at start/end)
-      const cleanedTerm = selectedText.replace(/^[^\w]+|[^\w]+$/g, "")
-
-      if (cleanedTerm.length < 2) return
-
-      // Get selection position for popup
-      const range = selection?.getRangeAt(0)
-      if (!range) return
-
-      const rect = range.getBoundingClientRect()
-
-      setDefinitionPopup({
-        term: cleanedTerm,
-        position: {
-          x: rect.left + rect.width / 2,
-          y: rect.top - 10,
-        },
-      })
-
-      // Clear text selection
-      selection?.removeAllRanges()
-    }
 
     const container = contentRef.current
     container.addEventListener("dblclick", handleDoubleClick)
@@ -243,49 +289,77 @@ export function SemanticHTMLViewer({
     return () => {
       container.removeEventListener("dblclick", handleDoubleClick)
     }
-  }, [])
+  }, [handleDoubleClick])
 
-  const handleZoomIn = () => {
+  // Zoom controls - memoized
+  const handleZoomIn = useCallback(() => {
     if (isPdf2HtmlMode) {
-      const newZoom = Math.min(zoom + 0.1, 2.0)
+      const newZoom = Math.min(zoom + ZOOM_STEP, MAX_ZOOM)
       setZoom(newZoom)
       onViewStateChange?.({ semanticZoom: newZoom })
     } else {
-      const newFontSize = Math.min(fontSize + 2, 32)
+      const newFontSize = Math.min(fontSize + FONT_STEP, MAX_FONT_SIZE)
       setFontSize(newFontSize)
       onViewStateChange?.({ semanticFontSize: newFontSize })
     }
-  }
+  }, [isPdf2HtmlMode, zoom, fontSize, onViewStateChange])
 
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     if (isPdf2HtmlMode) {
-      const newZoom = Math.max(zoom - 0.1, 0.5)
+      const newZoom = Math.max(zoom - ZOOM_STEP, MIN_ZOOM)
       setZoom(newZoom)
       onViewStateChange?.({ semanticZoom: newZoom })
     } else {
-      const newFontSize = Math.max(fontSize - 2, 12)
+      const newFontSize = Math.max(fontSize - FONT_STEP, MIN_FONT_SIZE)
       setFontSize(newFontSize)
       onViewStateChange?.({ semanticFontSize: newFontSize })
     }
-  }
+  }, [isPdf2HtmlMode, zoom, fontSize, onViewStateChange])
 
-  const handleResetZoom = () => {
+  const handleResetZoom = useCallback(() => {
     if (isPdf2HtmlMode) {
-      setZoom(1.0)
-      onViewStateChange?.({ semanticZoom: 1.0 })
+      setZoom(DEFAULT_ZOOM)
+      onViewStateChange?.({ semanticZoom: DEFAULT_ZOOM })
     } else {
-      setFontSize(16)
-      setLineHeight(1.8)
-      onViewStateChange?.({ semanticFontSize: 16 })
+      setFontSize(DEFAULT_FONT_SIZE)
+      setLineHeight(DEFAULT_LINE_HEIGHT)
+      onViewStateChange?.({ semanticFontSize: DEFAULT_FONT_SIZE })
     }
-  }
+  }, [isPdf2HtmlMode, onViewStateChange])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + Plus/Equal: Zoom in
+      if ((e.ctrlKey || e.metaKey) && (e.key === "+" || e.key === "=")) {
+        e.preventDefault()
+        handleZoomIn()
+      }
+      // Ctrl/Cmd + Minus: Zoom out
+      else if ((e.ctrlKey || e.metaKey) && e.key === "-") {
+        e.preventDefault()
+        handleZoomOut()
+      }
+      // Ctrl/Cmd + 0: Reset zoom
+      else if ((e.ctrlKey || e.metaKey) && e.key === "0") {
+        e.preventDefault()
+        handleResetZoom()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [handleZoomIn, handleZoomOut, handleResetZoom])
 
   const { title = "", sections = [], references = [], metadata } = parsedData || {}
+
+  // Check if we have any content to display
+  const hasContent = isPdf2HtmlMode ? !!sanitizedHtmlContent : (sections.length > 0 || !!title)
 
   return (
     <div className={cn("flex h-full flex-col bg-warm-bg", className)}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-warm-border bg-warm-surface px-4 py-2 shadow-sm">
+      <div className="flex items-center justify-between border-b border-warm-border bg-warm-surface px-4 py-2 shadow-sm" role="toolbar" aria-label="Viewer controls">
         <div className="flex items-center gap-2">
           {isPdf2HtmlMode ? (
             <>
@@ -339,27 +413,61 @@ export function SemanticHTMLViewer({
 
       {/* Content */}
       <ScrollArea className="flex-1" ref={scrollAreaRef}>
-        {isPdf2HtmlMode ? (
-          // pdf2htmlEX mode - render raw HTML with zoom
+        {error ? (
+          // Error state
+          <div className="flex h-full items-center justify-center p-8">
+            <div className="text-center space-y-4">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+              <p className="text-warm-foreground font-medium">Failed to load content</p>
+              <p className="text-sm text-warm-muted-foreground">{error}</p>
+            </div>
+          </div>
+        ) : isLoading ? (
+          // Loading state
+          <div className="flex h-full items-center justify-center p-8">
+            <div className="text-center space-y-4">
+              <Loader2 className="h-12 w-12 text-warm-accent animate-spin mx-auto" />
+              <p className="text-warm-muted-foreground">Loading content...</p>
+            </div>
+          </div>
+        ) : !hasContent ? (
+          // Empty state
+          <div className="flex h-full items-center justify-center p-8">
+            <div className="text-center space-y-4">
+              <FileText className="h-12 w-12 text-warm-muted-foreground mx-auto" />
+              <p className="text-warm-foreground font-medium">No content available</p>
+              <p className="text-sm text-warm-muted-foreground">
+                Upload a PDF to view its content
+              </p>
+            </div>
+          </div>
+        ) : isPdf2HtmlMode ? (
+          // pdf2htmlEX mode - render raw HTML with improved zoom handling
           <div
             ref={contentRef}
-            className="pdf2htmlex-container mx-auto origin-top"
-            style={{
-              transform: `scale(${zoom})`,
-              transformOrigin: "top center",
-              width: `${100 / zoom}%`,
-            }}
+            className="pdf2htmlex-container w-full overflow-x-auto"
+            role="document"
+            aria-label="PDF content"
           >
             <div
-              className="pdf2htmlex-content bg-white p-8"
-              dangerouslySetInnerHTML={{ __html: htmlContent || "" }}
+              className="pdf2htmlex-content bg-white p-8 mx-auto"
+              style={{
+                transform: `scale(${zoom})`,
+                transformOrigin: "top center",
+                minWidth: "fit-content",
+                width: zoom < 1 ? "100%" : "auto",
+              }}
+              dangerouslySetInnerHTML={{ __html: sanitizedHtmlContent }}
             />
           </div>
         ) : (
           // Semantic mode - original parsed data rendering
           <article
+            ref={contentRef}
             className="mx-auto max-w-4xl px-8 py-12"
             style={{ fontSize: `${fontSize}px`, lineHeight }}
+            role="article"
+            aria-label="Document content"
           >
             {/* Header with metadata */}
             <header className="mb-12 border-b border-warm-border pb-8">
@@ -406,39 +514,13 @@ export function SemanticHTMLViewer({
 
             {/* Main Content Sections */}
             <main>
-              {sections.map((section, index) => (
-                <section
+              {sections.map((section) => (
+                <SectionContent
                   key={section.id}
-                  id={section.id}
-                  ref={(el) => {
-                    sectionRefs.current[section.id] = el
-                  }}
-                  className={cn(
-                    "mb-10 scroll-mt-4 rounded-lg transition-all",
-                    selectedSection === section.id &&
-                      "bg-warm-highlight/30 p-6 shadow-md ring-2 ring-warm-accent"
-                  )}
-                  aria-labelledby={`heading-${section.id}`}
-                >
-                  <h2
-                    id={`heading-${section.id}`}
-                    className="mb-4 font-serif text-2xl font-bold text-warm-heading"
-                  >
-                    {section.title}
-                  </h2>
-                  <div
-                    className="prose prose-warm max-w-none space-y-4 text-warm-foreground"
-                    dangerouslySetInnerHTML={{ __html: formatContent(section.content) }}
-                  />
-                  <div className="mt-2 text-right">
-                    <a
-                      href={`#page-${section.page}`}
-                      className="font-mono text-xs text-warm-muted-foreground hover:text-warm-accent"
-                    >
-                      Page {section.page}
-                    </a>
-                  </div>
-                </section>
+                  section={section}
+                  selectedSection={selectedSection}
+                  sectionRefs={sectionRefs}
+                />
               ))}
             </main>
 
@@ -518,19 +600,78 @@ export function SemanticHTMLViewer({
   )
 }
 
-// Helper function to format content with basic HTML support
-function formatContent(content: string): string {
-  // Convert newlines to paragraphs
-  const paragraphs = content.split("\n\n").filter((p) => p.trim())
+// Helper function to format content with basic HTML support - memoized
+const formatContent = (() => {
+  const cache = new Map<string, string>()
 
-  return paragraphs
-    .map((p) => {
-      // Preserve existing HTML tags
-      if (p.trim().startsWith("<")) {
-        return p
-      }
-      // Wrap plain text in paragraph tags
-      return `<p>${p.trim()}</p>`
-    })
-    .join("")
-}
+  return (content: string): string => {
+    if (cache.has(content)) {
+      return cache.get(content)!
+    }
+
+    // Convert newlines to paragraphs
+    const paragraphs = content.split("\n\n").filter((p) => p.trim())
+
+    const result = paragraphs
+      .map((p) => {
+        // Preserve existing HTML tags
+        if (p.trim().startsWith("<")) {
+          return p
+        }
+        // Wrap plain text in paragraph tags
+        return `<p>${p.trim()}</p>`
+      })
+      .join("")
+
+    cache.set(content, result)
+    return result
+  }
+})()
+
+// Memoized Section Component for better performance
+const SectionContent = memo(({
+  section,
+  selectedSection,
+  sectionRefs,
+}: {
+  section: Section
+  selectedSection: string | null
+  sectionRefs: React.MutableRefObject<{ [key: string]: HTMLElement | null }>
+}) => {
+  return (
+    <section
+      key={section.id}
+      id={section.id}
+      ref={(el) => {
+        sectionRefs.current[section.id] = el
+      }}
+      className={cn(
+        "mb-10 scroll-mt-4 rounded-lg transition-all",
+        selectedSection === section.id &&
+          "bg-warm-highlight/30 p-6 shadow-md ring-2 ring-warm-accent"
+      )}
+      aria-labelledby={`heading-${section.id}`}
+    >
+      <h2
+        id={`heading-${section.id}`}
+        className="mb-4 font-serif text-2xl font-bold text-warm-heading"
+      >
+        {section.title}
+      </h2>
+      <div
+        className="prose prose-warm max-w-none space-y-4 text-warm-foreground"
+        dangerouslySetInnerHTML={{ __html: formatContent(section.content) }}
+      />
+      <div className="mt-2 text-right">
+        <a
+          href={`#page-${section.page}`}
+          className="font-mono text-xs text-warm-muted-foreground hover:text-warm-accent"
+        >
+          Page {section.page}
+        </a>
+      </div>
+    </section>
+  )
+})
+
+SectionContent.displayName = "SectionContent"
