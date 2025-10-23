@@ -283,9 +283,11 @@ export function PDFReader() {
                 <PDFViewer
                   file={activeTab.file}
                   selectedSection={activeTab.selectedSection}
+                  parsedData={activeTab.parsedData}
                   onCitationClick={setSelectedCitation}
                   onPageChange={setCurrentPage}
                   onSectionSelect={handleSectionSelect}
+                  onHandlersReady={setPdfViewerHandlers}
                 />
               ) : (
                 <SemanticHTMLViewer
