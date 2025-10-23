@@ -17,12 +17,21 @@ interface QAInterfaceProps {
   onNewMessage?: (question: string, answer: string) => void
 }
 
+interface CitedSection {
+  doc_id?: string
+  title?: string
+  page?: number
+  excerpt: string
+}
+
 interface QAMessage {
   id: string
   question: string
   answer: string
   context?: string
   timestamp: Date
+  cited_sections?: CitedSection[]
+  confidence?: number
 }
 
 export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAInterfaceProps) {
@@ -64,11 +73,23 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
 
       const data = await response.json()
 
+      // Handle error responses from backend
+      if (data.error) {
+        toast({
+          title: data.error,
+          description: data.message || data.details || "Failed to get answer from backend service",
+          variant: "destructive",
+        })
+        return
+      }
+
       const newMessage: QAMessage = {
         id: Date.now().toString(),
         question: currentQuestion,
         answer: data.answer,
         context: data.context,
+        cited_sections: data.cited_sections,
+        confidence: data.confidence,
         timestamp: new Date(),
       }
 
@@ -172,7 +193,75 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
                     <div className="ml-9 rounded-lg border border-border bg-muted/30 p-4">
                       <p className="font-mono text-sm leading-relaxed text-foreground">{message.answer}</p>
 
-                      {message.context && (
+                      {/* Confidence Score */}
+                      {message.confidence !== undefined && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="font-mono text-xs text-muted-foreground">Confidence:</span>
+                          <div className="flex-1 max-w-[100px] h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary/70 transition-all"
+                              style={{ width: `${message.confidence * 100}%` }}
+                            />
+                          </div>
+                          <span className="font-mono text-xs font-medium text-foreground">
+                            {(message.confidence * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Citations */}
+                      {message.cited_sections && message.cited_sections.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <p className="font-mono text-xs font-medium text-muted-foreground">
+                            Citations ({message.cited_sections.length})
+                          </p>
+                          <div className="space-y-2">
+                            {message.cited_sections.slice(0, 3).map((citation, idx) => (
+                              <div
+                                key={idx}
+                                className="rounded-md border border-accent/30 bg-accent/5 p-3"
+                              >
+                                <div className="mb-1 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    {citation.title && (
+                                      <p className="font-mono text-xs font-medium text-foreground">
+                                        {citation.title}
+                                      </p>
+                                    )}
+                                    {citation.page && (
+                                      <span className="font-mono text-xs text-muted-foreground">
+                                        Page {citation.page}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {onHighlight && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => onHighlight(citation.excerpt)}
+                                      className="h-6 gap-1 px-2 text-xs hover:bg-accent/20"
+                                    >
+                                      Highlight
+                                    </Button>
+                                  )}
+                                </div>
+                                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                                  {citation.excerpt.slice(0, 200)}
+                                  {citation.excerpt.length > 200 ? "..." : ""}
+                                </p>
+                              </div>
+                            ))}
+                            {message.cited_sections.length > 3 && (
+                              <p className="font-mono text-xs text-muted-foreground text-center">
+                                +{message.cited_sections.length - 3} more citations
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Fallback Context Display */}
+                      {message.context && !message.cited_sections && (
                         <div className="mt-3 rounded-md border border-accent/30 bg-accent/5 p-3">
                           <div className="mb-2 flex items-center justify-between">
                             <p className="font-mono text-xs font-medium text-muted-foreground">Source Context</p>
