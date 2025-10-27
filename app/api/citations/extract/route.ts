@@ -14,6 +14,15 @@ interface ExtractedCitation {
   method: string;
   spansPages: boolean;
   destPage: number;
+  // Additional fields from extractCitationReference.js
+  sourcePage?: number;
+  xPosition?: number;
+  yPosition?: number;
+  linesProcessed?: number;
+  candidatesFound?: number;
+  xFilteredFound?: number;
+  thresholds?: any;
+  timestamp?: string;
 }
 
 /**
@@ -191,7 +200,7 @@ export async function POST(request: NextRequest) {
     console.log(`[extractCitations] Saved PDF to: ${tempPath}`);
 
     try {
-      // Create a standalone extraction script that avoids PDF.js worker issues
+      // Create a standalone extraction script that uses the exact same logic as extractCitationReference.js
       const projectRoot = process.cwd();
       const pdfjsPath = path.join(projectRoot, 'node_modules', 'pdfjs-dist');
       
@@ -206,6 +215,219 @@ export async function POST(request: NextRequest) {
         // Disable workers completely for Node.js environment
         GlobalWorkerOptions.workerSrc = null;
 
+        // === HELPER FUNCTIONS (copied from extractCitationReference.js) ===
+        function groupTextByLines(textItems, yTolerance = 2, xGapThreshold = 20) {
+          const lines = [];
+          const sortedItems = textItems.sort((a, b) => b.transform[5] - a.transform[5]);
+
+          for (const item of sortedItems) {
+            const yPos = item.transform[5];
+            let targetLine = lines.find((line) => Math.abs(line.yPosition - yPos) <= yTolerance);
+
+            if (!targetLine) {
+              targetLine = { yPosition: yPos, items: [] };
+              lines.push(targetLine);
+            }
+            targetLine.items.push(item);
+          }
+
+          const finalLines = [];
+          for (const line of lines) {
+            const items = line.items.sort((a, b) => a.transform[4] - b.transform[4]);
+            let currentSubline = { yPosition: line.yPosition, items: [] };
+
+            for (let i = 0; i < items.length; i++) {
+              const curr = items[i];
+              const prev = items[i - 1];
+              const prevXEnd = prev ? prev.transform[4] + (prev.width || 0) : null;
+              const currX = curr.transform[4];
+              const gap = prev ? currX - prevXEnd : 0;
+
+              if (i > 0 && gap > xGapThreshold) {
+                currentSubline.text = currentSubline.items.map((it) => it.str).join(" ").trim();
+                currentSubline.xPosition = currentSubline.items[0]?.transform[4] || 0;
+                finalLines.push(currentSubline);
+                currentSubline = { yPosition: line.yPosition, items: [] };
+              }
+              currentSubline.items.push(curr);
+            }
+
+            if (currentSubline.items.length > 0) {
+              currentSubline.text = currentSubline.items.map((it) => it.str).join(" ").trim();
+              currentSubline.xPosition = currentSubline.items[0]?.transform[4] || 0;
+              finalLines.push(currentSubline);
+            }
+          }
+
+          return finalLines.sort((a, b) => b.yPosition - a.yPosition);
+        }
+
+        function calculateAdaptiveThresholds(page, lines) {
+          const pageView = page.view;
+          const pageWidth = pageView[2] - pageView[0];
+          const pageHeight = pageView[3] - pageView[1];
+
+          const textStats = analyzeTextMetrics(lines);
+          const searchRange = Math.max(textStats.averageLineHeight * 10, pageHeight * 0.12, 60);
+          const xTolerance = Math.max(textStats.averageCharWidth * 5, pageWidth * 0.03, 20);
+
+          return {
+            searchRange: Math.round(searchRange),
+            xTolerance: Math.round(xTolerance),
+            pageWidth,
+            pageHeight,
+            textStats,
+          };
+        }
+
+        function analyzeTextMetrics(lines) {
+          if (lines.length === 0) {
+            return { averageLineHeight: 12, averageCharWidth: 6, lineSpacing: 14 };
+          }
+
+          const lineHeights = [];
+          const sortedLines = lines.sort((a, b) => b.yPosition - a.yPosition);
+
+          for (let i = 0; i < sortedLines.length - 1; i++) {
+            const diff = sortedLines[i].yPosition - sortedLines[i + 1].yPosition;
+            if (diff > 0 && diff < 100) {
+              lineHeights.push(diff);
+            }
+          }
+
+          const charWidths = [];
+          lines.forEach((line) => {
+            if (line.items && line.items.length > 0) {
+              line.items.forEach((item) => {
+                if (item.str && item.str.length > 0 && item.width) {
+                  charWidths.push(item.width / item.str.length);
+                }
+              });
+            }
+          });
+
+          const averageLineHeight = lineHeights.length > 0 ? lineHeights.reduce((a, b) => a + b, 0) / lineHeights.length : 12;
+          const averageCharWidth = charWidths.length > 0 ? charWidths.reduce((a, b) => a + b, 0) / charWidths.length : 6;
+
+          return {
+            averageLineHeight: Math.max(averageLineHeight, 8),
+            averageCharWidth: Math.max(averageCharWidth, 3),
+            lineSpacing: averageLineHeight,
+            totalLines: lines.length,
+            analyzedLineHeights: lineHeights.length,
+            analyzedCharWidths: charWidths.length,
+          };
+        }
+
+        function extractReferenceText(lines, targetX = 0, targetY, page = null) {
+          const thresholds = page ? calculateAdaptiveThresholds(page, lines) : { searchRange: 60, xTolerance: 25 };
+
+          const candidateLines = lines.filter((line) => {
+            if (line.isNextPage) {
+              const nextPageLines = lines.filter((l) => l.isNextPage);
+              if (nextPageLines.length === 0) return false;
+              const maxNextPageY = Math.max(...nextPageLines.map((l) => l.yPosition));
+              return line.yPosition >= maxNextPageY - thresholds.searchRange;
+            } else {
+              return line.yPosition <= targetY && line.yPosition >= targetY - thresholds.searchRange;
+            }
+          });
+
+          if (candidateLines.length === 0) {
+            return { text: "(no text found)", method: "none", confidence: 0, thresholds };
+          }
+
+          const xFilteredLines = candidateLines.filter((line) => {
+            const x = line.xPosition ?? 0;
+            return Math.abs(x - targetX) <= thresholds.xTolerance;
+          });
+
+          if (xFilteredLines.length === 0) {
+            return { text: "(no text found)", method: "none", confidence: 0, thresholds };
+          }
+
+          xFilteredLines.sort((a, b) => {
+            if (a.isNextPage && !b.isNextPage) return 1;
+            if (!a.isNextPage && b.isNextPage) return -1;
+            return b.yPosition - a.yPosition;
+          });
+
+          const referencePatterns = [
+            { pattern: /^\\s*\\[(\\d+)\\]/, type: "numbered" },
+            { pattern: /^\\s*[A-Z][a-z]+,\\s*[A-Z]\\..*?\\(\\d{4}\\)/, type: "author-year" },
+            { pattern: /^\\s*[A-Z][a-z]+\\s+et\\s+al\\..*?\\(\\d{4}\\)/, type: "author-year" },
+            { pattern: /^\\s*(?:doi:|DOI:|\\[doi\\])/i, type: "doi" },
+            { pattern: /^\\s*(?:https?:|www\\.)/i, type: "url" },
+            { pattern: /^\\s*arXiv:/i, type: "arxiv" },
+            { pattern: /^\\s*(\\d+)\\.\\s+/, type: "numbered-dot" },
+          ];
+
+          let referenceText = "";
+          let foundStart = false;
+          let referenceType = null;
+          let confidence = 0;
+          const collectedLines = [];
+          let spansPages = false;
+
+          for (const line of xFilteredLines) {
+            const text = line.text.trim();
+            if (!text) continue;
+
+            if (line.isNextPage) {
+              spansPages = true;
+            }
+
+            const matchedPattern = referencePatterns.find(({ pattern }) => pattern.test(text));
+
+            if (!foundStart && matchedPattern) {
+              foundStart = true;
+              referenceType = matchedPattern.type;
+              referenceText = text;
+              confidence = 0.8;
+              collectedLines.push(line);
+            } else if (foundStart && matchedPattern) {
+              if (matchedPattern.type === referenceType) {
+                break;
+              } else {
+                referenceText += " " + text;
+                collectedLines.push(line);
+              }
+            } else if (foundStart) {
+              referenceText += " " + text;
+              collectedLines.push(line);
+
+              if (/^\\s*(Appendix|Index|Acknowledgments|Figures|Tables)\\s/i.test(text)) {
+                break;
+              }
+            }
+          }
+
+          if (!referenceText.trim()) {
+            const fallbackLines = candidateLines.filter((line) => {
+              const x = line.xPosition ?? 0;
+              return Math.abs(x - targetX) <= thresholds.xTolerance;
+            });
+
+            referenceText = fallbackLines.map((line) => line.text.trim()).join(" ").trim();
+            confidence = 0.3;
+            referenceType = "proximity";
+            collectedLines.push(...fallbackLines);
+          }
+
+          const cleanedText = referenceText.replace(/\\s+/g, " ").replace(/[\\u00A0\\u2000-\\u200B\\u2028\\u2029]/g, " ").trim().substring(0, 1000);
+
+          return {
+            text: cleanedText || "(no text found)",
+            method: referenceType || "proximity",
+            confidence: spansPages ? confidence + 0.1 : confidence,
+            linesUsed: collectedLines.length,
+            spansPages,
+            thresholds,
+            candidatesFound: candidateLines.length,
+            xFilteredFound: xFilteredLines.length,
+          };
+        }
+
         async function extractCitations(pdfPath, outputPath) {
           try {
             const pdf = await getDocument({
@@ -219,54 +441,74 @@ export async function POST(request: NextRequest) {
 
             const citations = [];
 
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-              const page = await pdf.getPage(pageNum);
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i);
               const annotations = await page.getAnnotations();
 
               for (const ann of annotations) {
-                if (ann.subtype === 'Link' && ann.dest && typeof ann.dest === 'string' && ann.dest.startsWith('cite.')) {
+                if (ann.subtype === 'Link' && typeof ann.dest === 'string' && ann.dest.startsWith('cite.')) {
+                  const destName = ann.dest;
                   try {
-                    // Try to extract actual reference text
-                    const textContent = await page.getTextContent();
-                    const lines = textContent.items
-                      .filter(item => item.str && item.str.trim())
-                      .map(item => ({
-                        text: item.str.trim(),
-                        x: item.transform[4],
-                        y: item.transform[5],
-                        width: item.width || 0
-                      }))
-                      .sort((a, b) => b.y - a.y);
+                    const dest = await pdf.getDestination(destName);
+                    if (!dest) continue;
 
-                    // Find text near the annotation
-                    const annRect = ann.rect || [0, 0, 0, 0];
-                    const nearbyText = lines
-                      .filter(line => 
-                        Math.abs(line.y - annRect[1]) < 50 && 
-                        Math.abs(line.x - annRect[0]) < 100
-                      )
-                      .map(line => line.text)
-                      .join(' ')
-                      .trim();
+                    const pageIndex = await pdf.getPageIndex(dest[0]);
+                    const targetPage = await pdf.getPage(pageIndex + 1);
+                    const targetX = dest[2] ?? 0;
+                    const targetY = dest[3] ?? 0;
+
+                    const textContent = await targetPage.getTextContent();
+                    const lines = groupTextByLines(textContent.items);
+
+                    let allLines = [...lines];
+                    let nextPageLines = [];
+                    let spansPages = false;
+
+                    const pageHeight = targetPage.view[3] - targetPage.view[1] || 792;
+                    const distanceFromBottom = targetY;
+
+                    if (distanceFromBottom < 100 && pageIndex + 2 <= pdf.numPages) {
+                      try {
+                        const nextPage = await pdf.getPage(pageIndex + 2);
+                        const nextTextContent = await nextPage.getTextContent();
+                        nextPageLines = groupTextByLines(nextTextContent.items);
+
+                        nextPageLines = nextPageLines.map((line) => ({
+                          ...line,
+                          yPosition: line.yPosition - pageHeight,
+                          isNextPage: true,
+                        }));
+
+                        allLines = [...lines, ...nextPageLines];
+                        spansPages = true;
+                        console.log('🚩 Including next page for citation ' + destName + ' spanning pages ' + (pageIndex + 1) + '-' + (pageIndex + 2));
+                      } catch (err) {
+                        console.warn('⚠️ Could not load next page for multi-page citation: ' + err.message);
+                      }
+                    }
+
+                    const extractionResult = extractReferenceText(allLines, targetX, targetY, targetPage);
 
                     citations.push({
-                      id: ann.dest,
-                      text: nearbyText || 'Citation ' + ann.dest,
-                      confidence: nearbyText ? 0.8 : 0.5,
-                      method: 'annotation',
-                      spansPages: false,
-                      destPage: pageNum
+                      citationId: destName,
+                      sourcePage: i,
+                      targetPage: pageIndex + 1,
+                      spansPages: extractionResult.spansPages || spansPages,
+                      xPosition: targetX,
+                      yPosition: targetY,
+                      referenceText: extractionResult.text,
+                      extractionMethod: extractionResult.method,
+                      confidence: extractionResult.confidence,
+                      linesProcessed: extractionResult.linesUsed,
+                      candidatesFound: extractionResult.candidatesFound,
+                      xFilteredFound: extractionResult.xFilteredFound,
+                      thresholds: extractionResult.thresholds,
+                      timestamp: new Date().toISOString(),
                     });
+
+                    console.log('✅ Extracted citation ' + destName + ' (' + extractionResult.method + ', confidence: ' + extractionResult.confidence + (spansPages ? ', spans pages' : '') + '): ' + extractionResult.text.substring(0, 100) + '...');
                   } catch (err) {
-                    // Fallback to simple citation
-                    citations.push({
-                      id: ann.dest,
-                      text: 'Citation ' + ann.dest,
-                      confidence: 0.5,
-                      method: 'annotation',
-                      spansPages: false,
-                      destPage: pageNum
-                    });
+                    console.warn('⚠️ Could not resolve destination ' + ann.dest + ':', err.message);
                   }
                 }
               }
@@ -295,9 +537,28 @@ export async function POST(request: NextRequest) {
 
       // Read the results
       const results = JSON.parse(fs.readFileSync(outputPath, 'utf-8'));
-      const citations: ExtractedCitation[] = results.citations || [];
+      const rawCitations = results.citations || [];
 
-      console.log(`[extractCitations] Extracted ${citations.length} citations`);
+      console.log(`[extractCitations] Extracted ${rawCitations.length} citations`);
+
+      // Map the results to match the exact format from extractCitationReference.js
+      const citations: ExtractedCitation[] = rawCitations.map((citation: any) => ({
+        id: citation.citationId,
+        text: citation.referenceText,
+        confidence: citation.confidence,
+        method: citation.extractionMethod,
+        spansPages: citation.spansPages,
+        destPage: citation.targetPage,
+        // Include additional metadata from the original script
+        sourcePage: citation.sourcePage,
+        xPosition: citation.xPosition,
+        yPosition: citation.yPosition,
+        linesProcessed: citation.linesProcessed,
+        candidatesFound: citation.candidatesFound,
+        xFilteredFound: citation.xFilteredFound,
+        thresholds: citation.thresholds,
+        timestamp: citation.timestamp,
+      }));
 
       // Clean up temp files
       fs.unlinkSync(tempPath);
@@ -314,17 +575,30 @@ export async function POST(request: NextRequest) {
       const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
       const finalOutputPath = path.join(dataDir, `${safeFileName}_${timestamp}.json`);
 
+      // Generate extraction summary exactly like extractCitationReference.js
+      const methodCounts: Record<string, number> = {};
+      let totalConfidence = 0;
+      let highConfidenceCount = 0;
+
+      citations.forEach((citation) => {
+        const method = citation.method || "unknown";
+        methodCounts[method] = (methodCounts[method] || 0) + 1;
+        totalConfidence += citation.confidence || 0;
+        if (citation.confidence > 0.7) {
+          highConfidenceCount++;
+        }
+      });
+
       const extractionData = {
         fileName: file.name,
         fileSize: file.size,
         extractedAt: new Date().toISOString(),
         totalCitations: citations.length,
-        highConfidenceCount: citations.filter((c) => c.confidence > 0.7).length,
-        lowConfidenceCount: citations.filter((c) => c.confidence < 0.5).length,
-        byMethod: citations.reduce((acc, c) => {
-          acc[c.method] = (acc[c.method] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
+        byMethod: methodCounts,
+        averageConfidence: citations.length > 0 ? totalConfidence / citations.length : 0,
+        highConfidenceCount,
+        lowConfidenceCount: citations.filter((c) => (c.confidence || 0) < 0.5).length,
+        multiPageCitations: citations.filter((c) => c.spansPages).length,
         citations: citations,
       };
 
@@ -334,7 +608,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         citations,
         totalCitations: citations.length,
-        highConfidenceCount: citations.filter((c) => c.confidence > 0.7).length,
+        byMethod: methodCounts,
+        averageConfidence: extractionData.averageConfidence,
+        highConfidenceCount,
+        lowConfidenceCount: extractionData.lowConfidenceCount,
+        multiPageCitations: extractionData.multiPageCitations,
         savedToFile: finalOutputPath,
       });
     } catch (error) {
