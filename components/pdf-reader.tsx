@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { CitationSidebar } from "@/components/citation-sidebar"
+import { CitationPopup } from "@/components/citation-popup"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { QAInterface } from "@/components/qa-interface"
 import { BookmarkPanel, type BookmarkItem } from "@/components/bookmark-panel"
@@ -16,6 +17,7 @@ import { ExportDialog } from "@/components/export-dialog"
 import { ImageGallery, mockImages } from "@/components/image-gallery"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractCitations"
 
 interface NavigationTarget {
   page: number
@@ -32,6 +34,7 @@ interface PDFTab {
     answer: string
     timestamp: Date
   }>
+  extractedCitations?: ExtractedCitation[]
 }
 
 export function PDFReader() {
@@ -46,10 +49,73 @@ export function PDFReader() {
   const [qaOpen, setQaOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1) // Track current page for sidebar highlighting
 
+  // Citation popup state
+  const [popupCitation, setPopupCitation] = useState<any>(null)
+  const [citationPopupOpen, setCitationPopupOpen] = useState(false)
+
+  // Citation extraction hook
+  const { extractCitations, getCitationById, loading: extracting, progress } = useExtractCitations()
+
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
+
+  // Handle citation click from PDF viewer
+  const handleCitationClick = (citation: any, event: MouseEvent) => {
+    console.log("[PDFReader] Citation clicked:", citation)
+
+    // Try to get extracted reference text for this citation
+    if (activeTab && activeTab.extractedCitations) {
+      const extractedCitation = activeTab.extractedCitations.find(
+        (c) => c.id === citation.id || citation.text.includes(c.id.replace("cite.", ""))
+      )
+
+      if (extractedCitation) {
+        console.log("[PDFReader] Found extracted reference:", extractedCitation)
+        // Merge extracted reference with citation data
+        citation = {
+          ...citation,
+          extractedText: extractedCitation.text,
+          extractionConfidence: extractedCitation.confidence,
+          extractionMethod: extractedCitation.method,
+        }
+      }
+    }
+
+    setPopupCitation(citation)
+    setCitationPopupOpen(true)
+  }
+
+  // Handle closing citation popup
+  const handleCloseCitationPopup = () => {
+    setCitationPopupOpen(false)
+    setPopupCitation(null)
+  }
+
+  // Handle viewing reference from popup
+  const handleViewReference = (citation: any) => {
+    console.log("[PDFReader] View reference for:", citation)
+    // Could implement navigation to reference section
+  }
+
+  // Handle copying citation text
+  const handleCopyText = (text: string) => {
+    console.log("[PDFReader] Copied text:", text)
+  }
 
   const handleFileSelect = async (file: File) => {
     console.log("[PDF Reader] Upload detected:", file.name)
+
+    // Extract citations from the PDF in the background
+    extractCitations(file).then((result) => {
+      if (result) {
+        console.log("[PDFReader] Extracted", result.totalCitations, "citations")
+        // Update the tab with extracted citations
+        setTabs((prevTabs) =>
+          prevTabs.map((tab) =>
+            tab.file.name === file.name ? { ...tab, extractedCitations: result.citations } : tab
+          )
+        )
+      }
+    })
   
     try {
       // Create a new tab without parsed data
@@ -182,6 +248,7 @@ export function PDFReader() {
                 navigationTarget={navigationTarget}
                 onPageChange={handlePageChange}
                 onSectionSelect={handleSectionSelect} // Pass the bookmark handler
+                onCitationClick={handleCitationClick} // Pass citation click handler
               />
 
               <AnnotationToolbar
@@ -232,7 +299,16 @@ export function PDFReader() {
                 <MessageSquare className="h-6 w-6" />
               </button>
             )}
-            
+
+            {/* Citation Popup with metadata fetching */}
+            <CitationPopup
+              citation={popupCitation}
+              isOpen={citationPopupOpen}
+              onClose={handleCloseCitationPopup}
+              onViewReference={handleViewReference}
+              onCopyText={handleCopyText}
+            />
+
           </>
         )}
       </div>
