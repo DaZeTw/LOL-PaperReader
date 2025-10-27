@@ -249,6 +249,7 @@ export function PDFReader() {
                 onPageChange={handlePageChange}
                 onSectionSelect={handleSectionSelect} // Pass the bookmark handler
                 onCitationClick={handleCitationClick} // Pass citation click handler
+                extractedCitations={activeTab.extractedCitations || []} // Pass extracted citations
               />
 
               <AnnotationToolbar
@@ -289,6 +290,7 @@ export function PDFReader() {
               onCitationSelect={setSelectedCitation}
               isOpen={citationSidebarOpen}
               onToggle={() => setCitationSidebarOpen(!citationSidebarOpen)}
+              extractedCitations={activeTab.extractedCitations}
             />
 
             {!qaOpen && (

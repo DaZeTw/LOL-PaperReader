@@ -1,83 +1,36 @@
-import { type NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
-/**
- * GET /api/citations/list
- * List all saved citation extraction files for debugging
- */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const dataDir = path.join(process.cwd(), "data", "citations");
-
+    const dataDir = path.join(process.cwd(), 'data', 'citations');
+    
+    // Check if directory exists
     if (!fs.existsSync(dataDir)) {
-      return NextResponse.json({
-        files: [],
-        message: "No extractions found yet",
-      });
+      return NextResponse.json({ files: [] });
     }
 
-    const files = fs
-      .readdirSync(dataDir)
-      .filter((file) => file.endsWith(".json"))
-      .map((file) => {
+    // Read all JSON files in the citations directory
+    const files = fs.readdirSync(dataDir)
+      .filter(file => file.endsWith('.json'))
+      .map(file => {
         const filePath = path.join(dataDir, file);
         const stats = fs.statSync(filePath);
-        const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-
         return {
-          filename: file,
-          path: filePath,
+          name: file,
           size: stats.size,
-          createdAt: stats.birthtime,
-          modifiedAt: stats.mtime,
-          pdfFileName: content.fileName,
-          totalCitations: content.totalCitations,
-          highConfidenceCount: content.highConfidenceCount,
-          extractedAt: content.extractedAt,
+          modified: stats.mtime.toISOString(),
+          path: filePath
         };
       })
-      .sort((a, b) => b.modifiedAt.getTime() - a.modifiedAt.getTime()); // Most recent first
+      .sort((a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime()); // Most recent first
 
-    return NextResponse.json({
-      files,
-      total: files.length,
-    });
+    return NextResponse.json({ files });
   } catch (error) {
-    console.error("[listCitations] Error:", error);
+    console.error('Error listing citation files:', error);
     return NextResponse.json(
-      { error: "Failed to list citation files" },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * GET /api/citations/list?file={filename}
- * Get content of a specific extraction file
- */
-export async function POST(request: NextRequest) {
-  try {
-    const { filename } = await request.json();
-
-    if (!filename) {
-      return NextResponse.json({ error: "Filename is required" }, { status: 400 });
-    }
-
-    const dataDir = path.join(process.cwd(), "data", "citations");
-    const filePath = path.join(dataDir, filename);
-
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ error: "File not found" }, { status: 404 });
-    }
-
-    const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-
-    return NextResponse.json(content);
-  } catch (error) {
-    console.error("[getCitationFile] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to read citation file" },
+      { error: 'Failed to list citation files' },
       { status: 500 }
     );
   }

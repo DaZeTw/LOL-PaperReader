@@ -1,10 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { BookOpen, ExternalLink, X, ChevronDown, ChevronUp } from "lucide-react"
+import { BookOpen, ExternalLink, X, ChevronDown, ChevronUp, Bug } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import CitationList from "./CitationList"
+import CitationDebugger from "./CitationDebugger"
+import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractCitations"
 
 interface Citation {
   id: string
@@ -23,6 +26,7 @@ interface CitationSidebarProps {
   onCitationSelect: (citation: Citation | null) => void
   isOpen?: boolean
   onToggle?: () => void
+  extractedCitations?: ExtractedCitation[]
 }
 
 const mockCitations: Citation[] = [
@@ -82,8 +86,16 @@ const mockCitations: Citation[] = [
   },
 ]
 
-export function CitationSidebar({ selectedCitation, onCitationSelect, isOpen = true, onToggle }: CitationSidebarProps) {
+export function CitationSidebar({ 
+  selectedCitation, 
+  onCitationSelect, 
+  isOpen = true, 
+  onToggle,
+  extractedCitations = []
+}: CitationSidebarProps) {
   const [expandedCitation, setExpandedCitation] = useState<string | null>(null)
+  const [showExtracted, setShowExtracted] = useState(true)
+  const [debugMode, setDebugMode] = useState(false)
 
   return (
     <>
@@ -107,7 +119,9 @@ export function CitationSidebar({ selectedCitation, onCitationSelect, isOpen = t
               <h2 className="font-mono text-sm font-medium text-foreground">References</h2>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-muted-foreground">{mockCitations.length} citations</span>
+              <span className="font-mono text-xs text-muted-foreground">
+                {showExtracted ? extractedCitations.length : mockCitations.length} citations
+              </span>
               {onToggle && (
                 <button onClick={onToggle} className="rounded p-1.5 transition-colors hover:bg-muted">
                   <ChevronUp className="h-4 w-4 -rotate-90 text-muted-foreground" />
@@ -115,6 +129,50 @@ export function CitationSidebar({ selectedCitation, onCitationSelect, isOpen = t
               )}
             </div>
           </div>
+          
+          {/* Toggle between extracted and mock citations */}
+          {extractedCitations.length > 0 && (
+            <div className="mt-2 space-y-2">
+              <div className="flex rounded-md bg-muted p-1">
+                <button
+                  onClick={() => setShowExtracted(true)}
+                  className={cn(
+                    "flex-1 rounded px-2 py-1 text-xs font-medium transition-colors",
+                    showExtracted 
+                      ? "bg-background text-foreground shadow-sm" 
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Extracted ({extractedCitations.length})
+                </button>
+                <button
+                  onClick={() => setShowExtracted(false)}
+                  className={cn(
+                    "flex-1 rounded px-2 py-1 text-xs font-medium transition-colors",
+                    !showExtracted 
+                      ? "bg-background text-foreground shadow-sm" 
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Sample ({mockCitations.length})
+                </button>
+              </div>
+              
+              {/* Debug Mode Toggle */}
+              <button
+                onClick={() => setDebugMode(!debugMode)}
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded px-2 py-1 text-xs font-medium transition-colors",
+                  debugMode 
+                    ? "bg-orange-100 text-orange-700" 
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                <Bug className="w-3 h-3" />
+                {debugMode ? 'Hide' : 'Show'} Debug Info
+              </button>
+            </div>
+          )}
         </div>
 
       {selectedCitation && (
@@ -158,63 +216,96 @@ export function CitationSidebar({ selectedCitation, onCitationSelect, isOpen = t
       {/* Citations List */}
       <ScrollArea className="flex-1">
         <div className="p-2">
-          {mockCitations.map((citation) => (
-            <div
-              key={citation.id}
-              onClick={() => onCitationSelect(citation)}
-              className={cn(
-                "mb-2 w-full rounded-lg border p-3 text-left transition-all hover:border-primary/50 hover:bg-accent/50 cursor-pointer",
-                selectedCitation?.id === citation.id ? "border-primary bg-accent" : "border-border bg-background/50",
-              )}
-            >
-              <div className="mb-2 flex items-start justify-between gap-2">
-                <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground">
-                  [{citation.number}]
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setExpandedCitation(expandedCitation === citation.id ? null : citation.id)
-                  }}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  {expandedCitation === citation.id ? (
-                    <ChevronUp className="h-3 w-3" />
-                  ) : (
-                    <ChevronDown className="h-3 w-3" />
-                  )}
-                </button>
-              </div>
-
-              <h3
-                className={cn(
-                  "mb-1 text-xs font-medium leading-tight text-foreground",
-                  expandedCitation !== citation.id && "line-clamp-2",
-                )}
-              >
-                {citation.title}
-              </h3>
-
-              <p className="mb-1 text-xs text-muted-foreground">
-                {citation.authors.split(",")[0]} et al. • {citation.year}
-              </p>
-
-              <p className="text-xs italic text-muted-foreground">{citation.journal}</p>
-
-              {expandedCitation === citation.id && citation.summary && (
-                <p className="mt-2 border-t border-border pt-2 text-xs leading-relaxed text-muted-foreground">
-                  {citation.summary}
-                </p>
-              )}
-
-              {citation.citedBy && (
-                <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                  <BookOpen className="h-3 w-3" />
-                  <span>Cited by {citation.citedBy}</span>
+          {showExtracted && extractedCitations.length > 0 ? (
+            <>
+              <CitationList
+                citations={extractedCitations}
+                onCitationClick={(citation) => {
+                  // Convert extracted citation to the expected format
+                  const mockCitation: Citation = {
+                    id: citation.id,
+                    number: parseInt(citation.id.replace('cite.', '')) || 1,
+                    authors: "Extracted from PDF",
+                    title: citation.text.substring(0, 100) + (citation.text.length > 100 ? "..." : ""),
+                    journal: `Page ${citation.destPage}`,
+                    year: new Date().getFullYear().toString(),
+                    summary: citation.text,
+                  };
+                  onCitationSelect(mockCitation);
+                }}
+                showMetadata={true}
+                className="space-y-2"
+              />
+              
+              {/* Debug Mode */}
+              {debugMode && (
+                <div className="mt-4">
+                  <CitationDebugger 
+                    citations={extractedCitations} 
+                    className="border-t pt-4"
+                  />
                 </div>
               )}
-            </div>
-          ))}
+            </>
+          ) : (
+            mockCitations.map((citation) => (
+              <div
+                key={citation.id}
+                onClick={() => onCitationSelect(citation)}
+                className={cn(
+                  "mb-2 w-full rounded-lg border p-3 text-left transition-all hover:border-primary/50 hover:bg-accent/50 cursor-pointer",
+                  selectedCitation?.id === citation.id ? "border-primary bg-accent" : "border-border bg-background/50",
+                )}
+              >
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground">
+                    [{citation.number}]
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setExpandedCitation(expandedCitation === citation.id ? null : citation.id)
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    {expandedCitation === citation.id ? (
+                      <ChevronUp className="h-3 w-3" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3" />
+                    )}
+                  </button>
+                </div>
+
+                <h3
+                  className={cn(
+                    "mb-1 text-xs font-medium leading-tight text-foreground",
+                    expandedCitation !== citation.id && "line-clamp-2",
+                  )}
+                >
+                  {citation.title}
+                </h3>
+
+                <p className="mb-1 text-xs text-muted-foreground">
+                  {citation.authors.split(",")[0]} et al. • {citation.year}
+                </p>
+
+                <p className="text-xs italic text-muted-foreground">{citation.journal}</p>
+
+                {expandedCitation === citation.id && citation.summary && (
+                  <p className="mt-2 border-t border-border pt-2 text-xs leading-relaxed text-muted-foreground">
+                    {citation.summary}
+                  </p>
+                )}
+
+                {citation.citedBy && (
+                  <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                    <BookOpen className="h-3 w-3" />
+                    <span>Cited by {citation.citedBy}</span>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </ScrollArea>
       </aside>
