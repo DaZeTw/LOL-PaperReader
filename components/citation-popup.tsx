@@ -168,8 +168,13 @@ export function CitationPopup({
             {citation.type}
           </Badge>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose} className="h-6 w-6 p-0">
-          <X className="h-3 w-3" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
+        >
+          <X className="h-5 w-5" />
         </Button>
       </div>
 

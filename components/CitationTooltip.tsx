@@ -68,14 +68,50 @@ export default function CitationTooltip({
       setLoading(true);
       setError(null);
 
-      const response = await fetch("/api/citations/metadata", {
+      // Parse citation text to extract title, authors, year
+      const parseCitation = (text: string) => {
+        const cleanText = text.replace(/^\[\d+\]\s*/, '');
+        const yearMatch = cleanText.match(/\b(19\d{2}|20\d{2})\b/);
+        const year = yearMatch ? parseInt(yearMatch[1]) : undefined;
+        
+        // Extract authors (first part)
+        const parts = cleanText.split('.');
+        const authorsText = parts[0]?.trim() || '';
+        const authors = authorsText ? authorsText.split(/,\s*(?:and\s+)?|(?:\s+and\s+)/i).map(a => a.trim()) : [];
+        
+        // Extract title (after year, before venue)
+        let title = '';
+        if (year) {
+          const afterYear = cleanText.substring(cleanText.indexOf(year.toString()) + 4).trim();
+          const segments = afterYear.split('.').filter(s => s.trim().length > 0);
+          // Title is segments before the last 1-2 segments (venue info)
+          if (segments.length >= 2) {
+            title = segments.slice(0, -2).join('. ').trim();
+          }
+        }
+        
+        if (!title || title.length < 10) {
+          title = parts.slice(2, -2).join('. ').trim();
+        }
+        
+        return { title, authors, year };
+      };
+
+      const parsed = parseCitation(citationText);
+      
+      console.log("[CitationTooltip] Parsed citation:", parsed);
+      
+      // Use the new API route
+      const response = await fetch("/api/references/search", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          citationId,
-          citationText,
+          title: parsed.title || citationText.replace(/^\[\d+\]\s*/, '').substring(0, 100),
+          authors: parsed.authors?.join(", "),
+          year: parsed.year?.toString(),
+          fullCitation: citationText,
         }),
       });
 
@@ -84,8 +120,23 @@ export default function CitationTooltip({
       }
 
       const data = await response.json();
-      setMetadata(data.metadata);
-      onMetadataLoad?.(data.metadata);
+      
+      // Convert API response to CitationMetadata format
+      const metadata: CitationMetadata = {
+        id: citationId,
+        title: data.title || citationText,
+        authors: data.authors || parsed.authors,
+        year: data.year || parsed.year || new Date().getFullYear(),
+        venue: data.venue || data.searchQuery || '',
+        abstract: data.abstract || '',
+        url: data.url || '',
+        doi: data.doi,
+        arxivId: data.arxivId,
+        cachedAt: new Date().toISOString(),
+      };
+      
+      setMetadata(metadata);
+      onMetadataLoad?.(metadata);
     } catch (err) {
       console.error("Failed to fetch citation metadata:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch metadata");
