@@ -15,18 +15,20 @@ interface Citation {
     text: string;
     position?: { x: number; y: number };
     confidence?: number;
+    extractedData?: any; // Full extracted citation data
 }
 
 interface CitationPluginProps {
     onCitationClick?: (citation: Citation, event: MouseEvent) => void;
     pdfUrl?: string; // PDF URL or file path for loading annotations
+    extractedCitations?: any[]; // Extracted citation data from API
 }
 
 // Store valid citation IDs globally
 let validCitationIds: Set<string> = new Set();
 
 export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
-    const { onCitationClick, pdfUrl } = props || {};
+    const { onCitationClick, pdfUrl, extractedCitations = [] } = props || {};
 
     // Load and filter PDF.js annotations on plugin initialization
     const loadPDFAnnotations = async (url: string) => {
@@ -113,21 +115,38 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                     ev.stopPropagation();
                     ev.stopImmediatePropagation();
 
+                    console.log(`🖱️ Citation clicked: ${annotationId}`, ev);
+
                     const rect = anchorLink.getBoundingClientRect();
                     const popupX = rect.left + (rect.width / 2);
                     const popupY = rect.bottom + 10;
 
+                    // Try to find matching extracted citation data
+                    const extractedCitation = extractedCitations.find(extracted => 
+                        extracted.id === annotationId || 
+                        annotationId.includes(extracted.id.replace('cite.', '')) ||
+                        extracted.id.includes(annotationId.replace('cite.', ''))
+                    );
+
+                    console.log(`🔍 Looking for extracted citation for ${annotationId}:`, extractedCitation);
+
                     const citation: Citation = {
                         id: annotationId,
                         type: "reference",
-                        text: anchorLink.textContent || `Citation ${annotationId}`,
+                        text: extractedCitation?.text || anchorLink.textContent || `Citation ${annotationId}`,
                         position: { x: popupX, y: popupY },
-                        confidence: 0.95 // High confidence since it's PDF.js validated
+                        confidence: extractedCitation?.confidence || 0.95,
+                        // Add extracted citation data
+                        extractedData: extractedCitation
                     };
 
+                    console.log(`📋 Citation data:`, citation);
+
                     if (onCitationClick) {
+                        console.log(`📤 Calling onCitationClick handler`);
                         onCitationClick(citation, ev);
                     } else {
+                        console.log(`📱 Showing built-in popup`);
                         showCitationPopup(citation, popupX, popupY);
                     }
                 });
@@ -137,22 +156,27 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                 
                 // Add visual styling for valid citations
                 anchorLink.style.cursor = "pointer";
-                anchorLink.style.borderBottom = "1px dotted #dc2626";
+                anchorLink.style.borderBottom = "2px solid #dc2626";
                 anchorLink.style.color = "#dc2626";
-                anchorLink.style.backgroundColor = "rgba(220, 38, 38, 0.05)";
-                anchorLink.style.padding = "1px 2px";
-                anchorLink.style.borderRadius = "2px";
+                anchorLink.style.backgroundColor = "rgba(220, 38, 38, 0.1)";
+                anchorLink.style.padding = "2px 4px";
+                anchorLink.style.borderRadius = "4px";
                 anchorLink.style.transition = "all 0.2s ease";
+                anchorLink.style.fontWeight = "600";
+                anchorLink.style.textDecoration = "none";
+                anchorLink.title = `Click to view citation details: ${annotationId}`;
                 
                 // Add hover effects
                 anchorLink.addEventListener('mouseenter', () => {
-                    anchorLink.style.backgroundColor = "rgba(220, 38, 38, 0.1)";
-                    anchorLink.style.transform = "translateY(-1px)";
+                    anchorLink.style.backgroundColor = "rgba(220, 38, 38, 0.2)";
+                    anchorLink.style.transform = "translateY(-2px) scale(1.05)";
+                    anchorLink.style.boxShadow = "0 4px 8px rgba(220, 38, 38, 0.3)";
                 });
                 
                 anchorLink.addEventListener('mouseleave', () => {
-                    anchorLink.style.backgroundColor = "rgba(220, 38, 38, 0.05)";
-                    anchorLink.style.transform = "translateY(0)";
+                    anchorLink.style.backgroundColor = "rgba(220, 38, 38, 0.1)";
+                    anchorLink.style.transform = "translateY(0) scale(1)";
+                    anchorLink.style.boxShadow = "none";
                 });
                 
                 // Mark as processed
@@ -261,6 +285,8 @@ function detectCitationType(href: string | null): Citation["type"] {
 }
 
 function showCitationPopup(citation: Citation, x: number, y: number) {
+    console.log(`🎯 Creating citation popup at (${x}, ${y}) for:`, citation);
+    
     // Remove any existing citation popup safely
     const existingPopup = document.querySelector('.citation-popup');
     safeRemoveElement(existingPopup);
@@ -268,14 +294,37 @@ function showCitationPopup(citation: Citation, x: number, y: number) {
     const popup = document.createElement("div");
     popup.className = "citation-popup";
     
-    // Enhanced hardcoded popup content
+    // Use extracted data if available, otherwise fall back to basic info
+    const extractedData = citation.extractedData;
+    const hasExtractedData = extractedData && extractedData.text;
+    
+    // Enhanced popup content with extracted data
     popup.innerHTML = `
         <div class="citation-header">
             <span class="citation-type">${citation.type.toUpperCase()}</span>
             <span class="citation-id">${citation.id}</span>
         </div>
         <div class="citation-content">
-            <div class="citation-text">${citation.text}</div>
+            <div class="citation-text">
+                ${hasExtractedData ? extractedData.text : citation.text}
+            </div>
+            ${hasExtractedData ? `
+                <div class="citation-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Confidence:</span>
+                        <span class="meta-value">${Math.round((extractedData.confidence || 0) * 100)}%</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Method:</span>
+                        <span class="meta-value">${extractedData.method || 'unknown'}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Page:</span>
+                        <span class="meta-value">${extractedData.destPage || 'unknown'}</span>
+                    </div>
+                    ${extractedData.spansPages ? '<div class="meta-item"><span class="meta-label">Multi-page:</span><span class="meta-value">Yes</span></div>' : ''}
+                </div>
+            ` : ''}
             <div class="citation-actions">
                 <button class="citation-btn">View Reference</button>
                 <button class="citation-btn">Copy</button>
@@ -287,16 +336,18 @@ function showCitationPopup(citation: Citation, x: number, y: number) {
     popup.style.position = "fixed";
     popup.style.left = `${Math.max(10, Math.min(x - 150, window.innerWidth - 320))}px`; // Center popup horizontally
     popup.style.top = `${Math.min(y, window.innerHeight - 150)}px`; // Position below citation
-    popup.style.width = "300px";
-    popup.style.padding = "16px";
+    popup.style.width = "320px";
+    popup.style.padding = "20px";
     popup.style.background = "#ffffff";
-    popup.style.border = "1px solid #e5e7eb";
+    popup.style.border = "2px solid #dc2626";
     popup.style.borderRadius = "12px";
-    popup.style.zIndex = "10000";
-    popup.style.boxShadow = "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)";
+    popup.style.zIndex = "99999";
+    popup.style.boxShadow = "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)";
     popup.style.fontSize = "14px";
     popup.style.fontFamily = "system-ui, -apple-system, sans-serif";
     popup.style.color = "#374151";
+    popup.style.transform = "scale(1.05)";
+    popup.style.transition = "all 0.2s ease";
 
     // Style the header
     const header = popup.querySelector('.citation-header') as HTMLElement;
@@ -335,7 +386,39 @@ function showCitationPopup(citation: Citation, x: number, y: number) {
         textEl.style.marginBottom = "12px";
         textEl.style.fontWeight = "500";
         textEl.style.lineHeight = "1.4";
+        textEl.style.maxHeight = "200px";
+        textEl.style.overflowY = "auto";
     }
+
+    // Style the metadata section
+    const metaEl = popup.querySelector('.citation-meta') as HTMLElement;
+    if (metaEl) {
+        metaEl.style.marginBottom = "12px";
+        metaEl.style.padding = "8px";
+        metaEl.style.backgroundColor = "#f8fafc";
+        metaEl.style.borderRadius = "6px";
+        metaEl.style.fontSize = "12px";
+    }
+
+    // Style meta items
+    popup.querySelectorAll('.meta-item').forEach((item) => {
+        const metaItem = item as HTMLElement;
+        metaItem.style.display = "flex";
+        metaItem.style.justifyContent = "space-between";
+        metaItem.style.marginBottom = "4px";
+        
+        const label = metaItem.querySelector('.meta-label') as HTMLElement;
+        if (label) {
+            label.style.fontWeight = "600";
+            label.style.color = "#6b7280";
+        }
+        
+        const value = metaItem.querySelector('.meta-value') as HTMLElement;
+        if (value) {
+            value.style.color = "#374151";
+            value.style.fontWeight = "500";
+        }
+    });
 
     // Style the actions
     const actionsEl = popup.querySelector('.citation-actions') as HTMLElement;

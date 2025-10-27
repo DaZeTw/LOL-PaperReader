@@ -26,6 +26,7 @@ interface PDFViewerProps {
   onPageChange?: (page: number) => void
   onSectionSelect?: (bookmark: any) => void
   onCitationClick?: (citation: any, event: MouseEvent) => void
+  extractedCitations?: any[] // Extracted citation data
 }
 
 export function PDFViewer({
@@ -35,6 +36,7 @@ export function PDFViewer({
   onPageChange,
   onSectionSelect,
   onCitationClick,
+  extractedCitations = [],
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
   const [numPages, setNumPages] = useState(0)
@@ -50,8 +52,14 @@ export function PDFViewer({
   const thumbnailPluginInstance = thumbnailPlugin()
   const bookmarkPluginInstance = bookmarkPlugin()
   const citationPluginInstance = useCitationPlugin({
-    onCitationClick: onCitationClick,
+    onCitationClick: (citation, event) => {
+      console.log("[PDFViewer] Citation clicked in PDF:", citation);
+      if (onCitationClick) {
+        onCitationClick(citation, event);
+      }
+    },
     pdfUrl: pdfUrl,
+    extractedCitations: extractedCitations,
   });
 
   const { jumpToNextPage, jumpToPreviousPage } = pageNavigationPluginInstance

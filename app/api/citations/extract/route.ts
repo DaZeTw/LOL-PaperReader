@@ -575,6 +575,14 @@ export async function POST(request: NextRequest) {
       const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
       const finalOutputPath = path.join(dataDir, `${safeFileName}_${timestamp}.json`);
 
+      // Check for duplicate citation IDs
+      const citationIds = citations.map(c => c.id);
+      const uniqueIds = new Set(citationIds);
+      if (citationIds.length !== uniqueIds.size) {
+        console.warn(`[API] Found ${citationIds.length - uniqueIds.size} duplicate citation IDs:`, 
+          citationIds.filter((id, index) => citationIds.indexOf(id) !== index));
+      }
+
       // Generate extraction summary exactly like extractCitationReference.js
       const methodCounts: Record<string, number> = {};
       let totalConfidence = 0;
