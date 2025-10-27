@@ -50,7 +50,8 @@ export function PDFViewer({
   const thumbnailPluginInstance = thumbnailPlugin()
   const bookmarkPluginInstance = bookmarkPlugin()
   const citationPluginInstance = useCitationPlugin({
-    onCitationClick: onCitationClick
+    onCitationClick: onCitationClick,
+    pdfUrl: pdfUrl,
   });
 
   const { jumpToNextPage, jumpToPreviousPage } = pageNavigationPluginInstance

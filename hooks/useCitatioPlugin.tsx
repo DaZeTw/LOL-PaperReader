@@ -1,5 +1,8 @@
-// src/plugins/useCitationPlugin.tsx
 import { Plugin } from "@react-pdf-viewer/core";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+
+// Required for PDF.js to work in browser environments
+GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
 
 interface PluginRenderEvent {
     container?: HTMLElement;
@@ -16,50 +19,112 @@ interface Citation {
 
 interface CitationPluginProps {
     onCitationClick?: (citation: Citation, event: MouseEvent) => void;
+    pdfUrl?: string; // PDF URL or file path for loading annotations
 }
 
-export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
-    const { onCitationClick } = props || {};
+// Store valid citation IDs globally
+let validCitationIds: Set<string> = new Set();
 
-    return {        onAnnotationLayerRender: (e: PluginRenderEvent) => {
-            // Use either container or ele property (different versions may use different names)
+export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
+    const { onCitationClick, pdfUrl } = props || {};
+
+    // Load and filter PDF.js annotations on plugin initialization
+    const loadPDFAnnotations = async (url: string) => {
+        try {
+            const pdf = await getDocument(url).promise;
+            const allValidIds = new Set<string>();
+
+            // Process all pages
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const annotations = await page.getAnnotations();
+
+                // Filter for citation annotations only
+                const citationAnnotations = annotations.filter((ann: any) => 
+                    ann.subtype === "Link" && 
+                    typeof ann.dest === "string" && 
+                    ann.dest.startsWith("cite.")
+                );
+
+                // Extract IDs and store them
+                citationAnnotations.forEach((ann: any) => {
+                    if (ann.id) {
+                        allValidIds.add(ann.id);
+                        console.log(`✓ Valid citation found: ${ann.id} -> ${ann.dest}`);
+                    }
+                });
+            }
+
+            validCitationIds = allValidIds;
+            console.log(`📚 Loaded ${validCitationIds.size} valid citation IDs`);
+            
+        } catch (error) {
+            console.error("Failed to load PDF annotations:", error);
+        }
+    };
+
+    // Initialize PDF annotations if URL is provided
+    if (pdfUrl) {
+        loadPDFAnnotations(pdfUrl);
+    }
+
+    return {
+        onDocumentLoad: async (e: any) => {
+            // If PDF URL wasn't provided in props, try to get it from the document
+            if (!pdfUrl && e.doc) {
+                try {
+                    // Attempt to extract PDF source and load annotations
+                    const pdfSource = e.doc.loadingTask?.source;
+                    if (pdfSource) {
+                        await loadPDFAnnotations(pdfSource);
+                    }
+                } catch (error) {
+                    console.warn("Could not auto-load PDF annotations:", error);
+                }
+            }
+        },
+
+        onAnnotationLayerRender: (e: PluginRenderEvent) => {
             const annotationLayer = e.container || e.ele;
             if (!annotationLayer) return;
 
-            // Find only citation links - those with data-annotation-link attribute
+            // Find all annotation links
             const citationLinks = annotationLayer.querySelectorAll("a[data-annotation-link]");
             
             citationLinks.forEach((link: Element) => {
                 const anchorLink = link as HTMLAnchorElement;
                 const annotationId = anchorLink.getAttribute("data-annotation-link");
-                const originalHref = anchorLink.getAttribute("href");
                 
-                // Skip if this is not a citation link or already processed
-                if (!annotationId || anchorLink.getAttribute("data-citation-processed") === "true") {
+                // Skip if already processed
+                if (anchorLink.getAttribute("data-citation-processed") === "true") {
                     return;
                 }
-                
+
+                // ✨ KEY FILTER: Only process if this ID is in our valid citations list
+                if (!annotationId || !validCitationIds.has(annotationId)) {
+                    console.log(`❌ Skipping non-citation link: ${annotationId}`);
+                    return;
+                }
+
+                console.log(`✅ Processing valid citation: ${annotationId}`);
+
                 anchorLink.addEventListener("click", (ev: MouseEvent) => {
-                    // Always prevent default navigation behavior
                     ev.preventDefault();
                     ev.stopPropagation();
                     ev.stopImmediatePropagation();
 
-                    // Get the element's position for popup placement
                     const rect = anchorLink.getBoundingClientRect();
-                    const popupX = rect.left + (rect.width / 2); // Center horizontally
-                    const popupY = rect.bottom + 10; // Position below the citation
+                    const popupX = rect.left + (rect.width / 2);
+                    const popupY = rect.bottom + 10;
 
-                    // Create citation object from link
                     const citation: Citation = {
                         id: annotationId,
-                        type: "reference", // Annotation links are typically references
-                        text: anchorLink.textContent || `Citation ${annotationId}` || "Unknown citation",
+                        type: "reference",
+                        text: anchorLink.textContent || `Citation ${annotationId}`,
                         position: { x: popupX, y: popupY },
-                        confidence: 0.9
+                        confidence: 0.95 // High confidence since it's PDF.js validated
                     };
 
-                    // Use callback if provided, otherwise show basic popup
                     if (onCitationClick) {
                         onCitationClick(citation, ev);
                     } else {
@@ -67,10 +132,10 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                     }
                 });
 
-                // Remove href to prevent any navigation
+                // Remove href to prevent navigation
                 anchorLink.removeAttribute("href");
                 
-                // Add visual indication that this is a clickable citation
+                // Add visual styling for valid citations
                 anchorLink.style.cursor = "pointer";
                 anchorLink.style.borderBottom = "1px dotted #dc2626";
                 anchorLink.style.color = "#dc2626";
@@ -79,7 +144,7 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                 anchorLink.style.borderRadius = "2px";
                 anchorLink.style.transition = "all 0.2s ease";
                 
-                // Add hover effect
+                // Add hover effects
                 anchorLink.addEventListener('mouseenter', () => {
                     anchorLink.style.backgroundColor = "rgba(220, 38, 38, 0.1)";
                     anchorLink.style.transform = "translateY(-1px)";
@@ -90,67 +155,65 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                     anchorLink.style.transform = "translateY(0)";
                 });
                 
-                // Mark as processed and add data attributes
+                // Mark as processed
                 anchorLink.setAttribute("data-citation-processed", "true");
                 anchorLink.setAttribute("data-citation", "true");
                 anchorLink.setAttribute("data-citation-id", annotationId);
             });
-        },onTextLayerRender: (e: PluginRenderEvent) => {
-            // Use either container or ele property (different versions may use different names)
+        },
+
+        // Keep the text layer render for text-based citations (optional)
+        onTextLayerRender: (e: PluginRenderEvent) => {
+            // This can remain for detecting inline citations in text
+            // but will have lower confidence than annotation-based ones
             const textLayer = e.container || e.ele;
             if (!textLayer) return;
 
-            // Enhanced citation detection patterns
-            const citationPatterns = [
-                { pattern: /\[\d+\]/g, type: "reference" as const },
-                { pattern: /\(\w+\s+\d{4}\)/g, type: "inline" as const },
-                { pattern: /\(\w+\s+et\s+al\.\s*,?\s*\d{4}\)/g, type: "inline" as const },
-                { pattern: /doi:\s*[\w\.\-\/]+/gi, type: "doi" as const },
-                { pattern: /https?:\/\/[^\s]+/g, type: "url" as const }
-            ];
-
-            // Only process if we haven't already processed this layer
             if (textLayer.getAttribute('data-citations-processed') === 'true') {
                 return;
             }
+
+            // Only process basic text patterns with lower confidence
+            const citationPatterns = [
+                { pattern: /\[\d+\]/g, type: "reference" as const },
+                { pattern: /\(\w+\s+\d{4}\)/g, type: "inline" as const }
+            ];
 
             let htmlContent = textLayer.innerHTML;
             
             citationPatterns.forEach(({ pattern, type }) => {
                 htmlContent = htmlContent.replace(pattern, (match: string) => {
-                    const id = `cite-${type}-${Math.random().toString(36).substr(2, 9)}`;
+                    const id = `text-cite-${type}-${Math.random().toString(36).substr(2, 9)}`;
                     return `<span class="inline-citation citation-${type}" data-cite="${match}" data-type="${type}" data-id="${id}">${match}</span>`;
                 });
             });
 
             textLayer.innerHTML = htmlContent;
-            textLayer.setAttribute('data-citations-processed', 'true');            // Add click handlers to detected citations
+            textLayer.setAttribute('data-citations-processed', 'true');
+
+            // Add click handlers with lower confidence
             textLayer.querySelectorAll(".inline-citation").forEach((el: Element) => {
                 el.addEventListener("click", (ev: Event) => {
-                    // Prevent any default behavior and scrolling
                     ev.preventDefault();
                     ev.stopPropagation();
-                    ev.stopImmediatePropagation();
                     
                     const cite = el.getAttribute("data-cite");
                     const type = el.getAttribute("data-type") as Citation["type"];
                     const id = el.getAttribute("data-id");
                     const mouseEvent = ev as MouseEvent;
 
-                    // Get the element's position for popup placement
                     const rect = (el as HTMLElement).getBoundingClientRect();
-                    const popupX = rect.left + (rect.width / 2); // Center horizontally
-                    const popupY = rect.bottom + 10; // Position below the citation
+                    const popupX = rect.left + (rect.width / 2);
+                    const popupY = rect.bottom + 10;
 
                     const citation: Citation = {
-                        id: id || `citation-${Date.now()}`,
+                        id: id || `text-citation-${Date.now()}`,
                         type: type || "inline",
-                        text: cite || "Unknown citation",
+                        text: cite || "Text citation",
                         position: { x: popupX, y: popupY },
-                        confidence: 0.7
+                        confidence: 0.6 // Lower confidence for text-based detection
                     };
 
-                    // Use callback if provided, otherwise show basic popup
                     if (onCitationClick) {
                         onCitationClick(citation, mouseEvent);
                     } else {
@@ -158,20 +221,14 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                     }
                 });
 
-                // Add hover styling
+                // Style text-based citations differently
                 (el as HTMLElement).style.cursor = 'pointer';
                 (el as HTMLElement).style.borderBottom = '1px dotted #3b82f6';
                 (el as HTMLElement).style.color = '#3b82f6';
+                (el as HTMLElement).style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+                (el as HTMLElement).style.padding = '1px 2px';
+                (el as HTMLElement).style.borderRadius = '2px';
                 (el as HTMLElement).style.transition = 'all 0.2s ease';
-                
-                // Add hover effect
-                el.addEventListener('mouseenter', () => {
-                    (el as HTMLElement).style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                });
-                
-                el.addEventListener('mouseleave', () => {
-                    (el as HTMLElement).style.backgroundColor = 'transparent';
-                });
             });
         },
     };
