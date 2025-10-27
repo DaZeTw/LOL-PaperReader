@@ -21,33 +21,20 @@ export default function CitationLink({
 }: CitationLinkProps) {
   const { tooltip, showTooltip, hideTooltip, updatePosition, tooltipRef } = useCitationTooltip();
 
-  const handleMouseEnter = (event: React.MouseEvent) => {
-    showTooltip(citationId, citationText, event);
-  };
-
-  const handleMouseMove = (event: React.MouseEvent) => {
-    updatePosition(event);
-  };
-
-  const handleMouseLeave = () => {
-    // Small delay to allow moving to tooltip
-    setTimeout(() => {
-      hideTooltip();
-    }, 100);
-  };
-
   const handleClick = (event: React.MouseEvent) => {
     event.preventDefault();
-    showTooltip(citationId, citationText, event);
+    // Toggle tooltip on click
+    if (tooltip.isVisible && tooltip.citationId === citationId) {
+      hideTooltip();
+    } else {
+      showTooltip(citationId, citationText, event);
+    }
   };
 
   return (
     <>
       <span
         className={`cursor-pointer text-blue-600 hover:text-blue-800 underline decoration-dotted underline-offset-2 transition-colors ${className}`}
-        onMouseEnter={handleMouseEnter}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
         onClick={handleClick}
         role="button"
         tabIndex={0}
