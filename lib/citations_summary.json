@@ -1,10 +1,13 @@
 {
-  "totalCitations": 22,
+  "totalCitations": 183,
   "byMethod": {
-    "numbered": 22
+    "numbered": 167,
+    "numbered-dot": 7,
+    "url": 8,
+    "arxiv": 1
   },
-  "averageConfidence": 0.8000000000000003,
-  "highConfidenceCount": 22,
+  "averageConfidence": 0.7999999999999996,
+  "highConfidenceCount": 183,
   "lowConfidenceCount": 0,
-  "extractionDate": "2025-10-22T03:47:16.982Z"
+  "extractionDate": "2025-10-26T15:54:19.849Z"
 }

@@ -1,0 +1,7711 @@
+{
+  "pageNumber": 10,
+  "totalLines": 156,
+  "extractedAt": "2025-10-26T15:54:19.794Z",
+  "lines": [
+    {
+      "lineIndex": 0,
+      "xPosition": 500.486,
+      "yPosition": 725.549,
+      "text": "Lo and Chang, et al.",
+      "segments": [],
+      "items": [
+        {
+          "str": "Lo and Chang, et al.",
+          "x": 500.486,
+          "y": 725.549,
+          "width": 57.71516880000014,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            500.486,
+            725.549
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 1,
+      "xPosition": 57.041,
+      "yPosition": 698.351,
+      "text": "[43]   Hyeonsu B Kang, Joseph Chee Chang, Yongsung Kim, and Aniket Kittur. 2022.",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 57.041,
+          "y": 698.351,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041,
+            698.351
+          ]
+        },
+        {
+          "str": "[43]",
+          "x": 57.041,
+          "y": 698.351,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041,
+            698.351
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 698.351,
+          "width": 3.9890094094094057,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            698.351
+          ]
+        },
+        {
+          "str": "Hyeonsu B Kang, Joseph Chee Chang, Yongsung Kim, and Aniket Kittur. 2022.",
+          "x": 72.477,
+          "y": 698.351,
+          "width": 222.63886487339994,
+          "height": 6.9738,
+          "transform": [
+            6.9668262,
+            0,
+            0,
+            6.9738,
+            72.477,
+            698.351
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 2,
+      "xPosition": 321.198,
+      "yPosition": 698.351,
+      "text": "[61]   Kyle Lo, Lucy Lu Wang, Mark Neumann, Rodney Kinney, and Daniel Weld. 2020.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[61]",
+          "x": 321.198,
+          "y": 698.351,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            698.351
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 698.351,
+          "width": 4.06634734693883,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            698.351
+          ]
+        },
+        {
+          "str": "Kyle Lo, Lucy Lu Wang, Mark Neumann, Rodney Kinney, and Daniel Weld. 2020.",
+          "x": 336.634,
+          "y": 698.351,
+          "width": 222.64177294799984,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            698.351
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 3,
+      "xPosition": 72.268,
+      "yPosition": 690.381,
+      "text": "Threddy: An Interactive System for Personalized Thread-based Exploration and",
+      "segments": [],
+      "items": [
+        {
+          "str": "Threddy: An Interactive System for Personalized Thread-based Exploration and",
+          "x": 72.268,
+          "y": 690.381,
+          "width": 221.77381379999989,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            72.268,
+            690.381
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 4,
+      "xPosition": 336.634,
+      "yPosition": 690.381,
+      "text": "S2ORC: The Semantic Scholar Open Research Corpus. In   Proceedings of the 58th",
+      "segments": [],
+      "items": [
+        {
+          "str": "S2ORC: The Semantic Scholar Open Research Corpus. In",
+          "x": 336.634,
+          "y": 690.381,
+          "width": 157.94122763999997,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            690.381
+          ]
+        },
+        {
+          "str": " ",
+          "x": 494.5752276400001,
+          "y": 690.381,
+          "width": 1.724257510203972,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            494.5752276400001,
+            690.381
+          ]
+        },
+        {
+          "str": "Proceedings of the 58th",
+          "x": 496.265,
+          "y": 690.381,
+          "width": 61.939478411999815,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            496.265,
+            690.381
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 5,
+      "xPosition": 72.477,
+      "yPosition": 682.411,
+      "text": "Organization of Scientific Literature.   arXiv preprint arXiv:2208.03455   (2022).",
+      "segments": [],
+      "items": [
+        {
+          "str": "Organization of Scientific Literature.",
+          "x": 72.477,
+          "y": 682.411,
+          "width": 104.11186019999997,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            682.411
+          ]
+        },
+        {
+          "str": " ",
+          "x": 176.58886019999997,
+          "y": 682.411,
+          "width": 2.511139800000052,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            176.58886019999997,
+            682.411
+          ]
+        },
+        {
+          "str": "arXiv preprint arXiv:2208.03455",
+          "x": 179.10000000000002,
+          "y": 682.411,
+          "width": 87.57698040000001,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            179.10000000000002,
+            682.411
+          ]
+        },
+        {
+          "str": " ",
+          "x": 266.67698039999993,
+          "y": 682.411,
+          "width": 2.0890196000000856,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            266.67698039999993,
+            682.411
+          ]
+        },
+        {
+          "str": "(2022).",
+          "x": 268.766,
+          "y": 682.411,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            268.766,
+            682.411
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 6,
+      "xPosition": 336.634,
+      "yPosition": 682.411,
+      "text": "Annual Meeting of the Association for Computational Linguistics . Association",
+      "segments": [],
+      "items": [
+        {
+          "str": "Annual Meeting of the Association for Computational Linguistics",
+          "x": 336.634,
+          "y": 682.411,
+          "width": 184.15560236399992,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            682.411
+          ]
+        },
+        {
+          "str": ". Association",
+          "x": 520.787,
+          "y": 682.411,
+          "width": 37.41583175999988,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            520.787,
+            682.411
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 7,
+      "xPosition": 57.041000000000025,
+      "yPosition": 674.441,
+      "text": "[44]   Hyeonsu B Kang, Rafal Kocielnik, Andrew Head, Jiangjiang Yang, Matt Latzke,",
+      "segments": [],
+      "items": [
+        {
+          "str": "[44]",
+          "x": 57.041000000000025,
+          "y": 674.4409999999999,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041000000000025,
+            674.4409999999999
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000004,
+          "y": 674.4409999999999,
+          "width": 4.0131121852970475,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000004,
+            674.4409999999999
+          ]
+        },
+        {
+          "str": "Hyeonsu B Kang, Rafal Kocielnik, Andrew Head, Jiangjiang Yang, Matt Latzke,",
+          "x": 72.477,
+          "y": 674.441,
+          "width": 222.33351704039984,
+          "height": 6.9738,
+          "transform": [
+            6.9249833999999995,
+            0,
+            0,
+            6.9738,
+            72.477,
+            674.441
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 8,
+      "xPosition": 336.634,
+      "yPosition": 674.441,
+      "text": "for Computational Linguistics, Online, 4969–4983.   https://doi.org/10.18653/v1/",
+      "segments": [],
+      "items": [
+        {
+          "str": "for Computational Linguistics, Online, 4969–4983.",
+          "x": 336.634,
+          "y": 674.441,
+          "width": 140.46812765699997,
+          "height": 6.9738,
+          "transform": [
+            6.869193,
+            0,
+            0,
+            6.9738,
+            336.634,
+            674.441
+          ]
+        },
+        {
+          "str": " ",
+          "x": 477.1021276569999,
+          "y": 674.441,
+          "width": 4.379546399999997,
+          "height": 6.9738,
+          "transform": [
+            6.869193,
+            0,
+            0,
+            6.9738,
+            477.1021276569999,
+            674.441
+          ]
+        },
+        {
+          "str": "https://doi.org/10.18653/v1/",
+          "x": 481.4159808609999,
+          "y": 674.441,
+          "width": 77.23720609200001,
+          "height": 6.9738,
+          "transform": [
+            6.869193,
+            0,
+            0,
+            6.9738,
+            481.4159808609999,
+            674.441
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 9,
+      "xPosition": 72.233,
+      "yPosition": 666.471,
+      "text": "Aniket Kittur, Daniel S Weld, Doug Downey, and Jonathan Bragg. 2022. From",
+      "segments": [],
+      "items": [
+        {
+          "str": "Aniket Kittur, Daniel S Weld, Doug Downey, and Jonathan Bragg. 2022. From",
+          "x": 72.233,
+          "y": 666.471,
+          "width": 221.80934531099993,
+          "height": 6.9738,
+          "transform": [
+            7.022616599999999,
+            0,
+            0,
+            6.9738,
+            72.233,
+            666.471
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 10,
+      "xPosition": 336.634,
+      "yPosition": 666.471,
+      "text": "2020.acl-main.447",
+      "segments": [],
+      "items": [
+        {
+          "str": "2020.acl-main.447",
+          "x": 336.634,
+          "y": 666.471,
+          "width": 50.99939940000001,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            666.471
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 11,
+      "xPosition": 72.142,
+      "yPosition": 658.501,
+      "text": "Who You Know to What You Read: Augmenting Scientific Recommendations",
+      "segments": [],
+      "items": [
+        {
+          "str": "Who You Know to What You Read: Augmenting Scientific Recommendations",
+          "x": 72.142,
+          "y": 658.501,
+          "width": 221.90173421339995,
+          "height": 6.9738,
+          "transform": [
+            7.064459399999999,
+            0,
+            0,
+            6.9738,
+            72.142,
+            658.501
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 12,
+      "xPosition": 321.19800000000004,
+      "yPosition": 658.501,
+      "text": "[62]   Kurt Luther, Nathan Hahn, Steven P Dow, and Aniket Kittur. 2015. Crowdlines:",
+      "segments": [],
+      "items": [
+        {
+          "str": "[62]",
+          "x": 321.19800000000004,
+          "y": 658.501,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            658.501
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 658.501,
+          "width": 4.045705989847712,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            658.501
+          ]
+        },
+        {
+          "str": "Kurt Luther, Nathan Hahn, Steven P Dow, and Aniket Kittur. 2015. Crowdlines:",
+          "x": 336.634,
+          "y": 658.501,
+          "width": 222.39012337499992,
+          "height": 6.9738,
+          "transform": [
+            6.869193,
+            0,
+            0,
+            6.9738,
+            336.634,
+            658.501
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 13,
+      "xPosition": 72.219,
+      "yPosition": 650.53,
+      "text": "with Implicit Social Networks. In   Proceedings of the 2022 CHI Conference on",
+      "segments": [],
+      "items": [
+        {
+          "str": "with Implicit Social Networks. In",
+          "x": 72.219,
+          "y": 650.53,
+          "width": 97.66527948,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.219,
+            650.53
+          ]
+        },
+        {
+          "str": " ",
+          "x": 169.88427948000003,
+          "y": 650.53,
+          "width": 2.172275019607806,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            169.88427948000003,
+            650.53
+          ]
+        },
+        {
+          "str": "Proceedings of the 2022 CHI Conference on",
+          "x": 172.1,
+          "y": 650.53,
+          "width": 121.942890468,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            172.1,
+            650.53
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 14,
+      "xPosition": 336.634,
+      "yPosition": 650.53,
+      "text": "Supporting synthesis of diverse information sources through crowdsourced",
+      "segments": [],
+      "items": [
+        {
+          "str": "Supporting synthesis of diverse information sources through crowdsourced",
+          "x": 336.634,
+          "y": 650.53,
+          "width": 221.56432084800008,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            650.53
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 15,
+      "xPosition": 72.477,
+      "yPosition": 642.56,
+      "text": "Human Factors in Computing Systems   (New Orleans, LA, USA)   (CHI ’22) . Asso-",
+      "segments": [],
+      "items": [
+        {
+          "str": "Human Factors in Computing Systems",
+          "x": 72.477,
+          "y": 642.56,
+          "width": 105.69491279999995,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            642.56
+          ]
+        },
+        {
+          "str": " ",
+          "x": 178.17191280000003,
+          "y": 642.56,
+          "width": 1.900087199999973,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            178.17191280000003,
+            642.56
+          ]
+        },
+        {
+          "str": "(New Orleans, LA, USA)",
+          "x": 180.072,
+          "y": 642.56,
+          "width": 69.00575099999999,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            180.072,
+            642.56
+          ]
+        },
+        {
+          "str": " ",
+          "x": 249.077751,
+          "y": 642.56,
+          "width": 1.7412490000000105,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            249.077751,
+            642.56
+          ]
+        },
+        {
+          "str": "(CHI ’22)",
+          "x": 250.81900000000002,
+          "y": 642.56,
+          "width": 25.056863400000026,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            250.81900000000002,
+            642.56
+          ]
+        },
+        {
+          "str": ". Asso-",
+          "x": 275.877,
+          "y": 642.56,
+          "width": 19.345321200000004,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            275.877,
+            642.56
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 16,
+      "xPosition": 336.634,
+      "yPosition": 642.56,
+      "text": "outlines. In   Third AAAI Conference on Human Computation and Crowdsourcing .",
+      "segments": [],
+      "items": [
+        {
+          "str": "outlines. In",
+          "x": 336.634,
+          "y": 642.56,
+          "width": 31.273866623999993,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            642.56
+          ]
+        },
+        {
+          "str": " ",
+          "x": 367.907866624,
+          "y": 642.56,
+          "width": 1.7644218122448907,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            367.907866624,
+            642.56
+          ]
+        },
+        {
+          "str": "Third AAAI Conference on Human Computation and Crowdsourcing",
+          "x": 369.637,
+          "y": 642.56,
+          "width": 185.333198232,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            369.637,
+            642.56
+          ]
+        },
+        {
+          "str": ".",
+          "x": 554.973,
+          "y": 642.56,
+          "width": 1.50355128,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            554.973,
+            642.56
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 17,
+      "xPosition": 72.477,
+      "yPosition": 634.59,
+      "text": "ciation for Computing Machinery, New York, NY, USA, Article 302, 23 pages.",
+      "segments": [],
+      "items": [
+        {
+          "str": "ciation for Computing Machinery, New York, NY, USA, Article 302, 23 pages.",
+          "x": 72.477,
+          "y": 634.59,
+          "width": 222.63842552399993,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            634.59
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 18,
+      "xPosition": 321.198,
+      "yPosition": 634.59,
+      "text": "[63]   Jock D. Mackinlay, Ramana Rao, and Stuart K. Card. 1995. An organic user",
+      "segments": [],
+      "items": [
+        {
+          "str": "[63]",
+          "x": 321.198,
+          "y": 634.59,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            634.59
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 634.59,
+          "width": 3.906882745098091,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            634.59
+          ]
+        },
+        {
+          "str": "Jock D. Mackinlay, Ramana Rao, and Stuart K. Card. 1995. An organic user",
+          "x": 336.634,
+          "y": 634.59,
+          "width": 221.69947309199992,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            634.59
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 19,
+      "xPosition": 72.477,
+      "yPosition": 626.62,
+      "text": "https://doi.org/10.1145/3491102.3517470",
+      "segments": [],
+      "items": [
+        {
+          "str": "https://doi.org/10.1145/3491102.3517470",
+          "x": 72.477,
+          "y": 626.62,
+          "width": 113.14293120000005,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            626.62
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 20,
+      "xPosition": 336.634,
+      "yPosition": 626.62,
+      "text": "interface for searching citation links. In   CHI ’95 .",
+      "segments": [],
+      "items": [
+        {
+          "str": "interface for searching citation links. In",
+          "x": 336.634,
+          "y": 626.62,
+          "width": 112.3200228,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            626.62
+          ]
+        },
+        {
+          "str": " ",
+          "x": 448.9540228000002,
+          "y": 626.62,
+          "width": 1.7439771999997902,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            448.9540228000002,
+            626.62
+          ]
+        },
+        {
+          "str": "CHI ’95",
+          "x": 450.698,
+          "y": 626.62,
+          "width": 20.747054999999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            450.698,
+            626.62
+          ]
+        },
+        {
+          "str": ".",
+          "x": 471.445,
+          "y": 626.62,
+          "width": 1.534236,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            471.445,
+            626.62
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 21,
+      "xPosition": 57.041000000000004,
+      "yPosition": 618.65,
+      "text": "[45]   Taslim Arefin Khan, Dongwook Yoon, and Joanna McGrenere. 2020. Design-",
+      "segments": [],
+      "items": [
+        {
+          "str": "[45]",
+          "x": 57.041000000000004,
+          "y": 618.65,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041000000000004,
+            618.65
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 618.65,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            618.65
+          ]
+        },
+        {
+          "str": "Taslim Arefin Khan, Dongwook Yoon, and Joanna McGrenere. 2020. Design-",
+          "x": 72.477,
+          "y": 618.65,
+          "width": 222.7451246639999,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            618.65
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 22,
+      "xPosition": 321.198,
+      "yPosition": 618.65,
+      "text": "[64]   Daniel Maliniak, Ryan Powers, and Barbara F. Walter. 2013. The Gender Citation",
+      "segments": [],
+      "items": [
+        {
+          "str": "[64]",
+          "x": 321.198,
+          "y": 618.65,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            618.65
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 618.65,
+          "width": 4.06634734693883,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            618.65
+          ]
+        },
+        {
+          "str": "Daniel Maliniak, Ryan Powers, and Barbara F. Walter. 2013. The Gender Citation",
+          "x": 336.634,
+          "y": 618.65,
+          "width": 221.56878408000006,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            618.65
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 23,
+      "xPosition": 72.477,
+      "yPosition": 610.68,
+      "text": "ing an Eyes-Reduced Document Skimming App for Situational Impairments.",
+      "segments": [],
+      "items": [
+        {
+          "str": "ing an Eyes-Reduced Document Skimming App for Situational Impairments.",
+          "x": 72.477,
+          "y": 610.68,
+          "width": 222.63842552399998,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            610.68
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 24,
+      "xPosition": 336.634,
+      "yPosition": 610.68,
+      "text": "Gap in International Relations.   International Organization   67 (2013), 889 – 922.",
+      "segments": [],
+      "items": [
+        {
+          "str": "Gap in International Relations.",
+          "x": 336.634,
+          "y": 610.68,
+          "width": 86.18947315200002,
+          "height": 6.9738,
+          "transform": [
+            6.862219199999999,
+            0,
+            0,
+            6.9738,
+            336.634,
+            610.68
+          ]
+        },
+        {
+          "str": " ",
+          "x": 422.82347315199985,
+          "y": 610.68,
+          "width": 2.5513484227643843,
+          "height": 6.9738,
+          "transform": [
+            6.862219199999999,
+            0,
+            0,
+            6.9738,
+            422.82347315199985,
+            610.68
+          ]
+        },
+        {
+          "str": "International Organization",
+          "x": 425.334,
+          "y": 610.68,
+          "width": 73.2404655216,
+          "height": 6.9738,
+          "transform": [
+            6.862219199999999,
+            0,
+            0,
+            6.9738,
+            425.334,
+            610.68
+          ]
+        },
+        {
+          "str": " ",
+          "x": 498.5744655216,
+          "y": 610.68,
+          "width": 1.7861122747967229,
+          "height": 6.9738,
+          "transform": [
+            6.862219199999999,
+            0,
+            0,
+            6.9738,
+            498.5744655216,
+            610.68
+          ]
+        },
+        {
+          "str": "67 (2013), 889 – 922.",
+          "x": 500.332,
+          "y": 610.68,
+          "width": 56.12609083679988,
+          "height": 6.9738,
+          "transform": [
+            6.862219199999999,
+            0,
+            0,
+            6.9738,
+            500.332,
+            610.68
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 25,
+      "xPosition": 72.477,
+      "yPosition": 602.71,
+      "text": "Proceedings of the 2020 CHI Conference on Human Factors in Computing Systems",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 72.477,
+          "y": 602.71,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            6.8761668,
+            0,
+            0,
+            6.9738,
+            72.477,
+            602.71
+          ]
+        },
+        {
+          "str": "Proceedings of the 2020 CHI Conference on Human Factors in Computing Systems",
+          "x": 72.477,
+          "y": 602.71,
+          "width": 221.57072279640008,
+          "height": 6.9738,
+          "transform": [
+            6.8761668,
+            0,
+            0,
+            6.9738,
+            72.477,
+            602.71
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 26,
+      "xPosition": 321.198,
+      "yPosition": 602.71,
+      "text": "[65]   Richard E. Mayer and Roxana Moreno. 1998. A Cognitive Theory of Multimedia",
+      "segments": [],
+      "items": [
+        {
+          "str": "[65]",
+          "x": 321.198,
+          "y": 602.71,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            602.71
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 602.71,
+          "width": 4.06634734693883,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            602.71
+          ]
+        },
+        {
+          "str": "Richard E. Mayer and Roxana Moreno. 1998. A Cognitive Theory of Multimedia",
+          "x": 336.634,
+          "y": 602.71,
+          "width": 221.56878407999974,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            602.71
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 27,
+      "xPosition": 72.268,
+      "yPosition": 594.74,
+      "text": "(2020).",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 72.268,
+          "y": 594.74,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.268,
+            594.74
+          ]
+        },
+        {
+          "str": "(2020).",
+          "x": 72.268,
+          "y": 594.74,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.268,
+            594.74
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 28,
+      "xPosition": 336.634,
+      "yPosition": 594.74,
+      "text": "Learning: Implications for Design Principles. In   CHI 1998 .",
+      "segments": [],
+      "items": [
+        {
+          "str": "Learning: Implications for Design Principles. In",
+          "x": 336.634,
+          "y": 594.74,
+          "width": 134.83842299999992,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            594.74
+          ]
+        },
+        {
+          "str": " ",
+          "x": 471.4724230000002,
+          "y": 594.74,
+          "width": 1.7445769999997651,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            471.4724230000002,
+            594.74
+          ]
+        },
+        {
+          "str": "CHI 1998",
+          "x": 473.217,
+          "y": 594.74,
+          "width": 25.070810999999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            473.217,
+            594.74
+          ]
+        },
+        {
+          "str": ".",
+          "x": 498.288,
+          "y": 594.74,
+          "width": 1.534236,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            498.288,
+            594.74
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 29,
+      "xPosition": 57.041,
+      "yPosition": 586.77,
+      "text": "[46]   Kandarp Khandwala and Philip J. Guo. 2018. Codemotion: expanding the de-",
+      "segments": [],
+      "items": [
+        {
+          "str": "[46]",
+          "x": 57.041,
+          "y": 586.77,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041,
+            586.77
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 586.77,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            586.77
+          ]
+        },
+        {
+          "str": "Kandarp Khandwala and Philip J. Guo. 2018. Codemotion: expanding the de-",
+          "x": 72.477,
+          "y": 586.77,
+          "width": 222.74512466399995,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            586.77
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 30,
+      "xPosition": 321.198,
+      "yPosition": 586.77,
+      "text": "[66] Richard E. Mayer and Roxana Moreno. 1998. A Split-Attention Effect in Multi-",
+      "segments": [],
+      "items": [
+        {
+          "str": "[66] Richard E. Mayer and Roxana Moreno. 1998. A Split-Attention Effect in Multi-",
+          "x": 321.198,
+          "y": 586.77,
+          "width": 238.18316520000022,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            586.77
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 31,
+      "xPosition": 72.477,
+      "yPosition": 578.799,
+      "text": "sign space of learner interactions with computer programming tutorial videos.",
+      "segments": [],
+      "items": [
+        {
+          "str": "sign space of learner interactions with computer programming tutorial videos.",
+          "x": 72.477,
+          "y": 578.799,
+          "width": 222.6450785291999,
+          "height": 6.9738,
+          "transform": [
+            6.9528786,
+            0,
+            0,
+            6.9738,
+            72.477,
+            578.799
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 32,
+      "xPosition": 336.634,
+      "yPosition": 578.799,
+      "text": "media Learning: Evidence for Dual Processing Systems in Working Memory.",
+      "segments": [],
+      "items": [
+        {
+          "str": "media Learning: Evidence for Dual Processing Systems in Working Memory.",
+          "x": 336.634,
+          "y": 578.799,
+          "width": 222.6384255240001,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            578.799
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 33,
+      "xPosition": 72.477,
+      "yPosition": 570.829,
+      "text": "Proceedings of the Fifth Annual ACM Conference on Learning at Scale   (2018).",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 72.477,
+          "y": 570.829,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            570.829
+          ]
+        },
+        {
+          "str": "Proceedings of the Fifth Annual ACM Conference on Learning at Scale",
+          "x": 72.477,
+          "y": 570.829,
+          "width": 192.616356,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            570.829
+          ]
+        },
+        {
+          "str": " ",
+          "x": 265.09335599999986,
+          "y": 570.829,
+          "width": 1.9086440000001517,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            265.09335599999986,
+            570.829
+          ]
+        },
+        {
+          "str": "(2018).",
+          "x": 267.002,
+          "y": 570.829,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            267.002,
+            570.829
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 34,
+      "xPosition": 336.634,
+      "yPosition": 570.829,
+      "text": "Journal of Educational Psychology   90 (1998), 312–320.",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 336.634,
+          "y": 570.829,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            570.829
+          ]
+        },
+        {
+          "str": "Journal of Educational Psychology",
+          "x": 336.634,
+          "y": 570.829,
+          "width": 95.02499879999998,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            570.829
+          ]
+        },
+        {
+          "str": " ",
+          "x": 431.6589988,
+          "y": 570.829,
+          "width": 2.068001200000026,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            431.6589988,
+            570.829
+          ]
+        },
+        {
+          "str": "90 (1998), 312–320.",
+          "x": 433.72700000000003,
+          "y": 570.829,
+          "width": 53.4472032,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            433.72700000000003,
+            570.829
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 35,
+      "xPosition": 57.041,
+      "yPosition": 562.859,
+      "text": "[47]   Juho Kim, Philip J. Guo, Carrie J. Cai, Shang-Wen Li, Krzysztof Z Gajos, and",
+      "segments": [],
+      "items": [
+        {
+          "str": "[47]",
+          "x": 57.041,
+          "y": 562.8589999999999,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041,
+            562.8589999999999
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 562.8589999999999,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            562.8589999999999
+          ]
+        },
+        {
+          "str": "Juho Kim, Philip J. Guo, Carrie J. Cai, Shang-Wen Li, Krzysztof Z Gajos, and",
+          "x": 72.477,
+          "y": 562.859,
+          "width": 221.564320848,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            562.859
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 36,
+      "xPosition": 321.19800000000004,
+      "yPosition": 562.859,
+      "text": "[67]   Erin C McKiernan, Philip E Bourne, C Titus Brown, Stuart Buck, Amye Kenall,",
+      "segments": [],
+      "items": [
+        {
+          "str": "[67]",
+          "x": 321.19800000000004,
+          "y": 562.8589999999999,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            562.8589999999999
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 562.8589999999999,
+          "width": 4.005045628140699,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            562.8589999999999
+          ]
+        },
+        {
+          "str": "Erin C McKiernan, Philip E Bourne, C Titus Brown, Stuart Buck, Amye Kenall,",
+          "x": 336.634,
+          "y": 562.859,
+          "width": 222.33722710199987,
+          "height": 6.9738,
+          "transform": [
+            6.938931,
+            0,
+            0,
+            6.9738,
+            336.634,
+            562.859
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 37,
+      "xPosition": 72.477,
+      "yPosition": 554.889,
+      "text": "Rob Miller. 2014. Data-driven interaction techniques for improving navigation",
+      "segments": [],
+      "items": [
+        {
+          "str": "Rob Miller. 2014. Data-driven interaction techniques for improving navigation",
+          "x": 72.477,
+          "y": 554.889,
+          "width": 221.56484388299987,
+          "height": 6.9738,
+          "transform": [
+            6.9249833999999995,
+            0,
+            0,
+            6.9738,
+            72.477,
+            554.889
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 38,
+      "xPosition": 336.522,
+      "yPosition": 554.889,
+      "text": "Jennifer Lin, Damon McDougall, Brian A Nosek, Karthik Ram, Courtney K",
+      "segments": [],
+      "items": [
+        {
+          "str": "Jennifer Lin, Damon McDougall, Brian A Nosek, Karthik Ram, Courtney K",
+          "x": 336.522,
+          "y": 554.889,
+          "width": 221.90575809600008,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.522,
+            554.889
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 39,
+      "xPosition": 72.477,
+      "yPosition": 546.919,
+      "text": "of educational videos.   Proceedings of the 27th annual ACM symposium on User",
+      "segments": [],
+      "items": [
+        {
+          "str": "of educational videos.",
+          "x": 72.477,
+          "y": 546.919,
+          "width": 62.24398938899998,
+          "height": 6.9738,
+          "transform": [
+            7.008668999999999,
+            0,
+            0,
+            6.9738,
+            72.477,
+            546.919
+          ]
+        },
+        {
+          "str": " ",
+          "x": 134.72098938899998,
+          "y": 546.919,
+          "width": 2.4845876726368235,
+          "height": 6.9738,
+          "transform": [
+            7.008668999999999,
+            0,
+            0,
+            6.9738,
+            134.72098938899998,
+            546.919
+          ]
+        },
+        {
+          "str": "Proceedings of the 27th annual ACM symposium on User",
+          "x": 137.218,
+          "y": 546.919,
+          "width": 156.82597754399993,
+          "height": 6.9738,
+          "transform": [
+            7.008668999999999,
+            0,
+            0,
+            6.9738,
+            137.218,
+            546.919
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 40,
+      "xPosition": 336.634,
+      "yPosition": 546.919,
+      "text": "Soderberg, et al .   2016. How open science helps researchers succeed.   elife   5",
+      "segments": [],
+      "items": [
+        {
+          "str": "Soderberg, et al",
+          "x": 336.634,
+          "y": 546.919,
+          "width": 45.76681778400002,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            546.919
+          ]
+        },
+        {
+          "str": ".",
+          "x": 382.4,
+          "y": 546.919,
+          "width": 1.534236,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            382.4,
+            546.919
+          ]
+        },
+        {
+          "str": " ",
+          "x": 383.934236,
+          "y": 546.919,
+          "width": 2.046827450980385,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            383.934236,
+            546.919
+          ]
+        },
+        {
+          "str": "2016. How open science helps researchers succeed.",
+          "x": 386.022,
+          "y": 546.919,
+          "width": 151.0575291359999,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            386.022,
+            546.919
+          ]
+        },
+        {
+          "str": " ",
+          "x": 537.0795291360004,
+          "y": 546.919,
+          "width": 3.6945792784309766,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            537.0795291360004,
+            546.919
+          ]
+        },
+        {
+          "str": "elife",
+          "x": 540.848,
+          "y": 546.919,
+          "width": 11.793811608,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            540.848,
+            546.919
+          ]
+        },
+        {
+          "str": " ",
+          "x": 552.6418116079999,
+          "y": 546.919,
+          "width": 2.2080278352942226,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            552.6418116079999,
+            546.919
+          ]
+        },
+        {
+          "str": "5",
+          "x": 554.894,
+          "y": 546.919,
+          "width": 3.3076733399999996,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            554.894,
+            546.919
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 41,
+      "xPosition": 72.477,
+      "yPosition": 538.949,
+      "text": "interface software and technology   (2014).",
+      "segments": [],
+      "items": [
+        {
+          "str": "interface software and technology",
+          "x": 72.477,
+          "y": 538.949,
+          "width": 92.87706839999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            538.949
+          ]
+        },
+        {
+          "str": " ",
+          "x": 165.3540684,
+          "y": 538.949,
+          "width": 2.0679316000000085,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            165.3540684,
+            538.949
+          ]
+        },
+        {
+          "str": "(2014).",
+          "x": 167.422,
+          "y": 538.949,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            167.422,
+            538.949
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 42,
+      "xPosition": 336.425,
+      "yPosition": 538.949,
+      "text": "(2016).",
+      "segments": [],
+      "items": [
+        {
+          "str": "(2016).",
+          "x": 336.425,
+          "y": 538.949,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.425,
+            538.949
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 43,
+      "xPosition": 57.041,
+      "yPosition": 530.979,
+      "text": "[48]   Juho Kim, Phu Tran Nguyen, Sarah A. Weir, Philip J. Guo, Rob Miller, and",
+      "segments": [],
+      "items": [
+        {
+          "str": "[48]",
+          "x": 57.041,
+          "y": 530.9789999999999,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041,
+            530.9789999999999
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 530.9789999999999,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            530.9789999999999
+          ]
+        },
+        {
+          "str": "Juho Kim, Phu Tran Nguyen, Sarah A. Weir, Philip J. Guo, Rob Miller, and",
+          "x": 72.477,
+          "y": 530.979,
+          "width": 221.564320848,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            530.979
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 44,
+      "xPosition": 321.19800000000004,
+      "yPosition": 530.979,
+      "text": "[68]   Gerry McKiernan. 2000. arXiv.org: the Los Alamos National Laboratory e-print",
+      "segments": [],
+      "items": [
+        {
+          "str": "[68]",
+          "x": 321.19800000000004,
+          "y": 530.9789999999999,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            530.9789999999999
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 530.9789999999999,
+          "width": 4.058065580448061,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            530.9789999999999
+          ]
+        },
+        {
+          "str": "Gerry McKiernan. 2000. arXiv.org: the Los Alamos National Laboratory e-print",
+          "x": 336.634,
+          "y": 530.979,
+          "width": 221.56897934639994,
+          "height": 6.9738,
+          "transform": [
+            6.8482715999999995,
+            0,
+            0,
+            6.9738,
+            336.634,
+            530.979
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 45,
+      "xPosition": 72.477,
+      "yPosition": 523.009,
+      "text": "Krzysztof Z Gajos. 2014. Crowdsourcing step-by-step information extraction",
+      "segments": [],
+      "items": [
+        {
+          "str": "Krzysztof Z Gajos. 2014. Crowdsourcing step-by-step information extraction",
+          "x": 72.477,
+          "y": 523.009,
+          "width": 221.56694299680004,
+          "height": 6.9738,
+          "transform": [
+            7.0853808,
+            0,
+            0,
+            6.9738,
+            72.477,
+            523.009
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 46,
+      "xPosition": 336.634,
+      "yPosition": 523.009,
+      "text": "server.   International Journal on Grey Literature   (2000).",
+      "segments": [],
+      "items": [
+        {
+          "str": "server.",
+          "x": 336.634,
+          "y": 523.009,
+          "width": 18.780443400000028,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            523.009
+          ]
+        },
+        {
+          "str": " ",
+          "x": 355.4144434000001,
+          "y": 523.009,
+          "width": 2.5105565999999158,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            355.4144434000001,
+            523.009
+          ]
+        },
+        {
+          "str": "International Journal on Grey Literature",
+          "x": 357.925,
+          "y": 523.009,
+          "width": 111.40645499999998,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            357.925,
+            523.009
+          ]
+        },
+        {
+          "str": " ",
+          "x": 469.331455,
+          "y": 523.009,
+          "width": 1.9075450000000274,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            469.331455,
+            523.009
+          ]
+        },
+        {
+          "str": "(2000).",
+          "x": 471.23900000000003,
+          "y": 523.009,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            471.23900000000003,
+            523.009
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 47,
+      "xPosition": 72.477,
+      "yPosition": 515.039,
+      "text": "to enhance existing how-to videos.   Proceedings of the SIGCHI Conference on",
+      "segments": [],
+      "items": [
+        {
+          "str": "to enhance existing how-to videos.",
+          "x": 72.477,
+          "y": 515.039,
+          "width": 102.09685042799995,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            515.039
+          ]
+        },
+        {
+          "str": " ",
+          "x": 174.57385042800004,
+          "y": 515.039,
+          "width": 3.410930952941132,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            174.57385042800004,
+            515.039
+          ]
+        },
+        {
+          "str": "Proceedings of the SIGCHI Conference on",
+          "x": 178.053,
+          "y": 515.039,
+          "width": 115.98907845600004,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            178.053,
+            515.039
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 48,
+      "xPosition": 321.19800000000004,
+      "yPosition": 515.039,
+      "text": "[69]   Sonia K Murthy, Kyle Lo, Daniel King, Chandra Bhagavatula, Bailey Kuehl,",
+      "segments": [],
+      "items": [
+        {
+          "str": "[69]",
+          "x": 321.19800000000004,
+          "y": 515.039,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            515.039
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 515.039,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            515.039
+          ]
+        },
+        {
+          "str": "Sonia K Murthy, Kyle Lo, Daniel King, Chandra Bhagavatula, Bailey Kuehl,",
+          "x": 336.634,
+          "y": 515.039,
+          "width": 222.33255465600004,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            515.039
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 49,
+      "xPosition": 72.477,
+      "yPosition": 507.068,
+      "text": "Human Factors in Computing Systems   (2014).",
+      "segments": [],
+      "items": [
+        {
+          "str": "Human Factors in Computing Systems",
+          "x": 72.477,
+          "y": 507.068,
+          "width": 105.71583419999995,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            507.068
+          ]
+        },
+        {
+          "str": " ",
+          "x": 178.19283420000002,
+          "y": 507.068,
+          "width": 1.9081657999999777,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            178.19283420000002,
+            507.068
+          ]
+        },
+        {
+          "str": "(2014).",
+          "x": 180.101,
+          "y": 507.068,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            180.101,
+            507.068
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 50,
+      "xPosition": 336.634,
+      "yPosition": 507.068,
+      "text": "Sophie Johnson, Jonathan Borchardt, Daniel S Weld, Tom Hope, and Doug",
+      "segments": [],
+      "items": [
+        {
+          "str": "Sophie Johnson, Jonathan Borchardt, Daniel S Weld, Tom Hope, and Doug",
+          "x": 336.634,
+          "y": 507.068,
+          "width": 221.564320848,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            507.068
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 51,
+      "xPosition": 57.041,
+      "yPosition": 499.098,
+      "text": "[49]   Donald W. King, Carol Tenopir, Songphan Choemprayong, and Lei Wu. 2009.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[49]",
+          "x": 57.041,
+          "y": 499.09799999999996,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041,
+            499.09799999999996
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 499.09799999999996,
+          "width": 3.9222641732283425,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            499.09799999999996
+          ]
+        },
+        {
+          "str": "Donald W. King, Carol Tenopir, Songphan Choemprayong, and Lei Wu. 2009.",
+          "x": 72.477,
+          "y": 499.098,
+          "width": 222.6439208783999,
+          "height": 6.9738,
+          "transform": [
+            7.0853808,
+            0,
+            0,
+            6.9738,
+            72.477,
+            499.098
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 52,
+      "xPosition": 336.634,
+      "yPosition": 499.098,
+      "text": "Downey. 2022. ACCoRD: A Multi-Document Approach to Generating Diverse",
+      "segments": [],
+      "items": [
+        {
+          "str": "Downey. 2022. ACCoRD: A Multi-Document Approach to Generating Diverse",
+          "x": 336.634,
+          "y": 499.098,
+          "width": 221.56690115400002,
+          "height": 6.9738,
+          "transform": [
+            6.9598524,
+            0,
+            0,
+            6.9738,
+            336.634,
+            499.098
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 53,
+      "xPosition": 72.477,
+      "yPosition": 491.128,
+      "text": "Scholarly journal information-seeking and reading patterns of faculty at five",
+      "segments": [],
+      "items": [
+        {
+          "str": "Scholarly journal information-seeking and reading patterns of faculty at five",
+          "x": 72.477,
+          "y": 491.128,
+          "width": 221.56739629379996,
+          "height": 6.9738,
+          "transform": [
+            7.106302199999999,
+            0,
+            0,
+            6.9738,
+            72.477,
+            491.128
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 54,
+      "xPosition": 336.634,
+      "yPosition": 491.128,
+      "text": "Descriptions of Scientific Concepts.   arXiv preprint arXiv:2205.06982   (2022).",
+      "segments": [],
+      "items": [
+        {
+          "str": "Descriptions of Scientific Concepts.",
+          "x": 336.634,
+          "y": 491.128,
+          "width": 100.94575499999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            491.128
+          ]
+        },
+        {
+          "str": " ",
+          "x": 437.5797550000001,
+          "y": 491.128,
+          "width": 2.511244999999917,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            437.5797550000001,
+            491.128
+          ]
+        },
+        {
+          "str": "arXiv preprint arXiv:2205.06982",
+          "x": 440.091,
+          "y": 491.128,
+          "width": 87.57698040000004,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            440.091,
+            491.128
+          ]
+        },
+        {
+          "str": " ",
+          "x": 527.6679804,
+          "y": 491.128,
+          "width": 2.0330195999999887,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            527.6679804,
+            491.128
+          ]
+        },
+        {
+          "str": "(2022).",
+          "x": 529.701,
+          "y": 491.128,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            529.701,
+            491.128
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 55,
+      "xPosition": 72.477,
+      "yPosition": 483.158,
+      "text": "US universities.   Learned Publishing   22 (2009).",
+      "segments": [],
+      "items": [
+        {
+          "str": "US universities.",
+          "x": 72.477,
+          "y": 483.158,
+          "width": 44.30455139999999,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            483.158
+          ]
+        },
+        {
+          "str": " ",
+          "x": 116.78155139999998,
+          "y": 483.158,
+          "width": 2.510448600000018,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            116.78155139999998,
+            483.158
+          ]
+        },
+        {
+          "str": "Learned Publishing",
+          "x": 119.292,
+          "y": 483.158,
+          "width": 53.077591800000015,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            119.292,
+            483.158
+          ]
+        },
+        {
+          "str": " ",
+          "x": 172.36959179999997,
+          "y": 483.158,
+          "width": 2.0184082000000387,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            172.36959179999997,
+            483.158
+          ]
+        },
+        {
+          "str": "22 (2009).",
+          "x": 174.388,
+          "y": 483.158,
+          "width": 26.89097279999999,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            174.388,
+            483.158
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 56,
+      "xPosition": 321.19800000000004,
+      "yPosition": 483.158,
+      "text": "[70]   Preslav I Nakov, Ariel S Schwartz, Marti Hearst, et al .   2004. Citances: Citation",
+      "segments": [],
+      "items": [
+        {
+          "str": "[70]",
+          "x": 321.19800000000004,
+          "y": 483.15799999999996,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            483.15799999999996
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 483.15799999999996,
+          "width": 3.9810393606393575,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            483.15799999999996
+          ]
+        },
+        {
+          "str": "Preslav I Nakov, Ariel S Schwartz, Marti Hearst, et al",
+          "x": 336.634,
+          "y": 483.158,
+          "width": 150.24719449739987,
+          "height": 6.9738,
+          "transform": [
+            6.980773799999999,
+            0,
+            0,
+            6.9738,
+            336.634,
+            483.158
+          ]
+        },
+        {
+          "str": ".",
+          "x": 486.88,
+          "y": 483.158,
+          "width": 1.534236,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            486.88,
+            483.158
+          ]
+        },
+        {
+          "str": " ",
+          "x": 488.414236,
+          "y": 483.158,
+          "width": 1.7440199800199885,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            488.414236,
+            483.158
+          ]
+        },
+        {
+          "str": "2004. Citances: Citation",
+          "x": 490.16,
+          "y": 483.158,
+          "width": 68.04160222859997,
+          "height": 6.9738,
+          "transform": [
+            6.980773799999999,
+            0,
+            0,
+            6.9738,
+            490.16,
+            483.158
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 57,
+      "xPosition": 57.04100000000001,
+      "yPosition": 475.188,
+      "text": "[50]   Rodney Kinney, Chloe Anastasiades, Russell Authur, Iz Beltagy, Jonathan",
+      "segments": [],
+      "items": [
+        {
+          "str": "[50]",
+          "x": 57.04100000000001,
+          "y": 475.188,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.04100000000001,
+            475.188
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000002,
+          "y": 475.188,
+          "width": 3.9068827450980215,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000002,
+            475.188
+          ]
+        },
+        {
+          "str": "Rodney Kinney, Chloe Anastasiades, Russell Authur, Iz Beltagy, Jonathan",
+          "x": 72.477,
+          "y": 475.188,
+          "width": 221.56432084800002,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            475.188
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 58,
+      "xPosition": 336.634,
+      "yPosition": 475.188,
+      "text": "sentences for semantic analysis of bioscience text. In   Proceedings of the SIGIR ,",
+      "segments": [],
+      "items": [
+        {
+          "str": "sentences for semantic analysis of bioscience text. In",
+          "x": 336.634,
+          "y": 475.188,
+          "width": 151.39718109120005,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            336.634,
+            475.188
+          ]
+        },
+        {
+          "str": " ",
+          "x": 488.0311810912,
+          "y": 475.188,
+          "width": 1.7261056411067561,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            488.0311810912,
+            475.188
+          ]
+        },
+        {
+          "str": "Proceedings of the SIGIR",
+          "x": 489.778,
+          "y": 475.188,
+          "width": 67.63894199039991,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            489.778,
+            475.188
+          ]
+        },
+        {
+          "str": ",",
+          "x": 557.416,
+          "y": 475.188,
+          "width": 1.552646832,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            557.416,
+            475.188
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 59,
+      "xPosition": 72.477,
+      "yPosition": 467.218,
+      "text": "Bragg, Alexandra Buraczynski, Isabel Cachola, Stefan Candra, Yoganand Chan-",
+      "segments": [],
+      "items": [
+        {
+          "str": "Bragg, Alexandra Buraczynski, Isabel Cachola, Stefan Candra, Yoganand Chan-",
+          "x": 72.477,
+          "y": 467.218,
+          "width": 222.74836050719986,
+          "height": 6.9738,
+          "transform": [
+            6.8970882,
+            0,
+            0,
+            6.9738,
+            72.477,
+            467.218
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 60,
+      "xPosition": 336.404,
+      "yPosition": 467.218,
+      "text": "Vol. 4. Citeseer, 81–88.",
+      "segments": [],
+      "items": [
+        {
+          "str": "Vol. 4. Citeseer, 81–88.",
+          "x": 336.404,
+          "y": 467.218,
+          "width": 63.649872600000016,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.404,
+            467.218
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 61,
+      "xPosition": 72.477,
+      "yPosition": 459.248,
+      "text": "drasekhar, Arman Cohan, et al .   2023. The Semantic Scholar Open Data Platform.",
+      "segments": [],
+      "items": [
+        {
+          "str": "drasekhar, Arman Cohan, et al",
+          "x": 72.477,
+          "y": 459.248,
+          "width": 84.349226808,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            72.477,
+            459.248
+          ]
+        },
+        {
+          "str": ".",
+          "x": 156.825,
+          "y": 459.248,
+          "width": 1.534236,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            156.825,
+            459.248
+          ]
+        },
+        {
+          "str": " ",
+          "x": 158.35923599999998,
+          "y": 459.248,
+          "width": 1.5405755102041003,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            158.35923599999998,
+            459.248
+          ]
+        },
+        {
+          "str": "2023. The Semantic Scholar Open Data Platform.",
+          "x": 159.869,
+          "y": 459.248,
+          "width": 135.25127195999997,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            159.869,
+            459.248
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 62,
+      "xPosition": 321.198,
+      "yPosition": 459.248,
+      "text": "[71]   Keisuke Okamura. 2019.   Interdisciplinarity revisited: evidence for research",
+      "segments": [],
+      "items": [
+        {
+          "str": "[71]",
+          "x": 321.198,
+          "y": 459.248,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            459.248
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 459.248,
+          "width": 3.906882745098091,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            459.248
+          ]
+        },
+        {
+          "str": "Keisuke Okamura. 2019.",
+          "x": 336.634,
+          "y": 459.248,
+          "width": 70.912248444,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            459.248
+          ]
+        },
+        {
+          "str": " ",
+          "x": 407.54624844400007,
+          "y": 459.248,
+          "width": 4.260991800000021,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            407.54624844400007,
+            459.248
+          ]
+        },
+        {
+          "str": "Interdisciplinarity revisited: evidence for research",
+          "x": 411.8924600800001,
+          "y": 459.248,
+          "width": 146.30586076799997,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            411.8924600800001,
+            459.248
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 63,
+      "xPosition": 72.477,
+      "yPosition": 451.278,
+      "text": "arXiv preprint arXiv:2301.10140   (2023).",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 72.477,
+          "y": 451.278,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            451.278
+          ]
+        },
+        {
+          "str": "arXiv preprint arXiv:2301.10140",
+          "x": 72.477,
+          "y": 451.278,
+          "width": 87.57698040000001,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            451.278
+          ]
+        },
+        {
+          "str": " ",
+          "x": 160.05398039999997,
+          "y": 451.278,
+          "width": 2.0190196000000356,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            160.05398039999997,
+            451.278
+          ]
+        },
+        {
+          "str": "(2023).",
+          "x": 162.073,
+          "y": 451.278,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            162.073,
+            451.278
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 64,
+      "xPosition": 336.634,
+      "yPosition": 451.278,
+      "text": "impact and dynamism.   Palgrave Communications   5, 1 (2019), 1–9.",
+      "segments": [],
+      "items": [
+        {
+          "str": "impact and dynamism.",
+          "x": 336.634,
+          "y": 451.278,
+          "width": 64.6262046,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            451.278
+          ]
+        },
+        {
+          "str": " ",
+          "x": 401.26020460000007,
+          "y": 451.278,
+          "width": 2.5107953999999495,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            401.26020460000007,
+            451.278
+          ]
+        },
+        {
+          "str": "Palgrave Communications",
+          "x": 403.771,
+          "y": 451.278,
+          "width": 72.56936280000001,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            403.771,
+            451.278
+          ]
+        },
+        {
+          "str": " ",
+          "x": 476.3403628,
+          "y": 451.278,
+          "width": 1.9076372000000674,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            476.3403628,
+            451.278
+          ]
+        },
+        {
+          "str": "5, 1 (2019), 1–9.",
+          "x": 478.24800000000005,
+          "y": 451.278,
+          "width": 43.753621199999984,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            478.24800000000005,
+            451.278
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 65,
+      "xPosition": 57.04100000000001,
+      "yPosition": 443.308,
+      "text": "[51]   Aniket Kittur, Andrew M. Peters, Abdigani Diriye, Trupti Telang, and Michael R.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[51]",
+          "x": 57.04100000000001,
+          "y": 443.308,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.04100000000001,
+            443.308
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000002,
+          "y": 443.308,
+          "width": 4.066347346938757,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000002,
+            443.308
+          ]
+        },
+        {
+          "str": "Aniket Kittur, Andrew M. Peters, Abdigani Diriye, Trupti Telang, and Michael R.",
+          "x": 72.477,
+          "y": 443.308,
+          "width": 222.6417729479999,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            72.477,
+            443.308
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 66,
+      "xPosition": 321.19800000000004,
+      "yPosition": 443.308,
+      "text": "[72]   Yulia Otmakhova, Karin Verspoor, Timothy Baldwin, and Jey Han Lau. 2022.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[72]",
+          "x": 321.19800000000004,
+          "y": 443.308,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            443.308
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 443.308,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            443.308
+          ]
+        },
+        {
+          "str": "Yulia Otmakhova, Karin Verspoor, Timothy Baldwin, and Jey Han Lau. 2022.",
+          "x": 336.634,
+          "y": 443.308,
+          "width": 222.6384255239999,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            443.308
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 67,
+      "xPosition": 72.477,
+      "yPosition": 435.337,
+      "text": "Bove. 2013. Costs and Benefits of Structured Information Foraging. In   Proceed-",
+      "segments": [],
+      "items": [
+        {
+          "str": "Bove. 2013. Costs and Benefits of Structured Information Foraging. In",
+          "x": 72.477,
+          "y": 435.337,
+          "width": 197.40956032079998,
+          "height": 6.9738,
+          "transform": [
+            6.9459048,
+            0,
+            0,
+            6.9738,
+            72.477,
+            435.337
+          ]
+        },
+        {
+          "str": " ",
+          "x": 269.88656032079984,
+          "y": 435.337,
+          "width": 1.7393972682732766,
+          "height": 6.9738,
+          "transform": [
+            6.9459048,
+            0,
+            0,
+            6.9738,
+            269.88656032079984,
+            435.337
+          ]
+        },
+        {
+          "str": "Proceed-",
+          "x": 271.619,
+          "y": 435.337,
+          "width": 23.12291707920004,
+          "height": 6.9738,
+          "transform": [
+            6.9459048,
+            0,
+            0,
+            6.9738,
+            271.619,
+            435.337
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 68,
+      "xPosition": 336.425,
+      "yPosition": 435.337,
+      "text": "The patient is more dead than alive: exploring the current state of the multi-",
+      "segments": [],
+      "items": [
+        {
+          "str": "The patient is more dead than alive: exploring the current state of the multi-",
+          "x": 336.425,
+          "y": 435.337,
+          "width": 222.95852294400026,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.425,
+            435.337
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 69,
+      "xPosition": 72.477,
+      "yPosition": 427.367,
+      "text": "ings of the SIGCHI Conference on Human Factors in Computing Systems   (Paris,",
+      "segments": [],
+      "items": [
+        {
+          "str": "ings of the SIGCHI Conference on Human Factors in Computing Systems",
+          "x": 72.477,
+          "y": 427.367,
+          "width": 202.33795872840008,
+          "height": 6.9738,
+          "transform": [
+            7.0993284,
+            0,
+            0,
+            6.9738,
+            72.477,
+            427.367
+          ]
+        },
+        {
+          "str": " ",
+          "x": 274.81495872840003,
+          "y": 427.367,
+          "width": 1.8674275752455591,
+          "height": 6.9738,
+          "transform": [
+            7.0993284,
+            0,
+            0,
+            6.9738,
+            274.81495872840003,
+            427.367
+          ]
+        },
+        {
+          "str": "(Paris,",
+          "x": 276.716,
+          "y": 427.367,
+          "width": 18.096188091600002,
+          "height": 6.9738,
+          "transform": [
+            7.0993284,
+            0,
+            0,
+            6.9738,
+            276.716,
+            427.367
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 70,
+      "xPosition": 336.634,
+      "yPosition": 427.367,
+      "text": "document summarisation of the biomedical literature. In   Proceedings of the 60th",
+      "segments": [],
+      "items": [
+        {
+          "str": "document summarisation of the biomedical literature. In",
+          "x": 336.634,
+          "y": 427.367,
+          "width": 157.6951919759999,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            427.367
+          ]
+        },
+        {
+          "str": " ",
+          "x": 494.329191976,
+          "y": 427.367,
+          "width": 1.7855183918367383,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            494.329191976,
+            427.367
+          ]
+        },
+        {
+          "str": "Proceedings of the 60th",
+          "x": 496.079,
+          "y": 427.367,
+          "width": 62.12400516000011,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            496.079,
+            427.367
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 71,
+      "xPosition": 72.477,
+      "yPosition": 419.397,
+      "text": "France)   (CHI ’13) . Association for Computing Machinery, New York, NY, USA,",
+      "segments": [],
+      "items": [
+        {
+          "str": "France)",
+          "x": 72.477,
+          "y": 419.397,
+          "width": 21.208134760799997,
+          "height": 6.9738,
+          "transform": [
+            7.0016951999999995,
+            0,
+            0,
+            6.9738,
+            72.477,
+            419.397
+          ]
+        },
+        {
+          "str": " ",
+          "x": 93.68513476080001,
+          "y": 419.397,
+          "width": 1.7259613936254932,
+          "height": 6.9738,
+          "transform": [
+            7.0016951999999995,
+            0,
+            0,
+            6.9738,
+            93.68513476080001,
+            419.397
+          ]
+        },
+        {
+          "str": "(CHI ’13)",
+          "x": 95.418,
+          "y": 419.397,
+          "width": 25.143087463199997,
+          "height": 6.9738,
+          "transform": [
+            7.0016951999999995,
+            0,
+            0,
+            6.9738,
+            95.418,
+            419.397
+          ]
+        },
+        {
+          "str": ". Association for Computing Machinery, New York, NY, USA,",
+          "x": 120.565,
+          "y": 419.397,
+          "width": 174.24418674719993,
+          "height": 6.9738,
+          "transform": [
+            7.0016951999999995,
+            0,
+            0,
+            6.9738,
+            120.565,
+            419.397
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 72,
+      "xPosition": 336.634,
+      "yPosition": 419.397,
+      "text": "Annual Meeting of the Association for Computational Linguistics (Volume 1: Long",
+      "segments": [],
+      "items": [
+        {
+          "str": "Annual Meeting of the Association for Computational Linguistics (Volume 1: Long",
+          "x": 336.634,
+          "y": 419.397,
+          "width": 221.56911184860013,
+          "height": 6.9738,
+          "transform": [
+            6.8412977999999995,
+            0,
+            0,
+            6.9738,
+            336.634,
+            419.397
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 73,
+      "xPosition": 72.477,
+      "yPosition": 411.427,
+      "text": "2989–2998.   https://doi.org/10.1145/2470654.2481415",
+      "segments": [],
+      "items": [
+        {
+          "str": "2989–2998.",
+          "x": 72.477,
+          "y": 411.427,
+          "width": 31.29841439999999,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            411.427
+          ]
+        },
+        {
+          "str": " ",
+          "x": 103.77541440000002,
+          "y": 411.427,
+          "width": 5.230350000000001,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            103.77541440000002,
+            411.427
+          ]
+        },
+        {
+          "str": "https://doi.org/10.1145/2470654.2481415",
+          "x": 109.00576440000002,
+          "y": 411.427,
+          "width": 113.14293120000005,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            109.00576440000002,
+            411.427
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 74,
+      "xPosition": 336.634,
+      "yPosition": 411.427,
+      "text": "Papers) . Association for Computational Linguistics, Dublin, Ireland, 5098–5111.",
+      "segments": [],
+      "items": [
+        {
+          "str": "Papers)",
+          "x": 336.634,
+          "y": 411.427,
+          "width": 20.076558999000028,
+          "height": 6.9738,
+          "transform": [
+            6.9110358,
+            0,
+            0,
+            6.9738,
+            336.634,
+            411.427
+          ]
+        },
+        {
+          "str": ". Association for Computational Linguistics, Dublin, Ireland, 5098–5111.",
+          "x": 356.711,
+          "y": 411.427,
+          "width": 202.5624592979999,
+          "height": 6.9738,
+          "transform": [
+            6.9110358,
+            0,
+            0,
+            6.9738,
+            356.711,
+            411.427
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 75,
+      "xPosition": 57.041000000000004,
+      "yPosition": 403.457,
+      "text": "[52]   Rebecca Krosnick. 2015. VideoDoc : combining videos and lecture notes for a",
+      "segments": [],
+      "items": [
+        {
+          "str": "[52]",
+          "x": 57.041000000000004,
+          "y": 403.457,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041000000000004,
+            403.457
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 403.457,
+          "width": 3.945564752475244,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            403.457
+          ]
+        },
+        {
+          "str": "Rebecca Krosnick. 2015. VideoDoc : combining videos and lecture notes for a",
+          "x": 72.477,
+          "y": 403.457,
+          "width": 221.56857486600003,
+          "height": 6.9738,
+          "transform": [
+            7.043538,
+            0,
+            0,
+            6.9738,
+            72.477,
+            403.457
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 76,
+      "xPosition": 336.634,
+      "yPosition": 403.457,
+      "text": "https://doi.org/10.18653/v1/2022.acl-long.350",
+      "segments": [],
+      "items": [
+        {
+          "str": "https://doi.org/10.18653/v1/2022.acl-long.350",
+          "x": 336.634,
+          "y": 403.457,
+          "width": 127.66935660000004,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            403.457
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 77,
+      "xPosition": 72.477,
+      "yPosition": 395.487,
+      "text": "better learning experience.",
+      "segments": [],
+      "items": [
+        {
+          "str": "better learning experience.",
+          "x": 72.477,
+          "y": 395.487,
+          "width": 76.12600079999999,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            395.487
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 78,
+      "xPosition": 321.19800000000004,
+      "yPosition": 395.487,
+      "text": "[73]   Srishti Palani, Aakanksha Naik, Doug Downey, Amy X. Zhang, Jonathan Bragg,",
+      "segments": [],
+      "items": [
+        {
+          "str": "[73]",
+          "x": 321.19800000000004,
+          "y": 395.48699999999997,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            395.48699999999997
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 395.48699999999997,
+          "width": 4.066347346938771,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            395.48699999999997
+          ]
+        },
+        {
+          "str": "Srishti Palani, Aakanksha Naik, Doug Downey, Amy X. Zhang, Jonathan Bragg,",
+          "x": 336.634,
+          "y": 395.487,
+          "width": 222.33422836800003,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            395.487
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 79,
+      "xPosition": 57.041000000000004,
+      "yPosition": 387.517,
+      "text": "[53]   Andrew Kuznetsov, Joseph Chee Chang, Nathan Hahn, Napol Rachatasumrit,",
+      "segments": [],
+      "items": [
+        {
+          "str": "[53]",
+          "x": 57.041000000000004,
+          "y": 387.517,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041000000000004,
+            387.517
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 387.517,
+          "width": 3.9377671936758856,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            387.517
+          ]
+        },
+        {
+          "str": "Andrew Kuznetsov, Joseph Chee Chang, Nathan Hahn, Napol Rachatasumrit,",
+          "x": 72.477,
+          "y": 387.517,
+          "width": 222.33196885679985,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            72.477,
+            387.517
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 80,
+      "xPosition": 336.634,
+      "yPosition": 387.517,
+      "text": "and Joseph Chee Chang. 2023. Relatedly: Scaffolding Literature Reviews with",
+      "segments": [],
+      "items": [
+        {
+          "str": "and Joseph Chee Chang. 2023. Relatedly: Scaffolding Literature Reviews with",
+          "x": 336.634,
+          "y": 387.517,
+          "width": 221.5656598175999,
+          "height": 6.9738,
+          "transform": [
+            7.0295904,
+            0,
+            0,
+            6.9738,
+            336.634,
+            387.517
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 81,
+      "xPosition": 72.477,
+      "yPosition": 379.547,
+      "text": "Bradley Breneisen, Julina Coupland, and Aniket Kittur. 2022.   Fuse: In-Situ",
+      "segments": [],
+      "items": [
+        {
+          "str": "Bradley Breneisen, Julina Coupland, and Aniket Kittur. 2022.",
+          "x": 72.477,
+          "y": 379.547,
+          "width": 179.795164176,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            379.547
+          ]
+        },
+        {
+          "str": " ",
+          "x": 252.272164176,
+          "y": 379.547,
+          "width": 4.6794197999999785,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            252.272164176,
+            379.547
+          ]
+        },
+        {
+          "str": "Fuse: In-Situ",
+          "x": 257.04517237199997,
+          "y": 379.547,
+          "width": 36.996148476000016,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            257.04517237199997,
+            379.547
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 82,
+      "xPosition": 336.634,
+      "yPosition": 379.547,
+      "text": "Existing Related Work Sections. 22 (2023).",
+      "segments": [],
+      "items": [
+        {
+          "str": "Existing Related Work Sections. 22 (2023).",
+          "x": 336.634,
+          "y": 379.547,
+          "width": 119.97028139999998,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            379.547
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 83,
+      "xPosition": 72.477,
+      "yPosition": 371.577,
+      "text": "Sensemaking Support in the Browser. In   Proceedings of the 35th Annual ACM",
+      "segments": [],
+      "items": [
+        {
+          "str": "Sensemaking Support in the Browser. In",
+          "x": 72.477,
+          "y": 371.577,
+          "width": 116.50834760400002,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            371.577
+          ]
+        },
+        {
+          "str": " ",
+          "x": 188.98534760400003,
+          "y": 371.577,
+          "width": 1.7045611725489838,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            188.98534760400003,
+            371.577
+          ]
+        },
+        {
+          "str": "Proceedings of the 35th Annual ACM",
+          "x": 190.724,
+          "y": 371.577,
+          "width": 103.32033389999998,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            190.724,
+            371.577
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 84,
+      "xPosition": 321.19800000000004,
+      "yPosition": 371.577,
+      "text": "[74]   Carole L Palmer, Lauren C Teffeau, and Carrie M Pirmann. 2009. Scholarly",
+      "segments": [],
+      "items": [
+        {
+          "str": "[74]",
+          "x": 321.19800000000004,
+          "y": 371.577,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            371.577
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 371.577,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            371.577
+          ]
+        },
+        {
+          "str": "Carole L Palmer, Lauren C Teffeau, and Carrie M Pirmann. 2009. Scholarly",
+          "x": 336.634,
+          "y": 371.577,
+          "width": 221.74926602399998,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            371.577
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 85,
+      "xPosition": 72.477,
+      "yPosition": 363.606,
+      "text": "Symposium on User Interface Software and Technology   (Bend, OR, USA)   (UIST",
+      "segments": [],
+      "items": [
+        {
+          "str": "Symposium on User Interface Software and Technology",
+          "x": 72.477,
+          "y": 363.606,
+          "width": 154.05933160800004,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            363.606
+          ]
+        },
+        {
+          "str": " ",
+          "x": 226.5363316079999,
+          "y": 363.606,
+          "width": 2.044772933333447,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            226.5363316079999,
+            363.606
+          ]
+        },
+        {
+          "str": "(Bend, OR, USA)",
+          "x": 228.622,
+          "y": 363.606,
+          "width": 47.886574032,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            228.622,
+            363.606
+          ]
+        },
+        {
+          "str": " ",
+          "x": 276.50857403199996,
+          "y": 363.606,
+          "width": 1.7249274196078592,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            276.50857403199996,
+            363.606
+          ]
+        },
+        {
+          "str": "(UIST",
+          "x": 278.268,
+          "y": 363.606,
+          "width": 15.777246168000001,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            278.268,
+            363.606
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 86,
+      "xPosition": 336.634,
+      "yPosition": 363.606,
+      "text": "information practices in the online environment.   Report commissioned by OCLC",
+      "segments": [],
+      "items": [
+        {
+          "str": "information practices in the online environment.",
+          "x": 336.634,
+          "y": 363.606,
+          "width": 135.82535517599996,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            363.606
+          ]
+        },
+        {
+          "str": " ",
+          "x": 472.45935517599975,
+          "y": 363.606,
+          "width": 2.3700457387757505,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            472.45935517599975,
+            363.606
+          ]
+        },
+        {
+          "str": "Report commissioned by OCLC",
+          "x": 474.782,
+          "y": 363.606,
+          "width": 83.41975874399995,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            474.782,
+            363.606
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 87,
+      "xPosition": 71.731,
+      "yPosition": 355.636,
+      "text": "’22) . Association for Computing Machinery, New York, NY, USA, Article 34,",
+      "segments": [],
+      "items": [
+        {
+          "str": "’22)",
+          "x": 71.731,
+          "y": 355.636,
+          "width": 10.449402444,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            71.731,
+            355.636
+          ]
+        },
+        {
+          "str": ". Association for Computing Machinery, New York, NY, USA, Article 34,",
+          "x": 82.18,
+          "y": 355.636,
+          "width": 212.6300461920001,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            82.18,
+            355.636
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 88,
+      "xPosition": 336.634,
+      "yPosition": 355.636,
+      "text": "Research. Published online at: www. oclc. org/programs/publications/reports/2009-",
+      "segments": [],
+      "items": [
+        {
+          "str": "Research. Published online at: www. oclc. org/programs/publications/reports/2009-",
+          "x": 336.634,
+          "y": 355.636,
+          "width": 222.2655643331998,
+          "height": 6.9738,
+          "transform": [
+            6.8970882,
+            0,
+            0,
+            6.9738,
+            336.634,
+            355.636
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 89,
+      "xPosition": 72.317,
+      "yPosition": 347.666,
+      "text": "15 pages.   https://doi.org/10.1145/3526113.3545693",
+      "segments": [],
+      "items": [
+        {
+          "str": "15 pages.",
+          "x": 72.317,
+          "y": 347.666,
+          "width": 25.89371939999999,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.317,
+            347.666
+          ]
+        },
+        {
+          "str": " ",
+          "x": 98.21071939999999,
+          "y": 347.666,
+          "width": 5.230350000000001,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            98.21071939999999,
+            347.666
+          ]
+        },
+        {
+          "str": "https://doi.org/10.1145/3526113.3545693",
+          "x": 103.44106939999999,
+          "y": 347.666,
+          "width": 113.14293120000005,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            103.44106939999999,
+            347.666
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 90,
+      "xPosition": 336.634,
+      "yPosition": 347.666,
+      "text": "02. pdf   (2009).",
+      "segments": [],
+      "items": [
+        {
+          "str": "02. pdf",
+          "x": 336.634,
+          "y": 347.666,
+          "width": 18.522412800000005,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            347.666
+          ]
+        },
+        {
+          "str": " ",
+          "x": 355.15641279999994,
+          "y": 347.666,
+          "width": 3.2015872000000627,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            355.15641279999994,
+            347.666
+          ]
+        },
+        {
+          "str": "(2009).",
+          "x": 358.358,
+          "y": 347.666,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            358.358,
+            347.666
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 91,
+      "xPosition": 57.041,
+      "yPosition": 339.696,
+      "text": "[54]   Shahid Latif, Zhengzhong Zhou, Yoon Kim, Fabian Beck, and Nam Wook Kim.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[54]",
+          "x": 57.041,
+          "y": 339.69599999999997,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041,
+            339.69599999999997
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 339.69599999999997,
+          "width": 3.973101096709867,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            339.69599999999997
+          ]
+        },
+        {
+          "str": "Shahid Latif, Zhengzhong Zhou, Yoon Kim, Fabian Beck, and Nam Wook Kim.",
+          "x": 72.477,
+          "y": 339.696,
+          "width": 222.64198216199992,
+          "height": 6.9738,
+          "transform": [
+            6.994721399999999,
+            0,
+            0,
+            6.9738,
+            72.477,
+            339.696
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 92,
+      "xPosition": 321.198,
+      "yPosition": 339.696,
+      "text": "[75] Soya Park, Jonathan Bragg, Michael Chang, Kevin Larson, and Danielle Bragg.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[75] Soya Park, Jonathan Bragg, Michael Chang, Kevin Larson, and Danielle Bragg.",
+          "x": 321.198,
+          "y": 339.69599999999997,
+          "width": 238.07855820000012,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            339.69599999999997
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 93,
+      "xPosition": 72.477,
+      "yPosition": 331.726,
+      "text": "2021. Kori: Interactive Synthesis of Text and Charts in Data Documents.   IEEE",
+      "segments": [],
+      "items": [
+        {
+          "str": "2021. Kori: Interactive Synthesis of Text and Charts in Data Documents.",
+          "x": 72.477,
+          "y": 331.726,
+          "width": 206.02683392399996,
+          "height": 6.9738,
+          "transform": [
+            7.008668999999999,
+            0,
+            0,
+            6.9738,
+            72.477,
+            331.726
+          ]
+        },
+        {
+          "str": " ",
+          "x": 278.503833924,
+          "y": 331.726,
+          "width": 2.506632911442819,
+          "height": 6.9738,
+          "transform": [
+            7.008668999999999,
+            0,
+            0,
+            6.9738,
+            278.503833924,
+            331.726
+          ]
+        },
+        {
+          "str": "IEEE",
+          "x": 281.023,
+          "y": 331.726,
+          "width": 13.022107001999998,
+          "height": 6.9738,
+          "transform": [
+            7.008668999999999,
+            0,
+            0,
+            6.9738,
+            281.023,
+            331.726
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 94,
+      "xPosition": 336.634,
+      "yPosition": 331.726,
+      "text": "2022. Exploring Team-Sourced Hyperlinks to Address Navigation Challenges",
+      "segments": [],
+      "items": [
+        {
+          "str": "2022. Exploring Team-Sourced Hyperlinks to Address Navigation Challenges",
+          "x": 336.634,
+          "y": 331.726,
+          "width": 221.568574866,
+          "height": 6.9738,
+          "transform": [
+            7.043538,
+            0,
+            0,
+            6.9738,
+            336.634,
+            331.726
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 95,
+      "xPosition": 72.477,
+      "yPosition": 323.756,
+      "text": "Transactions on Visualization and Computer Graphics   PP (2021), 1–1.",
+      "segments": [],
+      "items": [
+        {
+          "str": "Transactions on Visualization and Computer Graphics",
+          "x": 72.477,
+          "y": 323.756,
+          "width": 149.38576979999993,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            323.756
+          ]
+        },
+        {
+          "str": " ",
+          "x": 221.86276979999997,
+          "y": 323.756,
+          "width": 1.9082302000000482,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            221.86276979999997,
+            323.756
+          ]
+        },
+        {
+          "str": "PP (2021), 1–1.",
+          "x": 223.77100000000002,
+          "y": 323.756,
+          "width": 41.53595279999999,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            223.77100000000002,
+            323.756
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 96,
+      "xPosition": 336.634,
+      "yPosition": 323.756,
+      "text": "for Low-Vision Readers of Scientific Papers. In   Proceedings of the 25th ACM",
+      "segments": [],
+      "items": [
+        {
+          "str": "for Low-Vision Readers of Scientific Papers. In",
+          "x": 336.634,
+          "y": 323.756,
+          "width": 136.98035593200012,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            323.756
+          ]
+        },
+        {
+          "str": " ",
+          "x": 473.6143559320003,
+          "y": 323.756,
+          "width": 2.115337321568317,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            473.6143559320003,
+            323.756
+          ]
+        },
+        {
+          "str": "Proceedings of the 25th ACM",
+          "x": 475.772,
+          "y": 323.756,
+          "width": 82.42864228800012,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            475.772,
+            323.756
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 97,
+      "xPosition": 57.041000000000025,
+      "yPosition": 315.786,
+      "text": "[55]   Min Kyung Lee, Sara B. Kiesler, Jodi Forlizzi, Siddhartha S. Srinivasa, and Paul E.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[55]",
+          "x": 57.041000000000025,
+          "y": 315.78599999999994,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041000000000025,
+            315.78599999999994
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000004,
+          "y": 315.78599999999994,
+          "width": 4.066347346938743,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000004,
+            315.78599999999994
+          ]
+        },
+        {
+          "str": "Min Kyung Lee, Sara B. Kiesler, Jodi Forlizzi, Siddhartha S. Srinivasa, and Paul E.",
+          "x": 72.477,
+          "y": 315.786,
+          "width": 222.64177294799987,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            72.477,
+            315.786
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 98,
+      "xPosition": 336.634,
+      "yPosition": 315.786,
+      "text": "Conference On Computer-Supported Cooperative Work And Social Computing .",
+      "segments": [],
+      "items": [
+        {
+          "str": "Conference On Computer-Supported Cooperative Work And Social Computing",
+          "x": 336.634,
+          "y": 315.786,
+          "width": 214.2979002000001,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            315.786
+          ]
+        },
+        {
+          "str": ".",
+          "x": 550.933,
+          "y": 315.786,
+          "width": 1.534236,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            550.933,
+            315.786
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 99,
+      "xPosition": 72.477,
+      "yPosition": 307.816,
+      "text": "Rybski. 2010. Gracefully mitigating breakdowns in robotic services.   2010 5th",
+      "segments": [],
+      "items": [
+        {
+          "str": "Rybski. 2010. Gracefully mitigating breakdowns in robotic services.",
+          "x": 72.477,
+          "y": 307.816,
+          "width": 195.67203107699996,
+          "height": 6.9738,
+          "transform": [
+            7.106302199999999,
+            0,
+            0,
+            6.9738,
+            72.477,
+            307.816
+          ]
+        },
+        {
+          "str": " ",
+          "x": 268.149031077,
+          "y": 307.816,
+          "width": 2.460224654563286,
+          "height": 6.9738,
+          "transform": [
+            7.106302199999999,
+            0,
+            0,
+            6.9738,
+            268.149031077,
+            307.816
+          ]
+        },
+        {
+          "str": "2010 5th",
+          "x": 270.656,
+          "y": 307.816,
+          "width": 23.386840540199973,
+          "height": 6.9738,
+          "transform": [
+            7.106302199999999,
+            0,
+            0,
+            6.9738,
+            270.656,
+            307.816
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 100,
+      "xPosition": 321.198,
+      "yPosition": 307.816,
+      "text": "[76]   Amy Pavel, Colorado Reed, Björn Hartmann, and Maneesh Agrawala. 2014.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[76]",
+          "x": 321.198,
+          "y": 307.816,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            307.816
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 307.816,
+          "width": 3.906882745098091,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            307.816
+          ]
+        },
+        {
+          "str": "Amy Pavel, Colorado Reed, Björn Hartmann, and Maneesh Agrawala. 2014.",
+          "x": 336.634,
+          "y": 307.816,
+          "width": 222.6384255240001,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            307.816
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 101,
+      "xPosition": 72.477,
+      "yPosition": 299.846,
+      "text": "ACM/IEEE International Conference on Human-Robot Interaction (HRI)   (2010),",
+      "segments": [],
+      "items": [
+        {
+          "str": "ACM/IEEE International Conference on Human-Robot Interaction (HRI)",
+          "x": 72.477,
+          "y": 299.846,
+          "width": 201.22035148800003,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            299.846
+          ]
+        },
+        {
+          "str": " ",
+          "x": 273.69735148799987,
+          "y": 299.846,
+          "width": 2.0388710901961953,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            273.69735148799987,
+            299.846
+          ]
+        },
+        {
+          "str": "(2010),",
+          "x": 275.777,
+          "y": 299.846,
+          "width": 19.035126575999996,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            275.777,
+            299.846
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 102,
+      "xPosition": 336.404,
+      "yPosition": 299.846,
+      "text": "Video digests: a browsable, skimmable format for informational lecture videos.",
+      "segments": [],
+      "items": [
+        {
+          "str": "Video digests: a browsable, skimmable format for informational lecture videos.",
+          "x": 336.404,
+          "y": 299.846,
+          "width": 222.87152478900012,
+          "height": 6.9738,
+          "transform": [
+            6.938931,
+            0,
+            0,
+            6.9738,
+            336.404,
+            299.846
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 103,
+      "xPosition": 72.477,
+      "yPosition": 291.875,
+      "text": "203–210.",
+      "segments": [],
+      "items": [
+        {
+          "str": "203–210.",
+          "x": 72.477,
+          "y": 291.875,
+          "width": 24.812780399999998,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            291.875
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 104,
+      "xPosition": 336.634,
+      "yPosition": 291.875,
+      "text": "Proceedings of the 27th annual ACM symposium on User interface software and",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 336.634,
+          "y": 291.875,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            336.634,
+            291.875
+          ]
+        },
+        {
+          "str": "Proceedings of the 27th annual ACM symposium on User interface software and",
+          "x": 336.634,
+          "y": 291.875,
+          "width": 221.56976041200008,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            336.634,
+            291.875
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 105,
+      "xPosition": 57.041000000000004,
+      "yPosition": 283.905,
+      "text": "[56]   Mike Lewis, Yinhan Liu, Naman Goyal, Marjan Ghazvininejad, Abdelrahman",
+      "segments": [],
+      "items": [
+        {
+          "str": "[56]",
+          "x": 57.041000000000004,
+          "y": 283.905,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041000000000004,
+            283.905
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 283.905,
+          "width": 3.9300003944773136,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            283.905
+          ]
+        },
+        {
+          "str": "Mike Lewis, Yinhan Liu, Naman Goyal, Marjan Ghazvininejad, Abdelrahman",
+          "x": 72.477,
+          "y": 283.905,
+          "width": 221.56921645559996,
+          "height": 6.9738,
+          "transform": [
+            7.0714331999999995,
+            0,
+            0,
+            6.9738,
+            72.477,
+            283.905
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 106,
+      "xPosition": 336.634,
+      "yPosition": 283.905,
+      "text": "technology   (2014).",
+      "segments": [],
+      "items": [
+        {
+          "str": "technology",
+          "x": 336.634,
+          "y": 283.905,
+          "width": 29.85483780000001,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            283.905
+          ]
+        },
+        {
+          "str": " ",
+          "x": 366.48883780000006,
+          "y": 283.905,
+          "width": 2.0681621999999606,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            366.48883780000006,
+            283.905
+          ]
+        },
+        {
+          "str": "(2014).",
+          "x": 368.557,
+          "y": 283.905,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            368.557,
+            283.905
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 107,
+      "xPosition": 72.477,
+      "yPosition": 275.935,
+      "text": "Mohamed, Omer Levy, Veselin Stoyanov, and Luke Zettlemoyer. 2020. BART:",
+      "segments": [],
+      "items": [
+        {
+          "str": "Mohamed, Omer Levy, Veselin Stoyanov, and Luke Zettlemoyer. 2020. BART:",
+          "x": 72.477,
+          "y": 275.935,
+          "width": 222.38918191200003,
+          "height": 6.9738,
+          "transform": [
+            7.064459399999999,
+            0,
+            0,
+            6.9738,
+            72.477,
+            275.935
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 108,
+      "xPosition": 321.19800000000004,
+      "yPosition": 275.935,
+      "text": "[77]   Silvio Peroni, Alexander Dutton, Tanya Gray, and David M. Shotton. 2015.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[77]",
+          "x": 321.19800000000004,
+          "y": 275.93499999999995,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            275.93499999999995
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 275.93499999999995,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            275.93499999999995
+          ]
+        },
+        {
+          "str": "Silvio Peroni, Alexander Dutton, Tanya Gray, and David M. Shotton. 2015.",
+          "x": 336.634,
+          "y": 275.935,
+          "width": 222.63842552400007,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            275.935
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 109,
+      "xPosition": 72.477,
+      "yPosition": 267.965,
+      "text": "Denoising Sequence-to-Sequence Pre-training for Natural Language Generation,",
+      "segments": [],
+      "items": [
+        {
+          "str": "Denoising Sequence-to-Sequence Pre-training for Natural Language Generation,",
+          "x": 72.477,
+          "y": 267.965,
+          "width": 222.33422836799986,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            72.477,
+            267.965
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 110,
+      "xPosition": 336.634,
+      "yPosition": 267.965,
+      "text": "Setting our bibliographic references free: towards open citation data.   J. Docu-",
+      "segments": [],
+      "items": [
+        {
+          "str": "Setting our bibliographic references free: towards open citation data.",
+          "x": 336.634,
+          "y": 267.965,
+          "width": 196.9128862847998,
+          "height": 6.9738,
+          "transform": [
+            7.0295904,
+            0,
+            0,
+            6.9738,
+            336.634,
+            267.965
+          ]
+        },
+        {
+          "str": " ",
+          "x": 533.5468862848002,
+          "y": 267.965,
+          "width": 2.5140017015871536,
+          "height": 6.9738,
+          "transform": [
+            7.0295904,
+            0,
+            0,
+            6.9738,
+            533.5468862848002,
+            267.965
+          ]
+        },
+        {
+          "str": "J. Docu-",
+          "x": 536.081,
+          "y": 267.965,
+          "width": 22.818050438400046,
+          "height": 6.9738,
+          "transform": [
+            7.0295904,
+            0,
+            0,
+            6.9738,
+            536.081,
+            267.965
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 111,
+      "xPosition": 72.268,
+      "yPosition": 259.995,
+      "text": "Translation, and Comprehension. In   Proceedings of the 58th Annual Meeting of",
+      "segments": [],
+      "items": [
+        {
+          "str": "Translation, and Comprehension. In",
+          "x": 72.268,
+          "y": 259.995,
+          "width": 103.12096690559999,
+          "height": 6.9738,
+          "transform": [
+            7.0016951999999995,
+            0,
+            0,
+            6.9738,
+            72.268,
+            259.995
+          ]
+        },
+        {
+          "str": " ",
+          "x": 175.38896690560006,
+          "y": 259.995,
+          "width": 1.743060850995969,
+          "height": 6.9738,
+          "transform": [
+            7.0016951999999995,
+            0,
+            0,
+            6.9738,
+            175.38896690560006,
+            259.995
+          ]
+        },
+        {
+          "str": "Proceedings of the 58th Annual Meeting of",
+          "x": 177.139,
+          "y": 259.995,
+          "width": 116.90730475440006,
+          "height": 6.9738,
+          "transform": [
+            7.0016951999999995,
+            0,
+            0,
+            6.9738,
+            177.139,
+            259.995
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 112,
+      "xPosition": 336.634,
+      "yPosition": 259.995,
+      "text": "mentation   71 (2015), 253–277.",
+      "segments": [],
+      "items": [
+        {
+          "str": "mentation",
+          "x": 336.634,
+          "y": 259.995,
+          "width": 28.195073399999995,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            259.995
+          ]
+        },
+        {
+          "str": " ",
+          "x": 364.8290733999999,
+          "y": 259.995,
+          "width": 1.7609266000001185,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            364.8290733999999,
+            259.995
+          ]
+        },
+        {
+          "str": "71 (2015), 253–277.",
+          "x": 366.59000000000003,
+          "y": 259.995,
+          "width": 53.4472032,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            366.59000000000003,
+            259.995
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 113,
+      "xPosition": 72.477,
+      "yPosition": 252.025,
+      "text": "the Association for Computational Linguistics . Association for Computational",
+      "segments": [],
+      "items": [
+        {
+          "str": "the Association for Computational Linguistics",
+          "x": 72.477,
+          "y": 252.025,
+          "width": 128.72184249599997,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            252.025
+          ]
+        },
+        {
+          "str": ". Association for Computational",
+          "x": 201.196,
+          "y": 252.025,
+          "width": 92.84959162799997,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            201.196,
+            252.025
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 114,
+      "xPosition": 321.19800000000004,
+      "yPosition": 252.025,
+      "text": "[78]   Simon Philip, Peter Bamidele Shola, and Abari Ovye John. 2014. Application",
+      "segments": [],
+      "items": [
+        {
+          "str": "[78]",
+          "x": 321.19800000000004,
+          "y": 252.025,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            252.025
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 252.025,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            252.025
+          ]
+        },
+        {
+          "str": "Simon Philip, Peter Bamidele Shola, and Abari Ovye John. 2014. Application",
+          "x": 336.634,
+          "y": 252.025,
+          "width": 221.56432084800008,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            252.025
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 115,
+      "xPosition": 72.477,
+      "yPosition": 244.055,
+      "text": "Linguistics, Online, 7871–7880.   https://doi.org/10.18653/v1/2020.acl-main.703",
+      "segments": [],
+      "items": [
+        {
+          "str": "Linguistics, Online, 7871–7880.",
+          "x": 72.477,
+          "y": 244.055,
+          "width": 87.956180775,
+          "height": 6.9738,
+          "transform": [
+            6.9668262,
+            0,
+            0,
+            6.9738,
+            72.477,
+            244.055
+          ]
+        },
+        {
+          "str": " ",
+          "x": 160.43318077499998,
+          "y": 244.055,
+          "width": 4.2540179999999905,
+          "height": 6.9738,
+          "transform": [
+            6.9668262,
+            0,
+            0,
+            6.9738,
+            160.43318077499998,
+            244.055
+          ]
+        },
+        {
+          "str": "https://doi.org/10.18653/v1/2020.acl-main.703",
+          "x": 164.68294475699997,
+          "y": 244.055,
+          "width": 129.29036061960002,
+          "height": 6.9738,
+          "transform": [
+            6.9668262,
+            0,
+            0,
+            6.9738,
+            164.68294475699997,
+            244.055
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 116,
+      "xPosition": 336.634,
+      "yPosition": 244.055,
+      "text": "of Content-Based Approach in Research Paper Recommendation System for",
+      "segments": [],
+      "items": [
+        {
+          "str": "of Content-Based Approach in Research Paper Recommendation System for",
+          "x": 336.634,
+          "y": 244.055,
+          "width": 221.69947309200006,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            244.055
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 117,
+      "xPosition": 57.041,
+      "yPosition": 236.085,
+      "text": "[57]   Ching Liu, Juho Kim, and Hao-Chuan Wang. 2018. ConceptScape: Collaborative",
+      "segments": [],
+      "items": [
+        {
+          "str": "[57]",
+          "x": 57.041,
+          "y": 236.085,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041,
+            236.085
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 236.085,
+          "width": 4.066347346938771,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            236.085
+          ]
+        },
+        {
+          "str": "Ching Liu, Juho Kim, and Hao-Chuan Wang. 2018. ConceptScape: Collaborative",
+          "x": 72.477,
+          "y": 236.085,
+          "width": 221.56878407999994,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            72.477,
+            236.085
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 118,
+      "xPosition": 336.634,
+      "yPosition": 236.085,
+      "text": "a Digital Library.   International Journal of Advanced Computer Science and",
+      "segments": [],
+      "items": [
+        {
+          "str": "a Digital Library.",
+          "x": 336.634,
+          "y": 236.085,
+          "width": 50.78879063999997,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            236.085
+          ]
+        },
+        {
+          "str": " ",
+          "x": 387.42279064000013,
+          "y": 236.085,
+          "width": 5.358048392156713,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            387.42279064000013,
+            236.085
+          ]
+        },
+        {
+          "str": "International Journal of Advanced Computer Science and",
+          "x": 392.888,
+          "y": 236.085,
+          "width": 165.31253424000008,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            392.888,
+            236.085
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 119,
+      "xPosition": 72.477,
+      "yPosition": 228.115,
+      "text": "Concept Mapping for Video Learning.   Proceedings of the 2018 CHI Conference",
+      "segments": [],
+      "items": [
+        {
+          "str": "Concept Mapping for Video Learning.",
+          "x": 72.477,
+          "y": 228.115,
+          "width": 109.33456691519996,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            72.477,
+            228.115
+          ]
+        },
+        {
+          "str": " ",
+          "x": 181.81156691520002,
+          "y": 228.115,
+          "width": 2.493510953359674,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            181.81156691520002,
+            228.115
+          ]
+        },
+        {
+          "str": "Proceedings of the 2018 CHI Conference",
+          "x": 184.335,
+          "y": 228.115,
+          "width": 109.708613652,
+          "height": 6.9738,
+          "transform": [
+            7.0574856,
+            0,
+            0,
+            6.9738,
+            184.335,
+            228.115
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 120,
+      "xPosition": 336.634,
+      "yPosition": 228.115,
+      "text": "Applications   5 (2014).",
+      "segments": [],
+      "items": [
+        {
+          "str": "Applications",
+          "x": 336.634,
+          "y": 228.115,
+          "width": 34.26227940000002,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            228.115
+          ]
+        },
+        {
+          "str": " ",
+          "x": 370.89627939999997,
+          "y": 228.115,
+          "width": 1.9077206000000615,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            370.89627939999997,
+            228.115
+          ]
+        },
+        {
+          "str": "5 (2014).",
+          "x": 372.80400000000003,
+          "y": 228.115,
+          "width": 23.64815579999999,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            372.80400000000003,
+            228.115
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 121,
+      "xPosition": 72.477,
+      "yPosition": 220.144,
+      "text": "on Human Factors in Computing Systems   (2018).",
+      "segments": [],
+      "items": [
+        {
+          "str": "on Human Factors in Computing Systems",
+          "x": 72.477,
+          "y": 220.144,
+          "width": 114.18900119999994,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            220.144
+          ]
+        },
+        {
+          "str": " ",
+          "x": 186.6660012,
+          "y": 220.144,
+          "width": 1.9079988000000014,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            186.6660012,
+            220.144
+          ]
+        },
+        {
+          "str": "(2018).",
+          "x": 188.574,
+          "y": 220.144,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            188.574,
+            220.144
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 122,
+      "xPosition": 321.19800000000004,
+      "yPosition": 220.144,
+      "text": "[79]   Peter Pirolli and Stuart Card. 1999. Information Foraging.   Psychological Review",
+      "segments": [],
+      "items": [
+        {
+          "str": "[79]",
+          "x": 321.19800000000004,
+          "y": 220.144,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            220.144
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 220.144,
+          "width": 4.037508004052681,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            220.144
+          ]
+        },
+        {
+          "str": "Peter Pirolli and Stuart Card. 1999. Information Foraging.",
+          "x": 336.634,
+          "y": 220.144,
+          "width": 161.6712064127998,
+          "height": 6.9738,
+          "transform": [
+            6.8831406,
+            0,
+            0,
+            6.9738,
+            336.634,
+            220.144
+          ]
+        },
+        {
+          "str": " ",
+          "x": 498.3052064127998,
+          "y": 220.144,
+          "width": 2.5256267347519725,
+          "height": 6.9738,
+          "transform": [
+            6.8831406,
+            0,
+            0,
+            6.9738,
+            498.3052064127998,
+            220.144
+          ]
+        },
+        {
+          "str": "Psychological Review",
+          "x": 500.798,
+          "y": 220.144,
+          "width": 57.40539260399989,
+          "height": 6.9738,
+          "transform": [
+            6.8831406,
+            0,
+            0,
+            6.9738,
+            500.798,
+            220.144
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 123,
+      "xPosition": 57.041000000000025,
+      "yPosition": 212.174,
+      "text": "[58]   Michael Xieyang Liu, Jane Hsieh, Nathan Hahn, Angelina Zhou, Emily Deng,",
+      "segments": [],
+      "items": [
+        {
+          "str": "[58]",
+          "x": 57.041000000000025,
+          "y": 212.174,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041000000000025,
+            212.174
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000004,
+          "y": 212.174,
+          "width": 3.9261284729063726,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000004,
+            212.174
+          ]
+        },
+        {
+          "str": "Michael Xieyang Liu, Jane Hsieh, Nathan Hahn, Angelina Zhou, Emily Deng,",
+          "x": 72.477,
+          "y": 212.174,
+          "width": 222.33276386999987,
+          "height": 6.9738,
+          "transform": [
+            7.0784069999999994,
+            0,
+            0,
+            6.9738,
+            72.477,
+            212.174
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 124,
+      "xPosition": 336.474,
+      "yPosition": 212.174,
+      "text": "106, 4 (1999), 643–675.   https://doi.org/10.1037/0033-295x.106.4.643",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 336.474,
+          "y": 212.174,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.474,
+            212.174
+          ]
+        },
+        {
+          "str": "106, 4 (1999), 643–675.",
+          "x": 336.474,
+          "y": 212.174,
+          "width": 63.2105232,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.474,
+            212.174
+          ]
+        },
+        {
+          "str": " ",
+          "x": 399.6845232,
+          "y": 212.174,
+          "width": 4.254017999999974,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            399.6845232,
+            212.174
+          ]
+        },
+        {
+          "str": "https://doi.org/10.1037/0033-295x.106.4.643",
+          "x": 403.9385412,
+          "y": 212.174,
+          "width": 122.48084940000004,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            403.9385412,
+            212.174
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 125,
+      "xPosition": 72.477,
+      "yPosition": 204.204,
+      "text": "Shaun Burley, Cynthia Taylor, Aniket Kittur, and Brad A Myers. 2019. Unakite:",
+      "segments": [],
+      "items": [
+        {
+          "str": "Shaun Burley, Cynthia Taylor, Aniket Kittur, and Brad A Myers. 2019. Unakite:",
+          "x": 72.477,
+          "y": 204.204,
+          "width": 222.3936451439999,
+          "height": 6.9738,
+          "transform": [
+            6.904062,
+            0,
+            0,
+            6.9738,
+            72.477,
+            204.204
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 126,
+      "xPosition": 321.198,
+      "yPosition": 204.204,
+      "text": "[80]   Antoine Ponsard, Francisco Escalona, and Tamara Munzner. 2016. PaperQuest:",
+      "segments": [],
+      "items": [
+        {
+          "str": "[80]",
+          "x": 321.198,
+          "y": 204.204,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            204.204
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 204.204,
+          "width": 4.021211301715493,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            204.204
+          ]
+        },
+        {
+          "str": "Antoine Ponsard, Francisco Escalona, and Tamara Munzner. 2016. PaperQuest:",
+          "x": 336.634,
+          "y": 204.204,
+          "width": 222.3902210081998,
+          "height": 6.9738,
+          "transform": [
+            6.9110358,
+            0,
+            0,
+            6.9738,
+            336.634,
+            204.204
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 127,
+      "xPosition": 72.477,
+      "yPosition": 196.234,
+      "text": "Scaffolding developers’ decision-making using the web. In   Proceedings of the",
+      "segments": [],
+      "items": [
+        {
+          "str": "Scaffolding developers’ decision-making using the web. In",
+          "x": 72.477,
+          "y": 196.234,
+          "width": 169.06834396799997,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            196.234
+          ]
+        },
+        {
+          "str": " ",
+          "x": 241.545343968,
+          "y": 196.234,
+          "width": 1.7947608156862818,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            241.545343968,
+            196.234
+          ]
+        },
+        {
+          "str": "Proceedings of the",
+          "x": 243.376,
+          "y": 196.234,
+          "width": 50.66786494800004,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            243.376,
+            196.234
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 128,
+      "xPosition": 336.39,
+      "yPosition": 196.234,
+      "text": "A Visualization Tool to Support Literature Review.   Proceedings of the 2016 CHI",
+      "segments": [],
+      "items": [
+        {
+          "str": "A Visualization Tool to Support Literature Review.",
+          "x": 336.39,
+          "y": 196.234,
+          "width": 143.2384487856001,
+          "height": 6.9738,
+          "transform": [
+            6.9459048,
+            0,
+            0,
+            6.9738,
+            336.39,
+            196.234
+          ]
+        },
+        {
+          "str": " ",
+          "x": 479.62844878560037,
+          "y": 196.234,
+          "width": 2.5065775244976214,
+          "height": 6.9738,
+          "transform": [
+            6.9459048,
+            0,
+            0,
+            6.9738,
+            479.62844878560037,
+            196.234
+          ]
+        },
+        {
+          "str": "Proceedings of the 2016 CHI",
+          "x": 482.125,
+          "y": 196.234,
+          "width": 76.07849527439993,
+          "height": 6.9738,
+          "transform": [
+            6.9459048,
+            0,
+            0,
+            6.9738,
+            482.125,
+            196.234
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 129,
+      "xPosition": 72.477,
+      "yPosition": 188.264,
+      "text": "32nd Annual ACM Symposium on User Interface Software and Technology . 67–80.",
+      "segments": [],
+      "items": [
+        {
+          "str": "32nd Annual ACM Symposium on User Interface Software and Technology",
+          "x": 72.477,
+          "y": 188.264,
+          "width": 198.96084028799987,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            72.477,
+            188.264
+          ]
+        },
+        {
+          "str": ". 67–80.",
+          "x": 271.44,
+          "y": 188.264,
+          "width": 21.036049271999996,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            271.44,
+            188.264
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 130,
+      "xPosition": 336.634,
+      "yPosition": 188.264,
+      "text": "Conference Extended Abstracts on Human Factors in Computing Systems   (2016).",
+      "segments": [],
+      "items": [
+        {
+          "str": "Conference Extended Abstracts on Human Factors in Computing Systems",
+          "x": 336.634,
+          "y": 188.264,
+          "width": 199.39797201959988,
+          "height": 6.9738,
+          "transform": [
+            6.9249833999999995,
+            0,
+            0,
+            6.9738,
+            336.634,
+            188.264
+          ]
+        },
+        {
+          "str": " ",
+          "x": 536.0319720195995,
+          "y": 188.264,
+          "width": 1.915436032628878,
+          "height": 6.9738,
+          "transform": [
+            6.9249833999999995,
+            0,
+            0,
+            6.9738,
+            536.0319720195995,
+            188.264
+          ]
+        },
+        {
+          "str": "(2016).",
+          "x": 537.934,
+          "y": 188.264,
+          "width": 18.531255578399996,
+          "height": 6.9738,
+          "transform": [
+            6.9249833999999995,
+            0,
+            0,
+            6.9738,
+            537.934,
+            188.264
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 131,
+      "xPosition": 57.041,
+      "yPosition": 180.294,
+      "text": "[59]   Michael Xieyang Liu, Aniket Kittur, and Brad A. Myers. 2022.   Crystalline:",
+      "segments": [],
+      "items": [
+        {
+          "str": "[59]",
+          "x": 57.041,
+          "y": 180.294,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041,
+            180.294
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 180.294,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            180.294
+          ]
+        },
+        {
+          "str": "Michael Xieyang Liu, Aniket Kittur, and Brad A. Myers. 2022.",
+          "x": 72.477,
+          "y": 180.294,
+          "width": 183.73591907999997,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            180.294
+          ]
+        },
+        {
+          "str": " ",
+          "x": 256.21291908000006,
+          "y": 180.294,
+          "width": 4.874686199999989,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            256.21291908000006,
+            180.294
+          ]
+        },
+        {
+          "str": "Crystalline:",
+          "x": 261.18509900400005,
+          "y": 180.294,
+          "width": 33.68136185999999,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            261.18509900400005,
+            180.294
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 132,
+      "xPosition": 321.198,
+      "yPosition": 180.294,
+      "text": "[81]   Jason Portenoy, Marissa Radensky, Jevin D West, Eric Horvitz, Daniel S Weld,",
+      "segments": [],
+      "items": [
+        {
+          "str": "[81]",
+          "x": 321.198,
+          "y": 180.294,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            180.294
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 180.294,
+          "width": 3.9494751238850876,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            180.294
+          ]
+        },
+        {
+          "str": "Jason Portenoy, Marissa Radensky, Jevin D West, Eric Horvitz, Daniel S Weld,",
+          "x": 336.634,
+          "y": 180.294,
+          "width": 222.33431902740023,
+          "height": 6.9738,
+          "transform": [
+            7.036564199999999,
+            0,
+            0,
+            6.9738,
+            336.634,
+            180.294
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 133,
+      "xPosition": 72.477,
+      "yPosition": 172.324,
+      "text": "Lowering the Cost for Developers to Collect and Organize Information for",
+      "segments": [],
+      "items": [
+        {
+          "str": "Lowering the Cost for Developers to Collect and Organize Information for",
+          "x": 72.477,
+          "y": 172.324,
+          "width": 221.69947309200006,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            172.324
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 134,
+      "xPosition": 336.634,
+      "yPosition": 172.324,
+      "text": "and Tom Hope. 2022. Bursting scientific filter bubbles: Boosting innovation via",
+      "segments": [],
+      "items": [
+        {
+          "str": "and Tom Hope. 2022. Bursting scientific filter bubbles: Boosting innovation via",
+          "x": 336.634,
+          "y": 172.324,
+          "width": 221.57072279640002,
+          "height": 6.9738,
+          "transform": [
+            6.8761668,
+            0,
+            0,
+            6.9738,
+            336.634,
+            172.324
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 135,
+      "xPosition": 72.477,
+      "yPosition": 164.354,
+      "text": "Decision Making. In   Proceedings of the 2022 CHI Conference on Human Fac-",
+      "segments": [],
+      "items": [
+        {
+          "str": "Decision Making. In",
+          "x": 72.477,
+          "y": 164.354,
+          "width": 59.701725468,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            164.354
+          ]
+        },
+        {
+          "str": " ",
+          "x": 132.178725468,
+          "y": 164.354,
+          "width": 2.275759345098029,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            132.178725468,
+            164.354
+          ]
+        },
+        {
+          "str": "Proceedings of the 2022 CHI Conference on Human Fac-",
+          "x": 134.5,
+          "y": 164.354,
+          "width": 160.24076845200003,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            134.5,
+            164.354
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 136,
+      "xPosition": 336.634,
+      "yPosition": 164.354,
+      "text": "novel author discovery. In   Proceedings of the 2022 CHI Conference on Human",
+      "segments": [],
+      "items": [
+        {
+          "str": "novel author discovery. In",
+          "x": 336.634,
+          "y": 164.354,
+          "width": 76.17607268400009,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            164.354
+          ]
+        },
+        {
+          "str": " ",
+          "x": 412.81007268400015,
+          "y": 164.354,
+          "width": 1.9038503098037867,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            412.81007268400015,
+            164.354
+          ]
+        },
+        {
+          "str": "Proceedings of the 2022 CHI Conference on Human",
+          "x": 414.752,
+          "y": 164.354,
+          "width": 143.44632381600016,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            414.752,
+            164.354
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 137,
+      "xPosition": 72.477,
+      "yPosition": 156.384,
+      "text": "tors in Computing Systems   (New Orleans, LA, USA)   (CHI ’22) . Association",
+      "segments": [],
+      "items": [
+        {
+          "str": "tors in Computing Systems",
+          "x": 72.477,
+          "y": 156.384,
+          "width": 78.15356341199998,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            156.384
+          ]
+        },
+        {
+          "str": " ",
+          "x": 150.630563412,
+          "y": 156.384,
+          "width": 2.815133909803944,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            150.630563412,
+            156.384
+          ]
+        },
+        {
+          "str": "(New Orleans, LA, USA)",
+          "x": 153.502,
+          "y": 156.384,
+          "width": 73.19561004,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            153.502,
+            156.384
+          ]
+        },
+        {
+          "str": " ",
+          "x": 226.69761003999997,
+          "y": 156.384,
+          "width": 2.650382313725528,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            226.69761003999997,
+            156.384
+          ]
+        },
+        {
+          "str": "(CHI ’22)",
+          "x": 229.401,
+          "y": 156.384,
+          "width": 26.489839823999993,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            229.401,
+            156.384
+          ]
+        },
+        {
+          "str": ". Association",
+          "x": 255.893,
+          "y": 156.384,
+          "width": 38.14849918800001,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            255.893,
+            156.384
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 138,
+      "xPosition": 336.634,
+      "yPosition": 156.384,
+      "text": "Factors in Computing Systems . 1–13.",
+      "segments": [],
+      "items": [
+        {
+          "str": "Factors in Computing Systems",
+          "x": 336.634,
+          "y": 156.384,
+          "width": 83.18348639999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            156.384
+          ]
+        },
+        {
+          "str": ". 1–13.",
+          "x": 419.818,
+          "y": 156.384,
+          "width": 18.362015399999994,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            419.818,
+            156.384
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 139,
+      "xPosition": 72.477,
+      "yPosition": 148.413,
+      "text": "for Computing Machinery, New York, NY, USA, Article 68, 16 pages.   https:",
+      "segments": [],
+      "items": [
+        {
+          "str": "for Computing Machinery, New York, NY, USA, Article 68, 16 pages.",
+          "x": 72.477,
+          "y": 148.413,
+          "width": 199.98264146399998,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            148.413
+          ]
+        },
+        {
+          "str": " ",
+          "x": 272.459641464,
+          "y": 148.413,
+          "width": 5.823122999999989,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            272.459641464,
+            148.413
+          ]
+        },
+        {
+          "str": "https:",
+          "x": 278.399226924,
+          "y": 148.413,
+          "width": 16.46723394,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            278.399226924,
+            148.413
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 140,
+      "xPosition": 321.198,
+      "yPosition": 148.413,
+      "text": "[82]   Napol Rachatasumrit, Jonathan Bragg, Amy X. Zhang, and Daniel S. Weld. 2022.",
+      "segments": [],
+      "items": [
+        {
+          "str": "[82]",
+          "x": 321.198,
+          "y": 148.41299999999998,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            148.41299999999998
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 148.41299999999998,
+          "width": 4.06634734693883,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            148.41299999999998
+          ]
+        },
+        {
+          "str": "Napol Rachatasumrit, Jonathan Bragg, Amy X. Zhang, and Daniel S. Weld. 2022.",
+          "x": 336.634,
+          "y": 148.413,
+          "width": 222.64177294800007,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            148.413
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 141,
+      "xPosition": 72.254,
+      "yPosition": 140.443,
+      "text": "//doi.org/10.1145/3491102.3501968",
+      "segments": [],
+      "items": [
+        {
+          "str": "//doi.org/10.1145/3491102.3501968",
+          "x": 72.254,
+          "y": 140.443,
+          "width": 96.99858420000004,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.254,
+            140.443
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 142,
+      "xPosition": 336.634,
+      "yPosition": 140.443,
+      "text": "CiteRead: Integrating Localized Citation Contexts into Scientific Paper Reading.",
+      "segments": [],
+      "items": [
+        {
+          "str": "CiteRead: Integrating Localized Citation Contexts into Scientific Paper Reading.",
+          "x": 336.634,
+          "y": 140.443,
+          "width": 222.64177294799984,
+          "height": 6.9738,
+          "transform": [
+            6.834324,
+            0,
+            0,
+            6.9738,
+            336.634,
+            140.443
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 143,
+      "xPosition": 57.041000000000004,
+      "yPosition": 132.473,
+      "text": "[60]   Michael Xieyang Liu, Andrew Kuznetsov, Yongsung Kim, Joseph Chee Chang,",
+      "segments": [],
+      "items": [
+        {
+          "str": "[60]",
+          "x": 57.041000000000004,
+          "y": 132.473,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            57.041000000000004,
+            132.473
+          ]
+        },
+        {
+          "str": " ",
+          "x": 68.49197960000001,
+          "y": 132.473,
+          "width": 3.973101096709867,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            68.49197960000001,
+            132.473
+          ]
+        },
+        {
+          "str": "Michael Xieyang Liu, Andrew Kuznetsov, Yongsung Kim, Joseph Chee Chang,",
+          "x": 72.477,
+          "y": 132.473,
+          "width": 222.33421442039983,
+          "height": 6.9738,
+          "transform": [
+            6.994721399999999,
+            0,
+            0,
+            6.9738,
+            72.477,
+            132.473
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 144,
+      "xPosition": 336.634,
+      "yPosition": 132.473,
+      "text": "27th International Conference on Intelligent User Interfaces   (2022).",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 336.634,
+          "y": 132.473,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            132.473
+          ]
+        },
+        {
+          "str": "27th International Conference on Intelligent User Interfaces",
+          "x": 336.634,
+          "y": 132.473,
+          "width": 162.26637839999992,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            132.473
+          ]
+        },
+        {
+          "str": " ",
+          "x": 498.9003784,
+          "y": 132.473,
+          "width": 1.9076215999999704,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            498.9003784,
+            132.473
+          ]
+        },
+        {
+          "str": "(2022).",
+          "x": 500.808,
+          "y": 132.473,
+          "width": 18.661888799999996,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            500.808,
+            132.473
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 145,
+      "xPosition": 72.233,
+      "yPosition": 124.50300000000001,
+      "text": "Aniket Kittur, and Brad A. Myers. 2022. Wigglite: Low-Cost Information Col-",
+      "segments": [],
+      "items": [
+        {
+          "str": "Aniket Kittur, and Brad A. Myers. 2022. Wigglite: Low-Cost Information Col-",
+          "x": 72.233,
+          "y": 124.503,
+          "width": 222.99057452880004,
+          "height": 6.9738,
+          "transform": [
+            7.0714331999999995,
+            0,
+            0,
+            6.9738,
+            72.233,
+            124.503
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 146,
+      "xPosition": 321.198,
+      "yPosition": 124.50300000000001,
+      "text": "[83]   Colin Raffel, Noam M. Shazeer, Adam Roberts, Katherine Lee, Sharan Narang,",
+      "segments": [],
+      "items": [
+        {
+          "str": "[83]",
+          "x": 321.198,
+          "y": 124.50300000000001,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.198,
+            124.50300000000001
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.64897959999996,
+          "y": 124.50300000000001,
+          "width": 3.9533932539683065,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.64897959999996,
+            124.50300000000001
+          ]
+        },
+        {
+          "str": "Colin Raffel, Noam M. Shazeer, Adam Roberts, Katherine Lee, Sharan Narang,",
+          "x": 336.634,
+          "y": 124.503,
+          "width": 222.3318851712001,
+          "height": 6.9738,
+          "transform": [
+            7.0295904,
+            0,
+            0,
+            6.9738,
+            336.634,
+            124.503
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 147,
+      "xPosition": 72.477,
+      "yPosition": 116.533,
+      "text": "lection and Triage. In   Proceedings of the 35th Annual ACM Symposium on",
+      "segments": [],
+      "items": [
+        {
+          "str": "lection and Triage. In",
+          "x": 72.477,
+          "y": 116.533,
+          "width": 64.958436432,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            116.533
+          ]
+        },
+        {
+          "str": " ",
+          "x": 137.435436432,
+          "y": 116.533,
+          "width": 2.7338858509803927,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            137.435436432,
+            116.533
+          ]
+        },
+        {
+          "str": "Proceedings of the 35th Annual ACM Symposium on",
+          "x": 140.224,
+          "y": 116.533,
+          "width": 153.817480224,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            140.224,
+            116.533
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 148,
+      "xPosition": 336.634,
+      "yPosition": 116.533,
+      "text": "Michael Matena, Yanqi Zhou, Wei Li, and Peter J. Liu. 2019.   Exploring the",
+      "segments": [],
+      "items": [
+        {
+          "str": "Michael Matena, Yanqi Zhou, Wei Li, and Peter J. Liu. 2019.",
+          "x": 336.634,
+          "y": 116.533,
+          "width": 176.85026791199988,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            116.533
+          ]
+        },
+        {
+          "str": " ",
+          "x": 513.484267912,
+          "y": 116.533,
+          "width": 4.4771796000000394,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            513.484267912,
+            116.533
+          ]
+        },
+        {
+          "str": "Exploring the",
+          "x": 518.050991104,
+          "y": 116.533,
+          "width": 40.14732974399998,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            518.050991104,
+            116.533
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 149,
+      "xPosition": 72.477,
+      "yPosition": 108.563,
+      "text": "User Interface Software and Technology   (Bend, OR, USA)   (UIST ’22) . Associ-",
+      "segments": [],
+      "items": [
+        {
+          "str": "User Interface Software and Technology",
+          "x": 72.477,
+          "y": 108.563,
+          "width": 113.819529276,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            108.563
+          ]
+        },
+        {
+          "str": " ",
+          "x": 186.296529276,
+          "y": 108.563,
+          "width": 2.774971298039224,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            186.296529276,
+            108.563
+          ]
+        },
+        {
+          "str": "(Bend, OR, USA)",
+          "x": 189.127,
+          "y": 108.563,
+          "width": 49.373248716000006,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            189.127,
+            108.563
+          ]
+        },
+        {
+          "str": " ",
+          "x": 238.50024871600002,
+          "y": 108.563,
+          "width": 2.4566189058823378,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            238.50024871600002,
+            108.563
+          ]
+        },
+        {
+          "str": "(UIST ’22)",
+          "x": 241.006,
+          "y": 108.563,
+          "width": 28.730521763999985,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            241.006,
+            108.563
+          ]
+        },
+        {
+          "str": ". Associ-",
+          "x": 269.736,
+          "y": 108.563,
+          "width": 25.486867908,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            269.736,
+            108.563
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 150,
+      "xPosition": 336.634,
+      "yPosition": 108.563,
+      "text": "Limits of Transfer Learning with a Unified Text-to-Text Transformer.   ArXiv",
+      "segments": [],
+      "items": [
+        {
+          "str": "Limits of Transfer Learning with a Unified Text-to-Text Transformer.",
+          "x": 336.634,
+          "y": 108.563,
+          "width": 201.5617887360002,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            108.563
+          ]
+        },
+        {
+          "str": " ",
+          "x": 538.1957887360003,
+          "y": 108.563,
+          "width": 3.2178541803918335,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            538.1957887360003,
+            108.563
+          ]
+        },
+        {
+          "str": "ArXiv",
+          "x": 541.478,
+          "y": 108.563,
+          "width": 16.723311876000036,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            541.478,
+            108.563
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 151,
+      "xPosition": 72.477,
+      "yPosition": 100.593,
+      "text": "ation for Computing Machinery, New York, NY, USA, Article 32, 16 pages.",
+      "segments": [],
+      "items": [
+        {
+          "str": "ation for Computing Machinery, New York, NY, USA, Article 32, 16 pages.",
+          "x": 72.477,
+          "y": 100.593,
+          "width": 222.63842552399996,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            72.477,
+            100.593
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 152,
+      "xPosition": 336.634,
+      "yPosition": 100.593,
+      "text": "abs/1910.10683 (2019).",
+      "segments": [],
+      "items": [
+        {
+          "str": "",
+          "x": 336.634,
+          "y": 100.593,
+          "width": 0,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            100.593
+          ]
+        },
+        {
+          "str": "abs/1910.10683 (2019).",
+          "x": 336.634,
+          "y": 100.593,
+          "width": 62.722357200000005,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            336.634,
+            100.593
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 153,
+      "xPosition": 72.477,
+      "yPosition": 92.623,
+      "text": "https://doi.org/10.1145/3526113.3545661",
+      "segments": [],
+      "items": [
+        {
+          "str": "https://doi.org/10.1145/3526113.3545661",
+          "x": 72.477,
+          "y": 92.623,
+          "width": 113.14293120000005,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            72.477,
+            92.623
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 154,
+      "xPosition": 321.19800000000004,
+      "yPosition": 92.623,
+      "text": "[84]   Daniel M. Russell, Mark J. Stefik, Peter Pirolli, and Stuart K. Card. 1993. The",
+      "segments": [],
+      "items": [
+        {
+          "str": "[84]",
+          "x": 321.19800000000004,
+          "y": 92.623,
+          "width": 11.4509796,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            321.19800000000004,
+            92.623
+          ]
+        },
+        {
+          "str": " ",
+          "x": 332.6489796,
+          "y": 92.623,
+          "width": 3.9068827450980357,
+          "height": 6.9738,
+          "transform": [
+            6.9738,
+            0,
+            0,
+            6.9738,
+            332.6489796,
+            92.623
+          ]
+        },
+        {
+          "str": "Daniel M. Russell, Mark J. Stefik, Peter Pirolli, and Stuart K. Card. 1993. The",
+          "x": 336.634,
+          "y": 92.623,
+          "width": 221.5643208480002,
+          "height": 6.9738,
+          "transform": [
+            7.113276,
+            0,
+            0,
+            6.9738,
+            336.634,
+            92.623
+          ]
+        }
+      ]
+    },
+    {
+      "lineIndex": 155,
+      "xPosition": 336.634,
+      "yPosition": 84.653,
+      "text": "Cost Structure of Sensemaking. In   Proceedings of the INTERACT ’93 and CHI ’93",
+      "segments": [],
+      "items": [
+        {
+          "str": "Cost Structure of Sensemaking. In",
+          "x": 336.634,
+          "y": 84.653,
+          "width": 95.36218203000003,
+          "height": 6.9738,
+          "transform": [
+            6.8482715999999995,
+            0,
+            0,
+            6.9738,
+            336.634,
+            84.653
+          ]
+        },
+        {
+          "str": " ",
+          "x": 431.99618202999994,
+          "y": 84.653,
+          "width": 1.781892026476617,
+          "height": 6.9738,
+          "transform": [
+            6.8482715999999995,
+            0,
+            0,
+            6.9738,
+            431.99618202999994,
+            84.653
+          ]
+        },
+        {
+          "str": "Proceedings of the INTERACT ’93 and CHI ’93",
+          "x": 433.746,
+          "y": 84.653,
+          "width": 124.45363978680001,
+          "height": 6.9738,
+          "transform": [
+            6.8482715999999995,
+            0,
+            0,
+            6.9738,
+            433.746,
+            84.653
+          ]
+        }
+      ]
+    }
+  ]
+}
