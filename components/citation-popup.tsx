@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, ExternalLink, Copy, BookOpen, Link, FileText } from "lucide-react"
+import { X, ExternalLink, Copy, BookOpen, Link, FileText, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import { useCitationMetadata, CitationMetadata } from "@/hooks/useCitationMetadata"
 
 interface Citation {
   id: string
@@ -20,6 +21,9 @@ interface Citation {
   page?: number
   position?: { x: number; y: number }
   confidence?: number
+  extractedText?: string // Full reference text from PDF extraction
+  extractionConfidence?: number
+  extractionMethod?: string
 }
 
 interface CitationPopupProps {
@@ -38,6 +42,33 @@ export function CitationPopup({
   onCopyText,
 }: CitationPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null)
+  const { fetchMetadata, loading, getCachedMetadata } = useCitationMetadata()
+  const [enrichedMetadata, setEnrichedMetadata] = useState<CitationMetadata | null>(null)
+
+  // Fetch metadata when citation changes
+  useEffect(() => {
+    if (citation && isOpen) {
+      // Use extracted text if available, otherwise use citation text
+      const textToSearch = citation.extractedText || citation.text
+
+      // Check if we already have metadata cached
+      const cached = getCachedMetadata(textToSearch)
+      if (cached) {
+        setEnrichedMetadata(cached)
+      } else {
+        // Fetch metadata from API
+        fetchMetadata(textToSearch, {
+          title: citation.title,
+          authors: citation.authors,
+          year: citation.year,
+        }).then((metadata) => {
+          if (metadata) {
+            setEnrichedMetadata(metadata)
+          }
+        })
+      }
+    }
+  }, [citation, isOpen, fetchMetadata, getCachedMetadata])
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -69,8 +100,25 @@ export function CitationPopup({
 
   if (!isOpen || !citation) return null
 
+  // Merge citation data with enriched metadata
+  const displayData = {
+    title: enrichedMetadata?.title || citation.title,
+    authors: enrichedMetadata?.authors || citation.authors,
+    year: enrichedMetadata?.year || citation.year,
+    doi: enrichedMetadata?.doi || citation.doi,
+    url: enrichedMetadata?.url || citation.url,
+    abstract: enrichedMetadata?.abstract,
+    venue: enrichedMetadata?.venue,
+    extractedText: citation.extractedText,
+    extractionConfidence: citation.extractionConfidence,
+    extractionMethod: citation.extractionMethod,
+  }
+
+  // Use extracted reference text for fetching metadata if available
+  const textForMetadata = citation.extractedText || citation.text
+
   const handleCopyText = () => {
-    const textToCopy = citation.title || citation.text
+    const textToCopy = displayData.title || citation.text
     onCopyText(textToCopy)
     navigator.clipboard.writeText(textToCopy)
   }
@@ -126,50 +174,78 @@ export function CitationPopup({
       </div>
 
       {/* Content */}
-      <ScrollArea className="max-h-60">
+      <ScrollArea className="max-h-96">
         <div className="p-3 space-y-3">
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-sm text-muted-foreground">Fetching metadata...</span>
+            </div>
+          )}
+
+          {/* Extracted Reference Text (if available) */}
+          {displayData.extractedText && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">Extracted Reference</p>
+                <Badge variant="outline" className="text-xs">
+                  {Math.round((displayData.extractionConfidence || 0) * 100)}% confidence
+                </Badge>
+              </div>
+              <p className="text-xs text-foreground bg-green-50 dark:bg-green-950 p-2 rounded leading-relaxed border border-green-200 dark:border-green-800">
+                {displayData.extractedText}
+              </p>
+            </div>
+          )}
+
           {/* Citation Text */}
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Citation Text</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              {displayData.extractedText ? "Inline Citation" : "Citation Text"}
+            </p>
             <p className="text-xs text-foreground bg-muted/30 p-2 rounded font-mono leading-relaxed">
               {citation.text}
             </p>
           </div>
 
           {/* Reference Details */}
-          {(citation.title || citation.authors || citation.journal) && (
+          {(displayData.title || displayData.authors || displayData.venue) && (
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground">Reference Details</p>
-              
-              {citation.title && (
+
+              {displayData.title && (
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Title</p>
-                  <p className="text-sm font-medium text-foreground leading-tight">{citation.title}</p>
+                  <p className="text-sm font-medium text-foreground leading-tight">{displayData.title}</p>
                 </div>
               )}
-              
-              {citation.authors && citation.authors.length > 0 && (
+
+              {displayData.authors && displayData.authors.length > 0 && (
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Authors</p>
-                  <p className="text-sm text-foreground">{citation.authors.join(", ")}</p>
+                  <p className="text-sm text-foreground">
+                    {displayData.authors.slice(0, 3).join(", ")}
+                    {displayData.authors.length > 3 && " et al."}
+                  </p>
                 </div>
               )}
-              
-              {citation.journal && (
+
+              {displayData.venue && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Journal</p>
-                  <p className="text-sm text-foreground italic">{citation.journal}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Venue</p>
+                  <p className="text-sm text-foreground italic">{displayData.venue}</p>
                 </div>
               )}
-              
+
               <div className="flex items-center gap-4">
-                {citation.year && (
+                {displayData.year && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Year</p>
-                    <p className="text-sm text-foreground font-medium">{citation.year}</p>
+                    <p className="text-sm text-foreground font-medium">{displayData.year}</p>
                   </div>
                 )}
-                
+
                 {citation.page && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Page</p>
@@ -177,6 +253,16 @@ export function CitationPopup({
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Abstract */}
+          {displayData.abstract && (
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Abstract</p>
+              <p className="text-xs text-foreground bg-muted/30 p-2 rounded leading-relaxed">
+                {displayData.abstract}
+              </p>
             </div>
           )}
 
@@ -212,11 +298,11 @@ export function CitationPopup({
             Copy
           </Button>
           
-          {citation.url && (
+          {displayData.url && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => window.open(citation.url, "_blank")}
+              onClick={() => window.open(displayData.url, "_blank")}
               className="h-7 text-xs"
             >
               <ExternalLink className="h-3 w-3 mr-1" />
@@ -224,11 +310,11 @@ export function CitationPopup({
             </Button>
           )}
 
-          {citation.doi && (
+          {displayData.doi && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => window.open(`https://doi.org/${citation.doi}`, "_blank")}
+              onClick={() => window.open(`https://doi.org/${displayData.doi}`, "_blank")}
               className="h-7 text-xs"
             >
               <FileText className="h-3 w-3 mr-1" />

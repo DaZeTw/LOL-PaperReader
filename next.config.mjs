@@ -18,6 +18,17 @@ const nextConfig = {
       'pdfjs-dist/build/pdf.mjs': 'pdfjs-dist/build/pdf.js',
     }
 
+    if (isServer) {
+      // Disable pdfjs worker loading on server-side
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        'pdfjs-dist/build/pdf.worker.js': false,
+        'pdfjs-dist/build/pdf.worker.mjs': false,
+      }
+    }
+
     if (!isServer) {
       config.externals = config.externals || []
       config.externals.push({

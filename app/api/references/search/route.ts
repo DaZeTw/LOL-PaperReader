@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     try {
       const query = encodeURIComponent(title);
       const response = await fetch(
-        `https://api.semanticscholar.org/graph/v1/paper/search?query=${query}&limit=3&fields=url,externalIds,title,authors,year`,
+        `https://api.semanticscholar.org/graph/v1/paper/search?query=${query}&limit=3&fields=url,externalIds,title,authors,year,abstract,venue,citationCount`,
         {
           headers: {
             "Accept": "application/json",
@@ -43,6 +43,15 @@ export async function POST(request: NextRequest) {
             }
           }
 
+          // Extract abstract snippet (first 300 characters)
+          let abstractSnippet = bestMatch.abstract;
+          if (abstractSnippet && abstractSnippet.length > 300) {
+            abstractSnippet = abstractSnippet.substring(0, 297) + "...";
+          }
+
+          // Format authors list
+          const authorsList = bestMatch.authors?.map((author: any) => author.name).slice(0, 5) || [];
+
           const result = {
             url: bestMatch.url,
             doi: bestMatch.externalIds?.DOI,
@@ -51,6 +60,10 @@ export async function POST(request: NextRequest) {
             semanticScholarId: bestMatch.paperId,
             title: bestMatch.title,
             year: bestMatch.year,
+            abstract: abstractSnippet,
+            authors: authorsList,
+            venue: bestMatch.venue,
+            citationCount: bestMatch.citationCount,
           };
 
           // Construct preferred URL
