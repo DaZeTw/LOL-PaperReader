@@ -28,3 +28,6 @@ next-env.d.ts
 
 # extracted citation data for debugging
 /data/citations/*.json
+
+# reference tracking data
+/.references-data

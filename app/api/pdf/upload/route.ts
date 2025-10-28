@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { initializePDFReferenceTracking } from "@/lib/reference-tracker";
+import { randomBytes } from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,9 +11,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    // Generate unique PDF ID for tracking
+    const pdfId = randomBytes(16).toString('hex');
+    console.log(`[PDFUpload] Processing PDF: ${file.name} (ID: ${pdfId})`);
+
+    // Initialize reference tracking for this PDF
+    initializePDFReferenceTracking(pdfId, file.name);
+
     // TODO: Implement actual PDF parsing logic
     // For now, return mock parsed data with DOI/URL links
     const mockParsedData = {
+      pdfId: pdfId,
       title: file.name,
       sections: [
         {
