@@ -272,6 +272,38 @@ async function fetchAbstractFromArxiv(arxivId: string): Promise<string | null> {
 }
 
 /**
+ * Fetch complete paper details from Semantic Scholar using paperId
+ */
+async function fetchAbstractFromSemanticScholar(paperId: string): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://api.semanticscholar.org/graph/v1/paper/${encodeURIComponent(paperId)}?fields=abstract`,
+      {
+        headers: {
+          "Accept": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.warn(`[SemanticScholar Detail] Failed to fetch paper ${paperId}: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    if (data.abstract) {
+      console.log(`[SemanticScholar Detail] Found abstract for paper ${paperId}`);
+      return data.abstract;
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`[SemanticScholar Detail] Error fetching paper ${paperId}:`, error);
+    return null;
+  }
+}
+
+/**
  * Try multiple strategies to get an abstract
  */
 async function fetchAbstractWithFallbacks(metadata: any): Promise<string | null> {
@@ -282,7 +314,16 @@ async function fetchAbstractWithFallbacks(metadata: any): Promise<string | null>
 
   console.log(`[AbstractFallback] No good abstract found, trying fallback strategies...`);
 
-  // Try 2: Fetch from CrossRef if we have a DOI
+  // Try 2: Fetch from Semantic Scholar detail endpoint if we have a paperId
+  if (metadata.semanticScholarId || metadata.paperId) {
+    const paperId = metadata.semanticScholarId || metadata.paperId;
+    const semanticScholarAbstract = await fetchAbstractFromSemanticScholar(paperId);
+    if (semanticScholarAbstract && semanticScholarAbstract.length > 50) {
+      return semanticScholarAbstract;
+    }
+  }
+
+  // Try 3: Fetch from CrossRef if we have a DOI
   if (metadata.doi || metadata.externalIds?.DOI) {
     const doi = metadata.doi || metadata.externalIds.DOI;
     const crossRefAbstract = await fetchAbstractFromCrossRef(doi);
@@ -291,7 +332,7 @@ async function fetchAbstractWithFallbacks(metadata: any): Promise<string | null>
     }
   }
 
-  // Try 3: Fetch from arXiv if we have an arXiv ID
+  // Try 4: Fetch from arXiv if we have an arXiv ID
   if (metadata.arxivId || metadata.externalIds?.ArXiv) {
     const arxivId = metadata.arxivId || metadata.externalIds.ArXiv;
     const arxivAbstract = await fetchAbstractFromArxiv(arxivId);
