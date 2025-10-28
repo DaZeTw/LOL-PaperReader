@@ -247,7 +247,7 @@ export async function POST(request: NextRequest) {
           }
 
           // Extract abstract snippet (first 300 characters)
-          let abstractSnippet = bestMatch.abstract;
+          let abstractSnippet = bestMatch.abstract || null;
           if (abstractSnippet && abstractSnippet.length > 300) {
             abstractSnippet = abstractSnippet.substring(0, 297) + "...";
           }
@@ -303,6 +303,7 @@ export async function POST(request: NextRequest) {
       title: title,
       authors: authors?.split(',').map((a: string) => a.trim()),
       year: year ? parseInt(year) : undefined,
+      abstract: null,
     });
   } catch (error) {
     console.error("[v0] Reference search error:", error);
