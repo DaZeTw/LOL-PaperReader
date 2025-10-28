@@ -1,5 +1,98 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+/**
+ * Fetch citation metadata from Google Scholar using GSB output format
+ */
+async function fetchFromGoogleScholar(citationText: string): Promise<any | null> {
+  try {
+    // Build Google Scholar API URL with gsb output format
+    const scholarUrl = new URL("https://scholar.google.com/scholar");
+    scholarUrl.searchParams.set("oi", "gsr-r");
+    scholarUrl.searchParams.set("q", citationText);
+    scholarUrl.searchParams.set("output", "gsb");
+    scholarUrl.searchParams.set("hl", "en");
+    scholarUrl.searchParams.set("rfa", "1");
+
+    console.log("[v0] Calling Google Scholar:", scholarUrl.toString());
+
+    const response = await fetch(scholarUrl.toString(), {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+    });
+
+    if (!response.ok) {
+      console.error("[v0] Google Scholar API error:", response.status, response.statusText);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log("[v0] Google Scholar response:", JSON.stringify(data, null, 2));
+
+    // Parse the response structure
+    if (data.r && data.r.length > 0) {
+      const result = data.r[0]; // Take first result
+
+      // Extract metadata from the result
+      const metadata = {
+        title: result.t || null,
+        url: result.u || null,
+        authors: result.m ? parseAuthors(result.m) : [],
+        year: result.m ? parseYear(result.m) : null,
+        abstract: result.s ? stripHtml(result.s) : null,
+        venue: result.m ? parseVenue(result.m) : null,
+        citationCount: result.l?.c?.l ? parseInt(result.l.c.l.match(/\d+/)?.[0] || "0") : 0,
+        pdfUrl: result.l?.g?.u || null,
+      };
+
+      return metadata;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("[v0] Google Scholar fetch error:", error);
+    return null;
+  }
+}
+
+/**
+ * Parse authors from Google Scholar metadata string
+ * Format: "Author1, Author2, Author3 - Source, Year"
+ */
+function parseAuthors(metadata: string): string[] {
+  const authorMatch = metadata.match(/^([^-]+)/);
+  if (authorMatch) {
+    const authorsText = authorMatch[1].trim();
+    return authorsText.split(",").map(a => a.trim()).filter(a => a.length > 0);
+  }
+  return [];
+}
+
+/**
+ * Parse year from Google Scholar metadata string
+ */
+function parseYear(metadata: string): number | null {
+  const yearMatch = metadata.match(/\b(19\d{2}|20\d{2})\b/);
+  return yearMatch ? parseInt(yearMatch[1]) : null;
+}
+
+/**
+ * Parse venue from Google Scholar metadata string
+ */
+function parseVenue(metadata: string): string | null {
+  const venueMatch = metadata.match(/-\s*([^,]+),/);
+  return venueMatch ? venueMatch[1].trim() : null;
+}
+
+/**
+ * Strip HTML tags from string
+ */
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -13,6 +106,20 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("[v0] Searching for paper:", { title, authors, year, fullCitationLength: fullCitation?.length });
+
+    // Try Google Scholar first with full citation if available
+    if (fullCitation) {
+      try {
+        const scholarResult = await fetchFromGoogleScholar(fullCitation);
+        if (scholarResult && scholarResult.title) {
+          console.log("[v0] Google Scholar found paper:", scholarResult);
+          return NextResponse.json(scholarResult);
+        }
+      } catch (error) {
+        console.error("[v0] Google Scholar error:", error);
+        // Continue to Semantic Scholar
+      }
+    }
 
     // Try Semantic Scholar API - Multiple strategies for better results
     try {
