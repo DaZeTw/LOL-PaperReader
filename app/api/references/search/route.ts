@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { trackReferenceRetrieval } from "@/lib/reference-tracker";
 
 /**
  * Fetch citation metadata from Google Scholar using GSB output format
@@ -93,10 +94,103 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 }
 
+/**
+ * Fetch abstract from CrossRef using DOI
+ */
+async function fetchAbstractFromCrossRef(doi: string): Promise<string | null> {
+  try {
+    const response = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; AcademicReader/1.0; mailto:support@example.com)",
+      },
+    });
+
+    if (!response.ok) {
+      console.warn(`[CrossRef] Failed to fetch DOI ${doi}: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    const abstract = data.message?.abstract;
+
+    if (abstract) {
+      console.log(`[CrossRef] Found abstract for DOI ${doi}`);
+      return stripHtml(abstract);
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`[CrossRef] Error fetching DOI ${doi}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Fetch abstract from arXiv using arXiv ID
+ */
+async function fetchAbstractFromArxiv(arxivId: string): Promise<string | null> {
+  try {
+    const response = await fetch(`http://export.arxiv.org/api/query?id_list=${encodeURIComponent(arxivId)}`);
+
+    if (!response.ok) {
+      console.warn(`[arXiv] Failed to fetch ${arxivId}: ${response.status}`);
+      return null;
+    }
+
+    const xmlText = await response.text();
+
+    // Parse XML to extract abstract (simple regex-based parsing)
+    const summaryMatch = xmlText.match(/<summary>(.*?)<\/summary>/s);
+    if (summaryMatch && summaryMatch[1]) {
+      const abstract = summaryMatch[1].trim().replace(/\s+/g, ' ');
+      console.log(`[arXiv] Found abstract for ${arxivId}`);
+      return abstract;
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`[arXiv] Error fetching ${arxivId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Try multiple strategies to get an abstract
+ */
+async function fetchAbstractWithFallbacks(metadata: any): Promise<string | null> {
+  // Try 1: Use existing abstract from search result
+  if (metadata.abstract && metadata.abstract.length > 50) {
+    return metadata.abstract;
+  }
+
+  console.log(`[AbstractFallback] No good abstract found, trying fallback strategies...`);
+
+  // Try 2: Fetch from CrossRef if we have a DOI
+  if (metadata.doi || metadata.externalIds?.DOI) {
+    const doi = metadata.doi || metadata.externalIds.DOI;
+    const crossRefAbstract = await fetchAbstractFromCrossRef(doi);
+    if (crossRefAbstract) {
+      return crossRefAbstract;
+    }
+  }
+
+  // Try 3: Fetch from arXiv if we have an arXiv ID
+  if (metadata.arxivId || metadata.externalIds?.ArXiv) {
+    const arxivId = metadata.arxivId || metadata.externalIds.ArXiv;
+    const arxivAbstract = await fetchAbstractFromArxiv(arxivId);
+    if (arxivAbstract) {
+      return arxivAbstract;
+    }
+  }
+
+  console.warn(`[AbstractFallback] All fallback strategies failed`);
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, authors, year, fullCitation } = body;
+    const { title, authors, year, fullCitation, pdfId } = body;
 
     if (!title) {
       return NextResponse.json(
@@ -105,7 +199,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("[v0] Searching for paper:", { title, authors, year, fullCitationLength: fullCitation?.length });
+    console.log("[v0] Searching for paper:", { title, authors, year, fullCitationLength: fullCitation?.length, pdfId });
 
     // Try Google Scholar first with full citation if available
     if (fullCitation) {
@@ -113,6 +207,21 @@ export async function POST(request: NextRequest) {
         const scholarResult = await fetchFromGoogleScholar(fullCitation);
         if (scholarResult && scholarResult.title) {
           console.log("[v0] Google Scholar found paper:", scholarResult);
+
+          // Try to get better abstract if missing or too short
+          if (!scholarResult.abstract || scholarResult.abstract.length < 50) {
+            console.log("[v0] Google Scholar abstract missing/short, trying fallbacks...");
+            const betterAbstract = await fetchAbstractWithFallbacks(scholarResult);
+            if (betterAbstract) {
+              scholarResult.abstract = betterAbstract;
+            }
+          }
+
+          // Track the reference retrieval
+          if (pdfId) {
+            trackReferenceRetrieval(pdfId, fullCitation, scholarResult, 'google-scholar');
+          }
+
           return NextResponse.json(scholarResult);
         }
       } catch (error) {
@@ -246,11 +355,8 @@ export async function POST(request: NextRequest) {
             console.log("[v0] Best match found with score:", bestScore);
           }
 
-          // Extract abstract snippet (first 300 characters)
+          // Extract abstract snippet (first 300 characters initially)
           let abstractSnippet = bestMatch.abstract || null;
-          if (abstractSnippet && abstractSnippet.length > 300) {
-            abstractSnippet = abstractSnippet.substring(0, 297) + "...";
-          }
 
           // Format authors list
           const authorsList = bestMatch.authors?.map((author: any) => author.name).slice(0, 5) || [];
@@ -267,7 +373,22 @@ export async function POST(request: NextRequest) {
             authors: authorsList,
             venue: bestMatch.venue,
             citationCount: bestMatch.citationCount,
+            externalIds: bestMatch.externalIds,
           };
+
+          // Try to get better abstract if missing or too short
+          if (!result.abstract || result.abstract.length < 50) {
+            console.log("[v0] Semantic Scholar abstract missing/short, trying fallbacks...");
+            const betterAbstract = await fetchAbstractWithFallbacks(result);
+            if (betterAbstract) {
+              result.abstract = betterAbstract;
+            }
+          }
+
+          // Truncate abstract if too long (after getting full version)
+          if (result.abstract && result.abstract.length > 300) {
+            result.abstract = result.abstract.substring(0, 297) + "...";
+          }
 
           // Construct preferred URL
           if (result.doi) {
@@ -276,6 +397,11 @@ export async function POST(request: NextRequest) {
             result.url = `https://arxiv.org/abs/${result.arxivId}`;
           } else if (result.semanticScholarId) {
             result.url = `https://www.semanticscholar.org/paper/${result.semanticScholarId}`;
+          }
+
+          // Track the reference retrieval
+          if (pdfId) {
+            trackReferenceRetrieval(pdfId, fullCitation || title, result, 'semantic-scholar');
           }
 
           console.log("[v0] Paper found:", result);
@@ -296,7 +422,8 @@ export async function POST(request: NextRequest) {
     const fallbackUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(scholarQuery)}`;
 
     console.log("[v0] No direct match found, providing Google Scholar fallback with query:", scholarQuery.substring(0, 100));
-    return NextResponse.json({
+
+    const fallbackResult = {
       url: fallbackUrl,
       fallback: true,
       searchQuery: scholarQuery,
@@ -304,7 +431,14 @@ export async function POST(request: NextRequest) {
       authors: authors?.split(',').map((a: string) => a.trim()),
       year: year ? parseInt(year) : undefined,
       abstract: null,
-    });
+    };
+
+    // Track the fallback reference
+    if (pdfId) {
+      trackReferenceRetrieval(pdfId, fullCitation || title, fallbackResult, 'fallback');
+    }
+
+    return NextResponse.json(fallbackResult);
   } catch (error) {
     console.error("[v0] Reference search error:", error);
     return NextResponse.json(
