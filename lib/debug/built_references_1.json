@@ -1,0 +1,1224 @@
+{
+  "references": [
+    {
+      "citationId": "cite.auer2022delivering",
+      "sourcePage": 1,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 669.34
+      },
+      "startingLine": {
+        "lineIndex": 66,
+        "position": {
+          "x": 112.981,
+          "y": 658.431,
+          "page": 6
+        },
+        "text": "[3] C. Auer, M. Dolfi, A. Carvalho, C. B. Ramis, and P. W. Staar. Delivering document conversion"
+      },
+      "reference": {
+        "fullText": "[3] C. Auer, M. Dolfi, A. Carvalho, C. B. Ramis, and P. W. Staar. Delivering document conversion as a cloud service with high throughput and responsiveness. In 2022 IEEE 15th International Conference on Cloud Computing (CLOUD), pages 363–373. IEEE, 2022.",
+        "lineCount": 3,
+        "characterCount": 254,
+        "wordCount": 40,
+        "lines": [
+          {
+            "lineIndex": 66,
+            "text": "[3] C. Auer, M. Dolfi, A. Carvalho, C. B. Ramis, and P. W. Staar. Delivering document conversion",
+            "position": {
+              "x": 112.981,
+              "y": 658.431,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 67,
+            "text": "as a cloud service with high throughput and responsiveness. In 2022 IEEE 15th International",
+            "position": {
+              "x": 129.579,
+              "y": 647.522,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 68,
+            "text": "Conference on Cloud Computing (CLOUD), pages 363–373. IEEE, 2022.",
+            "position": {
+              "x": 129.579,
+              "y": 636.613,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.908999999999992,
+        "processedAt": "2025-10-29T04:09:27.762Z"
+      }
+    },
+    {
+      "citationId": "cite.tableformer",
+      "sourcePage": 1,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 303.064
+      },
+      "startingLine": {
+        "lineIndex": 93,
+        "position": {
+          "x": 107.99999999999997,
+          "y": 292.155,
+          "page": 6
+        },
+        "text": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding"
+      },
+      "reference": {
+        "fullText": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding with transformers. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 4614–4623, 2022.",
+        "lineCount": 3,
+        "characterCount": 225,
+        "wordCount": 31,
+        "lines": [
+          {
+            "lineIndex": 93,
+            "text": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding",
+            "position": {
+              "x": 107.99999999999997,
+              "y": 292.155,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 94,
+            "text": "with transformers. In Proceedings of the IEEE/CVF Conference on Computer Vision and",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 281.24499999999995,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 95,
+            "text": "Pattern Recognition, pages 4614–4623, 2022.",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 270.33599999999996,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.909000000000049,
+        "processedAt": "2025-10-29T04:09:27.772Z"
+      }
+    },
+    {
+      "citationId": "cite.dln",
+      "sourcePage": 1,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 262.366
+      },
+      "startingLine": {
+        "lineIndex": 96,
+        "position": {
+          "x": 107.99999999999999,
+          "y": 251.45699999999997,
+          "page": 6
+        },
+        "text": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human-"
+      },
+      "reference": {
+        "fullText": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human- annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
+        "lineCount": 2,
+        "characterCount": 166,
+        "wordCount": 25,
+        "lines": [
+          {
+            "lineIndex": 96,
+            "text": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human-",
+            "position": {
+              "x": 107.99999999999999,
+              "y": 251.45699999999997,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 97,
+            "text": "annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 240.54799999999997,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.90900000000002,
+        "processedAt": "2025-10-29T04:09:27.773Z"
+      }
+    },
+    {
+      "citationId": "cite.lysak_optimized_2023",
+      "sourcePage": 1,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 501.519
+      },
+      "startingLine": {
+        "lineIndex": 76,
+        "position": {
+          "x": 112.981,
+          "y": 509.48900000000003,
+          "page": 6
+        },
+        "text": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index."
+      },
+      "reference": {
+        "fullText": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index.",
+        "lineCount": 1,
+        "characterCount": 78,
+        "wordCount": 8,
+        "lines": [
+          {
+            "lineIndex": 76,
+            "text": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index.",
+            "position": {
+              "x": 112.981,
+              "y": 509.48900000000003,
+              "page": 6
+            },
+            "isStartingLine": true
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 7.970000000000027,
+        "processedAt": "2025-10-29T04:09:27.774Z"
+      }
+    },
+    {
+      "citationId": "cite.pymupdf",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 539.278
+      },
+      "startingLine": {
+        "lineIndex": 75,
+        "position": {
+          "x": 112.981,
+          "y": 528.369,
+          "page": 6
+        },
+        "text": "[7] A. S. Inc. PyMuPDF, 2024. URL https://github.com/pymupdf/PyMuPDF."
+      },
+      "reference": {
+        "fullText": "[7] A. S. Inc. PyMuPDF, 2024. URL https://github.com/pymupdf/PyMuPDF.",
+        "lineCount": 1,
+        "characterCount": 69,
+        "wordCount": 8,
+        "lines": [
+          {
+            "lineIndex": 75,
+            "text": "[7] A. S. Inc. PyMuPDF, 2024. URL https://github.com/pymupdf/PyMuPDF.",
+            "position": {
+              "x": 112.981,
+              "y": 528.369,
+              "page": 6
+            },
+            "isStartingLine": true
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.908999999999992,
+        "processedAt": "2025-10-29T04:09:27.775Z"
+      }
+    },
+    {
+      "citationId": "cite.pypdfium2",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 202.79
+      },
+      "startingLine": {
+        "lineIndex": 100,
+        "position": {
+          "x": 108.00000000000001,
+          "y": 191.881,
+          "page": 6
+        },
+        "text": "[15] P. Team. PyPDFium2: Python bindings for PDFium, 2024. URL https://github.com/"
+      },
+      "reference": {
+        "fullText": "[15] P. Team. PyPDFium2: Python bindings for PDFium, 2024. URL https://github.com/ pypdfium2-team/pypdfium2.",
+        "lineCount": 2,
+        "characterCount": 108,
+        "wordCount": 12,
+        "lines": [
+          {
+            "lineIndex": 100,
+            "text": "[15] P. Team. PyPDFium2: Python bindings for PDFium, 2024. URL https://github.com/",
+            "position": {
+              "x": 108.00000000000001,
+              "y": 191.881,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 101,
+            "text": "pypdfium2-team/pypdfium2.",
+            "position": {
+              "x": 129.579,
+              "y": 180.972,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.908999999999992,
+        "processedAt": "2025-10-29T04:09:27.776Z"
+      }
+    },
+    {
+      "citationId": "cite.pypdf",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 232.578
+      },
+      "startingLine": {
+        "lineIndex": 98,
+        "position": {
+          "x": 107.99999999999997,
+          "y": 221.66899999999998,
+          "page": 6
+        },
+        "text": "[14] pypdf Maintainers. pypdf: A Pure-Python PDF Library, 2024. URL https://github.com/"
+      },
+      "reference": {
+        "fullText": "[14] pypdf Maintainers. pypdf: A Pure-Python PDF Library, 2024. URL https://github.com/ py-pdf/pypdf.",
+        "lineCount": 2,
+        "characterCount": 101,
+        "wordCount": 12,
+        "lines": [
+          {
+            "lineIndex": 98,
+            "text": "[14] pypdf Maintainers. pypdf: A Pure-Python PDF Library, 2024. URL https://github.com/",
+            "position": {
+              "x": 107.99999999999997,
+              "y": 221.66899999999998,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 99,
+            "text": "py-pdf/pypdf.",
+            "position": {
+              "x": 129.579,
+              "y": 210.76,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.90900000000002,
+        "processedAt": "2025-10-29T04:09:27.777Z"
+      }
+    },
+    {
+      "citationId": "cite.qpdf",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 628.643
+      },
+      "startingLine": {
+        "lineIndex": 69,
+        "position": {
+          "x": 112.981,
+          "y": 617.734,
+          "page": 6
+        },
+        "text": "[4] J. Berkenbilt. Qpdf: A content-preserving pdf document transformer, 2024. URL https:"
+      },
+      "reference": {
+        "fullText": "[4] J. Berkenbilt. Qpdf: A content-preserving pdf document transformer, 2024. URL https: //github.com/qpdf/qpdf.",
+        "lineCount": 2,
+        "characterCount": 112,
+        "wordCount": 13,
+        "lines": [
+          {
+            "lineIndex": 69,
+            "text": "[4] J. Berkenbilt. Qpdf: A content-preserving pdf document transformer, 2024. URL https:",
+            "position": {
+              "x": 112.981,
+              "y": 617.734,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 70,
+            "text": "//github.com/qpdf/qpdf.",
+            "position": {
+              "x": 129.579,
+              "y": 606.8240000000001,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.908999999999992,
+        "processedAt": "2025-10-29T04:09:27.778Z"
+      }
+    },
+    {
+      "citationId": "cite.dln",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 262.366
+      },
+      "startingLine": {
+        "lineIndex": 96,
+        "position": {
+          "x": 107.99999999999999,
+          "y": 251.45699999999997,
+          "page": 6
+        },
+        "text": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human-"
+      },
+      "reference": {
+        "fullText": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human- annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
+        "lineCount": 2,
+        "characterCount": 166,
+        "wordCount": 25,
+        "lines": [
+          {
+            "lineIndex": 96,
+            "text": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human-",
+            "position": {
+              "x": 107.99999999999999,
+              "y": 251.45699999999997,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 97,
+            "text": "annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 240.54799999999997,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.90900000000002,
+        "processedAt": "2025-10-29T04:09:27.779Z"
+      }
+    },
+    {
+      "citationId": "cite.tableformer",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 303.064
+      },
+      "startingLine": {
+        "lineIndex": 93,
+        "position": {
+          "x": 107.99999999999997,
+          "y": 292.155,
+          "page": 6
+        },
+        "text": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding"
+      },
+      "reference": {
+        "fullText": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding with transformers. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 4614–4623, 2022.",
+        "lineCount": 3,
+        "characterCount": 225,
+        "wordCount": 31,
+        "lines": [
+          {
+            "lineIndex": 93,
+            "text": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding",
+            "position": {
+              "x": 107.99999999999997,
+              "y": 292.155,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 94,
+            "text": "with transformers. In Proceedings of the IEEE/CVF Conference on Computer Vision and",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 281.24499999999995,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 95,
+            "text": "Pattern Recognition, pages 4614–4623, 2022.",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 270.33599999999996,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.909000000000049,
+        "processedAt": "2025-10-29T04:09:27.779Z"
+      }
+    },
+    {
+      "citationId": "cite.lysak_optimized_2023",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 501.519
+      },
+      "startingLine": {
+        "lineIndex": 76,
+        "position": {
+          "x": 112.981,
+          "y": 509.48900000000003,
+          "page": 6
+        },
+        "text": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index."
+      },
+      "reference": {
+        "fullText": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index.",
+        "lineCount": 1,
+        "characterCount": 78,
+        "wordCount": 8,
+        "lines": [
+          {
+            "lineIndex": 76,
+            "text": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index.",
+            "position": {
+              "x": 112.981,
+              "y": 509.48900000000003,
+              "page": 6
+            },
+            "isStartingLine": true
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 7.970000000000027,
+        "processedAt": "2025-10-29T04:09:27.780Z"
+      }
+    },
+    {
+      "citationId": "cite.lv2023detrs",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 173.001
+      },
+      "startingLine": {
+        "lineIndex": 102,
+        "position": {
+          "x": 108.00000000000003,
+          "y": 162.092,
+          "page": 6
+        },
+        "text": "[16] Y. Zhao, W. Lv, S. Xu, J. Wei, G. Wang, Q. Dang, Y. Liu, and J. Chen. Detrs beat yolos on"
+      },
+      "reference": {
+        "fullText": "[16] Y. Zhao, W. Lv, S. Xu, J. Wei, G. Wang, Q. Dang, Y. Liu, and J. Chen. Detrs beat yolos on real-time object detection, 2023.",
+        "lineCount": 2,
+        "characterCount": 128,
+        "wordCount": 26,
+        "lines": [
+          {
+            "lineIndex": 102,
+            "text": "[16] Y. Zhao, W. Lv, S. Xu, J. Wei, G. Wang, Q. Dang, Y. Liu, and J. Chen. Detrs beat yolos on",
+            "position": {
+              "x": 108.00000000000003,
+              "y": 162.092,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 103,
+            "text": "real-time object detection, 2023.",
+            "position": {
+              "x": 129.57900000000004,
+              "y": 151.18300000000002,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.908999999999992,
+        "processedAt": "2025-10-29T04:09:27.781Z"
+      }
+    },
+    {
+      "citationId": "cite.dln",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 262.366
+      },
+      "startingLine": {
+        "lineIndex": 96,
+        "position": {
+          "x": 107.99999999999999,
+          "y": 251.45699999999997,
+          "page": 6
+        },
+        "text": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human-"
+      },
+      "reference": {
+        "fullText": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human- annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
+        "lineCount": 2,
+        "characterCount": 166,
+        "wordCount": 25,
+        "lines": [
+          {
+            "lineIndex": 96,
+            "text": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human-",
+            "position": {
+              "x": 107.99999999999999,
+              "y": 251.45699999999997,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 97,
+            "text": "annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 240.54799999999997,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.90900000000002,
+        "processedAt": "2025-10-29T04:09:27.782Z"
+      }
+    },
+    {
+      "citationId": "cite.onnxruntime",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 598.854
+      },
+      "startingLine": {
+        "lineIndex": 71,
+        "position": {
+          "x": 112.98100000000002,
+          "y": 587.945,
+          "page": 6
+        },
+        "text": "[5] O. R. developers. Onnx runtime. https://onnxruntime.ai/, 2024. Version: 1.18.1."
+      },
+      "reference": {
+        "fullText": "[5] O. R. developers. Onnx runtime. https://onnxruntime.ai/, 2024. Version: 1.18.1.",
+        "lineCount": 1,
+        "characterCount": 83,
+        "wordCount": 10,
+        "lines": [
+          {
+            "lineIndex": 71,
+            "text": "[5] O. R. developers. Onnx runtime. https://onnxruntime.ai/, 2024. Version: 1.18.1.",
+            "position": {
+              "x": 112.98100000000002,
+              "y": 587.945,
+              "page": 6
+            },
+            "isStartingLine": true
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.908999999999992,
+        "processedAt": "2025-10-29T04:09:27.783Z"
+      }
+    },
+    {
+      "citationId": "cite.tableformer",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 303.064
+      },
+      "startingLine": {
+        "lineIndex": 93,
+        "position": {
+          "x": 107.99999999999997,
+          "y": 292.155,
+          "page": 6
+        },
+        "text": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding"
+      },
+      "reference": {
+        "fullText": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding with transformers. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 4614–4623, 2022.",
+        "lineCount": 3,
+        "characterCount": 225,
+        "wordCount": 31,
+        "lines": [
+          {
+            "lineIndex": 93,
+            "text": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding",
+            "position": {
+              "x": 107.99999999999997,
+              "y": 292.155,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 94,
+            "text": "with transformers. In Proceedings of the IEEE/CVF Conference on Computer Vision and",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 281.24499999999995,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 95,
+            "text": "Pattern Recognition, pages 4614–4623, 2022.",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 270.33599999999996,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.909000000000049,
+        "processedAt": "2025-10-29T04:09:27.783Z"
+      }
+    },
+    {
+      "citationId": "cite.lysak_optimized_2023",
+      "sourcePage": 3,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 501.519
+      },
+      "startingLine": {
+        "lineIndex": 76,
+        "position": {
+          "x": 112.981,
+          "y": 509.48900000000003,
+          "page": 6
+        },
+        "text": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index."
+      },
+      "reference": {
+        "fullText": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index.",
+        "lineCount": 1,
+        "characterCount": 78,
+        "wordCount": 8,
+        "lines": [
+          {
+            "lineIndex": 76,
+            "text": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index.",
+            "position": {
+              "x": 112.981,
+              "y": 509.48900000000003,
+              "page": 6
+            },
+            "isStartingLine": true
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 7.970000000000027,
+        "processedAt": "2025-10-29T04:09:27.784Z"
+      }
+    },
+    {
+      "citationId": "cite.pytorch2",
+      "sourcePage": 3,
+      "targetPage": 5,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 137.455
+      },
+      "startingLine": {
+        "lineIndex": 55,
+        "position": {
+          "x": 112.98100000000001,
+          "y": 126.54600000000019,
+          "page": 5
+        },
+        "text": "[2] J. Ansel, E. Yang, H. He, N. Gimelshein, A. Jain, M. Voznesensky, B. Bao, P. Bell, D. Berard,"
+      },
+      "reference": {
+        "fullText": "[2] J. Ansel, E. Yang, H. He, N. Gimelshein, A. Jain, M. Voznesensky, B. Bao, P. Bell, D. Berard, E. Burovski, G. Chauhan, A. Chourdia, W. Constable, A. Desmaison, Z. DeVito, E. Ellison, W. Feng, J. Gong, M. Gschwind, B. Hirsh, S. Huang, K. Kalambarkar, L. Kirsch, M. La- zos, M. Lezcano, Y. Liang, J. Liang, Y. Lu, C. Luk, B. Maher, Y. Pan, C. Puhrsch, M. Reso, M. Saroufim, M. Y. Siraichi, H. Suk, M. Suo, P. Tillet, E. Wang, X. Wang, W. Wen, S. Zhang, X. Zhao, K. Zhou, R. Zou, A. Mathews, G. Chanan, P. Wu, and S. Chintala. Pytorch 2: Faster machine learning through dynamic python bytecode transformation and graph compilation. In Proceedings of the 29th ACM International Conference on Architectural Support for Pro- gramming Languages and Operating Systems, Volume 2 (ASPLOS ’24). ACM, 4 2024. doi: 10.1145/3620665.3640366. URL https://pytorch.org/assets/pytorch2-2.pdf.",
+        "lineCount": 10,
+        "characterCount": 877,
+        "wordCount": 144,
+        "lines": [
+          {
+            "lineIndex": 55,
+            "text": "[2] J. Ansel, E. Yang, H. He, N. Gimelshein, A. Jain, M. Voznesensky, B. Bao, P. Bell, D. Berard,",
+            "position": {
+              "x": 112.98100000000001,
+              "y": 126.54600000000019,
+              "page": 5
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 56,
+            "text": "E. Burovski, G. Chauhan, A. Chourdia, W. Constable, A. Desmaison, Z. DeVito, E. Ellison,",
+            "position": {
+              "x": 129.579,
+              "y": 115.6360000000002,
+              "page": 5
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 57,
+            "text": "W. Feng, J. Gong, M. Gschwind, B. Hirsh, S. Huang, K. Kalambarkar, L. Kirsch, M. La-",
+            "position": {
+              "x": 129.579,
+              "y": 104.72700000000019,
+              "page": 5
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 58,
+            "text": "zos, M. Lezcano, Y. Liang, J. Liang, Y. Lu, C. Luk, B. Maher, Y. Pan, C. Puhrsch, M. Reso,",
+            "position": {
+              "x": 129.579,
+              "y": 93.81800000000018,
+              "page": 5
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 59,
+            "text": "M. Saroufim, M. Y. Siraichi, H. Suk, M. Suo, P. Tillet, E. Wang, X. Wang, W. Wen, S. Zhang,",
+            "position": {
+              "x": 129.579,
+              "y": 82.90900000000018,
+              "page": 5
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 60,
+            "text": "X. Zhao, K. Zhou, R. Zou, A. Mathews, G. Chanan, P. Wu, and S. Chintala. Pytorch 2: Faster",
+            "position": {
+              "x": 129.579,
+              "y": 72.00000000000017,
+              "page": 5
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 62,
+            "text": "machine learning through dynamic python bytecode transformation and graph compilation.",
+            "position": {
+              "x": 129.579,
+              "y": 710.037,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 63,
+            "text": "In Proceedings of the 29th ACM International Conference on Architectural Support for Pro-",
+            "position": {
+              "x": 129.579,
+              "y": 699.128,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 64,
+            "text": "gramming Languages and Operating Systems, Volume 2 (ASPLOS ’24). ACM, 4 2024. doi:",
+            "position": {
+              "x": 129.579,
+              "y": 688.219,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 65,
+            "text": "10.1145/3620665.3640366. URL https://pytorch.org/assets/pytorch2-2.pdf.",
+            "position": {
+              "x": 129.579,
+              "y": 677.3100000000001,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.908999999999821,
+        "processedAt": "2025-10-29T04:09:27.785Z"
+      }
+    },
+    {
+      "citationId": "cite.easyocr",
+      "sourcePage": 4,
+      "targetPage": 5,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 166.602
+      },
+      "startingLine": {
+        "lineIndex": 52,
+        "position": {
+          "x": 108.00000000000009,
+          "y": 173.0390000000002,
+          "page": 5
+        },
+        "text": "References"
+      },
+      "reference": {
+        "fullText": "References",
+        "lineCount": 1,
+        "characterCount": 10,
+        "wordCount": 1,
+        "lines": [
+          {
+            "lineIndex": 52,
+            "text": "References",
+            "position": {
+              "x": 108.00000000000009,
+              "y": 173.0390000000002,
+              "page": 5
+            },
+            "isStartingLine": true
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 8.139123417174693,
+        "processedAt": "2025-10-29T04:09:27.785Z"
+      }
+    },
+    {
+      "citationId": "cite.Liu_LlamaIndex_2022",
+      "sourcePage": 5,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 520.399
+      },
+      "startingLine": {
+        "lineIndex": 75,
+        "position": {
+          "x": 112.981,
+          "y": 528.369,
+          "page": 6
+        },
+        "text": "[7] A. S. Inc. PyMuPDF, 2024. URL https://github.com/pymupdf/PyMuPDF."
+      },
+      "reference": {
+        "fullText": "[7] A. S. Inc. PyMuPDF, 2024. URL https://github.com/pymupdf/PyMuPDF.",
+        "lineCount": 1,
+        "characterCount": 69,
+        "wordCount": 8,
+        "lines": [
+          {
+            "lineIndex": 75,
+            "text": "[7] A. S. Inc. PyMuPDF, 2024. URL https://github.com/pymupdf/PyMuPDF.",
+            "position": {
+              "x": 112.981,
+              "y": 528.369,
+              "page": 6
+            },
+            "isStartingLine": true
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 7.970000000000027,
+        "processedAt": "2025-10-29T04:09:27.786Z"
+      }
+    },
+    {
+      "citationId": "cite.Morin2024",
+      "sourcePage": 5,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 354.67
+      },
+      "startingLine": {
+        "lineIndex": 89,
+        "position": {
+          "x": 107.99999999999994,
+          "y": 343.76099999999997,
+          "page": 6
+        },
+        "text": "[11] L. Morin, V. Weber, G. I. Meijer, F. Yu, and P. W. J. Staar. Patcid: an open-access dataset of"
+      },
+      "reference": {
+        "fullText": "[11] L. Morin, V. Weber, G. I. Meijer, F. Yu, and P. W. J. Staar. Patcid: an open-access dataset of chemical structures in patent documents. Nature Communications, 15(1):6532, August 2024. ISSN 2041-1723. doi: 10.1038/s41467-024-50779-y. URL https://doi.org/10.1038/ s41467-024-50779-y.",
+        "lineCount": 4,
+        "characterCount": 286,
+        "wordCount": 37,
+        "lines": [
+          {
+            "lineIndex": 89,
+            "text": "[11] L. Morin, V. Weber, G. I. Meijer, F. Yu, and P. W. J. Staar. Patcid: an open-access dataset of",
+            "position": {
+              "x": 107.99999999999994,
+              "y": 343.76099999999997,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 90,
+            "text": "chemical structures in patent documents. Nature Communications, 15(1):6532, August 2024.",
+            "position": {
+              "x": 129.57899999999995,
+              "y": 332.852,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 91,
+            "text": "ISSN 2041-1723. doi: 10.1038/s41467-024-50779-y. URL https://doi.org/10.1038/",
+            "position": {
+              "x": 129.57899999999995,
+              "y": 321.943,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 92,
+            "text": "s41467-024-50779-y.",
+            "position": {
+              "x": 129.57899999999998,
+              "y": 311.034,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.909000000000049,
+        "processedAt": "2025-10-29T04:09:27.787Z"
+      }
+    },
+    {
+      "citationId": "cite.mishra-etal-2024-statements",
+      "sourcePage": 5,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 108,
+        "y": 439.004
+      },
+      "startingLine": {
+        "lineIndex": 82,
+        "position": {
+          "x": 107.99999999999994,
+          "y": 428.09499999999997,
+          "page": 6
+        },
+        "text": "[10] L. Mishra, S. Dhibi, Y. Kim, C. Berrospi Ramis, S. Gupta, M. Dolfi, and P. Staar. State-"
+      },
+      "reference": {
+        "fullText": "[10] L. Mishra, S. Dhibi, Y. Kim, C. Berrospi Ramis, S. Gupta, M. Dolfi, and P. Staar. State- ments: Universal information extraction from tables with large language models for ESG KPIs. In D. Stammbach, J. Ni, T. Schimanski, K. Dutia, A. Singh, J. Bingler, C. Christi- aen, N. Kushwaha, V. Muccione, S. A. Vaghefi, and M. Leippold, editors, Proceedings of the 1st Workshop on Natural Language Processing Meets Climate Change (ClimateNLP 2024), pages 193–214, Bangkok, Thailand, Aug. 2024. Association for Computational Linguistics. URL https://aclanthology.org/2024.climatenlp-1.15.",
+        "lineCount": 7,
+        "characterCount": 583,
+        "wordCount": 84,
+        "lines": [
+          {
+            "lineIndex": 82,
+            "text": "[10] L. Mishra, S. Dhibi, Y. Kim, C. Berrospi Ramis, S. Gupta, M. Dolfi, and P. Staar. State-",
+            "position": {
+              "x": 107.99999999999994,
+              "y": 428.09499999999997,
+              "page": 6
+            },
+            "isStartingLine": true
+          },
+          {
+            "lineIndex": 83,
+            "text": "ments: Universal information extraction from tables with large language models for ESG",
+            "position": {
+              "x": 129.57899999999995,
+              "y": 417.186,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 84,
+            "text": "KPIs. In D. Stammbach, J. Ni, T. Schimanski, K. Dutia, A. Singh, J. Bingler, C. Christi-",
+            "position": {
+              "x": 129.57899999999995,
+              "y": 406.277,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 85,
+            "text": "aen, N. Kushwaha, V. Muccione, S. A. Vaghefi, and M. Leippold, editors, Proceedings of the",
+            "position": {
+              "x": 129.57899999999995,
+              "y": 395.36699999999996,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 86,
+            "text": "1st Workshop on Natural Language Processing Meets Climate Change (ClimateNLP 2024),",
+            "position": {
+              "x": 129.57899999999995,
+              "y": 384.45799999999997,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 87,
+            "text": "pages 193–214, Bangkok, Thailand, Aug. 2024. Association for Computational Linguistics.",
+            "position": {
+              "x": 129.57899999999995,
+              "y": 373.549,
+              "page": 6
+            },
+            "isStartingLine": false
+          },
+          {
+            "lineIndex": 88,
+            "text": "URL https://aclanthology.org/2024.climatenlp-1.15.",
+            "position": {
+              "x": 129.57899999999995,
+              "y": 362.64,
+              "page": 6
+            },
+            "isStartingLine": false
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 10.909000000000049,
+        "processedAt": "2025-10-29T04:09:27.788Z"
+      }
+    },
+    {
+      "citationId": "cite.dpk",
+      "sourcePage": 5,
+      "targetPage": 6,
+      "targetPosition": {
+        "x": 112.981,
+        "y": 579.975
+      },
+      "startingLine": {
+        "lineIndex": 71,
+        "position": {
+          "x": 112.98100000000002,
+          "y": 587.945,
+          "page": 6
+        },
+        "text": "[5] O. R. developers. Onnx runtime. https://onnxruntime.ai/, 2024. Version: 1.18.1."
+      },
+      "reference": {
+        "fullText": "[5] O. R. developers. Onnx runtime. https://onnxruntime.ai/, 2024. Version: 1.18.1.",
+        "lineCount": 1,
+        "characterCount": 83,
+        "wordCount": 10,
+        "lines": [
+          {
+            "lineIndex": 71,
+            "text": "[5] O. R. developers. Onnx runtime. https://onnxruntime.ai/, 2024. Version: 1.18.1.",
+            "position": {
+              "x": 112.98100000000002,
+              "y": 587.945,
+              "page": 6
+            },
+            "isStartingLine": true
+          }
+        ]
+      },
+      "metadata": {
+        "distance": 7.970000000000027,
+        "processedAt": "2025-10-29T04:09:27.788Z"
+      }
+    }
+  ],
+  "metadata": {
+    "pdfPath": "./1.pdf",
+    "referenceFilePath": "./debug/references_1.json",
+    "totalCitations": 22,
+    "successfulReferences": 22,
+    "failedReferences": 0,
+    "successRate": "100.0%",
+    "totalReferenceLines": 89,
+    "extractedAt": "2025-10-29T04:09:27.789Z"
+  }
+}

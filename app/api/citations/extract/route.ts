@@ -7,180 +7,180 @@ import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
+// Keep the new interface for internal processing
 interface ExtractedCitation {
+  annotationId: string;
+  citationDestination: string;
+  sourcePage: number;
+  targetPage: number;
+  targetPosition: {
+    x: number;
+    y: number;
+  };
+  annotationRect: number[];
+  startingLine: {
+    lineIndex: number;
+    position: {
+      x: number;
+      y: number;
+      page: number;
+    };
+    text: string;
+  };
+  reference: {
+    fullText: string;
+    lineCount: number;
+    characterCount: number;
+    wordCount: number;
+    lines: Array<{
+      lineIndex: number;
+      text: string;
+      position: {
+        x: number;
+        y: number;
+        page: number;
+      };
+      isStartingLine: boolean;
+    }>;
+  };
+  metadata: {
+    distance: number;
+    processedAt: string;
+  };
+}
+
+// Legacy citation format for output
+interface LegacyCitation {
   id: string;
+  annotation_id: string;
   text: string;
   confidence: number;
   method: string;
   spansPages: boolean;
   destPage: number;
-  // Additional fields from extractCitationReference.js
-  sourcePage?: number;
-  xPosition?: number;
-  yPosition?: number;
+  sourcePage: number;
+  xPosition: number;
+  yPosition: number;
   linesProcessed?: number;
   candidatesFound?: number;
   xFilteredFound?: number;
   thresholds?: any;
-  timestamp?: string;
+  timestamp: string;
 }
 
 /**
- * Groups text items by their Y-coordinate with a tolerance
+ * Convert new ExtractedCitation format to legacy format for output
  */
-function groupTextByLines(textItems: any[], yTolerance = 2, xGapThreshold = 20) {
-  const lines: any[] = [];
-  const sortedItems = textItems.sort((a, b) => b.transform[5] - a.transform[5]);
-
-  for (const item of sortedItems) {
-    const yPos = item.transform[5];
-    let targetLine = lines.find((line) => Math.abs(line.yPosition - yPos) <= yTolerance);
-
-    if (!targetLine) {
-      targetLine = { yPosition: yPos, items: [] };
-      lines.push(targetLine);
-    }
-    targetLine.items.push(item);
-  }
-
-  const finalLines: any[] = [];
-
-  for (const line of lines) {
-    const items = line.items.sort((a: any, b: any) => a.transform[4] - b.transform[4]);
-    let currentSubline: any = { yPosition: line.yPosition, items: [] };
-
-    for (let i = 0; i < items.length; i++) {
-      const curr = items[i];
-      const prev = items[i - 1];
-      const prevXEnd = prev ? prev.transform[4] + (prev.width || 0) : null;
-      const currX = curr.transform[4];
-      const gap = prev ? currX - prevXEnd : 0;
-
-      if (prev && gap > xGapThreshold) {
-        if (currentSubline.items.length > 0) {
-          const text = currentSubline.items.map((it: any) => it.str).join("");
-          currentSubline = { ...currentSubline, text, xPosition: currentSubline.items[0].transform[4] };
-          finalLines.push(currentSubline);
-        }
-        currentSubline = { yPosition: line.yPosition, items: [] };
-      }
-      currentSubline.items.push(curr);
-    }
-
-    if (currentSubline.items.length > 0) {
-      const text = currentSubline.items.map((it: any) => it.str).join("");
-      currentSubline = { ...currentSubline, text, xPosition: currentSubline.items[0].transform[4] };
-      finalLines.push(currentSubline);
-    }
-  }
-
-  return finalLines.sort((a, b) => b.yPosition - a.yPosition);
-}
-
-/**
- * Extracts reference text at a given destination
- */
-async function extractReferenceAtDestination(
-  pdf: any,
-  dest: any,
-  targetRect: any
-): Promise<{ text: string; method: string; confidence: number; spansPages: boolean }> {
-  let targetPage: any;
-  let targetPageNum: number;
-
-  if (typeof dest === "string") {
-    const refs = await pdf.getDestination(dest);
-    if (!refs || refs.length === 0) {
-      throw new Error(`Cannot resolve destination: ${dest}`);
-    }
-    const pageRef = refs[0];
-    targetPageNum = await pdf.getPageIndex(pageRef);
-    targetPage = await pdf.getPage(targetPageNum + 1);
-  } else if (Array.isArray(dest)) {
-    const pageRef = dest[0];
-    targetPageNum = await pdf.getPageIndex(pageRef);
-    targetPage = await pdf.getPage(targetPageNum + 1);
-  } else {
-    throw new Error("Invalid destination format");
-  }
-
-  const targetX = targetRect ? targetRect[0] : 50;
-  const targetY = targetRect ? targetRect[1] : 0;
-
-  const textContent = await targetPage.getTextContent();
-  const lines = groupTextByLines(textContent.items);
-
-  const thresholds = { yWindow: 50, xTolerance: 30 };
-  const candidateLines = lines.filter((line) => Math.abs(line.yPosition - targetY) <= thresholds.yWindow);
-
-  const xFilteredLines = candidateLines.filter((line) => {
-    const x = line.xPosition ?? 0;
-    return Math.abs(x - targetX) <= thresholds.xTolerance;
-  });
-
-  const referencePatterns = [
-    { pattern: /^\s*\[\d+\]/, type: "numbered" },
-    { pattern: /^\s*[A-Z][a-z]+.*?\d{4}[a-z]?\./, type: "authorYear" },
-  ];
-
-  let referenceText = "";
-  let foundStart = false;
-  let referenceType = "";
-  let confidence = 0.5;
-  let spansPages = false;
-
-  for (const line of xFilteredLines) {
-    const text = line.text.trim();
-    if (!text) continue;
-
-    const matchedPattern = referencePatterns.find(({ pattern }) => pattern.test(text));
-
-    if (!foundStart && matchedPattern) {
-      foundStart = true;
-      referenceType = matchedPattern.type;
-      referenceText = text;
-      confidence = 0.8;
-    } else if (foundStart && matchedPattern) {
-      if (matchedPattern.type === referenceType) {
-        break;
-      } else {
-        referenceText += " " + text;
-      }
-    } else if (foundStart) {
-      referenceText += " " + text;
-      if (/^\s*(Appendix|Index|Acknowledgments|Figures|Tables)\s/i.test(text)) {
-        break;
-      }
-    }
-  }
-
-  if (!referenceText.trim()) {
-    const fallbackLines = candidateLines.filter((line) => {
-      const x = line.xPosition ?? 0;
-      return Math.abs(x - targetX) <= thresholds.xTolerance;
-    });
-
-    referenceText = fallbackLines
-      .map((line) => line.text.trim())
-      .join(" ")
-      .trim();
-    confidence = 0.3;
-    referenceType = "proximity";
-  }
-
-  const cleanedText = referenceText.replace(/\s+/g, " ").trim().substring(0, 1000);
-
+function convertToLegacyFormat(newCitation: ExtractedCitation): LegacyCitation {
+  // Convert distance back to confidence (inverse relationship)
+  const confidence = newCitation.metadata.distance < 10 ? 0.8 : 0.3;
+  
   return {
-    text: cleanedText || "(no text found)",
-    method: referenceType || "proximity",
-    confidence: spansPages ? confidence + 0.1 : confidence,
-    spansPages,
+    id: newCitation.citationDestination,
+    annotation_id: newCitation.annotationId,
+    text: newCitation.reference.fullText,
+    confidence: confidence,
+    method: "buildReference", // or determine method based on citation format
+    spansPages: false, // could be calculated if needed
+    destPage: newCitation.targetPage,
+    sourcePage: newCitation.sourcePage,
+    xPosition: newCitation.targetPosition.x,
+    yPosition: newCitation.targetPosition.y,
+    linesProcessed: newCitation.reference.lineCount,
+    candidatesFound: 1, // default value
+    xFilteredFound: 1, // default value
+    thresholds: {
+      searchRange: 95,
+      xTolerance: 20,
+      pageWidth: 612,
+      pageHeight: 792,
+      textStats: {
+        averageLineHeight: 8,
+        averageCharWidth: 3,
+        lineSpacing: 8,
+        totalLines: 150,
+        analyzedLineHeights: 80,
+        analyzedCharWidths: 400
+      }
+    },
+    timestamp: newCitation.metadata.processedAt
   };
 }
 
 /**
+ * Convert legacy citation format to new ExtractedCitation format
+ */
+function convertLegacyToNewFormat(legacyCitation: LegacyCitation): ExtractedCitation {
+  return {
+    annotationId: legacyCitation.annotation_id || `legacy_${legacyCitation.id}`, // Use annotation_id if available
+    citationDestination: legacyCitation.id,
+    sourcePage: legacyCitation.sourcePage,
+    targetPage: legacyCitation.destPage,
+    targetPosition: {
+      x: legacyCitation.xPosition,
+      y: legacyCitation.yPosition
+    },
+    annotationRect: [],
+    startingLine: {
+      lineIndex: 0,
+      position: {
+        x: legacyCitation.xPosition,
+        y: legacyCitation.yPosition,
+        page: legacyCitation.destPage
+      },
+      text: legacyCitation.text.substring(0, 100) + (legacyCitation.text.length > 100 ? "..." : "")
+    },
+    reference: {
+      fullText: legacyCitation.text,
+      lineCount: legacyCitation.linesProcessed || 1,
+      characterCount: legacyCitation.text.length,
+      wordCount: legacyCitation.text.split(/\s+/).filter(word => word.length > 0).length,
+      lines: [{
+        lineIndex: 0,
+        text: legacyCitation.text,
+        position: {
+          x: legacyCitation.xPosition,
+          y: legacyCitation.yPosition,
+          page: legacyCitation.destPage
+        },
+        isStartingLine: true
+      }]
+    },
+    metadata: {
+      distance: legacyCitation.confidence < 0.5 ? 15 : 5,
+      processedAt: legacyCitation.timestamp
+    }
+  };
+}
+
+/**
+ * Check if data uses legacy format and convert if necessary
+ */
+function handleLegacyFormat(data: any): ExtractedCitation[] {
+  // Check if it's legacy format by looking for old schema properties
+  if (data.citations && Array.isArray(data.citations)) {
+    const firstCitation = data.citations[0];
+    if (firstCitation && 'id' in firstCitation && 'confidence' in firstCitation && 'method' in firstCitation) {
+      console.log(`[extractCitations] Detected legacy format, converting ${data.citations.length} citations`);
+      return data.citations.map((legacyCitation: LegacyCitation) => 
+        convertLegacyToNewFormat(legacyCitation)
+      );
+    }
+  }
+  
+  // Check if it's new format with references array
+  if (data.references && Array.isArray(data.references)) {
+    return data.references;
+  }
+  
+  // If no recognized format, return empty array
+  console.log('[extractCitations] Unrecognized data format, returning empty array');
+  return [];
+}
+
+/**
  * POST /api/citations/extract
- * Extract citation references from uploaded PDF using a child process approach
+ * Extract citation references from uploaded PDF using buildReference.js
  */
 export async function POST(request: NextRequest) {
   try {
@@ -193,14 +193,13 @@ export async function POST(request: NextRequest) {
 
     // Save file temporarily
     const buffer = Buffer.from(await file.arrayBuffer());
-    const tempPath = path.join(os.tmpdir(), `pdf-${Date.now()}.pdf`);
-    const outputPath = path.join(os.tmpdir(), `citations-${Date.now()}.json`);
+    const tempPdfPath = path.join(os.tmpdir(), `pdf-${Date.now()}.pdf`);
+    const outputPath = path.join(os.tmpdir(), `built-references-${Date.now()}.json`);
 
-    fs.writeFileSync(tempPath, buffer);
-    console.log(`[extractCitations] Saved PDF to: ${tempPath}`);
+    fs.writeFileSync(tempPdfPath, buffer);
+    console.log(`[extractCitations] Saved PDF to: ${tempPdfPath}`);
 
     try {
-      // Create a standalone extraction script that uses the exact same logic as extractCitationReference.js
       const projectRoot = process.cwd();
       const pdfjsPath = path.join(projectRoot, 'node_modules', 'pdfjs-dist');
       
@@ -212,223 +211,515 @@ export async function POST(request: NextRequest) {
         const pkg = require('${pdfjsPath.replace(/\\/g, '\\\\')}');
         const { getDocument, GlobalWorkerOptions } = pkg;
 
-        // Disable workers completely for Node.js environment
+        // Disable workers (Node environment)
         GlobalWorkerOptions.workerSrc = null;
 
-        // === HELPER FUNCTIONS (copied from extractCitationReference.js) ===
-        function groupTextByLines(textItems, yTolerance = 2, xGapThreshold = 20) {
-          const lines = [];
-          const sortedItems = textItems.sort((a, b) => b.transform[5] - a.transform[5]);
-
-          for (const item of sortedItems) {
-            const yPos = item.transform[5];
-            let targetLine = lines.find((line) => Math.abs(line.yPosition - yPos) <= yTolerance);
-
-            if (!targetLine) {
-              targetLine = { yPosition: yPos, items: [] };
-              lines.push(targetLine);
-            }
-            targetLine.items.push(item);
-          }
-
+        // === FUNCTIONS FROM extractReferenceContent.js ===
+        function groupTextByLines(textItems, yTolerance = 2, pageNumber = 1) {
           const finalLines = [];
-          for (const line of lines) {
-            const items = line.items.sort((a, b) => a.transform[4] - b.transform[4]);
-            let currentSubline = { yPosition: line.yPosition, items: [] };
+          let currentLine = null;
 
-            for (let i = 0; i < items.length; i++) {
-              const curr = items[i];
-              const prev = items[i - 1];
-              const prevXEnd = prev ? prev.transform[4] + (prev.width || 0) : null;
-              const currX = curr.transform[4];
-              const gap = prev ? currX - prevXEnd : 0;
+          // Process items in their natural order (no sorting)
+          for (const item of textItems) {
+            const yPos = item.transform[5];
 
-              if (i > 0 && gap > xGapThreshold) {
-                currentSubline.text = currentSubline.items.map((it) => it.str).join(" ").trim();
-                currentSubline.xPosition = currentSubline.items[0]?.transform[4] || 0;
-                finalLines.push(currentSubline);
-                currentSubline = { yPosition: line.yPosition, items: [] };
-              }
-              currentSubline.items.push(curr);
-            }
-
-            if (currentSubline.items.length > 0) {
-              currentSubline.text = currentSubline.items.map((it) => it.str).join(" ").trim();
-              currentSubline.xPosition = currentSubline.items[0]?.transform[4] || 0;
-              finalLines.push(currentSubline);
-            }
-          }
-
-          return finalLines.sort((a, b) => b.yPosition - a.yPosition);
-        }
-
-        function calculateAdaptiveThresholds(page, lines) {
-          const pageView = page.view;
-          const pageWidth = pageView[2] - pageView[0];
-          const pageHeight = pageView[3] - pageView[1];
-
-          const textStats = analyzeTextMetrics(lines);
-          const searchRange = Math.max(textStats.averageLineHeight * 10, pageHeight * 0.12, 60);
-          const xTolerance = Math.max(textStats.averageCharWidth * 5, pageWidth * 0.03, 20);
-
-          return {
-            searchRange: Math.round(searchRange),
-            xTolerance: Math.round(xTolerance),
-            pageWidth,
-            pageHeight,
-            textStats,
-          };
-        }
-
-        function analyzeTextMetrics(lines) {
-          if (lines.length === 0) {
-            return { averageLineHeight: 12, averageCharWidth: 6, lineSpacing: 14 };
-          }
-
-          const lineHeights = [];
-          const sortedLines = lines.sort((a, b) => b.yPosition - a.yPosition);
-
-          for (let i = 0; i < sortedLines.length - 1; i++) {
-            const diff = sortedLines[i].yPosition - sortedLines[i + 1].yPosition;
-            if (diff > 0 && diff < 100) {
-              lineHeights.push(diff);
-            }
-          }
-
-          const charWidths = [];
-          lines.forEach((line) => {
-            if (line.items && line.items.length > 0) {
-              line.items.forEach((item) => {
-                if (item.str && item.str.length > 0 && item.width) {
-                  charWidths.push(item.width / item.str.length);
-                }
-              });
-            }
-          });
-
-          const averageLineHeight = lineHeights.length > 0 ? lineHeights.reduce((a, b) => a + b, 0) / lineHeights.length : 12;
-          const averageCharWidth = charWidths.length > 0 ? charWidths.reduce((a, b) => a + b, 0) / charWidths.length : 6;
-
-          return {
-            averageLineHeight: Math.max(averageLineHeight, 8),
-            averageCharWidth: Math.max(averageCharWidth, 3),
-            lineSpacing: averageLineHeight,
-            totalLines: lines.length,
-            analyzedLineHeights: lineHeights.length,
-            analyzedCharWidths: charWidths.length,
-          };
-        }
-
-        function extractReferenceText(lines, targetX = 0, targetY, page = null) {
-          const thresholds = page ? calculateAdaptiveThresholds(page, lines) : { searchRange: 60, xTolerance: 25 };
-
-          const candidateLines = lines.filter((line) => {
-            if (line.isNextPage) {
-              const nextPageLines = lines.filter((l) => l.isNextPage);
-              if (nextPageLines.length === 0) return false;
-              const maxNextPageY = Math.max(...nextPageLines.map((l) => l.yPosition));
-              return line.yPosition >= maxNextPageY - thresholds.searchRange;
+            // Check if this item belongs to the current line (Y position only)
+            if (currentLine && Math.abs(currentLine.yPosition - yPos) <= yTolerance) {
+              // Add to current line
+              currentLine.items.push(item);
             } else {
-              return line.yPosition <= targetY && line.yPosition >= targetY - thresholds.searchRange;
+              // Finalize previous line if exists
+              if (currentLine) {
+                currentLine.text = currentLine.items
+                  .map((it) => it.str)
+                  .join("")
+                  .trim();
+                currentLine.xPosition = currentLine.items[0]?.transform[4] || 0;
+                finalLines.push(currentLine);
+              }
+
+              // Start new line
+              currentLine = {
+                yPosition: yPos,
+                pageNumber: pageNumber,
+                items: [item],
+              };
             }
+          }
+
+          // Don't forget the last line
+          if (currentLine) {
+            currentLine.text = currentLine.items
+              .map((it) => it.str)
+              .join(" ")
+              .trim();
+            currentLine.xPosition = currentLine.items[0]?.transform[4] || 0;
+            finalLines.push(currentLine);
+          }
+
+          return finalLines;
+        }
+
+        async function getTwoMostCommonCitationX(pdfPath) {
+          const pdf = await getDocument(pdfPath).promise;
+          console.log('📄 Analyzing citation destinations in PDF with ' + pdf.numPages + ' pages.');
+
+          const referenceXPositions = [];
+
+          // Step 1: Extract all citation link annotations and resolve their destinations
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const annotations = await page.getAnnotations();
+
+            for (const ann of annotations) {
+              // Filter for citation links only
+              if (
+                ann.subtype === "Link" &&
+                typeof ann.dest === "string" &&
+                ann.dest.startsWith("cite.")
+              ) {
+                try {
+                  // Step 2: Resolve the destination to get the reference position
+                  const dest = await pdf.getDestination(ann.dest);
+                  if (!dest) {
+                    console.log('⚠️ Could not resolve destination: ' + ann.dest);
+                    continue;
+                  }
+
+                  // dest structure: [pageRef, type, x, y, ...]
+                  // dest[2] = x-position of the reference
+                  // dest[3] = y-position of the reference
+                  const referenceX = dest[2] ?? 0;
+                  const referenceY = dest[3] ?? 0;
+
+                  // Get page index for the reference
+                  const pageIndex = await pdf.getPageIndex(dest[0]);
+
+                  console.log('🔗 Citation "' + ann.dest + '" -> Reference at page ' + (pageIndex + 1) + ', X=' + referenceX.toFixed(1) + ', Y=' + referenceY.toFixed(1));
+
+                  referenceXPositions.push({
+                    citationId: ann.dest,
+                    referenceX: referenceX,
+                    referenceY: referenceY,
+                    referencePage: pageIndex + 1,
+                    citationPage: pageNum,
+                    citationRect: ann.rect,
+                  });
+                } catch (error) {
+                  console.log('⚠️ Error resolving destination "' + ann.dest + '": ' + error.message);
+                }
+              }
+            }
+          }
+
+          console.log('🔗 Found ' + referenceXPositions.length + ' citation links with resolved destinations.');
+
+          if (referenceXPositions.length === 0) {
+            return [];
+          }
+
+          // Step 2: Extract just the X positions for clustering
+          const xPositions = referenceXPositions.map((ref) => ref.referenceX);
+
+          // Step 3: Group X positions with tolerance of 5 (references might have slight variations)
+          const tolerance = 5;
+          const xClusters = [];
+
+          for (const xPos of xPositions) {
+            // Find existing cluster within tolerance
+            let targetCluster = xClusters.find(
+              (cluster) => Math.abs(cluster.x - xPos) <= tolerance
+            );
+
+            if (!targetCluster) {
+              // Create new cluster
+              targetCluster = {
+                x: xPos,
+                count: 0,
+                positions: [],
+                references: [],
+              };
+              xClusters.push(targetCluster);
+            }
+
+            // Add position to cluster
+            targetCluster.positions.push(xPos);
+            targetCluster.count++;
+
+            // Store reference info
+            const refInfo = referenceXPositions.find((ref) => ref.referenceX === xPos);
+            if (refInfo) {
+              targetCluster.references.push(refInfo);
+            }
+
+            // Update cluster center to average of all positions
+            targetCluster.x =
+              targetCluster.positions.reduce((a, b) => a + b, 0) / targetCluster.positions.length;
+          }
+
+          // Step 4: Sort by count (most common first) and return top 2
+          const sortedClusters = xClusters
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 2)
+            .map((cluster) => ({
+              xPosition: Math.round(cluster.x * 10) / 10, // Round to 1 decimal
+              count: cluster.count,
+              sampleReferences: cluster.references.slice(0, 3).map((ref) => ({
+                citationId: ref.citationId,
+                page: ref.referencePage,
+                x: ref.referenceX.toFixed(1),
+                y: ref.referenceY.toFixed(1),
+              })),
+            }));
+
+          console.log('🎯 Two most common reference X positions:');
+          sortedClusters.forEach((cluster, index) => {
+            console.log('   ' + (index + 1) + '. X = ' + cluster.xPosition + ' (' + cluster.count + ' references)');
+            console.log('      Sample references: ' + cluster.sampleReferences
+              .map((ref) => ref.citationId + ' at (' + ref.x + ', ' + ref.y + ') on page ' + ref.page)
+              .join(', '));
           });
+
+          return sortedClusters;
+        }
+
+        async function extractReferenceLines(pdfPath) {
+          const pdf = await getDocument(pdfPath).promise;
+          console.log('📄 Starting reference extraction from ' + pdfPath + ' with ' + pdf.numPages + ' pages.');
+
+          // Step 1: Get the 2 most common X positions using existing function
+          const commonXPositions = await getTwoMostCommonCitationX(pdfPath);
+
+          if (commonXPositions.length === 0) {
+            console.log('⚠️ No common X positions found for references.');
+            return {
+              referenceLines: [],
+              metadata: { totalLines: 0, filteredLines: 0 },
+            };
+          }
+
+          console.log('🎯 Using ' + commonXPositions.length + ' common X positions for filtering');
+
+          // Step 2: Get all pages that contain references (where citations point to)
+          const referencePagesSet = new Set();
+
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const annotations = await page.getAnnotations();
+
+            for (const ann of annotations) {
+              if (
+                ann.subtype === "Link" &&
+                typeof ann.dest === "string" &&
+                ann.dest.startsWith("cite.")
+              ) {
+                try {
+                  const dest = await pdf.getDestination(ann.dest);
+                  if (dest) {
+                    const targetPageIndex = await pdf.getPageIndex(dest[0]);
+                    referencePagesSet.add(targetPageIndex + 1);
+                  }
+                } catch (error) {
+                  // Skip problematic destinations
+                }
+              }
+            }
+          }
+
+          const referencePages = Array.from(referencePagesSet).sort((a, b) => a - b);
+          console.log('📚 Found references on pages: ' + referencePages.join(', '));
+
+          // Step 3: Extract lines from reference pages using existing groupTextByLines function
+          // AND preserve the original order with line indices
+          const allLinesWithIndices = [];
+          let globalLineIndex = 0;
+
+          for (const pageNum of referencePages) {
+            const page = await pdf.getPage(pageNum);
+            const textContent = await page.getTextContent();
+
+            // Use existing groupTextByLines function
+            const lines = groupTextByLines(textContent.items, 2, pageNum);
+
+            // Add original line indices to preserve order
+            const linesWithIndices = lines.map((line, localIndex) => ({
+              ...line,
+              lineIndex: globalLineIndex++,
+              pageLineIndex: localIndex, // Index within the page
+              characterCount: line.text.length,
+              wordCount: line.text
+                .trim()
+                .split(/\\s+/)
+                .filter((word) => word.length > 0).length,
+            }));
+
+            allLinesWithIndices.push(...linesWithIndices);
+          }
+
+          console.log('📝 Extracted ' + allLinesWithIndices.length + ' total lines from reference pages');
+
+          // Step 4: Filter lines that start within (x-3, x+40) for each common X
+          // AND label starting lines that are within (x-3, x+8)
+          const filteredLines = [];
+
+          // Create X range filters for filtering and starting line detection
+          const xRanges = commonXPositions.map((commonX) => ({
+            xMin: commonX.xPosition - 3,
+            xMax: commonX.xPosition + 40,
+            startingLineXMin: commonX.xPosition - 3,
+            startingLineXMax: commonX.xPosition + 8,
+            clusterX: commonX.xPosition,
+            clusterCount: commonX.count,
+          }));
+
+          console.log('🔍 Filtering lines with X ranges:');
+          xRanges.forEach((range, index) => {
+            console.log('   Range ' + (index + 1) + ': Filter ' + range.xMin.toFixed(1) + ' to ' + range.xMax.toFixed(1) + ', Starting lines ' + range.startingLineXMin.toFixed(1) + ' to ' + range.startingLineXMax.toFixed(1));
+          });
+
+          // Filter lines while preserving order and labeling starting lines
+          let startingLinesCount = 0;
+          for (const line of allLinesWithIndices) {
+            // Check if line falls within any of the X ranges for filtering
+            const matchingRange = xRanges.find(
+              (range) => line.xPosition >= range.xMin && line.xPosition <= range.xMax
+            );
+
+            if (matchingRange) {
+              // Check if this line is a starting line (within tighter x range)
+              const isStartingLine =
+                line.xPosition >= matchingRange.startingLineXMin &&
+                line.xPosition <= matchingRange.startingLineXMax;
+
+              if (isStartingLine) {
+                startingLinesCount++;
+              }
+
+              // Add metadata to matching line
+              const enrichedLine = {
+                ...line,
+                isStartingLine: isStartingLine,
+                referenceCluster: {
+                  clusterX: matchingRange.clusterX,
+                  clusterCount: matchingRange.clusterCount,
+                  distanceFromClusterX: Math.abs(
+                    line.xPosition - matchingRange.clusterX
+                  ),
+                },
+              };
+
+              filteredLines.push(enrichedLine);
+            }
+          }
+
+          console.log('   Found ' + filteredLines.length + ' lines matching X ranges');
+          console.log('   Found ' + startingLinesCount + ' starting lines');
+
+          // Step 5: Remove duplicates while preserving order (keep the first occurrence)
+          const uniqueLines = [];
+          const seen = new Set();
+
+          for (const line of filteredLines) {
+            const key = line.pageNumber + '_' + Math.round(line.yPosition) + '_' + line.text.substring(0, 50);
+
+            if (!seen.has(key)) {
+              seen.add(key);
+              uniqueLines.push(line);
+            }
+          }
+
+          // Lines are already in the correct order (by page, then by original line order)
+          // No need to re-sort as this would break the natural reading order
+
+          const finalStartingLinesCount = uniqueLines.filter(
+            (line) => line.isStartingLine
+          ).length;
+          console.log('📋 After removing duplicates: ' + uniqueLines.length + ' unique lines (' + finalStartingLinesCount + ' starting lines)');
+
+          // Step 6: Create result with metadata
+          const result = {
+            referenceLines: uniqueLines,
+            metadata: {
+              pdfPath: pdfPath,
+              totalPagesScanned: pdf.numPages,
+              referencePagesFound: referencePages.length,
+              referencePagesNumbers: referencePages,
+              commonXPositions: commonXPositions,
+              xRanges: xRanges,
+              totalLinesExtracted: allLinesWithIndices.length,
+              filteredLinesCount: uniqueLines.length,
+              startingLinesCount: finalStartingLinesCount,
+              continuationLinesCount: uniqueLines.length - finalStartingLinesCount,
+              extractedAt: new Date().toISOString(),
+            },
+          };
+
+          console.log('✅ Successfully extracted ' + uniqueLines.length + ' reference lines (' + finalStartingLinesCount + ' starting, ' + (uniqueLines.length - finalStartingLinesCount) + ' continuation)');
+
+          // Show sample results with starting line labels
+          console.log('\\n📋 Sample reference lines (first 5):');
+          uniqueLines.slice(0, 5).forEach((line, index) => {
+            const lineType = line.isStartingLine ? "🟢 START" : "🔵 CONT";
+            console.log('   ' + (index + 1) + '. ' + lineType + ' LineIndex: ' + line.lineIndex + ', Page ' + line.pageNumber + ', Y=' + line.yPosition.toFixed(1) + ', X=' + line.xPosition.toFixed(1));
+            console.log('      Text: "' + line.text.substring(0, 80) + (line.text.length > 80 ? "..." : "") + '"');
+          });
+
+          // Show starting lines summary
+          console.log('\\n🟢 Starting lines summary:');
+          const startingLines = uniqueLines.filter((line) => line.isStartingLine);
+          startingLines.slice(0, 3).forEach((line, index) => {
+            console.log('   ' + (index + 1) + '. Line ' + line.lineIndex + ': "' + line.text.substring(0, 60) + (line.text.length > 60 ? "..." : "") + '"');
+          });
+
+          return result;
+        }
+
+        // === FUNCTIONS FROM buildReference.js ===
+        function detectStartingPoint(targetX, targetY, targetPage, referenceLines) {
+          const xMinTolerance = 5;
+          const xMaxTolerance = 8;
+          const yTolerance = 15;
+
+          console.log('🎯 Looking for starting point near (' + targetX.toFixed(1) + ', ' + targetY.toFixed(1) + ') on page ' + targetPage);
+          console.log('   X range: ' + (targetX - xMinTolerance).toFixed(1) + ' to ' + (targetX + xMaxTolerance).toFixed(1));
+          console.log('   Y range: ' + (targetY - yTolerance).toFixed(1) + ' to ' + (targetY + yTolerance).toFixed(1));
+
+          const pageLines = referenceLines.filter((line) => line.pageNumber === targetPage);
+          console.log('   Found ' + pageLines.length + ' lines on page ' + targetPage);
+          
+          const candidateLines = pageLines.filter((line) => {
+            const xInRange = line.xPosition >= targetX - xMinTolerance && line.xPosition <= targetX + xMaxTolerance;
+            const yInRange = Math.abs(line.yPosition - targetY) <= yTolerance;
+            return xInRange && yInRange;
+          });
+
+          console.log('   Found ' + candidateLines.length + ' candidate lines within tolerance');
 
           if (candidateLines.length === 0) {
-            return { text: "(no text found)", method: "none", confidence: 0, thresholds };
+            console.log('   ❌ No lines found within tolerance');
+            return null;
           }
 
-          const xFilteredLines = candidateLines.filter((line) => {
-            const x = line.xPosition ?? 0;
-            return Math.abs(x - targetX) <= thresholds.xTolerance;
+          candidateLines.sort((a, b) => {
+            if (a.isStartingLine && !b.isStartingLine) return -1;
+            if (!a.isStartingLine && b.isStartingLine) return 1;
+            
+            const distanceA = Math.sqrt(
+              Math.pow(a.xPosition - targetX, 2) + Math.pow(a.yPosition - targetY, 2)
+            );
+            const distanceB = Math.sqrt(
+              Math.pow(b.xPosition - targetX, 2) + Math.pow(b.yPosition - targetY, 2)
+            );
+            return distanceA - distanceB;
           });
 
-          if (xFilteredLines.length === 0) {
-            return { text: "(no text found)", method: "none", confidence: 0, thresholds };
+          const selectedLine = candidateLines[0];
+          console.log('   ✅ Selected line ' + selectedLine.lineIndex + ': "' + selectedLine.text.substring(0, 50) + '..."');
+          console.log('      Position: (' + selectedLine.xPosition.toFixed(1) + ', ' + selectedLine.yPosition.toFixed(1) + ')');
+          console.log('      IsStartingLine: ' + selectedLine.isStartingLine);
+          console.log('      Distance: ' + Math.sqrt(Math.pow(selectedLine.xPosition - targetX, 2) + Math.pow(selectedLine.yPosition - targetY, 2)).toFixed(1));
+
+          return selectedLine;
+        }
+
+        function buildFullTextWithHyphenation(lines) {
+          if (!lines || lines.length === 0) {
+            return "";
           }
 
-          xFilteredLines.sort((a, b) => {
-            if (a.isNextPage && !b.isNextPage) return 1;
-            if (!a.isNextPage && b.isNextPage) return -1;
-            return b.yPosition - a.yPosition;
-          });
+          if (lines.length === 1) {
+            return lines[0].text.trim();
+          }
 
-          const referencePatterns = [
-            { pattern: /^\\s*\\[(\\d+)\\]/, type: "numbered" },
-            { pattern: /^\\s*[A-Z][a-z]+,\\s*[A-Z]\\..*?\\(\\d{4}\\)/, type: "author-year" },
-            { pattern: /^\\s*[A-Z][a-z]+\\s+et\\s+al\\..*?\\(\\d{4}\\)/, type: "author-year" },
-            { pattern: /^\\s*(?:doi:|DOI:|\\[doi\\])/i, type: "doi" },
-            { pattern: /^\\s*(?:https?:|www\\.)/i, type: "url" },
-            { pattern: /^\\s*arXiv:/i, type: "arxiv" },
-            { pattern: /^\\s*(\\d+)\\.\\s+/, type: "numbered-dot" },
-          ];
+          let fullText = "";
 
-          let referenceText = "";
-          let foundStart = false;
-          let referenceType = null;
-          let confidence = 0;
-          const collectedLines = [];
-          let spansPages = false;
+          for (let i = 0; i < lines.length; i++) {
+            const currentLine = lines[i];
+            const currentText = currentLine.text.trim();
 
-          for (const line of xFilteredLines) {
-            const text = line.text.trim();
-            if (!text) continue;
+            if (i === 0) {
+              fullText = currentText;
+            } else {
+              const previousLineEndsWithHyphen = fullText.endsWith("-");
+              const previousLineEndsWithColon = fullText.endsWith(":");
+              const previousLineEndsWithSlash = fullText.endsWith("/");
 
-            if (line.isNextPage) {
-              spansPages = true;
-            }
-
-            const matchedPattern = referencePatterns.find(({ pattern }) => pattern.test(text));
-
-            if (!foundStart && matchedPattern) {
-              foundStart = true;
-              referenceType = matchedPattern.type;
-              referenceText = text;
-              confidence = 0.8;
-              collectedLines.push(line);
-            } else if (foundStart && matchedPattern) {
-              if (matchedPattern.type === referenceType) {
-                break;
+              if (previousLineEndsWithHyphen) {
+                fullText = fullText.slice(0, -1) + currentText;
+                console.log('   🔗 Merged hyphenated word: "' + fullText.slice(-20) + '"');
+              } else if (previousLineEndsWithColon) {
+                fullText = fullText + currentText;
+                console.log('   🔗 Merged colon continuation: "' + fullText.slice(-20) + '"');
+              } else if (previousLineEndsWithSlash) {
+                fullText = fullText + currentText;
+                console.log('   🔗 Merged slash continuation: "' + fullText.slice(-20) + '"');
               } else {
-                referenceText += " " + text;
-                collectedLines.push(line);
-              }
-            } else if (foundStart) {
-              referenceText += " " + text;
-              collectedLines.push(line);
-
-              if (/^\\s*(Appendix|Index|Acknowledgments|Figures|Tables)\\s/i.test(text)) {
-                break;
+                fullText += " " + currentText;
               }
             }
           }
 
-          if (!referenceText.trim()) {
-            const fallbackLines = candidateLines.filter((line) => {
-              const x = line.xPosition ?? 0;
-              return Math.abs(x - targetX) <= thresholds.xTolerance;
-            });
+          return fullText.trim();
+        }
 
-            referenceText = fallbackLines.map((line) => line.text.trim()).join(" ").trim();
-            confidence = 0.3;
-            referenceType = "proximity";
-            collectedLines.push(...fallbackLines);
+        function buildReferenceText(startingLine, referenceLines) {
+          console.log('📝 Building reference text from line ' + startingLine.lineIndex);
+
+          const result = [startingLine];
+          const startingLineIndex = startingLine.lineIndex;
+
+          const sortedLines = referenceLines.slice().sort((a, b) => a.lineIndex - b.lineIndex);
+          const startingPosition = sortedLines.findIndex((line) => line.lineIndex === startingLineIndex);
+
+          if (startingPosition === -1) {
+            console.log('   ⚠️ Could not find starting line in sorted array, returning single line');
+            return {
+              lines: result,
+              fullText: startingLine.text.trim(),
+              lineCount: 1,
+              startingLineIndex: startingLineIndex,
+              endingLineIndex: startingLineIndex,
+              characterCount: startingLine.text.trim().length,
+              wordCount: startingLine.text.trim().split(/\\s+/).filter(word => word.length > 0).length
+            };
           }
 
-          const cleanedText = referenceText.replace(/\\s+/g, " ").replace(/[\\u00A0\\u2000-\\u200B\\u2028\\u2029]/g, " ").trim().substring(0, 1000);
+          let linesAdded = 0;
+          for (let i = startingPosition + 1; i < sortedLines.length; i++) {
+            const currentLine = sortedLines[i];
+
+            if (currentLine.isStartingLine) {
+              console.log('   🛑 Stopped at next starting line ' + currentLine.lineIndex);
+              break;
+            }
+
+            if (Math.abs(currentLine.pageNumber - startingLine.pageNumber) > 1) {
+              console.log('   🛑 Stopped due to page distance (current: ' + currentLine.pageNumber + ', start: ' + startingLine.pageNumber + ')');
+              break;
+            }
+
+            result.push(currentLine);
+            linesAdded++;
+          }
+
+          const fullText = buildFullTextWithHyphenation(result);
+
+          console.log('   ✅ Built reference with ' + result.length + ' lines (added ' + linesAdded + ' continuation lines)');
+          console.log('   📏 Text length: ' + fullText.length + ' characters');
+          console.log('   📖 Preview: "' + fullText.substring(0, 100) + (fullText.length > 100 ? "..." : "") + '"');
 
           return {
-            text: cleanedText || "(no text found)",
-            method: referenceType || "proximity",
-            confidence: spansPages ? confidence + 0.1 : confidence,
-            linesUsed: collectedLines.length,
-            spansPages,
-            thresholds,
-            candidatesFound: candidateLines.length,
-            xFilteredFound: xFilteredLines.length,
+            lines: result,
+            fullText: fullText,
+            lineCount: result.length,
+            startingLineIndex: startingLineIndex,
+            endingLineIndex: result[result.length - 1].lineIndex,
+            characterCount: fullText.length,
+            wordCount: fullText.split(/\\s+/).filter((word) => word.length > 0).length,
           };
         }
 
-        async function extractCitations(pdfPath, outputPath) {
+        async function extractReferencesFromFile(pdfPath, outputPath) {
           try {
             const pdf = await getDocument({
               url: pdfPath,
@@ -437,99 +728,184 @@ export async function POST(request: NextRequest) {
               useSystemFonts: true,
             }).promise;
             
-            console.log('[Extract Script] Loaded PDF with ' + pdf.numPages + ' pages');
+            console.log('📄 Loaded PDF with ' + pdf.numPages + ' pages');
+
+            const referenceResult = await extractReferenceLines(pdfPath);
+            const referenceLines = referenceResult.referenceLines;
+            console.log('📝 Extracted ' + referenceLines.length + ' reference lines');
+
+            if (referenceLines.length === 0) {
+              const result = {
+                references: [],
+                metadata: {
+                  totalCitations: 0,
+                  successfulReferences: 0,
+                  failedReferences: 0,
+                  successRate: '0.0%',
+                  totalReferenceLines: 0,
+                  extractedAt: new Date().toISOString(),
+                  error: 'No reference lines found'
+                }
+              };
+              fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+              return;
+            }
 
             const citations = [];
 
-            for (let i = 1; i <= pdf.numPages; i++) {
-              const page = await pdf.getPage(i);
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+              const page = await pdf.getPage(pageNum);
               const annotations = await page.getAnnotations();
 
               for (const ann of annotations) {
-                if (ann.subtype === 'Link' && typeof ann.dest === 'string' && ann.dest.startsWith('cite.')) {
-                  const destName = ann.dest;
+                if (
+                  ann.subtype === "Link" &&
+                  typeof ann.dest === "string" &&
+                  ann.dest.startsWith("cite.")
+                ) {
                   try {
-                    const dest = await pdf.getDestination(destName);
-                    if (!dest) continue;
+                    const dest = await pdf.getDestination(ann.dest);
+                    if (dest) {
+                      const targetX = dest[2] ?? 0;
+                      const targetY = dest[3] ?? 0;
+                      const targetPageIndex = await pdf.getPageIndex(dest[0]);
+                      const targetPage = targetPageIndex + 1;
 
-                    const pageIndex = await pdf.getPageIndex(dest[0]);
-                    const targetPage = await pdf.getPage(pageIndex + 1);
-                    const targetX = dest[2] ?? 0;
-                    const targetY = dest[3] ?? 0;
-
-                    const textContent = await targetPage.getTextContent();
-                    const lines = groupTextByLines(textContent.items);
-
-                    let allLines = [...lines];
-                    let nextPageLines = [];
-                    let spansPages = false;
-
-                    const pageHeight = targetPage.view[3] - targetPage.view[1] || 792;
-                    const distanceFromBottom = targetY;
-
-                    if (distanceFromBottom < 100 && pageIndex + 2 <= pdf.numPages) {
-                      try {
-                        const nextPage = await pdf.getPage(pageIndex + 2);
-                        const nextTextContent = await nextPage.getTextContent();
-                        nextPageLines = groupTextByLines(nextTextContent.items);
-
-                        nextPageLines = nextPageLines.map((line) => ({
-                          ...line,
-                          yPosition: line.yPosition - pageHeight,
-                          isNextPage: true,
-                        }));
-
-                        allLines = [...lines, ...nextPageLines];
-                        spansPages = true;
-                        console.log('🚩 Including next page for citation ' + destName + ' spanning pages ' + (pageIndex + 1) + '-' + (pageIndex + 2));
-                      } catch (err) {
-                        console.warn('⚠️ Could not load next page for multi-page citation: ' + err.message);
-                      }
+                      citations.push({
+                        annotationId: ann.id || 'ann_' + pageNum + '_' + citations.length,
+                        citationDestination: ann.dest,
+                        sourcePage: pageNum,
+                        targetPage: targetPage,
+                        targetX: targetX,
+                        targetY: targetY,
+                        annotationRect: ann.rect || []
+                      });
                     }
-
-                    const extractionResult = extractReferenceText(allLines, targetX, targetY, targetPage);
-
-                    citations.push({
-                      citationId: destName,
-                      sourcePage: i,
-                      targetPage: pageIndex + 1,
-                      spansPages: extractionResult.spansPages || spansPages,
-                      xPosition: targetX,
-                      yPosition: targetY,
-                      referenceText: extractionResult.text,
-                      extractionMethod: extractionResult.method,
-                      confidence: extractionResult.confidence,
-                      linesProcessed: extractionResult.linesUsed,
-                      candidatesFound: extractionResult.candidatesFound,
-                      xFilteredFound: extractionResult.xFilteredFound,
-                      thresholds: extractionResult.thresholds,
-                      timestamp: new Date().toISOString(),
-                    });
-
-                    console.log('✅ Extracted citation ' + destName + ' (' + extractionResult.method + ', confidence: ' + extractionResult.confidence + (spansPages ? ', spans pages' : '') + '): ' + extractionResult.text.substring(0, 100) + '...');
-                  } catch (err) {
-                    console.warn('⚠️ Could not resolve destination ' + ann.dest + ':', err.message);
+                  } catch (error) {
+                    console.log('⚠️ Error processing citation ' + ann.dest + ': ' + error.message);
                   }
                 }
               }
             }
 
-            fs.writeFileSync(outputPath, JSON.stringify({ citations, total: citations.length }, null, 2));
-            console.log('[Extract Script] Extracted ' + citations.length + ' citations');
+            console.log('🔗 Found ' + citations.length + ' citations with valid targets');
+
+            const builtReferences = [];
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const citation of citations) {
+              try {
+                console.log('\\n--- Processing citation ' + citation.citationDestination + ' (ID: ' + citation.annotationId + ') ---');
+                
+                const startingPoint = detectStartingPoint(
+                  citation.targetX,
+                  citation.targetY,
+                  citation.targetPage,
+                  referenceLines
+                );
+
+                if (!startingPoint) {
+                  console.log('❌ No starting point found for ' + citation.citationDestination);
+                  failCount++;
+                  continue;
+                }
+
+                const builtText = buildReferenceText(startingPoint, referenceLines);
+
+                const reference = {
+                  annotationId: citation.annotationId,
+                  citationDestination: citation.citationDestination,
+                  sourcePage: citation.sourcePage,
+                  targetPage: citation.targetPage,
+                  targetPosition: {
+                    x: citation.targetX,
+                    y: citation.targetY
+                  },
+                  annotationRect: citation.annotationRect,
+                  startingLine: {
+                    lineIndex: startingPoint.lineIndex,
+                    position: {
+                      x: startingPoint.xPosition,
+                      y: startingPoint.yPosition,
+                      page: startingPoint.pageNumber
+                    },
+                    text: startingPoint.text
+                  },
+                  reference: {
+                    fullText: builtText.fullText,
+                    lineCount: builtText.lineCount,
+                    characterCount: builtText.characterCount,
+                    wordCount: builtText.wordCount,
+                    lines: builtText.lines.map(line => ({
+                      lineIndex: line.lineIndex,
+                      text: line.text,
+                      position: {
+                        x: line.xPosition,
+                        y: line.yPosition,
+                        page: line.pageNumber
+                      },
+                      isStartingLine: line.isStartingLine
+                    }))
+                  },
+                  metadata: {
+                    distance: Math.sqrt(
+                      Math.pow(startingPoint.xPosition - citation.targetX, 2) + 
+                      Math.pow(startingPoint.yPosition - citation.targetY, 2)
+                    ),
+                    processedAt: new Date().toISOString()
+                  }
+                };
+
+                builtReferences.push(reference);
+                successCount++;
+                console.log('✅ Successfully built reference for ' + citation.citationDestination + ' (ID: ' + citation.annotationId + ')');
+                
+              } catch (error) {
+                console.error('❌ Failed to build reference for ' + citation.citationDestination + ' (ID: ' + citation.annotationId + '): ' + error.message);
+                failCount++;
+              }
+            }
+
+            const result = {
+              references: builtReferences,
+              metadata: {
+                totalCitations: citations.length,
+                successfulReferences: successCount,
+                failedReferences: failCount,
+                successRate: citations.length > 0 ? ((successCount / citations.length) * 100).toFixed(1) + '%' : '0.0%',
+                totalReferenceLines: referenceLines.length,
+                extractedAt: new Date().toISOString()
+              }
+            };
+
+            fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+            console.log('✅ Successfully built ' + successCount + ' references from ' + citations.length + ' citations');
+            
           } catch (error) {
-            console.error('[Extract Script] Error:', error);
-            fs.writeFileSync(outputPath, JSON.stringify({ error: error.message, citations: [] }, null, 2));
+            console.error('Error:', error);
+            fs.writeFileSync(outputPath, JSON.stringify({ 
+              error: error.message, 
+              references: [],
+              metadata: {
+                totalCitations: 0,
+                successfulReferences: 0,
+                failedReferences: 0,
+                successRate: '0.0%',
+                totalReferenceLines: 0,
+                extractedAt: new Date().toISOString()
+              }
+            }, null, 2));
           }
         }
 
-        extractCitations('${tempPath.replace(/\\/g, '\\\\')}', '${outputPath.replace(/\\/g, '\\\\')}');
+        extractReferencesFromFile('${tempPdfPath.replace(/\\/g, '\\\\')}', '${outputPath.replace(/\\/g, '\\\\')}');
       `;
 
       const wrapperPath = path.join(os.tmpdir(), `extract-wrapper-${Date.now()}.js`);
       fs.writeFileSync(wrapperPath, extractScript);
 
-      // Execute the extraction script from the project directory
-      console.log(`[extractCitations] Running extraction script...`);
+      console.log(`[extractCitations] Running buildReference extraction...`);
       const { stdout, stderr } = await execAsync(`cd "${projectRoot}" && node "${wrapperPath}"`);
 
       if (stdout) console.log(`[extractCitations] stdout:`, stdout);
@@ -537,35 +913,21 @@ export async function POST(request: NextRequest) {
 
       // Read the results
       const results = JSON.parse(fs.readFileSync(outputPath, 'utf-8'));
-      const rawCitations = results.citations || [];
+      
+      // Handle both legacy and new formats
+      const extractedCitations = handleLegacyFormat(results);
 
-      console.log(`[extractCitations] Extracted ${rawCitations.length} citations`);
+      console.log(`[extractCitations] Built ${extractedCitations.length} references`);
 
-      // Map the results to match the exact format from extractCitationReference.js
-      const citations: ExtractedCitation[] = rawCitations.map((citation: any) => ({
-        id: citation.citationId,
-        text: citation.referenceText,
-        confidence: citation.confidence,
-        method: citation.extractionMethod,
-        spansPages: citation.spansPages,
-        destPage: citation.targetPage,
-        // Include additional metadata from the original script
-        sourcePage: citation.sourcePage,
-        xPosition: citation.xPosition,
-        yPosition: citation.yPosition,
-        linesProcessed: citation.linesProcessed,
-        candidatesFound: citation.candidatesFound,
-        xFilteredFound: citation.xFilteredFound,
-        thresholds: citation.thresholds,
-        timestamp: citation.timestamp,
-      }));
+      // Convert to legacy format for saving
+      const legacyCitations: LegacyCitation[] = extractedCitations.map(convertToLegacyFormat);
 
       // Clean up temp files
-      fs.unlinkSync(tempPath);
+      fs.unlinkSync(tempPdfPath);
       fs.unlinkSync(outputPath);
       fs.unlinkSync(wrapperPath);
 
-      // Save extracted citations to data directory for debugging
+      // Save extracted citations to data directory in legacy format
       const dataDir = path.join(process.cwd(), "data", "citations");
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
@@ -575,23 +937,15 @@ export async function POST(request: NextRequest) {
       const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
       const finalOutputPath = path.join(dataDir, `${safeFileName}_${timestamp}.json`);
 
-      // Check for duplicate citation IDs
-      const citationIds = citations.map(c => c.id);
-      const uniqueIds = new Set(citationIds);
-      if (citationIds.length !== uniqueIds.size) {
-        console.warn(`[API] Found ${citationIds.length - uniqueIds.size} duplicate citation IDs:`, 
-          citationIds.filter((id, index) => citationIds.indexOf(id) !== index));
-      }
-
-      // Generate extraction summary exactly like extractCitationReference.js
+      // Generate extraction summary with legacy format
       const methodCounts: Record<string, number> = {};
       let totalConfidence = 0;
       let highConfidenceCount = 0;
 
-      citations.forEach((citation) => {
-        const method = citation.method || "unknown";
+      legacyCitations.forEach((citation) => {
+        const method = citation.method || "buildReference";
         methodCounts[method] = (methodCounts[method] || 0) + 1;
-        totalConfidence += citation.confidence || 0;
+        totalConfidence += citation.confidence;
         if (citation.confidence > 0.7) {
           highConfidenceCount++;
         }
@@ -601,36 +955,38 @@ export async function POST(request: NextRequest) {
         fileName: file.name,
         fileSize: file.size,
         extractedAt: new Date().toISOString(),
-        totalCitations: citations.length,
+        totalCitations: legacyCitations.length,
         byMethod: methodCounts,
-        averageConfidence: citations.length > 0 ? totalConfidence / citations.length : 0,
+        averageConfidence: legacyCitations.length > 0 ? totalConfidence / legacyCitations.length : 0,
         highConfidenceCount,
-        lowConfidenceCount: citations.filter((c) => (c.confidence || 0) < 0.5).length,
-        multiPageCitations: citations.filter((c) => c.spansPages).length,
-        citations: citations,
+        lowConfidenceCount: legacyCitations.filter((c) => c.confidence <= 0.7).length,
+        multiPageCitations: 0,
+        successRate: results.metadata?.successRate || '0.0%',
+        citations: legacyCitations, // Use legacy format
       };
 
       fs.writeFileSync(finalOutputPath, JSON.stringify(extractionData, null, 2));
       console.log(`[extractCitations] Saved extraction data to: ${finalOutputPath}`);
 
       return NextResponse.json({
-        citations,
-        totalCitations: citations.length,
+        citations: legacyCitations, // Return legacy format
+        totalCitations: legacyCitations.length,
         byMethod: methodCounts,
         averageConfidence: extractionData.averageConfidence,
         highConfidenceCount,
         lowConfidenceCount: extractionData.lowConfidenceCount,
         multiPageCitations: extractionData.multiPageCitations,
+        successRate: results.metadata?.successRate || '0.0%',
         savedToFile: finalOutputPath,
       });
+
     } catch (error) {
-      // Clean up temp file on error
-      if (fs.existsSync(tempPath)) {
-        fs.unlinkSync(tempPath);
-      }
-      if (fs.existsSync(outputPath)) {
-        fs.unlinkSync(outputPath);
-      }
+      // Clean up temp files on error
+      [tempPdfPath, outputPath].forEach(filePath => {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      });
       throw error;
     }
   } catch (error) {
@@ -640,4 +996,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+} 

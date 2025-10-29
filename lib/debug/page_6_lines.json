@@ -1,7 +1,7 @@
 {
   "pageNumber": 6,
   "totalLines": 43,
-  "extractedAt": "2025-10-25T05:07:56.828Z",
+  "extractedAt": "2025-10-28T02:58:15.642Z",
   "lines": [
     {
       "lineIndex": 0,
@@ -9,17 +9,12 @@
       "xPosition": 129.579,
       "yPosition": 710.037,
       "text": "machine learning through dynamic python bytecode transformation and graph compilation.",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "machine learning through dynamic python bytecode transformation and graph compilation.",
           "x": 129.579,
           "y": 710.037,
-          "fontName": "g_d0_f1",
           "width": 374.4243957999999,
           "height": 9.9626,
           "transform": [
@@ -39,18 +34,12 @@
       "xPosition": 129.579,
       "yPosition": 699.128,
       "text": "In   Proceedings of the 29th ACM International Conference on Architectural Support for Pro-",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f2"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "In",
           "x": 129.579,
           "y": 699.128,
-          "fontName": "g_d0_f1",
           "width": 8.2988458,
           "height": 9.9626,
           "transform": [
@@ -66,7 +55,6 @@
           "str": " ",
           "x": 137.87784580000002,
           "y": 699.128,
-          "fontName": "g_d0_f1",
           "width": 3.0701541999999904,
           "height": 9.9626,
           "transform": [
@@ -82,7 +70,6 @@
           "str": "Proceedings of the 29th ACM International Conference on Architectural Support for Pro-",
           "x": 140.948,
           "y": 699.128,
-          "fontName": "g_d0_f2",
           "width": 363.0471065999995,
           "height": 9.9626,
           "transform": [
@@ -102,18 +89,12 @@
       "xPosition": 129.579,
       "yPosition": 688.219,
       "text": "gramming Languages and Operating Systems, Volume 2 (ASPLOS ’24) . ACM, 4 2024. doi:",
-      "fonts": [
-        "g_d0_f2",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f2",
       "segments": [],
       "items": [
         {
           "str": "gramming Languages and Operating Systems, Volume 2 (ASPLOS ’24)",
           "x": 129.579,
           "y": 688.219,
-          "fontName": "g_d0_f2",
           "width": 288.8755496000001,
           "height": 9.9626,
           "transform": [
@@ -129,7 +110,6 @@
           "str": ". ACM, 4 2024. doi:",
           "x": 418.45300000000003,
           "y": 688.219,
-          "fontName": "g_d0_f1",
           "width": 85.54884620000007,
           "height": 9.9626,
           "transform": [
@@ -149,18 +129,12 @@
       "xPosition": 129.579,
       "yPosition": 677.3100000000001,
       "text": "10.1145/3620665.3640366. URL   https://pytorch.org/assets/pytorch2-2.pdf .",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "10.1145/3620665.3640366. URL",
           "x": 129.579,
           "y": 677.3100000000001,
-          "fontName": "g_d0_f1",
           "width": 133.3792888,
           "height": 9.9626,
           "transform": [
@@ -176,7 +150,6 @@
           "str": " ",
           "x": 262.95828880000005,
           "y": 677.3100000000001,
-          "fontName": "g_d0_f1",
           "width": 2.4907111999999643,
           "height": 9.9626,
           "transform": [
@@ -192,7 +165,6 @@
           "str": "https://pytorch.org/assets/pytorch2-2.pdf",
           "x": 265.449,
           "y": 677.3100000000001,
-          "fontName": "g_d0_f3",
           "width": 214.94309500000017,
           "height": 9.9626,
           "transform": [
@@ -208,7 +180,6 @@
           "str": ".",
           "x": 480.391,
           "y": 677.3100000000001,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -228,17 +199,12 @@
       "xPosition": 112.981,
       "yPosition": 658.431,
       "text": "[3] C. Auer, M. Dolfi, A. Carvalho, C. B. Ramis, and P. W. Staar. Delivering document conversion",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[3] C. Auer, M. Dolfi, A. Carvalho, C. B. Ramis, and P. W. Staar. Delivering document conversion",
           "x": 112.981,
           "y": 658.431,
-          "fontName": "g_d0_f1",
           "width": 391.02208739999963,
           "height": 9.9626,
           "transform": [
@@ -258,18 +224,12 @@
       "xPosition": 129.579,
       "yPosition": 647.522,
       "text": "as a cloud service with high throughput and responsiveness. In   2022 IEEE 15th International",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f2"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "as a cloud service with high throughput and responsiveness. In",
           "x": 129.579,
           "y": 647.522,
-          "fontName": "g_d0_f1",
           "width": 252.0338548000002,
           "height": 9.9626,
           "transform": [
@@ -285,7 +245,6 @@
           "str": " ",
           "x": 381.61285479999975,
           "y": 647.522,
-          "fontName": "g_d0_f1",
           "width": 2.6461452000002623,
           "height": 9.9626,
           "transform": [
@@ -301,7 +260,6 @@
           "str": "2022 IEEE 15th International",
           "x": 384.259,
           "y": 647.522,
-          "fontName": "g_d0_f2",
           "width": 119.7404894,
           "height": 9.9626,
           "transform": [
@@ -321,18 +279,12 @@
       "xPosition": 129.579,
       "yPosition": 636.613,
       "text": "Conference on Cloud Computing (CLOUD) , pages 363–373. IEEE, 2022.",
-      "fonts": [
-        "g_d0_f2",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f2",
       "segments": [],
       "items": [
         {
           "str": "Conference on Cloud Computing (CLOUD)",
           "x": 129.579,
           "y": 636.613,
-          "fontName": "g_d0_f2",
           "width": 174.52482680000006,
           "height": 9.9626,
           "transform": [
@@ -348,7 +300,6 @@
           "str": ", pages 363–373. IEEE, 2022.",
           "x": 304.103,
           "y": 636.613,
-          "fontName": "g_d0_f1",
           "width": 118.9833318000001,
           "height": 9.9626,
           "transform": [
@@ -368,18 +319,12 @@
       "xPosition": 112.981,
       "yPosition": 617.734,
       "text": "[4] J. Berkenbilt.   Qpdf: A content-preserving pdf document transformer, 2024.   URL   https:",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[4] J. Berkenbilt.",
           "x": 112.981,
           "y": 617.734,
-          "fontName": "g_d0_f1",
           "width": 70.9237494,
           "height": 9.9626,
           "transform": [
@@ -395,7 +340,6 @@
           "str": " ",
           "x": 183.90474940000004,
           "y": 617.734,
-          "fontName": "g_d0_f1",
           "width": 6.8443062000000054,
           "height": 9.9626,
           "transform": [
@@ -411,7 +355,6 @@
           "str": "Qpdf: A content-preserving pdf document transformer, 2024.",
           "x": 190.74905560000005,
           "y": 617.734,
-          "fontName": "g_d0_f1",
           "width": 251.5955004000002,
           "height": 9.9626,
           "transform": [
@@ -427,7 +370,6 @@
           "str": " ",
           "x": 442.3445559999997,
           "y": 617.734,
-          "fontName": "g_d0_f1",
           "width": 6.8443062000000054,
           "height": 9.9626,
           "transform": [
@@ -443,7 +385,6 @@
           "str": "URL",
           "x": 449.18886219999973,
           "y": 617.734,
-          "fontName": "g_d0_f1",
           "width": 19.9252,
           "height": 9.9626,
           "transform": [
@@ -459,7 +400,6 @@
           "str": " ",
           "x": 469.1140621999997,
           "y": 617.734,
-          "fontName": "g_d0_f1",
           "width": 3.503937800000301,
           "height": 9.9626,
           "transform": [
@@ -475,7 +415,6 @@
           "str": "https:",
           "x": 472.618,
           "y": 617.734,
-          "fontName": "g_d0_f3",
           "width": 31.382189999999998,
           "height": 9.9626,
           "transform": [
@@ -495,18 +434,12 @@
       "xPosition": 129.579,
       "yPosition": 606.8240000000001,
       "text": "//github.com/qpdf/qpdf .",
-      "fonts": [
-        "g_d0_f3",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f3",
       "segments": [],
       "items": [
         {
           "str": "//github.com/qpdf/qpdf",
           "x": 129.579,
           "y": 606.8240000000001,
-          "fontName": "g_d0_f3",
           "width": 115.06803000000005,
           "height": 9.9626,
           "transform": [
@@ -522,7 +455,6 @@
           "str": ".",
           "x": 244.64600000000002,
           "y": 606.8240000000001,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -542,18 +474,12 @@
       "xPosition": 112.98100000000002,
       "yPosition": 587.945,
       "text": "[5] O. R. developers. Onnx runtime.   https://onnxruntime.ai/ , 2024. Version: 1.18.1.",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[5] O. R. developers. Onnx runtime.",
           "x": 112.98100000000002,
           "y": 587.945,
-          "fontName": "g_d0_f1",
           "width": 147.346854,
           "height": 9.9626,
           "transform": [
@@ -569,7 +495,6 @@
           "str": " ",
           "x": 260.32785400000006,
           "y": 587.945,
-          "fontName": "g_d0_f1",
           "width": 3.5861459999999283,
           "height": 9.9626,
           "transform": [
@@ -585,7 +510,6 @@
           "str": "https://onnxruntime.ai/",
           "x": 263.914,
           "y": 587.945,
-          "fontName": "g_d0_f3",
           "width": 120.29839500000006,
           "height": 9.9626,
           "transform": [
@@ -601,7 +525,6 @@
           "str": ", 2024. Version: 1.18.1.",
           "x": 384.212,
           "y": 587.945,
-          "fontName": "g_d0_f1",
           "width": 94.67458780000008,
           "height": 9.9626,
           "transform": [
@@ -621,17 +544,12 @@
       "xPosition": 112.981,
       "yPosition": 569.066,
       "text": "[6] IBM.   Data Prep Kit:   a community project to democratize and accelerate unstructured",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[6] IBM.",
           "x": 112.981,
           "y": 569.066,
-          "fontName": "g_d0_f1",
           "width": 37.90769300000001,
           "height": 9.9626,
           "transform": [
@@ -647,7 +565,6 @@
           "str": " ",
           "x": 150.88869300000002,
           "y": 569.066,
-          "fontName": "g_d0_f1",
           "width": 11.1381868,
           "height": 9.9626,
           "transform": [
@@ -663,7 +580,6 @@
           "str": "Data Prep Kit:",
           "x": 162.02687980000002,
           "y": 569.066,
-          "fontName": "g_d0_f1",
           "width": 62.27621259999999,
           "height": 9.9626,
           "transform": [
@@ -679,7 +595,6 @@
           "str": " ",
           "x": 224.30309240000005,
           "y": 569.066,
-          "fontName": "g_d0_f1",
           "width": 7.8106784000000005,
           "height": 9.9626,
           "transform": [
@@ -695,7 +610,6 @@
           "str": "a community project to democratize and accelerate unstructured",
           "x": 232.11377080000005,
           "y": 569.066,
-          "fontName": "g_d0_f1",
           "width": 271.8893166000001,
           "height": 9.9626,
           "transform": [
@@ -715,18 +629,12 @@
       "xPosition": 129.579,
       "yPosition": 558.157,
       "text": "data   preparation   for   LLM   app developers,   2024.   URL   https://github.com/IBM/",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "data",
           "x": 129.579,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 16.5976916,
           "height": 9.9626,
           "transform": [
@@ -742,7 +650,6 @@
           "str": " ",
           "x": 146.17669160000003,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 5.9875226000000055,
           "height": 9.9626,
           "transform": [
@@ -758,7 +665,6 @@
           "str": "preparation",
           "x": 152.16421420000003,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 45.3696804,
           "height": 9.9626,
           "transform": [
@@ -774,7 +680,6 @@
           "str": " ",
           "x": 197.53389460000008,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 5.977560000000011,
           "height": 9.9626,
           "transform": [
@@ -790,7 +695,6 @@
           "str": "for",
           "x": 203.5114546000001,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 11.6163916,
           "height": 9.9626,
           "transform": [
@@ -806,7 +710,6 @@
           "str": " ",
           "x": 215.1278462000001,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 5.9875226000000055,
           "height": 9.9626,
           "transform": [
@@ -822,7 +725,6 @@
           "str": "LLM",
           "x": 221.1153688000001,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 21.0310486,
           "height": 9.9626,
           "transform": [
@@ -838,7 +740,6 @@
           "str": " ",
           "x": 242.14641740000013,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 5.9875226000000055,
           "height": 9.9626,
           "transform": [
@@ -854,7 +755,6 @@
           "str": "app developers,",
           "x": 248.13394000000014,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 65.61368360000003,
           "height": 9.9626,
           "transform": [
@@ -870,7 +770,6 @@
           "str": " ",
           "x": 313.74762360000005,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 6.864231399999994,
           "height": 9.9626,
           "transform": [
@@ -886,7 +785,6 @@
           "str": "2024.",
           "x": 320.61185500000005,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 22.41585,
           "height": 9.9626,
           "transform": [
@@ -902,7 +800,6 @@
           "str": " ",
           "x": 343.02770499999997,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 14.764573199999973,
           "height": 9.9626,
           "transform": [
@@ -918,7 +815,6 @@
           "str": "URL",
           "x": 357.79227819999994,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 19.9252,
           "height": 9.9626,
           "transform": [
@@ -934,7 +830,6 @@
           "str": " ",
           "x": 377.7174781999999,
           "y": 558.157,
-          "fontName": "g_d0_f1",
           "width": 5.9845218000000955,
           "height": 9.9626,
           "transform": [
@@ -950,7 +845,6 @@
           "str": "https://github.com/IBM/",
           "x": 383.702,
           "y": 558.157,
-          "fontName": "g_d0_f3",
           "width": 120.29839500000006,
           "height": 9.9626,
           "transform": [
@@ -970,18 +864,12 @@
       "xPosition": 129.579,
       "yPosition": 547.248,
       "text": "data-prep-kit .",
-      "fonts": [
-        "g_d0_f3",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f3",
       "segments": [],
       "items": [
         {
           "str": "data-prep-kit",
           "x": 129.579,
           "y": 547.248,
-          "fontName": "g_d0_f3",
           "width": 68.991005,
           "height": 9.9626,
           "transform": [
@@ -997,7 +885,6 @@
           "str": ".",
           "x": 198.57,
           "y": 547.248,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -1017,18 +904,12 @@
       "xPosition": 112.981,
       "yPosition": 528.369,
       "text": "[7] A. S. Inc. PyMuPDF, 2024. URL   https://github.com/pymupdf/PyMuPDF .",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[7] A. S. Inc. PyMuPDF, 2024. URL",
           "x": 112.981,
           "y": 528.369,
-          "fontName": "g_d0_f1",
           "width": 151.63077199999998,
           "height": 9.9626,
           "transform": [
@@ -1044,7 +925,6 @@
           "str": " ",
           "x": 264.611772,
           "y": 528.369,
-          "fontName": "g_d0_f1",
           "width": 2.491228000000035,
           "height": 9.9626,
           "transform": [
@@ -1060,7 +940,6 @@
           "str": "https://github.com/pymupdf/PyMuPDF",
           "x": 267.103,
           "y": 528.369,
-          "fontName": "g_d0_f3",
           "width": 177.83241000000012,
           "height": 9.9626,
           "transform": [
@@ -1076,7 +955,6 @@
           "str": ".",
           "x": 444.93399999999997,
           "y": 528.369,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -1096,18 +974,12 @@
       "xPosition": 112.981,
       "yPosition": 509.48900000000003,
       "text": "[8] J. Liu. LlamaIndex, 11 2022. URL   https://github.com/jerryjliu/llama_index .",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[8] J. Liu. LlamaIndex, 11 2022. URL",
           "x": 112.981,
           "y": 509.48900000000003,
-          "fontName": "g_d0_f1",
           "width": 156.7216606,
           "height": 9.9626,
           "transform": [
@@ -1123,7 +995,6 @@
           "str": " ",
           "x": 269.7026606,
           "y": 509.48900000000003,
-          "fontName": "g_d0_f1",
           "width": 2.490339399999982,
           "height": 9.9626,
           "transform": [
@@ -1139,7 +1010,6 @@
           "str": "https://github.com/jerryjliu/llama_index",
           "x": 272.193,
           "y": 509.48900000000003,
-          "fontName": "g_d0_f3",
           "width": 209.21460000000016,
           "height": 9.9626,
           "transform": [
@@ -1155,7 +1025,6 @@
           "str": ".",
           "x": 481.407,
           "y": 509.48900000000003,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -1175,17 +1044,12 @@
       "xPosition": 112.981,
       "yPosition": 490.61,
       "text": "[9] M. Lysak, A. Nassar, N. Livathinos, C. Auer, and P. Staar.   Optimized Table Tokenization",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[9] M. Lysak, A. Nassar, N. Livathinos, C. Auer, and P. Staar.",
           "x": 112.981,
           "y": 490.61,
-          "fontName": "g_d0_f1",
           "width": 260.52199000000013,
           "height": 9.9626,
           "transform": [
@@ -1201,7 +1065,6 @@
           "str": " ",
           "x": 373.50299,
           "y": 490.61,
-          "fontName": "g_d0_f1",
           "width": 7.461987399999998,
           "height": 9.9626,
           "transform": [
@@ -1217,7 +1080,6 @@
           "str": "Optimized Table Tokenization",
           "x": 380.9649774,
           "y": 490.61,
-          "fontName": "g_d0_f1",
           "width": 123.03811000000006,
           "height": 9.9626,
           "transform": [
@@ -1237,18 +1099,12 @@
       "xPosition": 129.579,
       "yPosition": 479.701,
       "text": "for Table Structure Recognition. In   Document Analysis and Recognition - ICDAR 2023: 17th",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f2"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "for Table Structure Recognition. In",
           "x": 129.579,
           "y": 479.701,
-          "fontName": "g_d0_f1",
           "width": 141.5486208000001,
           "height": 9.9626,
           "transform": [
@@ -1264,7 +1120,6 @@
           "str": " ",
           "x": 271.12762080000016,
           "y": 479.701,
-          "fontName": "g_d0_f1",
           "width": 2.6413791999998466,
           "height": 9.9626,
           "transform": [
@@ -1280,7 +1135,6 @@
           "str": "Document Analysis and Recognition - ICDAR 2023: 17th",
           "x": 273.769,
           "y": 479.701,
-          "fontName": "g_d0_f2",
           "width": 230.23568600000007,
           "height": 9.9626,
           "transform": [
@@ -1300,18 +1154,12 @@
       "xPosition": 129.579,
       "yPosition": 468.79200000000003,
       "text": "International Conference, San Jos´ e, CA, USA, August 21–26, 2023, Proceedings, Part II , pages",
-      "fonts": [
-        "g_d0_f2",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f2",
       "segments": [],
       "items": [
         {
           "str": "International Conference, San Jos´",
           "x": 129.579,
           "y": 468.79200000000003,
-          "fontName": "g_d0_f2",
           "width": 138.70254579999997,
           "height": 9.9626,
           "transform": [
@@ -1327,7 +1175,6 @@
           "str": "e, CA, USA, August 21–26, 2023, Proceedings, Part II",
           "x": 264.429,
           "y": 468.79200000000003,
-          "fontName": "g_d0_f2",
           "width": 212.3428564,
           "height": 9.9626,
           "transform": [
@@ -1343,7 +1190,6 @@
           "str": ", pages",
           "x": 476.77199999999993,
           "y": 468.79200000000003,
-          "fontName": "g_d0_f1",
           "width": 27.227785799999978,
           "height": 9.9626,
           "transform": [
@@ -1363,17 +1209,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 457.88300000000004,
       "text": "37–50, Berlin, Heidelberg, Aug. 2023. Springer-Verlag. ISBN 978-3-031-41678-1. doi: 10.",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "37–50, Berlin, Heidelberg, Aug. 2023. Springer-Verlag. ISBN 978-3-031-41678-1. doi: 10.",
           "x": 129.57899999999995,
           "y": 457.88300000000004,
-          "fontName": "g_d0_f1",
           "width": 374.4243957999997,
           "height": 9.9626,
           "transform": [
@@ -1393,18 +1234,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 446.97400000000005,
       "text": "1007/978-3-031-41679-8 3. URL   https://doi.org/10.1007/978-3-031-41679-8_3 .",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "1007/978-3-031-41679-8 3. URL",
           "x": 129.57899999999995,
           "y": 446.97400000000005,
-          "fontName": "g_d0_f1",
           "width": 137.28468599999997,
           "height": 9.9626,
           "transform": [
@@ -1420,7 +1255,6 @@
           "str": " ",
           "x": 266.863686,
           "y": 446.974,
-          "fontName": "g_d0_f1",
           "width": 2.490314000000012,
           "height": 9.9626,
           "transform": [
@@ -1436,7 +1270,6 @@
           "str": "https://doi.org/10.1007/978-3-031-41679-8_3",
           "x": 269.354,
           "y": 446.974,
-          "fontName": "g_d0_f3",
           "width": 226.8982150000002,
           "height": 9.9626,
           "transform": [
@@ -1452,7 +1285,6 @@
           "str": ".",
           "x": 496.25199999999995,
           "y": 446.974,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -1472,17 +1304,12 @@
       "xPosition": 107.99999999999994,
       "yPosition": 428.09499999999997,
       "text": "[10] L. Mishra, S. Dhibi, Y. Kim, C. Berrospi Ramis, S. Gupta, M. Dolfi, and P. Staar.   State-",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[10] L. Mishra, S. Dhibi, Y. Kim, C. Berrospi Ramis, S. Gupta, M. Dolfi, and P. Staar.",
           "x": 107.99999999999994,
           "y": 428.09499999999997,
-          "fontName": "g_d0_f1",
           "width": 365.1392525999999,
           "height": 9.9626,
           "transform": [
@@ -1498,7 +1325,6 @@
           "str": " ",
           "x": 473.1392525999997,
           "y": 428.09499999999997,
-          "fontName": "g_d0_f1",
           "width": 7.621389000000022,
           "height": 9.9626,
           "transform": [
@@ -1514,7 +1340,6 @@
           "str": "State-",
           "x": 480.7606415999997,
           "y": 428.09499999999997,
-          "fontName": "g_d0_f1",
           "width": 23.2427458,
           "height": 9.9626,
           "transform": [
@@ -1534,17 +1359,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 417.186,
       "text": "ments:   Universal information extraction from tables with large language models for ESG",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "ments:",
           "x": 129.57899999999995,
           "y": 417.186,
-          "fontName": "g_d0_f1",
           "width": 26.570254200000004,
           "height": 9.9626,
           "transform": [
@@ -1560,7 +1380,6 @@
           "str": " ",
           "x": 156.14925419999997,
           "y": 417.186,
-          "fontName": "g_d0_f1",
           "width": 6.346176200000002,
           "height": 9.9626,
           "transform": [
@@ -1576,7 +1395,6 @@
           "str": "Universal information extraction from tables with large language models for ESG",
           "x": 162.49543039999998,
           "y": 417.186,
-          "fontName": "g_d0_f1",
           "width": 341.50796540000005,
           "height": 9.9626,
           "transform": [
@@ -1596,17 +1414,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 406.277,
       "text": "KPIs.   In D. Stammbach, J. Ni, T. Schimanski, K. Dutia, A. Singh, J. Bingler, C. Christi-",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "KPIs.",
           "x": 129.57899999999995,
           "y": 406.277,
-          "fontName": "g_d0_f1",
           "width": 22.41585,
           "height": 9.9626,
           "transform": [
@@ -1622,7 +1435,6 @@
           "str": " ",
           "x": 151.99484999999996,
           "y": 406.277,
-          "fontName": "g_d0_f1",
           "width": 7.4719499999999925,
           "height": 9.9626,
           "transform": [
@@ -1638,7 +1450,6 @@
           "str": "In D. Stammbach, J. Ni, T. Schimanski, K. Dutia, A. Singh, J. Bingler, C. Christi-",
           "x": 159.46679999999995,
           "y": 406.277,
-          "fontName": "g_d0_f1",
           "width": 344.53659580000004,
           "height": 9.9626,
           "transform": [
@@ -1658,18 +1469,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 395.36699999999996,
       "text": "aen, N. Kushwaha, V. Muccione, S. A. Vaghefi, and M. Leippold, editors,   Proceedings of the",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f2"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "aen, N. Kushwaha, V. Muccione, S. A. Vaghefi, and M. Leippold, editors,",
           "x": 129.57899999999995,
           "y": 395.36699999999996,
-          "fontName": "g_d0_f1",
           "width": 296.6663028000001,
           "height": 9.9626,
           "transform": [
@@ -1685,7 +1490,6 @@
           "str": " ",
           "x": 426.2453027999999,
           "y": 395.36699999999996,
-          "fontName": "g_d0_f1",
           "width": 2.874697200000071,
           "height": 9.9626,
           "transform": [
@@ -1701,7 +1505,6 @@
           "str": "Proceedings of the",
           "x": 429.11999999999995,
           "y": 395.36699999999996,
-          "fontName": "g_d0_f2",
           "width": 74.87890160000005,
           "height": 9.9626,
           "transform": [
@@ -1721,18 +1524,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 384.45799999999997,
       "text": "1st Workshop on Natural Language Processing Meets Climate Change (ClimateNLP 2024) ,",
-      "fonts": [
-        "g_d0_f2",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f2",
       "segments": [],
       "items": [
         {
           "str": "1st Workshop on Natural Language Processing Meets Climate Change (ClimateNLP 2024)",
           "x": 129.57899999999995,
           "y": 384.45799999999997,
-          "fontName": "g_d0_f2",
           "width": 371.93374579999994,
           "height": 9.9626,
           "transform": [
@@ -1748,7 +1545,6 @@
           "str": ",",
           "x": 501.50899999999996,
           "y": 384.45799999999997,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -1768,17 +1564,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 373.549,
       "text": "pages 193–214, Bangkok, Thailand, Aug. 2024. Association for Computational Linguistics.",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "pages 193–214, Bangkok, Thailand, Aug. 2024. Association for Computational Linguistics.",
           "x": 129.57899999999995,
           "y": 373.549,
-          "fontName": "g_d0_f1",
           "width": 374.4243957999997,
           "height": 9.9626,
           "transform": [
@@ -1798,18 +1589,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 362.64,
       "text": "URL   https://aclanthology.org/2024.climatenlp-1.15 .",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "URL",
           "x": 129.57899999999995,
           "y": 362.64,
-          "fontName": "g_d0_f1",
           "width": 19.9252,
           "height": 9.9626,
           "transform": [
@@ -1825,7 +1610,6 @@
           "str": " ",
           "x": 149.50419999999997,
           "y": 362.64,
-          "fontName": "g_d0_f1",
           "width": 2.490799999999979,
           "height": 9.9626,
           "transform": [
@@ -1841,7 +1625,6 @@
           "str": "https://aclanthology.org/2024.climatenlp-1.15",
           "x": 151.99499999999995,
           "y": 362.64,
-          "fontName": "g_d0_f3",
           "width": 235.8645550000002,
           "height": 9.9626,
           "transform": [
@@ -1857,7 +1640,6 @@
           "str": ".",
           "x": 387.85799999999995,
           "y": 362.64,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -1877,17 +1659,12 @@
       "xPosition": 107.99999999999994,
       "yPosition": 343.76099999999997,
       "text": "[11] L. Morin, V. Weber, G. I. Meijer, F. Yu, and P. W. J. Staar. Patcid: an open-access dataset of",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[11] L. Morin, V. Weber, G. I. Meijer, F. Yu, and P. W. J. Staar. Patcid: an open-access dataset of",
           "x": 107.99999999999994,
           "y": 343.76099999999997,
-          "fontName": "g_d0_f1",
           "width": 396.00338739999995,
           "height": 9.9626,
           "transform": [
@@ -1907,18 +1684,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 332.852,
       "text": "chemical structures in patent documents.   Nature Communications , 15(1):6532, August 2024.",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f2"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "chemical structures in patent documents.",
           "x": 129.57899999999995,
           "y": 332.852,
-          "fontName": "g_d0_f1",
           "width": 163.5061912000001,
           "height": 9.9626,
           "transform": [
@@ -1934,7 +1705,6 @@
           "str": " ",
           "x": 293.0851912,
           "y": 332.852,
-          "fontName": "g_d0_f1",
           "width": 4.447808799999962,
           "height": 9.9626,
           "transform": [
@@ -1950,7 +1720,6 @@
           "str": "Nature Communications",
           "x": 297.53299999999996,
           "y": 332.852,
-          "fontName": "g_d0_f2",
           "width": 97.59362959999999,
           "height": 9.9626,
           "transform": [
@@ -1966,7 +1735,6 @@
           "str": ", 15(1):6532, August 2024.",
           "x": 395.12799999999993,
           "y": 332.852,
-          "fontName": "g_d0_f1",
           "width": 108.8712928,
           "height": 9.9626,
           "transform": [
@@ -1986,18 +1754,12 @@
       "xPosition": 129.57899999999995,
       "yPosition": 321.943,
       "text": "ISSN 2041-1723.   doi: 10.1038/s41467-024-50779-y.   URL   https://doi.org/10.1038/",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "ISSN 2041-1723.",
           "x": 129.57899999999995,
           "y": 321.943,
-          "fontName": "g_d0_f1",
           "width": 70.53520799999998,
           "height": 9.9626,
           "transform": [
@@ -2013,7 +1775,6 @@
           "str": " ",
           "x": 200.114208,
           "y": 321.943,
-          "fontName": "g_d0_f1",
           "width": 6.126999000000012,
           "height": 9.9626,
           "transform": [
@@ -2029,7 +1790,6 @@
           "str": "doi: 10.1038/s41467-024-50779-y.",
           "x": 206.241207,
           "y": 321.943,
-          "fontName": "g_d0_f1",
           "width": 142.88360920000005,
           "height": 9.9626,
           "transform": [
@@ -2045,7 +1805,6 @@
           "str": " ",
           "x": 349.12481619999966,
           "y": 321.943,
-          "fontName": "g_d0_f1",
           "width": 6.1369616000000065,
           "height": 9.9626,
           "transform": [
@@ -2061,7 +1820,6 @@
           "str": "URL",
           "x": 355.26177779999966,
           "y": 321.943,
-          "fontName": "g_d0_f1",
           "width": 19.9252,
           "height": 9.9626,
           "transform": [
@@ -2077,7 +1835,6 @@
           "str": " ",
           "x": 375.1869777999996,
           "y": 321.943,
-          "fontName": "g_d0_f1",
           "width": 3.2850222000003555,
           "height": 9.9626,
           "transform": [
@@ -2093,7 +1850,6 @@
           "str": "https://doi.org/10.1038/",
           "x": 378.472,
           "y": 321.943,
-          "fontName": "g_d0_f3",
           "width": 125.52876000000006,
           "height": 9.9626,
           "transform": [
@@ -2113,18 +1869,12 @@
       "xPosition": 129.57899999999998,
       "yPosition": 311.034,
       "text": "s41467-024-50779-y .",
-      "fonts": [
-        "g_d0_f3",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f3",
       "segments": [],
       "items": [
         {
           "str": "s41467-024-50779-y",
           "x": 129.57899999999998,
           "y": 311.034,
-          "fontName": "g_d0_f3",
           "width": 95.64096000000004,
           "height": 9.9626,
           "transform": [
@@ -2140,7 +1890,6 @@
           "str": ".",
           "x": 225.21999999999997,
           "y": 311.034,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -2160,17 +1909,12 @@
       "xPosition": 107.99999999999997,
       "yPosition": 292.155,
       "text": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding",
           "x": 107.99999999999997,
           "y": 292.155,
-          "fontName": "g_d0_f1",
           "width": 396.0033873999998,
           "height": 9.9626,
           "transform": [
@@ -2190,18 +1934,12 @@
       "xPosition": 129.57899999999998,
       "yPosition": 281.24499999999995,
       "text": "with transformers.   In   Proceedings of the IEEE/CVF Conference on Computer Vision and",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f2"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "with transformers.",
           "x": 129.57899999999998,
           "y": 281.24499999999995,
-          "fontName": "g_d0_f1",
           "width": 74.53021060000002,
           "height": 9.9626,
           "transform": [
@@ -2217,7 +1955,6 @@
           "str": " ",
           "x": 204.10921060000004,
           "y": 281.24499999999995,
-          "fontName": "g_d0_f1",
           "width": 8.328733599999993,
           "height": 9.9626,
           "transform": [
@@ -2233,7 +1970,6 @@
           "str": "In",
           "x": 212.43794420000003,
           "y": 281.24499999999995,
-          "fontName": "g_d0_f1",
           "width": 8.2988458,
           "height": 9.9626,
           "transform": [
@@ -2249,7 +1985,6 @@
           "str": " ",
           "x": 220.73679000000004,
           "y": 281.24499999999995,
-          "fontName": "g_d0_f1",
           "width": 3.979209999999938,
           "height": 9.9626,
           "transform": [
@@ -2265,7 +2000,6 @@
           "str": "Proceedings of the IEEE/CVF Conference on Computer Vision and",
           "x": 224.71599999999998,
           "y": 281.24499999999995,
-          "fontName": "g_d0_f2",
           "width": 279.2815657999999,
           "height": 9.9626,
           "transform": [
@@ -2285,18 +2019,12 @@
       "xPosition": 129.57899999999998,
       "yPosition": 270.33599999999996,
       "text": "Pattern Recognition , pages 4614–4623, 2022.",
-      "fonts": [
-        "g_d0_f2",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f2",
       "segments": [],
       "items": [
         {
           "str": "Pattern Recognition",
           "x": 129.57899999999998,
           "y": 270.33599999999996,
-          "fontName": "g_d0_f2",
           "width": 79.63106179999998,
           "height": 9.9626,
           "transform": [
@@ -2312,7 +2040,6 @@
           "str": ", pages 4614–4623, 2022.",
           "x": 209.20999999999998,
           "y": 270.33599999999996,
-          "fontName": "g_d0_f1",
           "width": 102.38564020000001,
           "height": 9.9626,
           "transform": [
@@ -2332,17 +2059,12 @@
       "xPosition": 107.99999999999999,
       "yPosition": 251.45699999999997,
       "text": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar.   Doclaynet:   a large human-",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar.",
           "x": 107.99999999999999,
           "y": 251.45699999999997,
-          "fontName": "g_d0_f1",
           "width": 275.18693720000005,
           "height": 9.9626,
           "transform": [
@@ -2358,7 +2080,6 @@
           "str": " ",
           "x": 383.1869372,
           "y": 251.45699999999997,
-          "fontName": "g_d0_f1",
           "width": 8.408434399999976,
           "height": 9.9626,
           "transform": [
@@ -2374,7 +2095,6 @@
           "str": "Doclaynet:",
           "x": 391.59537159999996,
           "y": 251.45699999999997,
-          "fontName": "g_d0_f1",
           "width": 43.7158888,
           "height": 9.9626,
           "transform": [
@@ -2390,7 +2110,6 @@
           "str": " ",
           "x": 435.3112603999998,
           "y": 251.45699999999997,
-          "fontName": "g_d0_f1",
           "width": 6.097111199999972,
           "height": 9.9626,
           "transform": [
@@ -2406,7 +2125,6 @@
           "str": "a large human-",
           "x": 441.4083715999998,
           "y": 251.45699999999997,
-          "fontName": "g_d0_f1",
           "width": 62.59501580000001,
           "height": 9.9626,
           "transform": [
@@ -2426,17 +2144,12 @@
       "xPosition": 129.57899999999998,
       "yPosition": 240.54799999999997,
       "text": "annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
           "x": 129.57899999999998,
           "y": 240.54799999999997,
-          "fontName": "g_d0_f1",
           "width": 311.95889380000006,
           "height": 9.9626,
           "transform": [
@@ -2456,18 +2169,12 @@
       "xPosition": 107.99999999999997,
       "yPosition": 221.66899999999998,
       "text": "[14] pypdf Maintainers. pypdf: A Pure-Python PDF Library, 2024. URL   https://github.com/",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[14] pypdf Maintainers. pypdf: A Pure-Python PDF Library, 2024. URL",
           "x": 107.99999999999997,
           "y": 221.66899999999998,
-          "fontName": "g_d0_f1",
           "width": 294.08598939999996,
           "height": 9.9626,
           "transform": [
@@ -2483,7 +2190,6 @@
           "str": " ",
           "x": 402.0859893999997,
           "y": 221.66899999999998,
-          "fontName": "g_d0_f1",
           "width": 2.538010600000348,
           "height": 9.9626,
           "transform": [
@@ -2499,7 +2205,6 @@
           "str": "https://github.com/",
           "x": 404.624,
           "y": 221.66899999999998,
-          "fontName": "g_d0_f3",
           "width": 99.37693500000003,
           "height": 9.9626,
           "transform": [
@@ -2519,18 +2224,12 @@
       "xPosition": 129.579,
       "yPosition": 210.76,
       "text": "py-pdf/pypdf .",
-      "fonts": [
-        "g_d0_f3",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f3",
       "segments": [],
       "items": [
         {
           "str": "py-pdf/pypdf",
           "x": 129.579,
           "y": 210.76,
-          "fontName": "g_d0_f3",
           "width": 63.26251,
           "height": 9.9626,
           "transform": [
@@ -2546,7 +2245,6 @@
           "str": ".",
           "x": 192.841,
           "y": 210.76,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -2566,18 +2264,12 @@
       "xPosition": 108.00000000000001,
       "yPosition": 191.881,
       "text": "[15] P. Team.   PyPDFium2: Python bindings for PDFium, 2024.   URL   https://github.com/",
-      "fonts": [
-        "g_d0_f1",
-        "g_d0_f3"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[15] P. Team.",
           "x": 108.00000000000001,
           "y": 191.881,
-          "fontName": "g_d0_f1",
           "width": 56.39827859999999,
           "height": 9.9626,
           "transform": [
@@ -2593,7 +2285,6 @@
           "str": " ",
           "x": 164.39827860000003,
           "y": 191.881,
-          "fontName": "g_d0_f1",
           "width": 6.565353399999992,
           "height": 9.9626,
           "transform": [
@@ -2609,7 +2300,6 @@
           "str": "PyPDFium2: Python bindings for PDFium, 2024.",
           "x": 170.96363200000002,
           "y": 191.881,
-          "fontName": "g_d0_f1",
           "width": 203.75509520000006,
           "height": 9.9626,
           "transform": [
@@ -2625,7 +2315,6 @@
           "str": " ",
           "x": 374.7187271999997,
           "y": 191.881,
-          "fontName": "g_d0_f1",
           "width": 6.555390799999998,
           "height": 9.9626,
           "transform": [
@@ -2641,7 +2330,6 @@
           "str": "URL",
           "x": 381.2741179999997,
           "y": 191.881,
-          "fontName": "g_d0_f1",
           "width": 19.9252,
           "height": 9.9626,
           "transform": [
@@ -2657,7 +2345,6 @@
           "str": " ",
           "x": 401.19931799999966,
           "y": 191.881,
-          "fontName": "g_d0_f1",
           "width": 3.4246820000003595,
           "height": 9.9626,
           "transform": [
@@ -2673,7 +2360,6 @@
           "str": "https://github.com/",
           "x": 404.624,
           "y": 191.881,
-          "fontName": "g_d0_f3",
           "width": 99.37693500000003,
           "height": 9.9626,
           "transform": [
@@ -2693,18 +2379,12 @@
       "xPosition": 129.579,
       "yPosition": 180.972,
       "text": "pypdfium2-team/pypdfium2 .",
-      "fonts": [
-        "g_d0_f3",
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f3",
       "segments": [],
       "items": [
         {
           "str": "pypdfium2-team/pypdfium2",
           "x": 129.579,
           "y": 180.972,
-          "fontName": "g_d0_f3",
           "width": 126.02689000000007,
           "height": 9.9626,
           "transform": [
@@ -2720,7 +2400,6 @@
           "str": ".",
           "x": 255.60500000000002,
           "y": 180.972,
-          "fontName": "g_d0_f1",
           "width": 2.49065,
           "height": 9.9626,
           "transform": [
@@ -2740,17 +2419,12 @@
       "xPosition": 108.00000000000003,
       "yPosition": 162.092,
       "text": "[16] Y. Zhao, W. Lv, S. Xu, J. Wei, G. Wang, Q. Dang, Y. Liu, and J. Chen. Detrs beat yolos on",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "[16] Y. Zhao, W. Lv, S. Xu, J. Wei, G. Wang, Q. Dang, Y. Liu, and J. Chen. Detrs beat yolos on",
           "x": 108.00000000000003,
           "y": 162.092,
-          "fontName": "g_d0_f1",
           "width": 396.00338739999967,
           "height": 9.9626,
           "transform": [
@@ -2770,17 +2444,12 @@
       "xPosition": 129.57900000000004,
       "yPosition": 151.18300000000002,
       "text": "real-time object detection, 2023.",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "real-time object detection, 2023.",
           "x": 129.57900000000004,
           "y": 151.18300000000002,
-          "fontName": "g_d0_f1",
           "width": 129.21492200000003,
           "height": 9.9626,
           "transform": [
@@ -2800,17 +2469,12 @@
       "xPosition": 303.509,
       "yPosition": 42.11200000000002,
       "text": "6",
-      "fonts": [
-        "g_d0_f1"
-      ],
-      "dominantFont": "g_d0_f1",
       "segments": [],
       "items": [
         {
           "str": "6",
           "x": 303.509,
           "y": 42.11200000000002,
-          "fontName": "g_d0_f1",
           "width": 4.9813,
           "height": 9.9626,
           "transform": [
