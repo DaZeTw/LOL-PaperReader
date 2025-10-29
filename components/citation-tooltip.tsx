@@ -63,11 +63,11 @@ export function CitationTooltip({
         top: `${adjustedPosition.y + 10}px`,
       }}
     >
-      <div className="bg-background border-2 border-border rounded-lg shadow-2xl p-4 max-w-md animate-in fade-in-0 zoom-in-95 duration-200">
+      <div className="bg-white border-2 border-gray-200 rounded-lg shadow-2xl p-4 max-w-md animate-in fade-in-0 zoom-in-95 duration-200">
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
             <svg
-              className="w-4 h-4 text-accent"
+              className="w-4 h-4 text-blue-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -81,16 +81,16 @@ export function CitationTooltip({
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs text-muted-foreground mb-1 font-mono">
+            <div className="text-xs text-gray-600 mb-1 font-mono">
               Reference • Page {reference.pageNum}
             </div>
-            <div className="text-sm leading-relaxed line-clamp-6">
+            <div className="text-sm text-gray-800 leading-relaxed line-clamp-6">
               {reference.text}
             </div>
           </div>
         </div>
-        <div className="mt-3 pt-3 border-t border-border">
-          <div className="text-xs text-muted-foreground font-mono">
+        <div className="mt-3 pt-3 border-t border-gray-200">
+          <div className="text-xs text-gray-600 font-mono">
             Click to jump to reference
           </div>
         </div>
