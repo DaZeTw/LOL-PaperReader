@@ -1,0 +1,4952 @@
+{
+  "referenceLines": [
+    {
+      "yPosition": 710.037,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "torch runtimes backing the Docling pipeline. We will deliver updates on this topic at in a future",
+          "dir": "ltr",
+          "width": 396.0033873999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            710.037
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "torch runtimes backing the Docling pipeline. We will deliver updates on this topic at in a future",
+      "xPosition": 108,
+      "lineIndex": 0,
+      "pageLineIndex": 0,
+      "characterCount": 97,
+      "wordCount": 17,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.5
+      }
+    },
+    {
+      "yPosition": 699.128,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "version of this report.",
+          "dir": "ltr",
+          "width": 85.62854699999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            699.128
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "version of this report.",
+      "xPosition": 108,
+      "lineIndex": 1,
+      "pageLineIndex": 1,
+      "characterCount": 23,
+      "wordCount": 4,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.5
+      }
+    },
+    {
+      "yPosition": 678.8620000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "Table 1: Runtime characteristics of Docling with the standard model pipeline and settings, on our",
+          "dir": "ltr",
+          "width": 396.0033873999997,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            678.8620000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "Table 1: Runtime characteristics of Docling with the standard model pipeline and settings, on our",
+      "xPosition": 108,
+      "lineIndex": 2,
+      "pageLineIndex": 2,
+      "characterCount": 97,
+      "wordCount": 15,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.5
+      }
+    },
+    {
+      "yPosition": 667.9530000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "test dataset of 225 pages, on two different systems. OCR is disabled. We show the time-to-solution",
+          "dir": "ltr",
+          "width": 396.0033873999997,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            667.9530000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "test dataset of 225 pages, on two different systems. OCR is disabled. We show the time-to-solution",
+      "xPosition": 108,
+      "lineIndex": 3,
+      "pageLineIndex": 3,
+      "characterCount": 98,
+      "wordCount": 16,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.5
+      }
+    },
+    {
+      "yPosition": 657.0440000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "(TTS), computed throughput in pages per second, and the peak memory used (resident set size) for",
+          "dir": "ltr",
+          "width": 396.0033873999997,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            657.0440000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "(TTS), computed throughput in pages per second, and the peak memory used (resident set size) for",
+      "xPosition": 108,
+      "lineIndex": 4,
+      "pageLineIndex": 4,
+      "characterCount": 96,
+      "wordCount": 16,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.5
+      }
+    },
+    {
+      "yPosition": 646.1350000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "both the Docling-native PDF backend and for the pypdfium backend, using 4 and 16 threads.",
+          "dir": "ltr",
+          "width": 369.53275919999993,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108,
+            646.1350000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "both the Docling-native PDF backend and for the pypdfium backend, using 4 and 16 threads.",
+      "xPosition": 108,
+      "lineIndex": 5,
+      "pageLineIndex": 5,
+      "characterCount": 89,
+      "wordCount": 15,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.5
+      }
+    },
+    {
+      "yPosition": 619.332,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "CPU",
+          "dir": "ltr",
+          "width": 19.377257,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            134.524,
+            619.332
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 54.006743,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            153.90125700000002,
+            619.332
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        }
+      ],
+      "text": "CPU",
+      "xPosition": 134.524,
+      "lineIndex": 6,
+      "pageLineIndex": 6,
+      "characterCount": 3,
+      "wordCount": 1,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 24.024
+      }
+    },
+    {
+      "yPosition": 593.164,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "Apple M3 Max",
+          "dir": "ltr",
+          "width": 61.429391599999974,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            134.524,
+            593.164
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "Apple M3 Max",
+      "xPosition": 134.524,
+      "lineIndex": 11,
+      "pageLineIndex": 11,
+      "characterCount": 12,
+      "wordCount": 3,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 24.024
+      }
+    },
+    {
+      "yPosition": 582.255,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "(16 cores)",
+          "dir": "ltr",
+          "width": 40.10942759999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            134.524,
+            582.255
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "(16 cores)",
+      "xPosition": 134.524,
+      "lineIndex": 12,
+      "pageLineIndex": 12,
+      "characterCount": 10,
+      "wordCount": 2,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 24.024
+      }
+    },
+    {
+      "yPosition": 566.344,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "Intel(R) Xeon",
+          "dir": "ltr",
+          "width": 55.61123319999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            134.524,
+            566.344
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "Intel(R) Xeon",
+      "xPosition": 134.524,
+      "lineIndex": 18,
+      "pageLineIndex": 18,
+      "characterCount": 13,
+      "wordCount": 2,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 24.024
+      }
+    },
+    {
+      "yPosition": 555.4350000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "E5-2690",
+          "dir": "ltr",
+          "width": 34.3111944,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            134.524,
+            555.4350000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "E5-2690",
+      "xPosition": 134.524,
+      "lineIndex": 19,
+      "pageLineIndex": 19,
+      "characterCount": 7,
+      "wordCount": 1,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 24.024
+      }
+    },
+    {
+      "yPosition": 544.5260000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "(16 cores)",
+          "dir": "ltr",
+          "width": 40.10942759999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            134.524,
+            544.5260000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "(16 cores)",
+      "xPosition": 134.524,
+      "lineIndex": 20,
+      "pageLineIndex": 20,
+      "characterCount": 10,
+      "wordCount": 2,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 24.024
+      }
+    },
+    {
+      "yPosition": 520.379,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "",
+          "dir": "ltr",
+          "width": 0,
+          "height": 0,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108.00000000000001,
+            520.379
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": true
+        },
+        {
+          "str": "5",
+          "dir": "ltr",
+          "width": 5.9776,
+          "height": 11.9552,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108.00000000000001,
+            520.379
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 11.955200000000005,
+          "height": 0,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            113.97760000000001,
+            520.379
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": false
+        },
+        {
+          "str": "Applications",
+          "dir": "ltr",
+          "width": 64.13964800000001,
+          "height": 11.9552,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            125.93280000000001,
+            520.379
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": false
+        }
+      ],
+      "text": "5 Applications",
+      "xPosition": 108.00000000000001,
+      "lineIndex": 26,
+      "pageLineIndex": 26,
+      "characterCount": 14,
+      "wordCount": 2,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999986
+      }
+    },
+    {
+      "yPosition": 497.55400000000003,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "",
+          "dir": "ltr",
+          "width": 0,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000001,
+            497.55400000000003
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        },
+        {
+          "str": "Thanks to the high-quality, richly structured document conversion achieved by Docling, its out-",
+          "dir": "ltr",
+          "width": 396.00338739999967,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000001,
+            497.55400000000003
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "Thanks to the high-quality, richly structured document conversion achieved by Docling, its out-",
+      "xPosition": 108.00000000000001,
+      "lineIndex": 27,
+      "pageLineIndex": 27,
+      "characterCount": 95,
+      "wordCount": 13,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999986
+      }
+    },
+    {
+      "yPosition": 486.644,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "put qualifies for numerous downstream applications.",
+          "dir": "ltr",
+          "width": 216.27808340000007,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000001,
+            486.644
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 7.491875199999981,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            324.2780833999999,
+            486.644
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "For example, Docling can provide a base",
+          "dir": "ltr",
+          "width": 172.2334288000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            331.7699585999999,
+            486.644
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "put qualifies for numerous downstream applications. For example, Docling can provide a base",
+      "xPosition": 108.00000000000001,
+      "lineIndex": 28,
+      "pageLineIndex": 28,
+      "characterCount": 91,
+      "wordCount": 13,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999986
+      }
+    },
+    {
+      "yPosition": 475.735,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "for detailed enterprise document search, passage retrieval or classification use-cases, or support",
+          "dir": "ltr",
+          "width": 396.00338739999984,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000001,
+            475.735
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "for detailed enterprise document search, passage retrieval or classification use-cases, or support",
+      "xPosition": 108.00000000000001,
+      "lineIndex": 29,
+      "pageLineIndex": 29,
+      "characterCount": 98,
+      "wordCount": 12,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999986
+      }
+    },
+    {
+      "yPosition": 464.826,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "knowledge extraction pipelines, allowing specific treatment of different structures in the document,",
+          "dir": "ltr",
+          "width": 396.00338739999984,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000001,
+            464.826
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "knowledge extraction pipelines, allowing specific treatment of different structures in the document,",
+      "xPosition": 108.00000000000001,
+      "lineIndex": 30,
+      "pageLineIndex": 30,
+      "characterCount": 100,
+      "wordCount": 12,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999986
+      }
+    },
+    {
+      "yPosition": 453.91700000000003,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "such as tables, figures, section structure or references. For popular generative AI application pat-",
+          "dir": "ltr",
+          "width": 396.00338739999995,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000001,
+            453.91700000000003
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "such as tables, figures, section structure or references. For popular generative AI application pat-",
+      "xPosition": 108.00000000000001,
+      "lineIndex": 31,
+      "pageLineIndex": 31,
+      "characterCount": 100,
+      "wordCount": 14,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999986
+      }
+    },
+    {
+      "yPosition": 443.00800000000004,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "terns, such as retrieval-augmented generation (RAG), we provide",
+          "dir": "ltr",
+          "width": 255.72001680000017,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000001,
+            443.00800000000004
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 1.9669832000000724,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            363.72001679999994,
+            443.00800000000004
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "quackling",
+          "dir": "ltr",
+          "width": 39.093242399999994,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            365.687,
+            443.00800000000004
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": false
+        },
+        {
+          "str": ", an open-source package",
+          "dir": "ltr",
+          "width": 99.21753340000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            404.78000000000003,
+            443.00800000000004
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "terns, such as retrieval-augmented generation (RAG), we provide quackling, an open-source package",
+      "xPosition": 108.00000000000001,
+      "lineIndex": 32,
+      "pageLineIndex": 32,
+      "characterCount": 97,
+      "wordCount": 12,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999986
+      }
+    },
+    {
+      "yPosition": 432.09900000000005,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "which capitalizes on Docling’s feature-rich document output to enable document-native optimized",
+          "dir": "ltr",
+          "width": 396.0033873999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            432.09900000000005
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "which capitalizes on Docling’s feature-rich document output to enable document-native optimized",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 33,
+      "pageLineIndex": 33,
+      "characterCount": 95,
+      "wordCount": 11,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 421.19000000000005,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "vector embedding and chunking. It plugs in seamlessly with LLM frameworks such as LlamaIn-",
+          "dir": "ltr",
+          "width": 396.0033874000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            421.19000000000005
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "vector embedding and chunking. It plugs in seamlessly with LLM frameworks such as LlamaIn-",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 34,
+      "pageLineIndex": 34,
+      "characterCount": 90,
+      "wordCount": 14,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 410.28100000000006,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "dex [8]. Since Docling is fast, stable and cheap to run, it also makes for an excellent choice to build",
+          "dir": "ltr",
+          "width": 396.00338739999995,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            410.28100000000006
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "dex [8]. Since Docling is fast, stable and cheap to run, it also makes for an excellent choice to build",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 35,
+      "pageLineIndex": 35,
+      "characterCount": 103,
+      "wordCount": 20,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 399.37200000000007,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "document-derived datasets. With its powerful table structure recognition, it provides significant ben-",
+          "dir": "ltr",
+          "width": 396.00338739999967,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            399.37200000000007
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "document-derived datasets. With its powerful table structure recognition, it provides significant ben-",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 36,
+      "pageLineIndex": 36,
+      "characterCount": 102,
+      "wordCount": 12,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 388.4630000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "efit to automated knowledge-base construction [11, 10]. Docling is also integrated within the open",
+          "dir": "ltr",
+          "width": 396.0033873999996,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            388.4630000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "efit to automated knowledge-base construction [11, 10]. Docling is also integrated within the open",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 37,
+      "pageLineIndex": 37,
+      "characterCount": 98,
+      "wordCount": 14,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 377.5540000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "IBM data prep kit [6], which implements scalable data transforms to build large-scale multi-modal",
+          "dir": "ltr",
+          "width": 396.0033873999996,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            377.5540000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "IBM data prep kit [6], which implements scalable data transforms to build large-scale multi-modal",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 38,
+      "pageLineIndex": 38,
+      "characterCount": 97,
+      "wordCount": 14,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 366.6450000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "training datasets.",
+          "dir": "ltr",
+          "width": 67.5165402,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            366.6450000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        }
+      ],
+      "text": "training datasets.",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 39,
+      "pageLineIndex": 39,
+      "characterCount": 18,
+      "wordCount": 2,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 338.5390000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "",
+          "dir": "ltr",
+          "width": 0,
+          "height": 0,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108.00000000000006,
+            338.5390000000001
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": true
+        },
+        {
+          "str": "6",
+          "dir": "ltr",
+          "width": 5.9776,
+          "height": 11.9552,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108.00000000000006,
+            338.5390000000001
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 11.955200000000005,
+          "height": 0,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            113.97760000000005,
+            338.5390000000001
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": false
+        },
+        {
+          "str": "Future work and contributions",
+          "dir": "ltr",
+          "width": 157.8445056,
+          "height": 11.9552,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            125.93280000000006,
+            338.5390000000001
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": false
+        }
+      ],
+      "text": "6 Future work and contributions",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 40,
+      "pageLineIndex": 40,
+      "characterCount": 31,
+      "wordCount": 5,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 315.7140000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "",
+          "dir": "ltr",
+          "width": 0,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            315.7140000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        },
+        {
+          "str": "Docling is designed to allow easy extension of the model library and pipelines. In the future, we",
+          "dir": "ltr",
+          "width": 396.00338739999995,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            315.7140000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "Docling is designed to allow easy extension of the model library and pipelines. In the future, we",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 41,
+      "pageLineIndex": 41,
+      "characterCount": 97,
+      "wordCount": 17,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 304.8050000000001,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "plan to extend Docling with several more models, such as a figure-classifier model, an equation-",
+          "dir": "ltr",
+          "width": 396.00338739999995,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            304.8050000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "plan to extend Docling with several more models, such as a figure-classifier model, an equation-",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 42,
+      "pageLineIndex": 42,
+      "characterCount": 96,
+      "wordCount": 15,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 293.89600000000013,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "recognition model, a code-recognition model and more. This will help improve the quality of con-",
+          "dir": "ltr",
+          "width": 396.0033873999995,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            293.89600000000013
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "recognition model, a code-recognition model and more. This will help improve the quality of con-",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 43,
+      "pageLineIndex": 43,
+      "characterCount": 96,
+      "wordCount": 15,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 282.98700000000014,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "version for specific types of content, as well as augment extracted document metadata with ad-",
+          "dir": "ltr",
+          "width": 396.00338739999995,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            282.98700000000014
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "version for specific types of content, as well as augment extracted document metadata with ad-",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 44,
+      "pageLineIndex": 44,
+      "characterCount": 94,
+      "wordCount": 15,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 272.07800000000015,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "ditional information. Further investment into testing and optimizing GPU acceleration as well as",
+          "dir": "ltr",
+          "width": 396.00338739999984,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            272.07800000000015
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "ditional information. Further investment into testing and optimizing GPU acceleration as well as",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 45,
+      "pageLineIndex": 45,
+      "characterCount": 96,
+      "wordCount": 13,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 261.16900000000015,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "improving the Docling-native PDF backend are on our roadmap, too.",
+          "dir": "ltr",
+          "width": 274.66888200000017,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            261.16900000000015
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        }
+      ],
+      "text": "improving the Docling-native PDF backend are on our roadmap, too.",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 46,
+      "pageLineIndex": 46,
+      "characterCount": 65,
+      "wordCount": 10,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 244.78000000000014,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "",
+          "dir": "ltr",
+          "width": 0,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            244.78000000000014
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": true
+        },
+        {
+          "str": "We encourage everyone to propose or implement additional features and models, and will",
+          "dir": "ltr",
+          "width": 396.00338739999984,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            244.78000000000014
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": true
+        }
+      ],
+      "text": "We encourage everyone to propose or implement additional features and models, and will",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 47,
+      "pageLineIndex": 47,
+      "characterCount": 86,
+      "wordCount": 13,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 233.87100000000015,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "gladly take your inputs and contributions under review",
+          "dir": "ltr",
+          "width": 231.93929060000013,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000006,
+            233.87100000000015
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": false
+        },
+        {
+          "str": ". The codebase of Docling is open for use",
+          "dir": "ltr",
+          "width": 164.06409680000021,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            339.9390000000001,
+            233.87100000000015
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "gladly take your inputs and contributions under review. The codebase of Docling is open for use",
+      "xPosition": 108.00000000000006,
+      "lineIndex": 48,
+      "pageLineIndex": 48,
+      "characterCount": 95,
+      "wordCount": 16,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999943
+      }
+    },
+    {
+      "yPosition": 222.96200000000016,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "and contribution, under the MIT license agreement and in alignment with our contributing guidelines",
+          "dir": "ltr",
+          "width": 396.00338739999967,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000009,
+            222.96200000000016
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "and contribution, under the MIT license agreement and in alignment with our contributing guidelines",
+      "xPosition": 108.00000000000009,
+      "lineIndex": 49,
+      "pageLineIndex": 49,
+      "characterCount": 99,
+      "wordCount": 14,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4999999999999147
+      }
+    },
+    {
+      "yPosition": 212.05300000000017,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "included in the Docling repository. If you use Docling in your projects, please consider citing this",
+          "dir": "ltr",
+          "width": 396.0033873999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000009,
+            212.05300000000017
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "included in the Docling repository. If you use Docling in your projects, please consider citing this",
+      "xPosition": 108.00000000000009,
+      "lineIndex": 50,
+      "pageLineIndex": 50,
+      "characterCount": 100,
+      "wordCount": 16,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4999999999999147
+      }
+    },
+    {
+      "yPosition": 201.14400000000018,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "technical report.",
+          "dir": "ltr",
+          "width": 64.73697479999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000009,
+            201.14400000000018
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        }
+      ],
+      "text": "technical report.",
+      "xPosition": 108.00000000000009,
+      "lineIndex": 51,
+      "pageLineIndex": 51,
+      "characterCount": 17,
+      "wordCount": 2,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4999999999999147
+      }
+    },
+    {
+      "yPosition": 173.0390000000002,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "",
+          "dir": "ltr",
+          "width": 0,
+          "height": 0,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108.00000000000009,
+            173.0390000000002
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": true
+        },
+        {
+          "str": "References",
+          "dir": "ltr",
+          "width": 55.5438592,
+          "height": 11.9552,
+          "transform": [
+            11.9552,
+            0,
+            0,
+            11.9552,
+            108.00000000000009,
+            173.0390000000002
+          ],
+          "fontName": "g_d0_f2",
+          "hasEOL": false
+        }
+      ],
+      "text": "References",
+      "xPosition": 108.00000000000009,
+      "lineIndex": 52,
+      "pageLineIndex": 52,
+      "characterCount": 10,
+      "wordCount": 1,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4999999999999147
+      }
+    },
+    {
+      "yPosition": 155.69300000000018,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "",
+          "dir": "ltr",
+          "width": 0,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.98100000000008,
+            155.69300000000018
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        },
+        {
+          "str": "[1] J. AI.",
+          "dir": "ltr",
+          "width": 39.491746400000004,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.98100000000008,
+            155.69300000000018
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.884156600000011,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            152.4727464000001,
+            155.69300000000018
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Easyocr: Ready-to-use ocr with 80+ supported languages.",
+          "dir": "ltr",
+          "width": 238.37513020000011,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            159.3569030000001,
+            155.69300000000018
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.891966800000262,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            397.73203319999976,
+            155.69300000000018
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://github.com/",
+          "dir": "ltr",
+          "width": 99.37693500000003,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            404.624,
+            155.69300000000018
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": true
+        }
+      ],
+      "text": "[1] J. AI. Easyocr: Ready-to-use ocr with 80+ supported languages. https://github.com/",
+      "xPosition": 112.98100000000008,
+      "lineIndex": 53,
+      "pageLineIndex": 53,
+      "characterCount": 86,
+      "wordCount": 11,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.48100000000008
+      }
+    },
+    {
+      "yPosition": 144.7840000000002,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "JaidedAI/EasyOCR",
+          "dir": "ltr",
+          "width": 83.68584000000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            144.7840000000002
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ", 2024. Version: 1.7.0.",
+          "dir": "ltr",
+          "width": 89.69328780000002,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            213.264,
+            144.7840000000002
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "JaidedAI/EasyOCR, 2024. Version: 1.7.0.",
+      "xPosition": 129.579,
+      "lineIndex": 54,
+      "pageLineIndex": 54,
+      "characterCount": 39,
+      "wordCount": 4,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 126.54600000000019,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "[2] J. Ansel, E. Yang, H. He, N. Gimelshein, A. Jain, M. Voznesensky, B. Bao, P. Bell, D. Berard,",
+          "dir": "ltr",
+          "width": 391.0220874000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.98100000000001,
+            126.54600000000019
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[2] J. Ansel, E. Yang, H. He, N. Gimelshein, A. Jain, M. Voznesensky, B. Bao, P. Bell, D. Berard,",
+      "xPosition": 112.98100000000001,
+      "lineIndex": 55,
+      "pageLineIndex": 55,
+      "characterCount": 97,
+      "wordCount": 19,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4810000000000088
+      }
+    },
+    {
+      "yPosition": 115.6360000000002,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "E. Burovski, G. Chauhan, A. Chourdia, W. Constable, A. Desmaison, Z. DeVito, E. Ellison,",
+          "dir": "ltr",
+          "width": 374.42439579999973,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            115.6360000000002
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "E. Burovski, G. Chauhan, A. Chourdia, W. Constable, A. Desmaison, Z. DeVito, E. Ellison,",
+      "xPosition": 129.579,
+      "lineIndex": 56,
+      "pageLineIndex": 56,
+      "characterCount": 88,
+      "wordCount": 14,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 104.72700000000019,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "W. Feng, J. Gong, M. Gschwind, B. Hirsh, S. Huang, K. Kalambarkar, L. Kirsch, M. La-",
+          "dir": "ltr",
+          "width": 374.4243957999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            104.72700000000019
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "W. Feng, J. Gong, M. Gschwind, B. Hirsh, S. Huang, K. Kalambarkar, L. Kirsch, M. La-",
+      "xPosition": 129.579,
+      "lineIndex": 57,
+      "pageLineIndex": 57,
+      "characterCount": 84,
+      "wordCount": 16,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 93.81800000000018,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "zos, M. Lezcano, Y. Liang, J. Liang, Y. Lu, C. Luk, B. Maher, Y. Pan, C. Puhrsch, M. Reso,",
+          "dir": "ltr",
+          "width": 374.4243958000002,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            93.81800000000018
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "zos, M. Lezcano, Y. Liang, J. Liang, Y. Lu, C. Luk, B. Maher, Y. Pan, C. Puhrsch, M. Reso,",
+      "xPosition": 129.579,
+      "lineIndex": 58,
+      "pageLineIndex": 58,
+      "characterCount": 90,
+      "wordCount": 19,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 82.90900000000018,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "M. Saroufim, M. Y. Siraichi, H. Suk, M. Suo, P. Tillet, E. Wang, X. Wang, W. Wen, S. Zhang,",
+          "dir": "ltr",
+          "width": 374.4243958,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            82.90900000000018
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "M. Saroufim, M. Y. Siraichi, H. Suk, M. Suo, P. Tillet, E. Wang, X. Wang, W. Wen, S. Zhang,",
+      "xPosition": 129.579,
+      "lineIndex": 59,
+      "pageLineIndex": 59,
+      "characterCount": 91,
+      "wordCount": 19,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 72.00000000000017,
+      "pageNumber": 5,
+      "items": [
+        {
+          "str": "X. Zhao, K. Zhou, R. Zou, A. Mathews, G. Chanan, P. Wu, and S. Chintala. Pytorch 2: Faster",
+          "dir": "ltr",
+          "width": 374.4243957999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            72.00000000000017
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "X. Zhao, K. Zhou, R. Zou, A. Mathews, G. Chanan, P. Wu, and S. Chintala. Pytorch 2: Faster",
+      "xPosition": 129.579,
+      "lineIndex": 60,
+      "pageLineIndex": 60,
+      "characterCount": 90,
+      "wordCount": 18,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 710.037,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "machine learning through dynamic python bytecode transformation and graph compilation.",
+          "dir": "ltr",
+          "width": 374.4243957999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            710.037
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "machine learning through dynamic python bytecode transformation and graph compilation.",
+      "xPosition": 129.579,
+      "lineIndex": 62,
+      "pageLineIndex": 0,
+      "characterCount": 86,
+      "wordCount": 10,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 699.128,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "In",
+          "dir": "ltr",
+          "width": 8.2988458,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            699.128
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 3.0701541999999904,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            137.87784580000002,
+            699.128
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Proceedings of the 29th ACM International Conference on Architectural Support for Pro-",
+          "dir": "ltr",
+          "width": 363.0471065999995,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            140.948,
+            699.128
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": true
+        }
+      ],
+      "text": "In Proceedings of the 29th ACM International Conference on Architectural Support for Pro-",
+      "xPosition": 129.579,
+      "lineIndex": 63,
+      "pageLineIndex": 1,
+      "characterCount": 89,
+      "wordCount": 13,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 688.219,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "gramming Languages and Operating Systems, Volume 2 (ASPLOS ’24)",
+          "dir": "ltr",
+          "width": 288.8755496000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            688.219
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": false
+        },
+        {
+          "str": ". ACM, 4 2024. doi:",
+          "dir": "ltr",
+          "width": 85.54884620000007,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            418.45300000000003,
+            688.219
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "gramming Languages and Operating Systems, Volume 2 (ASPLOS ’24). ACM, 4 2024. doi:",
+      "xPosition": 129.579,
+      "lineIndex": 64,
+      "pageLineIndex": 2,
+      "characterCount": 82,
+      "wordCount": 13,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 677.3100000000001,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "10.1145/3620665.3640366. URL",
+          "dir": "ltr",
+          "width": 133.3792888,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            677.3100000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 2.4907111999999643,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            262.95828880000005,
+            677.3100000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://pytorch.org/assets/pytorch2-2.pdf",
+          "dir": "ltr",
+          "width": 214.94309500000017,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            265.449,
+            677.3100000000001
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            480.391,
+            677.3100000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "10.1145/3620665.3640366. URL https://pytorch.org/assets/pytorch2-2.pdf.",
+      "xPosition": 129.579,
+      "lineIndex": 65,
+      "pageLineIndex": 3,
+      "characterCount": 71,
+      "wordCount": 3,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 658.431,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[3] C. Auer, M. Dolfi, A. Carvalho, C. B. Ramis, and P. W. Staar. Delivering document conversion",
+          "dir": "ltr",
+          "width": 391.02208739999963,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.981,
+            658.431
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[3] C. Auer, M. Dolfi, A. Carvalho, C. B. Ramis, and P. W. Staar. Delivering document conversion",
+      "xPosition": 112.981,
+      "lineIndex": 66,
+      "pageLineIndex": 4,
+      "characterCount": 96,
+      "wordCount": 17,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4809999999999945
+      }
+    },
+    {
+      "yPosition": 647.522,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "as a cloud service with high throughput and responsiveness. In",
+          "dir": "ltr",
+          "width": 252.0338548000002,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            647.522
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 2.6461452000002623,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            381.61285479999975,
+            647.522
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "2022 IEEE 15th International",
+          "dir": "ltr",
+          "width": 119.7404894,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            384.259,
+            647.522
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": true
+        }
+      ],
+      "text": "as a cloud service with high throughput and responsiveness. In 2022 IEEE 15th International",
+      "xPosition": 129.579,
+      "lineIndex": 67,
+      "pageLineIndex": 5,
+      "characterCount": 91,
+      "wordCount": 14,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 636.613,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "Conference on Cloud Computing (CLOUD)",
+          "dir": "ltr",
+          "width": 174.52482680000006,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            636.613
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": false
+        },
+        {
+          "str": ", pages 363–373. IEEE, 2022.",
+          "dir": "ltr",
+          "width": 118.9833318000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            304.103,
+            636.613
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "Conference on Cloud Computing (CLOUD), pages 363–373. IEEE, 2022.",
+      "xPosition": 129.579,
+      "lineIndex": 68,
+      "pageLineIndex": 6,
+      "characterCount": 65,
+      "wordCount": 9,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 617.734,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[4] J. Berkenbilt.",
+          "dir": "ltr",
+          "width": 70.9237494,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.981,
+            617.734
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.8443062000000054,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            183.90474940000004,
+            617.734
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Qpdf: A content-preserving pdf document transformer, 2024.",
+          "dir": "ltr",
+          "width": 251.5955004000002,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            190.74905560000005,
+            617.734
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.8443062000000054,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            442.3445559999997,
+            617.734
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "URL",
+          "dir": "ltr",
+          "width": 19.9252,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            449.18886219999973,
+            617.734
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 3.503937800000301,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            469.1140621999997,
+            617.734
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https:",
+          "dir": "ltr",
+          "width": 31.382189999999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            472.618,
+            617.734
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": true
+        }
+      ],
+      "text": "[4] J. Berkenbilt. Qpdf: A content-preserving pdf document transformer, 2024. URL https:",
+      "xPosition": 112.981,
+      "lineIndex": 69,
+      "pageLineIndex": 7,
+      "characterCount": 88,
+      "wordCount": 12,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4809999999999945
+      }
+    },
+    {
+      "yPosition": 606.8240000000001,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "//github.com/qpdf/qpdf",
+          "dir": "ltr",
+          "width": 115.06803000000005,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            606.8240000000001
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            244.64600000000002,
+            606.8240000000001
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "//github.com/qpdf/qpdf.",
+      "xPosition": 129.579,
+      "lineIndex": 70,
+      "pageLineIndex": 8,
+      "characterCount": 23,
+      "wordCount": 1,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 587.945,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[5] O. R. developers. Onnx runtime.",
+          "dir": "ltr",
+          "width": 147.346854,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.98100000000002,
+            587.945
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 3.5861459999999283,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            260.32785400000006,
+            587.945
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://onnxruntime.ai/",
+          "dir": "ltr",
+          "width": 120.29839500000006,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            263.914,
+            587.945
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ", 2024. Version: 1.18.1.",
+          "dir": "ltr",
+          "width": 94.67458780000008,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            384.212,
+            587.945
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[5] O. R. developers. Onnx runtime. https://onnxruntime.ai/, 2024. Version: 1.18.1.",
+      "xPosition": 112.98100000000002,
+      "lineIndex": 71,
+      "pageLineIndex": 9,
+      "characterCount": 83,
+      "wordCount": 10,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.481000000000023
+      }
+    },
+    {
+      "yPosition": 569.066,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[6] IBM.",
+          "dir": "ltr",
+          "width": 37.90769300000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.981,
+            569.066
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 11.1381868,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            150.88869300000002,
+            569.066
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Data Prep Kit:",
+          "dir": "ltr",
+          "width": 62.27621259999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            162.02687980000002,
+            569.066
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 7.8106784000000005,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            224.30309240000005,
+            569.066
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "a community project to democratize and accelerate unstructured",
+          "dir": "ltr",
+          "width": 271.8893166000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            232.11377080000005,
+            569.066
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[6] IBM. Data Prep Kit: a community project to democratize and accelerate unstructured",
+      "xPosition": 112.981,
+      "lineIndex": 72,
+      "pageLineIndex": 10,
+      "characterCount": 86,
+      "wordCount": 13,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4809999999999945
+      }
+    },
+    {
+      "yPosition": 558.157,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "data",
+          "dir": "ltr",
+          "width": 16.5976916,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 5.9875226000000055,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            146.17669160000003,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "preparation",
+          "dir": "ltr",
+          "width": 45.3696804,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            152.16421420000003,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 5.977560000000011,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            197.53389460000008,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "for",
+          "dir": "ltr",
+          "width": 11.6163916,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            203.5114546000001,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 5.9875226000000055,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            215.1278462000001,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "LLM",
+          "dir": "ltr",
+          "width": 21.0310486,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            221.1153688000001,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 5.9875226000000055,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            242.14641740000013,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "app developers,",
+          "dir": "ltr",
+          "width": 65.61368360000003,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            248.13394000000014,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.864231399999994,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            313.74762360000005,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "2024.",
+          "dir": "ltr",
+          "width": 22.41585,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            320.61185500000005,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 14.764573199999973,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            343.02770499999997,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "URL",
+          "dir": "ltr",
+          "width": 19.9252,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            357.79227819999994,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 5.9845218000000955,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            377.7174781999999,
+            558.157
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://github.com/IBM/",
+          "dir": "ltr",
+          "width": 120.29839500000006,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            383.702,
+            558.157
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": true
+        }
+      ],
+      "text": "data preparation for LLM app developers, 2024. URL https://github.com/IBM/",
+      "xPosition": 129.579,
+      "lineIndex": 73,
+      "pageLineIndex": 11,
+      "characterCount": 74,
+      "wordCount": 9,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 547.248,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "data-prep-kit",
+          "dir": "ltr",
+          "width": 68.991005,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            547.248
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            198.57,
+            547.248
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "data-prep-kit.",
+      "xPosition": 129.579,
+      "lineIndex": 74,
+      "pageLineIndex": 12,
+      "characterCount": 14,
+      "wordCount": 1,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 528.369,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[7] A. S. Inc. PyMuPDF, 2024. URL",
+          "dir": "ltr",
+          "width": 151.63077199999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.981,
+            528.369
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 2.491228000000035,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            264.611772,
+            528.369
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://github.com/pymupdf/PyMuPDF",
+          "dir": "ltr",
+          "width": 177.83241000000012,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            267.103,
+            528.369
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            444.93399999999997,
+            528.369
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[7] A. S. Inc. PyMuPDF, 2024. URL https://github.com/pymupdf/PyMuPDF.",
+      "xPosition": 112.981,
+      "lineIndex": 75,
+      "pageLineIndex": 13,
+      "characterCount": 69,
+      "wordCount": 8,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4809999999999945
+      }
+    },
+    {
+      "yPosition": 509.48900000000003,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[8] J. Liu. LlamaIndex, 11 2022. URL",
+          "dir": "ltr",
+          "width": 156.7216606,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.981,
+            509.48900000000003
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 2.490339399999982,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            269.7026606,
+            509.48900000000003
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://github.com/jerryjliu/llama_index",
+          "dir": "ltr",
+          "width": 209.21460000000016,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            272.193,
+            509.48900000000003
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            481.407,
+            509.48900000000003
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[8] J. Liu. LlamaIndex, 11 2022. URL https://github.com/jerryjliu/llama_index.",
+      "xPosition": 112.981,
+      "lineIndex": 76,
+      "pageLineIndex": 14,
+      "characterCount": 78,
+      "wordCount": 8,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4809999999999945
+      }
+    },
+    {
+      "yPosition": 490.61,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[9] M. Lysak, A. Nassar, N. Livathinos, C. Auer, and P. Staar.",
+          "dir": "ltr",
+          "width": 260.52199000000013,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            112.981,
+            490.61
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 7.461987399999998,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            373.50299,
+            490.61
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Optimized Table Tokenization",
+          "dir": "ltr",
+          "width": 123.03811000000006,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            380.9649774,
+            490.61
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[9] M. Lysak, A. Nassar, N. Livathinos, C. Auer, and P. Staar. Optimized Table Tokenization",
+      "xPosition": 112.981,
+      "lineIndex": 77,
+      "pageLineIndex": 15,
+      "characterCount": 91,
+      "wordCount": 15,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4809999999999945
+      }
+    },
+    {
+      "yPosition": 479.701,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "for Table Structure Recognition. In",
+          "dir": "ltr",
+          "width": 141.5486208000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            479.701
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 2.6413791999998466,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            271.12762080000016,
+            479.701
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Document Analysis and Recognition - ICDAR 2023: 17th",
+          "dir": "ltr",
+          "width": 230.23568600000007,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            273.769,
+            479.701
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": true
+        }
+      ],
+      "text": "for Table Structure Recognition. In Document Analysis and Recognition - ICDAR 2023: 17th",
+      "xPosition": 129.579,
+      "lineIndex": 78,
+      "pageLineIndex": 16,
+      "characterCount": 88,
+      "wordCount": 13,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 468.79200000000003,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "International Conference, San Jos´",
+          "dir": "ltr",
+          "width": 138.70254579999997,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            468.79200000000003
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": false
+        },
+        {
+          "str": "e, CA, USA, August 21–26, 2023, Proceedings, Part II",
+          "dir": "ltr",
+          "width": 212.3428564,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            264.429,
+            468.79200000000003
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": false
+        },
+        {
+          "str": ", pages",
+          "dir": "ltr",
+          "width": 27.227785799999978,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            476.77199999999993,
+            468.79200000000003
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "International Conference, San Jos´e, CA, USA, August 21–26, 2023, Proceedings, Part II, pages",
+      "xPosition": 129.579,
+      "lineIndex": 79,
+      "pageLineIndex": 17,
+      "characterCount": 93,
+      "wordCount": 13,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 457.88300000000004,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "37–50, Berlin, Heidelberg, Aug. 2023. Springer-Verlag. ISBN 978-3-031-41678-1. doi: 10.",
+          "dir": "ltr",
+          "width": 374.4243957999997,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            457.88300000000004
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "37–50, Berlin, Heidelberg, Aug. 2023. Springer-Verlag. ISBN 978-3-031-41678-1. doi: 10.",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 80,
+      "pageLineIndex": 18,
+      "characterCount": 87,
+      "wordCount": 10,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 446.97400000000005,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "1007/978-3-031-41679-8 3. URL",
+          "dir": "ltr",
+          "width": 137.28468599999997,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            446.97400000000005
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 2.490314000000012,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            266.863686,
+            446.974
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://doi.org/10.1007/978-3-031-41679-8_3",
+          "dir": "ltr",
+          "width": 226.8982150000002,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            269.354,
+            446.974
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            496.25199999999995,
+            446.974
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "1007/978-3-031-41679-8 3. URL https://doi.org/10.1007/978-3-031-41679-8_3.",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 81,
+      "pageLineIndex": 19,
+      "characterCount": 74,
+      "wordCount": 4,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 428.09499999999997,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[10] L. Mishra, S. Dhibi, Y. Kim, C. Berrospi Ramis, S. Gupta, M. Dolfi, and P. Staar.",
+          "dir": "ltr",
+          "width": 365.1392525999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999994,
+            428.09499999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 7.621389000000022,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            473.1392525999997,
+            428.09499999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "State-",
+          "dir": "ltr",
+          "width": 23.2427458,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            480.7606415999997,
+            428.09499999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[10] L. Mishra, S. Dhibi, Y. Kim, C. Berrospi Ramis, S. Gupta, M. Dolfi, and P. Staar. State-",
+      "xPosition": 107.99999999999994,
+      "lineIndex": 82,
+      "pageLineIndex": 20,
+      "characterCount": 93,
+      "wordCount": 18,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.500000000000057
+      }
+    },
+    {
+      "yPosition": 417.186,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "ments:",
+          "dir": "ltr",
+          "width": 26.570254200000004,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            417.186
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.346176200000002,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            156.14925419999997,
+            417.186
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Universal information extraction from tables with large language models for ESG",
+          "dir": "ltr",
+          "width": 341.50796540000005,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            162.49543039999998,
+            417.186
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "ments: Universal information extraction from tables with large language models for ESG",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 83,
+      "pageLineIndex": 21,
+      "characterCount": 86,
+      "wordCount": 12,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 406.277,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "KPIs.",
+          "dir": "ltr",
+          "width": 22.41585,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            406.277
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 7.4719499999999925,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            151.99484999999996,
+            406.277
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "In D. Stammbach, J. Ni, T. Schimanski, K. Dutia, A. Singh, J. Bingler, C. Christi-",
+          "dir": "ltr",
+          "width": 344.53659580000004,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            159.46679999999995,
+            406.277
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "KPIs. In D. Stammbach, J. Ni, T. Schimanski, K. Dutia, A. Singh, J. Bingler, C. Christi-",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 84,
+      "pageLineIndex": 22,
+      "characterCount": 88,
+      "wordCount": 16,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 395.36699999999996,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "aen, N. Kushwaha, V. Muccione, S. A. Vaghefi, and M. Leippold, editors,",
+          "dir": "ltr",
+          "width": 296.6663028000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            395.36699999999996
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 2.874697200000071,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            426.2453027999999,
+            395.36699999999996
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Proceedings of the",
+          "dir": "ltr",
+          "width": 74.87890160000005,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            429.11999999999995,
+            395.36699999999996
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": true
+        }
+      ],
+      "text": "aen, N. Kushwaha, V. Muccione, S. A. Vaghefi, and M. Leippold, editors, Proceedings of the",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 85,
+      "pageLineIndex": 23,
+      "characterCount": 90,
+      "wordCount": 15,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 384.45799999999997,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "1st Workshop on Natural Language Processing Meets Climate Change (ClimateNLP 2024)",
+          "dir": "ltr",
+          "width": 371.93374579999994,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            384.45799999999997
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": false
+        },
+        {
+          "str": ",",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            501.50899999999996,
+            384.45799999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "1st Workshop on Natural Language Processing Meets Climate Change (ClimateNLP 2024),",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 86,
+      "pageLineIndex": 24,
+      "characterCount": 83,
+      "wordCount": 11,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 373.549,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "pages 193–214, Bangkok, Thailand, Aug. 2024. Association for Computational Linguistics.",
+          "dir": "ltr",
+          "width": 374.4243957999997,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            373.549
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "pages 193–214, Bangkok, Thailand, Aug. 2024. Association for Computational Linguistics.",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 87,
+      "pageLineIndex": 25,
+      "characterCount": 87,
+      "wordCount": 10,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 362.64,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "URL",
+          "dir": "ltr",
+          "width": 19.9252,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            362.64
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 2.490799999999979,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            149.50419999999997,
+            362.64
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://aclanthology.org/2024.climatenlp-1.15",
+          "dir": "ltr",
+          "width": 235.8645550000002,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            151.99499999999995,
+            362.64
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            387.85799999999995,
+            362.64
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "URL https://aclanthology.org/2024.climatenlp-1.15.",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 88,
+      "pageLineIndex": 26,
+      "characterCount": 50,
+      "wordCount": 2,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 343.76099999999997,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[11] L. Morin, V. Weber, G. I. Meijer, F. Yu, and P. W. J. Staar. Patcid: an open-access dataset of",
+          "dir": "ltr",
+          "width": 396.00338739999995,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999994,
+            343.76099999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[11] L. Morin, V. Weber, G. I. Meijer, F. Yu, and P. W. J. Staar. Patcid: an open-access dataset of",
+      "xPosition": 107.99999999999994,
+      "lineIndex": 89,
+      "pageLineIndex": 27,
+      "characterCount": 99,
+      "wordCount": 20,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.500000000000057
+      }
+    },
+    {
+      "yPosition": 332.852,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "chemical structures in patent documents.",
+          "dir": "ltr",
+          "width": 163.5061912000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            332.852
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 4.447808799999962,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            293.0851912,
+            332.852
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Nature Communications",
+          "dir": "ltr",
+          "width": 97.59362959999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            297.53299999999996,
+            332.852
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": false
+        },
+        {
+          "str": ", 15(1):6532, August 2024.",
+          "dir": "ltr",
+          "width": 108.8712928,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            395.12799999999993,
+            332.852
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "chemical structures in patent documents. Nature Communications, 15(1):6532, August 2024.",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 90,
+      "pageLineIndex": 28,
+      "characterCount": 88,
+      "wordCount": 10,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 321.943,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "ISSN 2041-1723.",
+          "dir": "ltr",
+          "width": 70.53520799999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999995,
+            321.943
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.126999000000012,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            200.114208,
+            321.943
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "doi: 10.1038/s41467-024-50779-y.",
+          "dir": "ltr",
+          "width": 142.88360920000005,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            206.241207,
+            321.943
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.1369616000000065,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            349.12481619999966,
+            321.943
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "URL",
+          "dir": "ltr",
+          "width": 19.9252,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            355.26177779999966,
+            321.943
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 3.2850222000003555,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            375.1869777999996,
+            321.943
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://doi.org/10.1038/",
+          "dir": "ltr",
+          "width": 125.52876000000006,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            378.472,
+            321.943
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": true
+        }
+      ],
+      "text": "ISSN 2041-1723. doi: 10.1038/s41467-024-50779-y. URL https://doi.org/10.1038/",
+      "xPosition": 129.57899999999995,
+      "lineIndex": 91,
+      "pageLineIndex": 29,
+      "characterCount": 77,
+      "wordCount": 6,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999995
+      }
+    },
+    {
+      "yPosition": 311.034,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "s41467-024-50779-y",
+          "dir": "ltr",
+          "width": 95.64096000000004,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999998,
+            311.034
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            225.21999999999997,
+            311.034
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "s41467-024-50779-y.",
+      "xPosition": 129.57899999999998,
+      "lineIndex": 92,
+      "pageLineIndex": 30,
+      "characterCount": 19,
+      "wordCount": 1,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999998
+      }
+    },
+    {
+      "yPosition": 292.155,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding",
+          "dir": "ltr",
+          "width": 396.0033873999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999997,
+            292.155
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[12] A. Nassar, N. Livathinos, M. Lysak, and P. Staar. Tableformer: Table structure understanding",
+      "xPosition": 107.99999999999997,
+      "lineIndex": 93,
+      "pageLineIndex": 31,
+      "characterCount": 97,
+      "wordCount": 14,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.5000000000000284
+      }
+    },
+    {
+      "yPosition": 281.24499999999995,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "with transformers.",
+          "dir": "ltr",
+          "width": 74.53021060000002,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999998,
+            281.24499999999995
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 8.328733599999993,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            204.10921060000004,
+            281.24499999999995
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "In",
+          "dir": "ltr",
+          "width": 8.2988458,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            212.43794420000003,
+            281.24499999999995
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 3.979209999999938,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            220.73679000000004,
+            281.24499999999995
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Proceedings of the IEEE/CVF Conference on Computer Vision and",
+          "dir": "ltr",
+          "width": 279.2815657999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            224.71599999999998,
+            281.24499999999995
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": true
+        }
+      ],
+      "text": "with transformers. In Proceedings of the IEEE/CVF Conference on Computer Vision and",
+      "xPosition": 129.57899999999998,
+      "lineIndex": 94,
+      "pageLineIndex": 32,
+      "characterCount": 83,
+      "wordCount": 12,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999998
+      }
+    },
+    {
+      "yPosition": 270.33599999999996,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "Pattern Recognition",
+          "dir": "ltr",
+          "width": 79.63106179999998,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999998,
+            270.33599999999996
+          ],
+          "fontName": "g_d0_f3",
+          "hasEOL": false
+        },
+        {
+          "str": ", pages 4614–4623, 2022.",
+          "dir": "ltr",
+          "width": 102.38564020000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            209.20999999999998,
+            270.33599999999996
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "Pattern Recognition, pages 4614–4623, 2022.",
+      "xPosition": 129.57899999999998,
+      "lineIndex": 95,
+      "pageLineIndex": 33,
+      "characterCount": 43,
+      "wordCount": 5,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999998
+      }
+    },
+    {
+      "yPosition": 251.45699999999997,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar.",
+          "dir": "ltr",
+          "width": 275.18693720000005,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999999,
+            251.45699999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 8.408434399999976,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            383.1869372,
+            251.45699999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "Doclaynet:",
+          "dir": "ltr",
+          "width": 43.7158888,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            391.59537159999996,
+            251.45699999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.097111199999972,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            435.3112603999998,
+            251.45699999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "a large human-",
+          "dir": "ltr",
+          "width": 62.59501580000001,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            441.4083715999998,
+            251.45699999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[13] B. Pfitzmann, C. Auer, M. Dolfi, A. S. Nassar, and P. Staar. Doclaynet: a large human-",
+      "xPosition": 107.99999999999999,
+      "lineIndex": 96,
+      "pageLineIndex": 34,
+      "characterCount": 91,
+      "wordCount": 17,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.500000000000014
+      }
+    },
+    {
+      "yPosition": 240.54799999999997,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
+          "dir": "ltr",
+          "width": 311.95889380000006,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57899999999998,
+            240.54799999999997
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "annotated dataset for document-layout segmentation. pages 3743–3751, 2022.",
+      "xPosition": 129.57899999999998,
+      "lineIndex": 97,
+      "pageLineIndex": 35,
+      "characterCount": 74,
+      "wordCount": 8,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.07899999999998
+      }
+    },
+    {
+      "yPosition": 221.66899999999998,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[14] pypdf Maintainers. pypdf: A Pure-Python PDF Library, 2024. URL",
+          "dir": "ltr",
+          "width": 294.08598939999996,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            107.99999999999997,
+            221.66899999999998
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 2.538010600000348,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            402.0859893999997,
+            221.66899999999998
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://github.com/",
+          "dir": "ltr",
+          "width": 99.37693500000003,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            404.624,
+            221.66899999999998
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": true
+        }
+      ],
+      "text": "[14] pypdf Maintainers. pypdf: A Pure-Python PDF Library, 2024. URL https://github.com/",
+      "xPosition": 107.99999999999997,
+      "lineIndex": 98,
+      "pageLineIndex": 36,
+      "characterCount": 87,
+      "wordCount": 11,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.5000000000000284
+      }
+    },
+    {
+      "yPosition": 210.76,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "py-pdf/pypdf",
+          "dir": "ltr",
+          "width": 63.26251,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            210.76
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            192.841,
+            210.76
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "py-pdf/pypdf.",
+      "xPosition": 129.579,
+      "lineIndex": 99,
+      "pageLineIndex": 37,
+      "characterCount": 13,
+      "wordCount": 1,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 191.881,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[15] P. Team.",
+          "dir": "ltr",
+          "width": 56.39827859999999,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000001,
+            191.881
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.565353399999992,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            164.39827860000003,
+            191.881
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "PyPDFium2: Python bindings for PDFium, 2024.",
+          "dir": "ltr",
+          "width": 203.75509520000006,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            170.96363200000002,
+            191.881
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 6.555390799999998,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            374.7187271999997,
+            191.881
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "URL",
+          "dir": "ltr",
+          "width": 19.9252,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            381.2741179999997,
+            191.881
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": " ",
+          "dir": "ltr",
+          "width": 3.4246820000003595,
+          "height": 0,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            401.19931799999966,
+            191.881
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": false
+        },
+        {
+          "str": "https://github.com/",
+          "dir": "ltr",
+          "width": 99.37693500000003,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            404.624,
+            191.881
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": true
+        }
+      ],
+      "text": "[15] P. Team. PyPDFium2: Python bindings for PDFium, 2024. URL https://github.com/",
+      "xPosition": 108.00000000000001,
+      "lineIndex": 100,
+      "pageLineIndex": 38,
+      "characterCount": 82,
+      "wordCount": 11,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.499999999999986
+      }
+    },
+    {
+      "yPosition": 180.972,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "pypdfium2-team/pypdfium2",
+          "dir": "ltr",
+          "width": 126.02689000000007,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.579,
+            180.972
+          ],
+          "fontName": "g_d0_f4",
+          "hasEOL": false
+        },
+        {
+          "str": ".",
+          "dir": "ltr",
+          "width": 2.49065,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            255.60500000000002,
+            180.972
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "pypdfium2-team/pypdfium2.",
+      "xPosition": 129.579,
+      "lineIndex": 101,
+      "pageLineIndex": 39,
+      "characterCount": 25,
+      "wordCount": 1,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000008
+      }
+    },
+    {
+      "yPosition": 162.092,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "[16] Y. Zhao, W. Lv, S. Xu, J. Wei, G. Wang, Q. Dang, Y. Liu, and J. Chen. Detrs beat yolos on",
+          "dir": "ltr",
+          "width": 396.00338739999967,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            108.00000000000003,
+            162.092
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "[16] Y. Zhao, W. Lv, S. Xu, J. Wei, G. Wang, Q. Dang, Y. Liu, and J. Chen. Detrs beat yolos on",
+      "xPosition": 108.00000000000003,
+      "lineIndex": 102,
+      "pageLineIndex": 40,
+      "characterCount": 94,
+      "wordCount": 22,
+      "isStartingLine": true,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 2.4999999999999716
+      }
+    },
+    {
+      "yPosition": 151.18300000000002,
+      "pageNumber": 6,
+      "items": [
+        {
+          "str": "real-time object detection, 2023.",
+          "dir": "ltr",
+          "width": 129.21492200000003,
+          "height": 9.9626,
+          "transform": [
+            9.9626,
+            0,
+            0,
+            9.9626,
+            129.57900000000004,
+            151.18300000000002
+          ],
+          "fontName": "g_d0_f1",
+          "hasEOL": true
+        }
+      ],
+      "text": "real-time object detection, 2023.",
+      "xPosition": 129.57900000000004,
+      "lineIndex": 103,
+      "pageLineIndex": 41,
+      "characterCount": 33,
+      "wordCount": 4,
+      "isStartingLine": false,
+      "referenceCluster": {
+        "clusterX": 110.5,
+        "clusterCount": 22,
+        "distanceFromClusterX": 19.079000000000036
+      }
+    }
+  ],
+  "metadata": {
+    "pdfPath": "./1.pdf",
+    "totalPagesScanned": 9,
+    "referencePagesFound": 2,
+    "referencePagesNumbers": [
+      5,
+      6
+    ],
+    "commonXPositions": [
+      {
+        "xPosition": 110.5,
+        "count": 22,
+        "sampleReferences": [
+          {
+            "citationId": "cite.auer2022delivering",
+            "page": 6,
+            "x": "113.0",
+            "y": "669.3"
+          },
+          {
+            "citationId": "cite.tableformer",
+            "page": 6,
+            "x": "108.0",
+            "y": "303.1"
+          },
+          {
+            "citationId": "cite.tableformer",
+            "page": 6,
+            "x": "108.0",
+            "y": "303.1"
+          }
+        ]
+      }
+    ],
+    "xRanges": [
+      {
+        "xMin": 107.5,
+        "xMax": 150.5,
+        "startingLineXMin": 107.5,
+        "startingLineXMax": 118.5,
+        "clusterX": 110.5,
+        "clusterCount": 22
+      }
+    ],
+    "totalLinesExtracted": 105,
+    "filteredLinesCount": 89,
+    "startingLinesCount": 49,
+    "continuationLinesCount": 40,
+    "extractedAt": "2025-10-29T07:26:34.308Z"
+  }
+}
