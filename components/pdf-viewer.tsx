@@ -52,12 +52,14 @@ export function PDFViewer({
   const thumbnailPluginInstance = thumbnailPlugin()
   const bookmarkPluginInstance = bookmarkPlugin()
   const citationPluginInstance = useCitationPlugin({
-    onCitationClick: (citation, event) => {
-      console.log("[PDFViewer] Citation clicked in PDF:", citation);
-      if (onCitationClick) {
-        onCitationClick(citation, event);
-      }
-    },
+    // Don't pass onCitationClick - let the plugin show its own built-in popup
+    // This avoids routing through the parent component and uses the plugin's API fetching
+    // onCitationClick: (citation, event) => {
+    //   console.log("[PDFViewer] Citation clicked in PDF:", citation);
+    //   if (onCitationClick) {
+    //     onCitationClick(citation, event);
+    //   }
+    // },
     pdfUrl: pdfUrl,
     extractedCitations: extractedCitations,
   });
