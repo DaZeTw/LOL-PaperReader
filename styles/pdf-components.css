@@ -209,55 +209,57 @@ a[data-citation="true"]:hover {
   }
 }
 
-/* Citation popup override for PDF viewer context */
+/* Citation popup override for PDF viewer context - Always use light theme */
 .citation-popup {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-  border: 1px solid hsl(var(--border)) !important;
-  background: hsl(var(--background)) !important;
-  color: hsl(var(--foreground)) !important;
+  border: 1px solid #e5e7eb !important;
+  background: #ffffff !important;
+  color: #374151 !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
 }
 
-/* Ensure citation highlights are visible in dark mode */
+/* Keep citation highlights visible in all modes */
 @media (prefers-color-scheme: dark) {
   .citation-popup {
-    background: #1f2937 !important;
-    color: #f9fafb !important;
-    border-color: #374151 !important;
+    /* Force light background even in dark mode */
+    background: #ffffff !important;
+    color: #374151 !important;
+    border-color: #e5e7eb !important;
   }
-  
+
   .citation-popup .citation-header {
-    border-bottom-color: #4b5563 !important;
+    color: #374151 !important;
+    border-bottom-color: #e5e7eb !important;
   }
-  
+
   .citation-popup .citation-btn {
-    background: #374151 !important;
-    color: #f9fafb !important;
-    border-color: #4b5563 !important;
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+    border-color: #e5e7eb !important;
   }
-  
+
   .citation-popup .citation-btn:hover {
-    background: #4b5563 !important;
-    border-color: #6b7280 !important;
+    background: #e5e7eb !important;
+    border-color: #d1d5db !important;
   }
-  
+
   .citation-reference {
-    color: #f87171 !important;
-    border-bottom-color: #f87171 !important;
+    color: #dc2626 !important;
+    border-bottom-color: #dc2626 !important;
   }
-  
+
   .citation-inline {
-    color: #60a5fa !important;
-    border-bottom-color: #60a5fa !important;
+    color: #2563eb !important;
+    border-bottom-color: #2563eb !important;
   }
-  
+
   .citation-doi {
-    color: #34d399 !important;
-    border-bottom-color: #34d399 !important;
+    color: #059669 !important;
+    border-bottom-color: #059669 !important;
   }
-  
+
   .citation-url {
-    color: #a78bfa !important;
-    border-bottom-color: #a78bfa !important;
+    color: #7c3aed !important;
+    border-bottom-color: #7c3aed !important;
   }
 }

@@ -150,20 +150,20 @@ export function CitationPopup({
   return (
     <div
       ref={popupRef}
-      className="fixed z-50 w-80 rounded-lg border border-border bg-background shadow-lg animate-in fade-in-0 zoom-in-95 duration-200"
+      className="fixed z-50 w-80 rounded-lg border border-gray-200 bg-white shadow-lg animate-in fade-in-0 zoom-in-95 duration-200"
       style={{
         left: Math.min(citation.position?.x || 0, window.innerWidth - 320),
         top: Math.max(citation.position?.y || 0 - 10, 10),
-        transform: citation.position?.y && citation.position.y > window.innerHeight / 2 
-          ? "translateY(-100%)" 
+        transform: citation.position?.y && citation.position.y > window.innerHeight / 2
+          ? "translateY(-100%)"
           : "translateY(10px)",
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+      <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 bg-gray-50">
         <div className="flex items-center gap-2">
           {getTypeIcon()}
-          <span className="text-sm font-medium">Citation</span>
+          <span className="text-sm font-medium text-gray-800">Citation</span>
           <Badge variant="outline" className={cn("text-xs", getTypeColor())}>
             {citation.type}
           </Badge>
@@ -172,7 +172,7 @@ export function CitationPopup({
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
+          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
         >
           <X className="h-5 w-5" />
         </Button>
@@ -184,8 +184,8 @@ export function CitationPopup({
           {/* Loading State */}
           {loading && (
             <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              <span className="ml-2 text-sm text-muted-foreground">Fetching metadata...</span>
+              <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+              <span className="ml-2 text-sm text-gray-600">Fetching metadata...</span>
             </div>
           )}
 
@@ -193,12 +193,12 @@ export function CitationPopup({
           {displayData.extractedText && (
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground">Extracted Reference</p>
+                <p className="text-xs font-medium text-gray-600">Extracted Reference</p>
                 <Badge variant="outline" className="text-xs">
                   {Math.round((displayData.extractionConfidence || 0) * 100)}% confidence
                 </Badge>
               </div>
-              <p className="text-xs text-foreground bg-green-50 dark:bg-green-950 p-2 rounded leading-relaxed border border-green-200 dark:border-green-800">
+              <p className="text-xs text-gray-800 bg-green-50 p-2 rounded leading-relaxed border border-green-200">
                 {displayData.extractedText}
               </p>
             </div>
@@ -206,10 +206,10 @@ export function CitationPopup({
 
           {/* Citation Text */}
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">
+            <p className="text-xs font-medium text-gray-600">
               {displayData.extractedText ? "Inline Citation" : "Citation Text"}
             </p>
-            <p className="text-xs text-foreground bg-muted/30 p-2 rounded font-mono leading-relaxed">
+            <p className="text-xs text-gray-800 bg-gray-50 p-2 rounded font-mono leading-relaxed">
               {citation.text}
             </p>
           </div>
@@ -217,19 +217,19 @@ export function CitationPopup({
           {/* Reference Details */}
           {(displayData.title || displayData.authors || displayData.venue) && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">Reference Details</p>
+              <p className="text-xs font-medium text-gray-600">Reference Details</p>
 
               {displayData.title && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Title</p>
-                  <p className="text-sm font-medium text-foreground leading-tight">{displayData.title}</p>
+                  <p className="text-xs text-gray-500 mb-1">Title</p>
+                  <p className="text-sm font-medium text-gray-900 leading-tight">{displayData.title}</p>
                 </div>
               )}
 
               {displayData.authors && displayData.authors.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Authors</p>
-                  <p className="text-sm text-foreground">
+                  <p className="text-xs text-gray-500 mb-1">Authors</p>
+                  <p className="text-sm text-gray-800">
                     {displayData.authors.slice(0, 3).join(", ")}
                     {displayData.authors.length > 3 && " et al."}
                   </p>
@@ -238,23 +238,23 @@ export function CitationPopup({
 
               {displayData.venue && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Venue</p>
-                  <p className="text-sm text-foreground italic">{displayData.venue}</p>
+                  <p className="text-xs text-gray-500 mb-1">Venue</p>
+                  <p className="text-sm text-gray-800 italic">{displayData.venue}</p>
                 </div>
               )}
 
               <div className="flex items-center gap-4">
                 {displayData.year && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Year</p>
-                    <p className="text-sm text-foreground font-medium">{displayData.year}</p>
+                    <p className="text-xs text-gray-500 mb-1">Year</p>
+                    <p className="text-sm text-gray-800 font-medium">{displayData.year}</p>
                   </div>
                 )}
 
                 {citation.page && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Page</p>
-                    <p className="text-sm text-foreground font-medium">{citation.page}</p>
+                    <p className="text-xs text-gray-500 mb-1">Page</p>
+                    <p className="text-sm text-gray-800 font-medium">{citation.page}</p>
                   </div>
                 )}
               </div>
@@ -264,8 +264,8 @@ export function CitationPopup({
           {/* Abstract */}
           {displayData.abstract && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Abstract</p>
-              <p className="text-xs text-foreground bg-muted/30 p-2 rounded leading-relaxed">
+              <p className="text-xs font-medium text-gray-600">Abstract</p>
+              <p className="text-xs text-gray-800 bg-gray-50 p-2 rounded leading-relaxed">
                 {displayData.abstract}
               </p>
             </div>
@@ -274,19 +274,19 @@ export function CitationPopup({
           {/* Confidence Score */}
           {citation.confidence && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Detection Confidence</p>
+              <p className="text-xs font-medium text-gray-600">Detection Confidence</p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                  <div 
+                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
                     className={cn(
                       "h-full transition-all",
-                      citation.confidence > 0.8 ? "bg-green-500" : 
+                      citation.confidence > 0.8 ? "bg-green-500" :
                       citation.confidence > 0.6 ? "bg-yellow-500" : "bg-red-500"
                     )}
                     style={{ width: `${citation.confidence * 100}%` }}
                   />
                 </div>
-                <span className="text-xs text-muted-foreground font-mono">
+                <span className="text-xs text-gray-600 font-mono">
                   {Math.round(citation.confidence * 100)}%
                 </span>
               </div>
@@ -296,13 +296,13 @@ export function CitationPopup({
       </ScrollArea>
 
       {/* Actions */}
-      <div className="flex items-center justify-between border-t border-border px-3 py-2">
+      <div className="flex items-center justify-between border-t border-gray-200 px-3 py-2 bg-gray-50">
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={handleCopyText} className="h-7 text-xs">
             <Copy className="h-3 w-3 mr-1" />
             Copy
           </Button>
-          
+
           {displayData.url && (
             <Button
               variant="ghost"
@@ -327,7 +327,7 @@ export function CitationPopup({
             </Button>
           )}
         </div>
-        
+
         <Button
           variant="default"
           size="sm"
