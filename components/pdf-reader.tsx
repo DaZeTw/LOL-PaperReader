@@ -35,6 +35,8 @@ interface PDFTab {
     timestamp: Date
   }>
   extractedCitations?: ExtractedCitation[]
+  pdfId?: string
+  parsedOutputs?: any
 }
 
 export function PDFReader() {
@@ -101,8 +103,8 @@ export function PDFReader() {
     console.log("[PDFReader] Copied text:", text)
   }
 
-  const handleFileSelect = async (file: File) => {
-    console.log("[PDF Reader] Upload detected:", file.name)
+  const handleFileSelect = async (file: File, parsedData?: any) => {
+    console.log("[PDF Reader] Upload detected:", file.name, "parsed:", parsedData)
 
     // Extract citations from the PDF in the background
     extractCitations(file).then((result) => {
@@ -118,13 +120,15 @@ export function PDFReader() {
     })
   
     try {
-      // Create a new tab without parsed data
+      // Create a new tab and store parsed info/pdfId (from Next API)
       const newTab: PDFTab = {
         id: Date.now().toString(),
         file,
         selectedSection: null,
         bookmarks: [],
-        qaHistory: []
+        qaHistory: [],
+        pdfId: parsedData?.pdfId,
+        parsedOutputs: parsedData?.outputs
       }
     
       setTabs((prev) => {

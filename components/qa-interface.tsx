@@ -17,11 +17,20 @@ interface QAInterfaceProps {
   onNewMessage?: (question: string, answer: string) => void
 }
 
+interface CitedSection {
+  doc_id?: string
+  title?: string
+  page?: number
+  excerpt?: string
+}
+
 interface QAMessage {
   id: string
   question: string
   answer: string
   context?: string
+  cited_sections?: CitedSection[]
+  confidence?: number
   timestamp: Date
 }
 
@@ -59,16 +68,24 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
       })
 
       if (!response.ok) {
-        throw new Error("Failed to get answer")
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to get answer`)
       }
 
       const data = await response.json()
+
+      // Check if this is an error response from backend
+      if (data.error) {
+        throw new Error(data.details || data.error || "Backend service unavailable")
+      }
 
       const newMessage: QAMessage = {
         id: Date.now().toString(),
         question: currentQuestion,
         answer: data.answer,
         context: data.context,
+        cited_sections: data.cited_sections,
+        confidence: data.confidence,
         timestamp: new Date(),
       }
 
@@ -79,11 +96,13 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
       if (onNewMessage) {
         onNewMessage(currentQuestion, data.answer)
       }
-    } catch (error) {
-      console.error("[v0] QA error:", error)
+    } catch (error: any) {
+      console.error("[QA] Error:", error)
+      const errorMessage =
+        error.message || "There was an error processing your question. Please ensure the backend is running."
       toast({
         title: "Failed to get answer",
-        description: "There was an error processing your question",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -172,7 +191,41 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
                     <div className="ml-9 rounded-lg border border-border bg-muted/30 p-4">
                       <p className="font-mono text-sm leading-relaxed text-foreground">{message.answer}</p>
 
-                      {message.context && (
+                      {/* Citations from backend */}
+                      {message.cited_sections && message.cited_sections.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <p className="font-mono text-xs font-medium text-muted-foreground">
+                            Sources ({message.cited_sections.length}):
+                          </p>
+                          <div className="space-y-2">
+                            {message.cited_sections.map((section, idx) => (
+                              <div
+                                key={idx}
+                                className="rounded-md border border-accent/30 bg-accent/5 p-2.5 text-xs"
+                              >
+                                <div className="mb-1 flex items-center gap-2">
+                                  <span className="font-mono font-medium text-primary">[{idx + 1}]</span>
+                                  <span className="font-mono font-medium text-foreground">
+                                    {section.title || "Document"}
+                                  </span>
+                                  {section.page !== undefined && (
+                                    <span className="font-mono text-muted-foreground">(p. {section.page})</span>
+                                  )}
+                                </div>
+                                {section.excerpt && (
+                                  <p className="mt-1 font-mono text-xs leading-relaxed text-muted-foreground">
+                                    {section.excerpt.substring(0, 300)}
+                                    {section.excerpt.length > 300 ? "..." : ""}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Fallback: context string if no cited_sections */}
+                      {!message.cited_sections && message.context && (
                         <div className="mt-3 rounded-md border border-accent/30 bg-accent/5 p-3">
                           <div className="mb-2 flex items-center justify-between">
                             <p className="font-mono text-xs font-medium text-muted-foreground">Source Context</p>
@@ -188,6 +241,22 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
                             )}
                           </div>
                           <p className="font-mono text-xs leading-relaxed text-muted-foreground">{message.context}</p>
+                        </div>
+                      )}
+
+                      {/* Confidence indicator */}
+                      {message.confidence !== undefined && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="font-mono text-xs text-muted-foreground">Confidence:</span>
+                          <div className="flex-1 rounded-full bg-muted h-1.5 overflow-hidden">
+                            <div
+                              className="h-full bg-primary transition-all"
+                              style={{ width: `${(message.confidence * 100).toFixed(0)}%` }}
+                            />
+                          </div>
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {(message.confidence * 100).toFixed(0)}%
+                          </span>
                         </div>
                       )}
                     </div>

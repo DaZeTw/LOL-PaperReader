@@ -1,0 +1,54 @@
+# Core web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
+# Note: FastAPI yêu cầu pydantic, không còn dependency với docling-core
+pydantic>=2.0.0,<3.0.0
+
+# Database
+motor==3.3.2
+pymongo==4.6.0
+bson==0.5.10
+
+# AI/ML APIs
+openai==1.109.0
+httpx>=0.27.0  # Required for openai>=1.0.0
+
+# Data processing
+# Note: Không còn dependency với docling, có thể dùng version linh hoạt hơn
+pandas>=2.0.0,<3.0.0
+numpy==1.24.3
+scikit-learn==1.3.2
+
+# PDF parsing - Using PyMuPDF (lightweight alternative to docling)
+pymupdf>=1.23.0
+Pillow==10.1.0
+
+# ML/AI dependencies (PyTorch and transformers)
+# Note: Không còn cần torch>=2.2.2 vì docling chạy trong container riêng
+# Giữ torch cho các ML models khác (embeddings, etc.)
+torch>=2.0.0,<3.0.0
+torchvision>=0.15.0
+transformers==4.35.0
+sentence-transformers==2.2.2
+
+# Visual BGE dependencies
+einops>=0.7.0
+regex>=2023.10.3
+timm>=0.9.0
+huggingface_hub>=0.19.0
+tqdm>=4.65.0
+
+# HTTP client
+requests>=2.31.0
+
+# Utilities
+pathlib2==2.3.7
+
+# Optional: llama_index (for semantic splitting, but code has fallback)
+# Uncomment if needed:
+# llama-index-core>=0.9.0
+# llama-index-embeddings-huggingface>=0.1.0
+pydantic-settings
+ftfy

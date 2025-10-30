@@ -1,0 +1,60 @@
+{
+  "question": "compare these two images with the ones we discussed earlier — do you see the same failure pattern?",
+  "hits": [
+    {
+      "index": 104,
+      "score": 0.38643758919135707,
+      "text": "We also experimented with using learned positional embeddings [9] instead, and found that the two versions produced nearly identical results (see Table 3 row (E)). We chose the sinusoidal version because it may allow the model to extrapolate to sequence lengths longer than the ones encountered during training.",
+      "metadata": {
+        "doc_id": "1706.03762v7-referenced",
+        "title": "3.5 Positional Encoding",
+        "page": 15,
+        "images": []
+      }
+    },
+    {
+      "index": 29,
+      "score": 0.38643758919135707,
+      "text": "We also experimented with using learned positional embeddings [9] instead, and found that the two versions produced nearly identical results (see Table 3 row (E)). We chose the sinusoidal version because it may allow the model to extrapolate to sequence lengths longer than the ones encountered during training.",
+      "metadata": {
+        "doc_id": "1706.03762v7-embedded",
+        "title": "3.5 Positional Encoding",
+        "page": 15,
+        "images": []
+      }
+    },
+    {
+      "index": 56,
+      "score": 0.25133733775230127,
+      "text": "We present these results in Table 3.\n\nIn Table 3 rows (A), we vary the number of attention heads and the attention key and value dimensions, keeping the amount of computation constant, as described in Section 3.2.2. While single-head attention is 0.9 BLEU worse than the best setting, quality also drops off with too many heads.\n\nIn Table 3 rows (B), we observe that reducing the attention key size d k hurts model quality. This suggests that determining compatibility is not easy and that a more sophisticated compatibility function than dot product may be beneficial. We further observe in rows (C) and (D) that, as expected, bigger models are better, and dropout is very helpful in avoiding over-fitting. In row (E) we replace our sinusoidal positional encoding with learned positional embeddings [9], and observe nearly identical results to the base model.",
+      "metadata": {
+        "doc_id": "1706.03762v7-embedded",
+        "title": "6.2 Model Variations",
+        "page": 24,
+        "images": []
+      }
+    },
+    {
+      "index": 131,
+      "score": 0.25133733775230127,
+      "text": "We present these results in Table 3.\n\nIn Table 3 rows (A), we vary the number of attention heads and the attention key and value dimensions, keeping the amount of computation constant, as described in Section 3.2.2. While single-head attention is 0.9 BLEU worse than the best setting, quality also drops off with too many heads.\n\nIn Table 3 rows (B), we observe that reducing the attention key size d k hurts model quality. This suggests that determining compatibility is not easy and that a more sophisticated compatibility function than dot product may be beneficial. We further observe in rows (C) and (D) that, as expected, bigger models are better, and dropout is very helpful in avoiding over-fitting. In row (E) we replace our sinusoidal positional encoding with learned positional embeddings [9], and observe nearly identical results to the base model.",
+      "metadata": {
+        "doc_id": "1706.03762v7-referenced",
+        "title": "6.2 Model Variations",
+        "page": 24,
+        "images": []
+      }
+    },
+    {
+      "index": 114,
+      "score": 0.23606264937026267,
+      "text": "We used the Adam optimizer [20] with β 1 = 0 . 9 , β 2 = 0 .",
+      "metadata": {
+        "doc_id": "1706.03762v7-referenced",
+        "title": "5.3 Optimizer",
+        "page": 20,
+        "images": []
+      }
+    }
+  ]
+}

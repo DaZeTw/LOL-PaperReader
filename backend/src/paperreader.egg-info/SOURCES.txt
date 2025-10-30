@@ -1,8 +1,0 @@
-pyproject.toml
-src/paperreader.egg-info/PKG-INFO
-src/paperreader.egg-info/SOURCES.txt
-src/paperreader.egg-info/dependency_links.txt
-src/paperreader.egg-info/requires.txt
-src/paperreader.egg-info/top_level.txt
-src/paperreader/api/pdf_handling.py
-src/paperreader/services/parser/pdf_parser.py
