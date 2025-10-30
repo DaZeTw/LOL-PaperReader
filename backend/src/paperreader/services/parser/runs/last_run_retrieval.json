@@ -1,58 +1,58 @@
 {
-  "question": "compare these two images with the ones we discussed earlier — do you see the same failure pattern?",
+  "question": "xin chào",
   "hits": [
     {
-      "index": 104,
-      "score": 0.38643758919135707,
-      "text": "We also experimented with using learned positional embeddings [9] instead, and found that the two versions produced nearly identical results (see Table 3 row (E)). We chose the sinusoidal version because it may allow the model to extrapolate to sequence lengths longer than the ones encountered during training.",
+      "index": 1,
+      "score": 0.2311462739290549,
+      "text": "Ashish Vaswani ∗\nGoogle Brain\navaswani@google.com\nNoam Shazeer ∗\nGoogle Brain\nnoam@google.com\nNiki Parmar ∗\nGoogle Research\nnikip@google.com\nJakob Uszkoreit ∗\nGoogle Research\nusz@google.com\nLlion Jones ∗\nGoogle Research\nllion@google.com\nAidan N. Gomez ∗†\nUniversity of Toronto\naidan@cs.toronto.edu\nŁukasz Kaiser ∗\nGoogle Brain\nlukaszkaiser@google.com\nIllia Polosukhin ∗‡\nillia.polosukhin@gmail.com\nAbstract",
       "metadata": {
-        "doc_id": "1706.03762v7-referenced",
-        "title": "3.5 Positional Encoding",
+        "doc_id": "1706.03762v7-embedded",
+        "title": "Attention Is All You Need",
+        "page": 3,
+        "images": []
+      }
+    },
+    {
+      "index": 40,
+      "score": 0.22390497169703916,
+      "text": "[36] Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, and Zbigniew Wojna.\nRethinking the inception architecture for computer vision. CoRR , abs/1512.00567, 2015.\n[37] Vinyals & Kaiser, Koo, Petrov, Sutskever, and Hinton. Grammar as a foreign language. In\nAdvances in Neural Information Processing Systems , 2015.\n[38] Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V Le, Mohammad Norouzi, Wolfgang\nMacherey, Maxim Krikun, Yuan Cao, Qin Gao, Klaus Macherey, et al. Google’s neural machine\ntranslation system: Bridging the gap between human and machine translation. arXiv preprint\narXiv:1609.08144 , 2016.\n[39] Jie Zhou, Ying Cao, Xuguang Wang, Peng Li, and Wei Xu. Deep recurrent models with\nfast-forward connections for neural machine translation. CoRR , abs/1606.04199, 2016.\n[40] Muhua Zhu, Yue Zhang, Wenliang Chen, Min Zhang, and Jingbo Zhu. Fast and accurate\nshift-reduce constituent parsing. In Proceedings of the 51st Annual Meeting of the ACL (Volume\n1: Long Papers) , pages 434–443. ACL, August 2013.\n12",
+      "metadata": {
+        "doc_id": "1706.03762v7-embedded",
+        "title": "Page 12",
         "page": 15,
         "images": []
       }
     },
     {
-      "index": 29,
-      "score": 0.38643758919135707,
-      "text": "We also experimented with using learned positional embeddings [9] instead, and found that the two versions produced nearly identical results (see Table 3 row (E)). We chose the sinusoidal version because it may allow the model to extrapolate to sequence lengths longer than the ones encountered during training.",
+      "index": 0,
+      "score": 0.22285432350795573,
+      "text": "Provided proper attribution is provided, Google hereby grants permission to\nreproduce the tables and figures in this paper solely for use in journalistic or\nscholarly works.",
       "metadata": {
         "doc_id": "1706.03762v7-embedded",
-        "title": "3.5 Positional Encoding",
-        "page": 15,
+        "title": "Page 1",
+        "page": 2,
         "images": []
       }
     },
     {
-      "index": 56,
-      "score": 0.25133733775230127,
-      "text": "We present these results in Table 3.\n\nIn Table 3 rows (A), we vary the number of attention heads and the attention key and value dimensions, keeping the amount of computation constant, as described in Section 3.2.2. While single-head attention is 0.9 BLEU worse than the best setting, quality also drops off with too many heads.\n\nIn Table 3 rows (B), we observe that reducing the attention key size d k hurts model quality. This suggests that determining compatibility is not easy and that a more sophisticated compatibility function than dot product may be beneficial. We further observe in rows (C) and (D) that, as expected, bigger models are better, and dropout is very helpful in avoiding over-fitting. In row (E) we replace our sinusoidal positional encoding with learned positional embeddings [9], and observe nearly identical results to the base model.",
+      "index": 34,
+      "score": 0.2208454550621085,
+      "text": "The code we used to train and evaluate our models is available at https://github.com/\ntensorflow/tensor2tensor .\nAcknowledgements\nWe are grateful to Nal Kalchbrenner and Stephan Gouws for their fruitful\ncomments, corrections and inspiration.\nReferences\n[1] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv preprint\narXiv:1607.06450 , 2016.\n[2] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. Neural machine translation by jointly\nlearning to align and translate. CoRR , abs/1409.0473, 2014.\n[3] Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V. Le. Massive exploration of neural\nmachine translation architectures. CoRR , abs/1703.03906, 2017.\n[4] Jianpeng Cheng, Li Dong, and Mirella Lapata. Long short-term memory-networks for machine\nreading. arXiv preprint arXiv:1601.06733 , 2016.\n10",
       "metadata": {
         "doc_id": "1706.03762v7-embedded",
-        "title": "6.2 Model Variations",
-        "page": 24,
+        "title": "Page 10",
+        "page": 13,
         "images": []
       }
     },
     {
-      "index": 131,
-      "score": 0.25133733775230127,
-      "text": "We present these results in Table 3.\n\nIn Table 3 rows (A), we vary the number of attention heads and the attention key and value dimensions, keeping the amount of computation constant, as described in Section 3.2.2. While single-head attention is 0.9 BLEU worse than the best setting, quality also drops off with too many heads.\n\nIn Table 3 rows (B), we observe that reducing the attention key size d k hurts model quality. This suggests that determining compatibility is not easy and that a more sophisticated compatibility function than dot product may be beneficial. We further observe in rows (C) and (D) that, as expected, bigger models are better, and dropout is very helpful in avoiding over-fitting. In row (E) we replace our sinusoidal positional encoding with learned positional embeddings [9], and observe nearly identical results to the base model.",
+      "index": 41,
+      "score": 0.21841136941797545,
+      "text": "Attention Visualizations\nIt\nis\nin\nthis\nspirit\nthat\na\nmajority\nof\nAmerican\ngovernments\nhave\npassed\nnew\nlaws\nsince\n2009\nmaking\nthe\nregistration\nor\nvoting\nprocess\nmore\ndifficult\n.\n<EOS>\n<pad>\n<pad>\n<pad>\n<pad>\n<pad>\n<pad>\nIt\nis\nin\nthis\nspirit\nthat\na\nmajority\nof\nAmerican\ngovernments\nhave\npassed\nnew\nlaws\nsince\n2009\nmaking\nthe\nregistration\nor\nvoting\nprocess\nmore\ndifficult\n.\n<EOS>\n<pad>\n<pad>\n<pad>\n<pad>\n<pad>\n<pad>\nFigure 3: An example of the attention mechanism following long-distance dependencies in the\nencoder self-attention in layer 5 of 6. Many of the attention heads attend to a distant dependency of\nthe verb ‘making’, completing the phrase ‘making...more difficult’. Attentions here shown only for\nthe word ‘making’. Different colors represent different heads. Best viewed in color.\n13",
       "metadata": {
-        "doc_id": "1706.03762v7-referenced",
-        "title": "6.2 Model Variations",
-        "page": 24,
-        "images": []
-      }
-    },
-    {
-      "index": 114,
-      "score": 0.23606264937026267,
-      "text": "We used the Adam optimizer [20] with β 1 = 0 . 9 , β 2 = 0 .",
-      "metadata": {
-        "doc_id": "1706.03762v7-referenced",
-        "title": "5.3 Optimizer",
-        "page": 20,
+        "doc_id": "1706.03762v7-embedded",
+        "title": "Page 13",
+        "page": 16,
         "images": []
       }
     }
