@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import fetch from "node-fetch"
 import { randomBytes } from "crypto"
 
 export const runtime = "nodejs"
