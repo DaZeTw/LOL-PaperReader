@@ -31,3 +31,7 @@ next-env.d.ts
 
 # reference tracking data
 /.references-data
+/backend/src/*.pth
+/backend/src/*.bin
+/backend/src/*.safetensors
+

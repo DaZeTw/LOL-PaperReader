@@ -1,0 +1,78 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Next.js
+.next
+out
+dist
+
+# Production
+build
+
+# Misc
+.DS_Store
+*.pem
+*.log
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+.env.local
+
+# Vercel
+.vercel
+
+# Typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Backend (not needed for frontend build)
+backend/
+
+# Git
+.git
+.gitignore
+
+# Documentation (not needed for build)
+*.md
+!README.md
+
+# Data files (not needed for build)
+data/
+.references-data
+
+# Large PDF files (if not in public/)
+*.pdf
+!public/**/*.pdf
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Cache
+.cache
+.turbo
+
+# Yarn (không dùng yarn nữa)
+yarn.lock
+.yarn

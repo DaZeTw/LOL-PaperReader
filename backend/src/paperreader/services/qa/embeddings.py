@@ -209,69 +209,112 @@ class VisualizedBGEEmbedder(Embedder):
         if not chunks:
             return []
 
-        result_container = {}
-        error_container = {}
+        # Configurable timeout - allow more time for large batches
+        # Default: 60s base + 5s per chunk, minimum 120s, maximum 600s (10 minutes)
+        base_timeout = int(os.getenv("CHUNK_EMBEDDING_TIMEOUT_BASE", "60"))
+        timeout_per_chunk = float(os.getenv("CHUNK_EMBEDDING_TIMEOUT_PER_CHUNK", "5.0"))
+        min_timeout = int(os.getenv("CHUNK_EMBEDDING_TIMEOUT_MIN", "120"))
+        max_timeout = int(os.getenv("CHUNK_EMBEDDING_TIMEOUT_MAX", "600"))
+        
+        # Calculate timeout based on number of chunks
+        calculated_timeout = max(min_timeout, min(max_timeout, int(base_timeout + len(chunks) * timeout_per_chunk)))
+        print(f"[LOG] Embedding {len(chunks)} chunks with timeout: {calculated_timeout}s")
+        
+        # Batch processing for large chunks to avoid timeout
+        batch_size = int(os.getenv("CHUNK_EMBEDDING_BATCH_SIZE", "50"))
+        all_embs: List[List[float]] = []
+        
+        for batch_idx in range(0, len(chunks), batch_size):
+            batch = chunks[batch_idx:batch_idx + batch_size]
+            batch_num = (batch_idx // batch_size) + 1
+            total_batches = (len(chunks) + batch_size - 1) // batch_size
+            print(f"[LOG] Processing batch {batch_num}/{total_batches} ({len(batch)} chunks)")
 
-        def embed_job():
-            try:
-                parser_base = Path(__file__).resolve().parent / "parser"
+            result_container = {}
+            error_container = {}
 
-                def resolve_image_path(p: str) -> str:
-                    if not p:
-                        return ""
-                    path = Path(p)
-                    if path.is_absolute() and path.exists():
-                        return str(path)
-                    for cand in [parser_base / p, parser_base / p.replace("\\", "/")]:
-                        if cand.exists():
-                            return str(cand)
-                    try:
-                        abs_path = Path(p).resolve()
-                        if abs_path.exists():
-                            return str(abs_path)
-                    except Exception:
-                        pass
-                    return p
+            def embed_job():
+                try:
+                    parser_base = Path(__file__).resolve().parent / "parser"
 
-                embs: List[List[float]] = []
-                with self._torch.no_grad():
-                    for ch in chunks:
-                        text = (ch.get("text") or "")
-                        images = ch.get("images") or []
+                    def resolve_image_path(p: str) -> str:
+                        if not p:
+                            return ""
+                        path = Path(p)
+                        if path.is_absolute() and path.exists():
+                            return str(path)
+                        for cand in [parser_base / p, parser_base / p.replace("\\", "/")]:
+                            if cand.exists():
+                                return str(cand)
+                        try:
+                            abs_path = Path(p).resolve()
+                            if abs_path.exists():
+                                return str(abs_path)
+                        except Exception:
+                            pass
+                        return p
 
-                        vecs = []
-                        for img in images:
-                            path = resolve_image_path(str(img.get("data") or ""))
-                            if not path:
-                                continue
-                            try:
-                                v = self.model.encode(image=path, text=text)
-                                vecs.append(v.detach().cpu().numpy().reshape(-1))
-                            except Exception:
-                                continue
+                    embs: List[List[float]] = []
+                    with self._torch.no_grad():
+                        for ch in batch:
+                            text = (ch.get("text") or "")
+                            images = ch.get("images") or []
 
-                        if not vecs:
-                            v = self.model.encode(text=text)
-                            embs.append(v.detach().cpu().numpy().reshape(-1).tolist())
-                        else:
-                            avg = np.mean(np.stack(vecs, axis=0), axis=0)
-                            embs.append(avg.astype(float).tolist())
+                            vecs = []
+                            for img in images:
+                                path = resolve_image_path(str(img.get("data") or ""))
+                                if not path:
+                                    continue
+                                try:
+                                    v = self.model.encode(image=path, text=text)
+                                    vecs.append(v.detach().cpu().numpy().reshape(-1))
+                                except Exception:
+                                    continue
 
-                result_container["embs"] = embs
+                            if not vecs:
+                                v = self.model.encode(text=text)
+                                embs.append(v.detach().cpu().numpy().reshape(-1).tolist())
+                            else:
+                                avg = np.mean(np.stack(vecs, axis=0), axis=0)
+                                embs.append(avg.astype(float).tolist())
 
-            except Exception as e:
-                error_container["err"] = e
+                    result_container["embs"] = embs
 
-        t = threading.Thread(target=embed_job)
-        t.start()
-        t.join(timeout=60)
+                except Exception as e:
+                    error_container["err"] = e
 
-        if t.is_alive():
-            raise RuntimeError("❌ Chunk embedding timeout (>60s)")
-        if "err" in error_container:
-            raise RuntimeError(f"❌ Chunk embedding failed: {error_container['err']}")
+            t = threading.Thread(target=embed_job)
+            t.start()
+            # Use calculated timeout for each batch
+            batch_timeout = max(min_timeout, min(max_timeout, int(calculated_timeout / total_batches)))
+            t.join(timeout=batch_timeout)
 
-        return result_container.get("embs", [])
+            if t.is_alive():
+                raise RuntimeError(f"❌ Chunk embedding timeout (> {batch_timeout}s) for batch {batch_num}/{total_batches}")
+            if "err" in error_container:
+                raise RuntimeError(f"❌ Chunk embedding failed in batch {batch_num}/{total_batches}: {error_container['err']}")
+
+            batch_embs = result_container.get("embs", [])
+            if not batch_embs:
+                print(f"[WARNING] Batch {batch_num} produced no embeddings, using text-only fallback")
+                # Fallback to text-only embedding for failed batch
+                try:
+                    batch_texts = [ch.get("text") or "" for ch in batch]
+                    # Use embed() method which handles List[str]
+                    text_embs = self.embed(batch_texts)
+                    batch_embs = text_embs
+                except Exception as e:
+                    print(f"[ERROR] Text-only fallback also failed: {e}")
+                    # Try to get embedding dimension from first successful batch or default
+                    emb_dim = len(all_embs[0]) if all_embs else 1024
+                    # Create zero vectors as last resort
+                    batch_embs = [[0.0] * emb_dim] * len(batch)
+            
+            all_embs.extend(batch_embs)
+            print(f"[LOG] Batch {batch_num}/{total_batches} completed: {len(batch_embs)} embeddings")
+
+        print(f"[LOG] All chunks embedded: {len(all_embs)} total embeddings")
+        return all_embs
 
 
 # ------------------------------

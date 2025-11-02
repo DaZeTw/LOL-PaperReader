@@ -26,7 +26,7 @@ class PyObjectId(ObjectId):
 # Chat message model
 # -----------------------------
 class ChatMessage(BaseModel):
-    role: str  # "user" or "assistant"
+    role: str  # "system", "user", or "assistant"
     content: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     metadata: Optional[Dict[str, Any]] = None  # citations, images, scores, etc.
