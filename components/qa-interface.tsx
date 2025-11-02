@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { Send, Loader2, X, Sparkles, History, Trash2 } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Send, Loader2, X, Sparkles, History, Trash2, MessageSquarePlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -39,7 +39,14 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
   const [isLoading, setIsLoading] = useState(false)
   const [messages, setMessages] = useState<QAMessage[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [isInitializing, setIsInitializing] = useState(true)
   const { toast } = useToast()
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+
+  // Storage key based on PDF filename to maintain separate sessions per PDF
+  const storageKey = `chat_session_${pdfFile.name}`
+  const messagesStorageKey = `chat_messages_${pdfFile.name}`
 
   const suggestedQuestions = [
     "What is the main finding?",
@@ -48,7 +55,214 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
     "What are the key conclusions?",
   ]
 
+  // Initialize session on mount
+  useEffect(() => {
+    const initializeSession = async () => {
+      try {
+        // FIRST: Load messages from localStorage immediately (instant restore)
+        // Only load if session_id exists (not cleared)
+        if (typeof window !== 'undefined') {
+          try {
+            const savedSessionId = localStorage.getItem(storageKey)
+            // Only load messages if we have a valid session_id (not cleared)
+            if (savedSessionId) {
+              const savedMessages = localStorage.getItem(messagesStorageKey)
+              if (savedMessages) {
+                const parsedMessages = JSON.parse(savedMessages)
+                if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+                  // Restore Date objects from ISO strings
+                  const restoredMessages = parsedMessages.map((msg: any) => ({
+                    ...msg,
+                    timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+                  }))
+                  setMessages(restoredMessages)
+                  setShowHistory(true)
+                  console.log("[Chat] Loaded", restoredMessages.length, "messages from localStorage")
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("[Chat] Failed to load messages from localStorage:", e)
+          }
+        }
+
+        // THEN: Check if we have a saved session_id in localStorage
+        const savedSessionId = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
+        
+        if (savedSessionId) {
+          // Set session ID immediately so user can chat while we verify
+          setSessionId(savedSessionId)
+          
+          // Verify session still exists and sync with backend
+          try {
+            const sessionResponse = await fetch(`/api/chat/sessions?session_id=${savedSessionId}`)
+            if (sessionResponse.ok) {
+              const sessionData = await sessionResponse.json()
+              console.log("[Chat] Using existing session:", savedSessionId)
+              
+              // Load chat history from backend and merge with localStorage
+              if (sessionData.messages && sessionData.messages.length > 0) {
+                const historyMessages: QAMessage[] = []
+                let currentQ: { question: string; timestamp: Date } | null = null
+                
+                for (const msg of sessionData.messages) {
+                  if (msg.role === "user") {
+                    currentQ = { question: msg.content, timestamp: new Date(msg.timestamp) }
+                  } else if (msg.role === "assistant" && currentQ) {
+                    historyMessages.push({
+                      id: msg.timestamp || Date.now().toString(),
+                      question: currentQ.question,
+                      answer: msg.content,
+                      cited_sections: msg.metadata?.cited_sections,
+                      confidence: msg.metadata?.confidence,
+                      timestamp: currentQ.timestamp,
+                    })
+                    currentQ = null
+                  }
+                }
+                
+                // Update with backend messages (backend is source of truth)
+                if (historyMessages.length > 0) {
+                  setMessages(historyMessages)
+                  setShowHistory(true)
+                  
+                  // Save to localStorage for next time (convert Date to ISO string)
+                  if (typeof window !== 'undefined') {
+                    try {
+                      const messagesToSave = historyMessages.map((msg) => ({
+                        ...msg,
+                        timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
+                      }))
+                      localStorage.setItem(messagesStorageKey, JSON.stringify(messagesToSave))
+                    } catch (e) {
+                      console.warn("[Chat] Failed to save messages to localStorage:", e)
+                    }
+                  }
+                  console.log("[Chat] Synced", historyMessages.length, "messages from backend")
+                }
+              }
+            } else {
+              // Session not found, create new one
+              throw new Error("Session not found")
+            }
+          } catch (error) {
+            console.log("[Chat] Session not found, creating new one")
+            // Session expired or not found, create new one
+            await createNewSession()
+          }
+        } else {
+          // No saved session, create new one
+          await createNewSession()
+        }
+      } catch (error: any) {
+        console.error("[Chat] Failed to initialize session:", error)
+        const errorMessage = error?.message || "Unknown error"
+        
+        toast({
+          title: "Session initialization failed",
+          description: errorMessage.includes("timeout") || errorMessage.includes("504") || errorMessage.includes("503")
+            ? "Backend connection timeout. Please check if MongoDB is running."
+            : errorMessage.length > 100 
+            ? errorMessage.substring(0, 100) + "..."
+            : errorMessage || "Chat may not work properly. Please refresh the page.",
+          variant: "destructive",
+          duration: 10000, // Show longer for important errors
+        })
+      } finally {
+        setIsInitializing(false)
+      }
+    }
+
+    const createNewSession = async () => {
+      try {
+        const response = await fetch("/api/chat/sessions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: null, // Use null for anonymous sessions
+            title: `Chat: ${pdfFile.name}`,
+            initial_message: null,
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          const errorMessage = errorData.details || errorData.error || `HTTP ${response.status}: Failed to create session`
+          
+          // Special handling for timeout errors
+          if (response.status === 504 || response.status === 503) {
+            throw new Error(`Connection timeout: ${errorMessage}. Please check if MongoDB is running and backend is accessible.`)
+          }
+          
+          throw new Error(errorMessage)
+        }
+
+        const sessionData = await response.json()
+        const newSessionId = sessionData.session_id
+        
+        // Save session_id to localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(storageKey, newSessionId)
+        }
+        setSessionId(newSessionId)
+        console.log("[Chat] Created new session:", newSessionId)
+      } catch (error: any) {
+        console.error("[Chat] Failed to create session:", error)
+        throw error
+      }
+    }
+
+    initializeSession()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pdfFile.name])
+
   const handleAskQuestion = async () => {
+    // Ensure we have a session ID before asking
+    let currentSessionId = sessionId
+    
+    // If no session ID, create one first
+    if (!currentSessionId) {
+      console.log("[Chat] No session ID, creating new session before asking...")
+      try {
+        const response = await fetch("/api/chat/sessions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: null,
+            title: `Chat: ${pdfFile.name}`,
+            initial_message: null,
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || `HTTP ${response.status}: Failed to create session`)
+        }
+
+        const sessionData = await response.json()
+        currentSessionId = sessionData.session_id
+        
+        // Save session_id to localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(storageKey, currentSessionId)
+        }
+        setSessionId(currentSessionId)
+        console.log("[Chat] Created new session before asking:", currentSessionId)
+      } catch (error: any) {
+        console.error("[Chat] Failed to create session before asking:", error)
+        toast({
+          title: "Failed to start chat",
+          description: error?.message || "Please try again",
+          variant: "destructive",
+        })
+        return
+      }
+    }
+
     if (!question.trim()) return
 
     setIsLoading(true)
@@ -56,14 +270,20 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
     setQuestion("")
 
     try {
-      const response = await fetch("/api/qa/ask", {
+      const response = await fetch("/api/chat/ask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          session_id: currentSessionId,
           question: currentQuestion,
-          filename: pdfFile.name,
+          retriever: "hybrid",
+          generator: "openai",
+          image_policy: "auto",
+          top_k: 5,
+          max_tokens: 1024,
+          user_images: [],
         }),
       })
 
@@ -83,21 +303,35 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
         id: Date.now().toString(),
         question: currentQuestion,
         answer: data.answer,
-        context: data.context,
+        context: undefined,
         cited_sections: data.cited_sections,
         confidence: data.confidence,
         timestamp: new Date(),
       }
 
-      setMessages((prev) => [...prev, newMessage])
+      const updatedMessages = [...messages, newMessage]
+      setMessages(updatedMessages)
       setShowHistory(true)
+
+      // Save messages to localStorage for persistence (convert Date to ISO string)
+      if (typeof window !== 'undefined') {
+        try {
+          const messagesToSave = updatedMessages.map((msg) => ({
+            ...msg,
+            timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
+          }))
+          localStorage.setItem(messagesStorageKey, JSON.stringify(messagesToSave))
+        } catch (e) {
+          console.warn("[Chat] Failed to save messages to localStorage:", e)
+        }
+      }
 
       // Notify parent of new Q&A message
       if (onNewMessage) {
         onNewMessage(currentQuestion, data.answer)
       }
     } catch (error: any) {
-      console.error("[QA] Error:", error)
+      console.error("[Chat] Error:", error)
       const errorMessage =
         error.message || "There was an error processing your question. Please ensure the backend is running."
       toast({
@@ -117,14 +351,129 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
     }
   }
 
-  const handleClearHistory = () => {
+  const handleClearHistory = async () => {
     setMessages([])
     setShowHistory(false)
+    // Clear localStorage messages AND session_id
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(messagesStorageKey)
+        localStorage.removeItem(storageKey) // Clear session_id too
+        setSessionId(null) // Reset session ID
+      } catch (e) {
+        console.warn("[Chat] Failed to clear messages from localStorage:", e)
+      }
+    }
+    
+    // Create new session to ensure clean start
+    try {
+      const response = await fetch("/api/chat/sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: null,
+          title: `Chat: ${pdfFile.name}`,
+          initial_message: null,
+        }),
+      })
+
+      if (response.ok) {
+        const sessionData = await response.json()
+        const newSessionId = sessionData.session_id
+        
+        // Save new session_id to localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(storageKey, newSessionId)
+        }
+        setSessionId(newSessionId)
+        console.log("[Chat] Created new session after clear:", newSessionId)
+      }
+    } catch (error) {
+      console.error("[Chat] Failed to create new session after clear:", error)
+    }
+    
     toast({
       title: "History cleared",
       description: "All Q&A history has been cleared",
     })
   }
+
+  const handleNewChat = async () => {
+    try {
+      setIsInitializing(true)
+      
+      // Clear current messages and history
+      setMessages([])
+      setShowHistory(false)
+      
+      // Clear localStorage messages
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem(messagesStorageKey)
+        } catch (e) {
+          console.warn("[Chat] Failed to clear messages from localStorage:", e)
+        }
+      }
+
+      // Create new session with same PDF filename
+      const response = await fetch("/api/chat/sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: null, // Use null for anonymous sessions
+          title: `Chat: ${pdfFile.name}`,
+          initial_message: null,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.details || errorData.error || `HTTP ${response.status}: Failed to create new session`
+        
+        // Special handling for timeout errors
+        if (response.status === 504 || response.status === 503) {
+          throw new Error(`Connection timeout: ${errorMessage}. Please check if MongoDB is running and backend is accessible.`)
+        }
+        
+        throw new Error(errorMessage)
+      }
+
+      const sessionData = await response.json()
+      const newSessionId = sessionData.session_id
+      
+      // Save new session_id to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(storageKey, newSessionId)
+      }
+      setSessionId(newSessionId)
+      console.log("[Chat] Created new chat session:", newSessionId)
+      
+      toast({
+        title: "New chat started",
+        description: "Previous chat history has been cleared",
+      })
+    } catch (error: any) {
+      console.error("[Chat] Failed to create new chat session:", error)
+      toast({
+        title: "Failed to start new chat",
+        description: error?.message || "Please try again",
+        variant: "destructive",
+      })
+    } finally {
+      setIsInitializing(false)
+    }
+  }
+
+  // Auto-scroll to bottom when new message is added
+  useEffect(() => {
+    if (showHistory && messages.length > 0 && scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
+    }
+  }, [messages, showHistory])
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-sm">
@@ -167,10 +516,13 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
         </div>
 
         {/* Main Content */}
-        <div className="flex max-h-[70vh] flex-col">
+        <div className="flex max-h-[70vh] flex-col overflow-hidden">
           {/* History Section */}
           {showHistory && messages.length > 0 && (
-            <ScrollArea className="flex-1 border-b border-border">
+            <div
+              ref={scrollAreaRef}
+              className="flex-1 min-h-0 overflow-y-auto border-b border-border"
+            >
               <div className="space-y-4 p-6">
                 {messages.map((message, index) => (
                   <div key={message.id} className="space-y-2">
@@ -189,37 +541,75 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
 
                     {/* Answer */}
                     <div className="ml-9 rounded-lg border border-border bg-muted/30 p-4">
-                      <p className="font-mono text-sm leading-relaxed text-foreground">{message.answer}</p>
+                      <div 
+                        className="font-mono text-sm leading-relaxed text-foreground [&_strong]:font-semibold [&_em]:italic [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-xs"
+                        dangerouslySetInnerHTML={{ 
+                          __html: (() => {
+                            // Escape HTML first to prevent XSS
+                            const escapeHtml = (text: string) => {
+                              const map: Record<string, string> = {
+                                '&': '&amp;',
+                                '<': '&lt;',
+                                '>': '&gt;',
+                                '"': '&quot;',
+                                "'": '&#039;',
+                              }
+                              return text.replace(/[&<>"']/g, (m) => map[m])
+                            }
+                            
+                            let html = escapeHtml(message.answer)
+                            // Process markdown - bold first (to avoid conflicts with italic)
+                            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            // Then italic (single asterisks, avoiding ones that are part of bold)
+                            // Match single * that are not immediately preceded or followed by another *
+                            html = html.replace(/(?<!\*)\*([^*<]+?)\*(?!\*)/g, '<em>$1</em>')
+                            // Code blocks (backticks)
+                            html = html.replace(/`([^`]+?)`/g, '<code>$1</code>')
+                            // Line breaks
+                            html = html.replace(/\n/g, '<br />')
+                            return html
+                          })()
+                        }}
+                      />
 
                       {/* Citations from backend */}
                       {message.cited_sections && message.cited_sections.length > 0 && (
                         <div className="mt-3 space-y-2">
                           <p className="font-mono text-xs font-medium text-muted-foreground">
-                            Sources ({message.cited_sections.length}):
+                            References:
                           </p>
                           <div className="space-y-2">
-                            {message.cited_sections.map((section, idx) => (
-                              <div
-                                key={idx}
-                                className="rounded-md border border-accent/30 bg-accent/5 p-2.5 text-xs"
-                              >
-                                <div className="mb-1 flex items-center gap-2">
-                                  <span className="font-mono font-medium text-primary">[{idx + 1}]</span>
-                                  <span className="font-mono font-medium text-foreground">
-                                    {section.title || "Document"}
-                                  </span>
-                                  {section.page !== undefined && (
-                                    <span className="font-mono text-muted-foreground">(p. {section.page})</span>
-                                  )}
+                            {message.cited_sections.map((section, idx) => {
+                              // Use citation_label if available, otherwise use citation_number, otherwise fallback to index
+                              const citationLabel = section.citation_label || 
+                                                   (section.citation_number ? `c${section.citation_number}` : `c${idx + 1}`)
+                              // Use summary if available, otherwise use excerpt
+                              const summary = section.summary || section.excerpt || ""
+                              
+                              return (
+                                <div
+                                  key={idx}
+                                  className="rounded-md border border-accent/30 bg-accent/5 p-2.5 text-xs"
+                                >
+                                  <div className="mb-1 flex items-start gap-2">
+                                    <span className="font-mono font-medium text-primary">{citationLabel}:</span>
+                                    <div className="flex-1">
+                                      <span className="font-mono text-foreground">
+                                        {summary || section.excerpt || "..."}
+                                      </span>
+                                      {section.title && (
+                                        <div className="mt-1 flex items-center gap-2">
+                                          <span className="font-mono text-xs text-muted-foreground">
+                                            {section.title}
+                                            {section.page !== undefined && ` (p. ${section.page})`}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                                {section.excerpt && (
-                                  <p className="mt-1 font-mono text-xs leading-relaxed text-muted-foreground">
-                                    {section.excerpt.substring(0, 300)}
-                                    {section.excerpt.length > 300 ? "..." : ""}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         </div>
                       )}
@@ -265,7 +655,7 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           )}
 
           {/* Input Section */}
@@ -295,14 +685,14 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask anything about this document..."
-                  disabled={isLoading}
+                  placeholder={isInitializing ? "Initializing chat..." : "Ask anything about this document..."}
+                  disabled={isLoading || isInitializing || !sessionId}
                   className="h-12 resize-none border-2 font-mono text-sm shadow-sm focus:border-primary"
                 />
               </div>
               <Button
                 onClick={handleAskQuestion}
-                disabled={isLoading || !question.trim()}
+                disabled={isLoading || !question.trim() || isInitializing || !sessionId}
                 size="lg"
                 className="h-12 gap-2 px-6 shadow-sm"
               >

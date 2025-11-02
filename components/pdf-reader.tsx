@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { FileText, MessageSquare, X, Plus } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
@@ -128,7 +128,7 @@ export function PDFReader() {
         bookmarks: [],
         qaHistory: [],
         pdfId: parsedData?.pdfId,
-        parsedOutputs: parsedData?.outputs
+        parsedOutputs: parsedData?.outputs || parsedData?.backendResult?.results?.[0]?.outputs
       }
     
       setTabs((prev) => {
@@ -144,6 +144,23 @@ export function PDFReader() {
       console.error("[PDF Reader] Error processing PDF:", error)
     }
   }
+
+  // Function to update a tab's parsed data when API completes
+  const handleParseComplete = useCallback((fileName: string, parsedData: any) => {
+    console.log("[PDF Reader] Updating parsed data for:", fileName, parsedData)
+    setTabs((prevTabs) =>
+      prevTabs.map((tab) => {
+        if (tab.file.name === fileName) {
+          return {
+            ...tab,
+            pdfId: parsedData?.pdfId || tab.pdfId,
+            parsedOutputs: parsedData?.backendResult?.results?.[0]?.outputs || parsedData?.outputs || tab.parsedOutputs,
+          }
+        }
+        return tab
+      })
+    )
+  }, [])
 
   const handleCloseTab = (tabId: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -241,7 +258,7 @@ export function PDFReader() {
 
       <div className="flex flex-1 overflow-hidden">
         {!activeTab ? (
-          <PDFUpload onFileSelect={handleFileSelect} />
+          <PDFUpload onFileSelect={handleFileSelect} onParseComplete={handleParseComplete} />
         ) : (
           <>
             {/* Center - PDF Viewer with Annotation Toolbar */}

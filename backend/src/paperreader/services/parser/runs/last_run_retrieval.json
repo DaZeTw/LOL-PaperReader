@@ -1,43 +1,32 @@
 {
-  "question": "xin chào",
+  "question": "compare attention and rnn",
   "hits": [
     {
-      "index": 1,
-      "score": 0.2311462739290549,
-      "text": "Ashish Vaswani ∗\nGoogle Brain\navaswani@google.com\nNoam Shazeer ∗\nGoogle Brain\nnoam@google.com\nNiki Parmar ∗\nGoogle Research\nnikip@google.com\nJakob Uszkoreit ∗\nGoogle Research\nusz@google.com\nLlion Jones ∗\nGoogle Research\nllion@google.com\nAidan N. Gomez ∗†\nUniversity of Toronto\naidan@cs.toronto.edu\nŁukasz Kaiser ∗\nGoogle Brain\nlukaszkaiser@google.com\nIllia Polosukhin ∗‡\nillia.polosukhin@gmail.com\nAbstract",
+      "index": 13,
+      "score": 0.35529686820387424,
+      "text": "The two most commonly used attention functions are additive attention [ 2 ], and dot-product (multi-\nplicative) attention. Dot-product attention is identical to our algorithm, except for the scaling factor\nof\n1\n√ d k . Additive attention computes the compatibility function using a feed-forward network with\na single hidden layer. While the two are similar in theoretical complexity, dot-product attention is\nmuch faster and more space-efficient in practice, since it can be implemented using highly optimized\nmatrix multiplication code.\nWhile for small values of d k the two mechanisms perform similarly, additive attention outperforms\ndot product attention without scaling for larger values of d k [ 3 ]. We suspect that for large values of\nd k , the dot products grow large in magnitude, pushing the softmax function into regions where it has\nextremely small gradients 4 . To counteract this effect, we scale the dot products by\n1\n√ d k .\n3.2.2\nMulti-Head Attention",
       "metadata": {
         "doc_id": "1706.03762v7-embedded",
-        "title": "Attention Is All You Need",
-        "page": 3,
+        "title": "Page 4",
+        "page": 7,
         "images": []
       }
     },
     {
-      "index": 40,
-      "score": 0.22390497169703916,
-      "text": "[36] Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, and Zbigniew Wojna.\nRethinking the inception architecture for computer vision. CoRR , abs/1512.00567, 2015.\n[37] Vinyals & Kaiser, Koo, Petrov, Sutskever, and Hinton. Grammar as a foreign language. In\nAdvances in Neural Information Processing Systems , 2015.\n[38] Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V Le, Mohammad Norouzi, Wolfgang\nMacherey, Maxim Krikun, Yuan Cao, Qin Gao, Klaus Macherey, et al. Google’s neural machine\ntranslation system: Bridging the gap between human and machine translation. arXiv preprint\narXiv:1609.08144 , 2016.\n[39] Jie Zhou, Ying Cao, Xuguang Wang, Peng Li, and Wei Xu. Deep recurrent models with\nfast-forward connections for neural machine translation. CoRR , abs/1606.04199, 2016.\n[40] Muhua Zhu, Yue Zhang, Wenliang Chen, Min Zhang, and Jingbo Zhu. Fast and accurate\nshift-reduce constituent parsing. In Proceedings of the 51st Annual Meeting of the ACL (Volume\n1: Long Papers) , pages 434–443. ACL, August 2013.\n12",
+      "index": 8,
+      "score": 0.3495531203692403,
+      "text": "Self-attention, sometimes called intra-attention is an attention mechanism relating different positions\nof a single sequence in order to compute a representation of the sequence. Self-attention has been\nused successfully in a variety of tasks including reading comprehension, abstractive summarization,\ntextual entailment and learning task-independent sentence representations [4, 27, 28, 22].\nEnd-to-end memory networks are based on a recurrent attention mechanism instead of sequence-\naligned recurrence and have been shown to perform well on simple-language question answering and\nlanguage modeling tasks [34].\nTo the best of our knowledge, however, the Transformer is the first transduction model relying\nentirely on self-attention to compute representations of its input and output without using sequence-\naligned RNNs or convolution. In the following sections, we will describe the Transformer, motivate\nself-attention and discuss its advantages over models such as [17, 18] and [9].\n3\nModel Architecture",
       "metadata": {
         "doc_id": "1706.03762v7-embedded",
-        "title": "Page 12",
-        "page": 15,
+        "title": "Page 2",
+        "page": 5,
         "images": []
       }
     },
     {
-      "index": 0,
-      "score": 0.22285432350795573,
-      "text": "Provided proper attribution is provided, Google hereby grants permission to\nreproduce the tables and figures in this paper solely for use in journalistic or\nscholarly works.",
-      "metadata": {
-        "doc_id": "1706.03762v7-embedded",
-        "title": "Page 1",
-        "page": 2,
-        "images": []
-      }
-    },
-    {
-      "index": 34,
-      "score": 0.2208454550621085,
-      "text": "The code we used to train and evaluate our models is available at https://github.com/\ntensorflow/tensor2tensor .\nAcknowledgements\nWe are grateful to Nal Kalchbrenner and Stephan Gouws for their fruitful\ncomments, corrections and inspiration.\nReferences\n[1] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv preprint\narXiv:1607.06450 , 2016.\n[2] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. Neural machine translation by jointly\nlearning to align and translate. CoRR , abs/1409.0473, 2014.\n[3] Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V. Le. Massive exploration of neural\nmachine translation architectures. CoRR , abs/1703.03906, 2017.\n[4] Jianpeng Cheng, Li Dong, and Mirella Lapata. Long short-term memory-networks for machine\nreading. arXiv preprint arXiv:1601.06733 , 2016.\n10",
+      "index": 33,
+      "score": 0.33968121218475167,
+      "text": "In contrast to RNN sequence-to-sequence models [ 37 ], the Transformer outperforms the Berkeley-\nParser [29] even when training only on the WSJ training set of 40K sentences.\n7\nConclusion\nIn this work, we presented the Transformer, the first sequence transduction model based entirely on\nattention, replacing the recurrent layers most commonly used in encoder-decoder architectures with\nmulti-headed self-attention.\nFor translation tasks, the Transformer can be trained significantly faster than architectures based\non recurrent or convolutional layers. On both WMT 2014 English-to-German and WMT 2014\nEnglish-to-French translation tasks, we achieve a new state of the art. In the former task our best\nmodel outperforms even all previously reported ensembles.\nWe are excited about the future of attention-based models and plan to apply them to other tasks. We\nplan to extend the Transformer to problems involving input and output modalities other than text and\nto investigate local, restricted attention mechanisms to efficiently handle large inputs and outputs\nsuch as images, audio and video. Making generation less sequential is another research goals of ours.",
       "metadata": {
         "doc_id": "1706.03762v7-embedded",
         "title": "Page 10",
@@ -46,13 +35,24 @@
       }
     },
     {
-      "index": 41,
-      "score": 0.21841136941797545,
-      "text": "Attention Visualizations\nIt\nis\nin\nthis\nspirit\nthat\na\nmajority\nof\nAmerican\ngovernments\nhave\npassed\nnew\nlaws\nsince\n2009\nmaking\nthe\nregistration\nor\nvoting\nprocess\nmore\ndifficult\n.\n<EOS>\n<pad>\n<pad>\n<pad>\n<pad>\n<pad>\n<pad>\nIt\nis\nin\nthis\nspirit\nthat\na\nmajority\nof\nAmerican\ngovernments\nhave\npassed\nnew\nlaws\nsince\n2009\nmaking\nthe\nregistration\nor\nvoting\nprocess\nmore\ndifficult\n.\n<EOS>\n<pad>\n<pad>\n<pad>\n<pad>\n<pad>\n<pad>\nFigure 3: An example of the attention mechanism following long-distance dependencies in the\nencoder self-attention in layer 5 of 6. Many of the attention heads attend to a distant dependency of\nthe verb ‘making’, completing the phrase ‘making...more difficult’. Attentions here shown only for\nthe word ‘making’. Different colors represent different heads. Best viewed in color.\n13",
+      "index": 15,
+      "score": 0.3314092504288557,
+      "text": "output values. These are concatenated and once again projected, resulting in the final values, as\ndepicted in Figure 2.\nMulti-head attention allows the model to jointly attend to information from different representation\nsubspaces at different positions. With a single attention head, averaging inhibits this.\nMultiHead( Q, K, V ) = Concat(head 1 , ..., head h ) W O\nwhere head i = Attention( QW Q\ni , KW K\ni , V W V\ni )\nWhere the projections are parameter matrices W Q\ni\n∈ R d model × d k , W K\ni\n∈ R d model × d k , W V\ni\n∈ R d model × d v\nand W O ∈ R hd v × d model .\nIn this work we employ h = 8 parallel attention layers, or heads. For each of these we use\nd k = d v = d model /h = 64 . Due to the reduced dimension of each head, the total computational cost\nis similar to that of single-head attention with full dimensionality.\n3.2.3\nApplications of Attention in our Model\nThe Transformer uses multi-head attention in three different ways:",
       "metadata": {
         "doc_id": "1706.03762v7-embedded",
-        "title": "Page 13",
-        "page": 16,
+        "title": "Page 5",
+        "page": 8,
+        "images": []
+      }
+    },
+    {
+      "index": 20,
+      "score": 0.3134313512851753,
+      "text": "In this section we compare various aspects of self-attention layers to the recurrent and convolu-\ntional layers commonly used for mapping one variable-length sequence of symbol representations\n( x 1 , ..., x n ) to another sequence of equal length ( z 1 , ..., z n ) , with x i , z i ∈ R d , such as a hidden\nlayer in a typical sequence transduction encoder or decoder. Motivating our use of self-attention we\nconsider three desiderata.\nOne is the total computational complexity per layer. Another is the amount of computation that can\nbe parallelized, as measured by the minimum number of sequential operations required.",
+      "metadata": {
+        "doc_id": "1706.03762v7-embedded",
+        "title": "Page 6",
+        "page": 9,
         "images": []
       }
     }

@@ -1,5 +1,6 @@
 import os
 import json
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Any, List
@@ -15,6 +16,7 @@ from typing import Dict, Any, List, Optional
 
 # Simple module-level cache
 _PIPELINE_CACHE: Optional["QAPipeline"] = None
+_PIPELINE_DATA_HASH: Optional[str] = None
 
 
 @dataclass
@@ -215,64 +217,122 @@ class QAPipeline:
         print(f"[DEBUG] Found citations in answer: {marker_indices}")
         print(f"[DEBUG] Generator citations: {gen_out.get('citations', [])}")
         
+        # ONLY include citations that are actually used in the answer
+        # Don't include citations that aren't referenced with [cN] markers
         ordered_hit_indices = []
         for idx in marker_indices:
             if 0 <= idx < len(hits):
                 ordered_hit_indices.append(idx)
-        # Fallback to natural order for any remaining hits not cited explicitly
-        remaining = [i for i in range(len(hits)) if i not in set(ordered_hit_indices)]
-        final_order = ordered_hit_indices + remaining
+        # Remove duplicates while preserving order
+        seen_indices = set()
+        unique_ordered_indices = []
+        for idx in ordered_hit_indices:
+            if idx not in seen_indices:
+                seen_indices.add(idx)
+                unique_ordered_indices.append(idx)
 
         def _norm_excerpt(s: str) -> str:
             s = (s or "").strip()
             return _re.sub(r"\s+", " ", s)
 
-        seen_citations = set()
+        # Only build citations for indices that were actually used
         cited = []
-        for i in final_order:
-            h = hits[i]
+        citation_map = {}  # Map citation number to citation info
+        for citation_num, hit_idx in enumerate(unique_ordered_indices, start=1):
+            h = hits[hit_idx]
             meta = h.get("metadata", {})
             title = meta.get("title")
             page = meta.get("page")
             excerpt = _norm_excerpt(h.get("text", ""))
-            key = (title, page, excerpt)
-            if key in seen_citations:
-                continue
-            seen_citations.add(key)
-            cited.append({
+            
+            citation_info = {
+                "citation_number": citation_num,
                 "doc_id": meta.get("doc_id"),
                 "title": title,
                 "page": page,
                 "excerpt": excerpt
-            })
+            }
+            cited.append(citation_info)
+            citation_map[hit_idx] = citation_info
+
+        # Get confidence from generator output if available
+        confidence = gen_out.get("confidence")
 
         return {
             "question": question,
             "answer": gen_out.get("answer", ""),
-            "citations": marker_indices,
-            "cited_sections": cited,
-            "retriever_scores": [{"index": h["index"], "score": h["score"]} for h in hits]
+            "citations": unique_ordered_indices,  # Only valid hit indices that have citations
+            "cited_sections": cited,  # Only citations that are actually used
+            "retriever_scores": [{"index": h["index"], "score": h["score"]} for h in hits],
+            "confidence": confidence
         }
 
 
+def _calculate_data_hash(config: PipelineConfig) -> str:
+    """Calculate hash of all parsed files to detect changes (fast - uses metadata only)"""
+    base = Path(config.data_dir)
+    if not base.exists():
+        return "fallback"
+    
+    # Collect all JSON and MD files
+    all_files = list(base.glob("*.json")) + list(base.glob("*.md"))
+    
+    if not all_files:
+        return "empty"
+    
+    # Sort for consistent hashing
+    all_files.sort(key=lambda p: str(p))
+    
+    # Calculate combined hash using file metadata (fast, no file reading)
+    hasher = hashlib.md5()
+    for file_path in all_files:
+        try:
+            # Include file name, modification time, and size in hash
+            stat = file_path.stat()
+            hasher.update(f"{file_path.name}:{stat.st_mtime}:{stat.st_size}".encode())
+        except Exception as e:
+            print(f"[WARNING] Failed to hash {file_path}: {e}")
+    
+    return hasher.hexdigest()
+
+
 async def get_pipeline(config: Optional[PipelineConfig] = None) -> QAPipeline:
-    """Return cached pipeline if available, else build and cache it."""
-    global _PIPELINE_CACHE
+    """Return cached pipeline if available and data hasn't changed, else build and cache it."""
+    global _PIPELINE_CACHE, _PIPELINE_DATA_HASH
     cfg = config or PipelineConfig()
-    if _PIPELINE_CACHE is None:
+    
+    # Calculate current data hash
+    current_hash = _calculate_data_hash(cfg)
+    
+    # Rebuild if cache is None or data has changed
+    if _PIPELINE_CACHE is None or _PIPELINE_DATA_HASH != current_hash:
+        if _PIPELINE_CACHE is None:
+            print("[LOG] Building pipeline (first time)")
+        else:
+            print(f"[LOG] Pipeline data changed (hash: {_PIPELINE_DATA_HASH} -> {current_hash}), rebuilding...")
+        
         _PIPELINE_CACHE = QAPipeline(cfg)
+        _PIPELINE_DATA_HASH = current_hash
+    else:
+        print(f"[LOG] Using cached pipeline (data hash: {current_hash})")
+    
     return _PIPELINE_CACHE
 
 
 def reset_pipeline_cache() -> None:
     """Clear the cached pipeline so it will rebuild on next access."""
-    global _PIPELINE_CACHE
+    global _PIPELINE_CACHE, _PIPELINE_DATA_HASH
     _PIPELINE_CACHE = None
+    _PIPELINE_DATA_HASH = None
+    print("[LOG] Pipeline cache reset")
 
 
 async def rebuild_pipeline(config: Optional[PipelineConfig] = None) -> QAPipeline:
     """Force rebuild of the pipeline and update the cache."""
-    global _PIPELINE_CACHE
+    global _PIPELINE_CACHE, _PIPELINE_DATA_HASH
     cfg = config or PipelineConfig()
+    print("[LOG] Force rebuilding pipeline...")
     _PIPELINE_CACHE = QAPipeline(cfg)
+    _PIPELINE_DATA_HASH = _calculate_data_hash(cfg)
+    print(f"[LOG] Pipeline rebuilt with hash: {_PIPELINE_DATA_HASH}")
     return _PIPELINE_CACHE

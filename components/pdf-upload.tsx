@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 
 interface PDFUploadProps {
-  onFileSelect: (file: File, parsedData: any) => void
+  onFileSelect: (file: File, parsedData?: any) => void
+  onParseComplete?: (fileName: string, parsedData: any) => void
 }
 
-export function PDFUpload({ onFileSelect }: PDFUploadProps) {
+export function PDFUpload({ onFileSelect, onParseComplete }: PDFUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const { toast } = useToast()
@@ -27,45 +28,46 @@ export function PDFUpload({ onFileSelect }: PDFUploadProps) {
         return
       }
 
-      setIsUploading(true)
+      // Navigate immediately without waiting for API response
+      console.log("[v0] Navigating to PDF viewer immediately for:", file.name)
+      onFileSelect(file)
 
-      try {
-        console.log("[v0] Uploading file:", file.name)
+      // Start upload/parse API call in background (fire-and-forget)
+      const formData = new FormData()
+      formData.append("file", file)
 
-        // Upload to API
-        const formData = new FormData()
-        formData.append("file", file)
+      fetch("/api/pdf/upload", {
+        method: "POST",
+        body: formData,
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            throw new Error("Upload failed")
+          }
 
-        const response = await fetch("/api/pdf/upload", {
-          method: "POST",
-          body: formData,
+          const data = await response.json()
+          console.log("[v0] Parsed data received in background:", data)
+
+          // Update the tab with parsed data if callback is provided
+          if (onParseComplete) {
+            onParseComplete(file.name, data)
+          }
+
+          toast({
+            title: "PDF processed successfully",
+            description: `${file.name} parsing completed`,
+          })
         })
-
-        if (!response.ok) {
-          throw new Error("Upload failed")
-        }
-
-        const data = await response.json()
-        console.log("[v0] Parsed data received:", data)
-
-        onFileSelect(file, data)
-
-        toast({
-          title: "PDF uploaded successfully",
-          description: `${file.name} has been processed`,
+        .catch((error) => {
+          console.error("[v0] Upload error:", error)
+          toast({
+            title: "Processing failed",
+            description: "PDF upload completed but parsing encountered an error",
+            variant: "destructive",
+          })
         })
-      } catch (error) {
-        console.error("[v0] Upload error:", error)
-        toast({
-          title: "Upload failed",
-          description: "There was an error processing your PDF",
-          variant: "destructive",
-        })
-      } finally {
-        setIsUploading(false)
-      }
     },
-    [onFileSelect, toast],
+    [onFileSelect, onParseComplete, toast],
   )
 
   const handleLoadSample = useCallback(async () => {

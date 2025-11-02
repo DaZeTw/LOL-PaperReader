@@ -68,8 +68,8 @@ class OpenAIGenerator(Generator):
         if self.client is None:
             raise RuntimeError("OPENAI_API_KEY not set")
 
-        # --- Short, focused system prompt ---
-        system = (
+        # --- Default system prompt (used only if not found in history) ---
+        default_system = (
             "You are a helpful assistant that answers questions using chat history, images, and document context."
             "\n\nPRIORITY ORDER:"
             "\n1. Use chat history for questions about previous messages."
@@ -79,17 +79,50 @@ class OpenAIGenerator(Generator):
             "\n- Never quote raw document text when answering."
             "\n- Focus on what is visible in images for image-related queries."
             "\n- Be concise and factual. Add [cN] markers when referencing document context."
+            "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
         )
 
         # --- Build messages ---
-        messages = [{"role": "system", "content": system}]
-
-        # Add chat history if provided
+        messages = []
+        
+        # Check if chat history contains system message
+        system_message_found = False
+        system_content = default_system
+        
         if chat_history:
-            print(f"[DEBUG] Adding {len(chat_history)} chat history messages...")
+            print(f"[DEBUG] Checking {len(chat_history)} chat history messages for system message...")
             for msg in chat_history:
                 if isinstance(msg, dict) and "role" in msg and "content" in msg:
+                    if msg["role"] == "system":
+                        # Use system message from history
+                        system_content = msg["content"]
+                        system_message_found = True
+                        print(f"[DEBUG] Found system message in chat history")
+                        break
+        
+        # Add system message (from history or default)
+        messages.append({"role": "system", "content": system_content})
+        if system_message_found:
+            print(f"[DEBUG] Using system message from chat history")
+        else:
+            print(f"[DEBUG] Using default system prompt (no system message in history)")
+        
+        # Add chat history messages (excluding system since we already added it)
+        if chat_history:
+            user_msgs = 0
+            assistant_msgs = 0
+            print(f"[DEBUG] Adding chat history messages (excluding system)...")
+            for msg in chat_history:
+                if isinstance(msg, dict) and "role" in msg and "content" in msg:
+                    # Skip system message since we already added it above
+                    if msg["role"] == "system":
+                        continue
                     messages.append({"role": msg["role"], "content": msg["content"]})
+                    if msg["role"] == "user":
+                        user_msgs += 1
+                    elif msg["role"] == "assistant":
+                        assistant_msgs += 1
+            print(f"[DEBUG] Added to OpenAI messages: {user_msgs} user, {assistant_msgs} assistant messages")
 
         # Prepare image list
         query_images_to_process = []
@@ -107,7 +140,8 @@ class OpenAIGenerator(Generator):
             prompt = (
                 f"Answer the question using the {len(contexts)} contexts below. "
                 "IMPORTANT: You MUST append [cN] markers where you use contextual info (e.g., [c1], [c2], etc.). "
-                f"Each [cN] should correspond to the context number you're referencing (1 to {len(contexts)}).\n\n"
+                f"Each [cN] should correspond to the context number you're referencing (1 to {len(contexts)}). "
+                "At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]\n\n"
                 + "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)])
                 + f"\n\nQuestion: {question}\nAnswer:"
             )
@@ -123,12 +157,23 @@ class OpenAIGenerator(Generator):
             import re
             citations = [int(m.group(1)) - 1 for m in re.finditer(r"\[c(\d+)\]", answer)]
             
+            # Extract confidence score if present
+            confidence = None
+            confidence_pattern = re.search(r"\[CONFIDENCE:([\d.]+)\]", answer)
+            if confidence_pattern:
+                try:
+                    confidence = float(confidence_pattern.group(1))
+                    # Remove confidence marker from answer
+                    answer = re.sub(r"\[CONFIDENCE:[\d.]+\]", "", answer).strip()
+                except ValueError:
+                    pass
+            
             # Validate citations - only include citations that exist in contexts
             valid_citations = [c for c in citations if 0 <= c < len(contexts)]
             if len(citations) != len(valid_citations):
                 print(f"[WARNING] Found invalid citations: {citations}, valid ones: {valid_citations}")
             
-            return {"answer": answer, "citations": valid_citations}
+            return {"answer": answer, "citations": valid_citations, "confidence": confidence}
 
         # --- Multimodal mode ---
         from pathlib import Path
@@ -209,7 +254,7 @@ class OpenAIGenerator(Generator):
             user_content.append({"type": "text", "text": f"[Reference Image {i+1}] {cap}"})
             user_content.append({"type": "image_url", "image_url": {"url": data_url}})
 
-        user_content.append({"type": "text", "text": f"Question: {question}\nAnswer: (Please append [cN] markers where you use contextual info from the {len(contexts)} contexts above. Use [c1] to [c{len(contexts)}] only.)"})
+        user_content.append({"type": "text", "text": f"Question: {question}\nAnswer: (Please append [cN] markers where you use contextual info from the {len(contexts)} contexts above. Use [c1] to [c{len(contexts)}] only. At the end, provide a confidence score [CONFIDENCE:0.85] based on how well the document context supports your answer.)"})
         messages.append({"role": "user", "content": user_content})
 
         # --- Send request ---
@@ -229,12 +274,23 @@ class OpenAIGenerator(Generator):
         import re
         citations = [int(m.group(1)) - 1 for m in re.finditer(r"\[c(\d+)\]", answer)]
         
+        # Extract confidence score if present
+        confidence = None
+        confidence_pattern = re.search(r"\[CONFIDENCE:([\d.]+)\]", answer)
+        if confidence_pattern:
+            try:
+                confidence = float(confidence_pattern.group(1))
+                # Remove confidence marker from answer
+                answer = re.sub(r"\[CONFIDENCE:[\d.]+\]", "", answer).strip()
+            except ValueError:
+                pass
+        
         # Validate citations - only include citations that exist in contexts
         valid_citations = [c for c in citations if 0 <= c < len(contexts)]
         if len(citations) != len(valid_citations):
             print(f"[WARNING] Found invalid citations: {citations}, valid ones: {valid_citations}")
         
-        return {"answer": answer, "citations": valid_citations}
+        return {"answer": answer, "citations": valid_citations, "confidence": confidence}
 
 
 # ============================ #
@@ -255,7 +311,8 @@ class OllamaGenerator(Generator):
         prompt = (
             f"You are a helpful assistant. Answer strictly using the {len(contexts)} contexts. "
             "IMPORTANT: You MUST append [cN] markers where you use contextual info (e.g., [c1], [c2], etc.). "
-            f"Each [cN] should correspond to the context number you're referencing (1 to {len(contexts)}).\n\n"
+            f"Each [cN] should correspond to the context number you're referencing (1 to {len(contexts)}). "
+            "At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]\n\n"
             + "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)])
             + f"\n\nQuestion: {question}\nAnswer:"
         )
@@ -265,12 +322,23 @@ class OllamaGenerator(Generator):
         import re
         citations = [int(m.group(1)) - 1 for m in re.finditer(r"\[c(\d+)\]", answer)]
         
+        # Extract confidence score if present
+        confidence = None
+        confidence_pattern = re.search(r"\[CONFIDENCE:([\d.]+)\]", answer)
+        if confidence_pattern:
+            try:
+                confidence = float(confidence_pattern.group(1))
+                # Remove confidence marker from answer
+                answer = re.sub(r"\[CONFIDENCE:[\d.]+\]", "", answer).strip()
+            except ValueError:
+                pass
+        
         # Validate citations - only include citations that exist in contexts
         valid_citations = [c for c in citations if 0 <= c < len(contexts)]
         if len(citations) != len(valid_citations):
             print(f"[WARNING] Found invalid citations: {citations}, valid ones: {valid_citations}")
         
-        return {"answer": answer, "citations": valid_citations}
+        return {"answer": answer, "citations": valid_citations, "confidence": confidence}
 
 
 # ============================ #

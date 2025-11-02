@@ -1,0 +1,61 @@
+services:
+  # Frontend Next.js
+  nextjs-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base  # Use base stage for development
+    command: npm run dev
+    environment:
+      NODE_ENV: development
+      BACKEND_URL: http://python-backend:8000
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - .:/app
+      - /app/node_modules       # ⚡ Giữ lại node_modules trong container
+      - /app/yarn.lock          # ⚡ Exclude yarn.lock để Next.js không detect yarn
+      - /app/.yarn              # ⚡ Exclude .yarn directory
+    ports:
+      - "3000:3000"
+    depends_on:
+      - python-backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Backend Python FastAPI
+  python-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/src:/app/src
+    environment:
+      OPENAI_API_KEY: your_openai_api_key_here
+      MONGODB_URL: mongodb://mongodb:27017/paperreader
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # MongoDB database
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
