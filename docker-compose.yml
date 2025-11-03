@@ -34,28 +34,27 @@ services:
     volumes:
       - ./backend/src:/app/src
     environment:
-      OPENAI_API_KEY: your_openai_api_key_here
-      MONGODB_URL: mongodb://mongodb:27017/paperreader
-    depends_on:
-      - mongodb
+      OPENAI_API_KEY: your_api_key
+      MONGODB_URL: mongodb+srv://vanlethai12042002_db_user:zK7RXEY5ZBUWdD45@cluster0.4xnkms3.mongodb.net/paperreader_chat?retryWrites=true&w=majority
     restart: unless-stopped
     networks:
       - app-network
 
-  # MongoDB database
-  mongodb:
-    image: mongo:7.0
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    restart: unless-stopped
-    networks:
-      - app-network
+  # MongoDB database (Local - only needed for local development)
+  # Comment out if using MongoDB Atlas (cloud)
+  # mongodb:
+  #   image: mongo:7.0
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #   restart: unless-stopped
+  #   networks:
+  #     - app-network
 
 networks:
   app-network:
     driver: bridge
 
-volumes:
-  mongodb_data:
+# volumes:
+#   mongodb_data:  # Only needed if using local MongoDB

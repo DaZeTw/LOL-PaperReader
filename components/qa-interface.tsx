@@ -37,6 +37,8 @@ interface QAMessage {
 export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAInterfaceProps) {
   const [question, setQuestion] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isPipelineReady, setIsPipelineReady] = useState<boolean | null>(null)
+  const [pipelineStatus, setPipelineStatus] = useState<{building?: boolean, ready?: boolean, chunks?: number, percent?: number, stage?: string, message?: string}>({})
   const [messages, setMessages] = useState<QAMessage[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -60,14 +62,13 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
     const initializeSession = async () => {
       try {
         // FIRST: Load messages from localStorage immediately (instant restore)
-        // Only load if session_id exists (not cleared)
+        // Always try to restore history regardless of session verification/pipeline readiness
         if (typeof window !== 'undefined') {
           try {
-            const savedSessionId = localStorage.getItem(storageKey)
-            // Only load messages if we have a valid session_id (not cleared)
-            if (savedSessionId) {
-              const savedMessages = localStorage.getItem(messagesStorageKey)
-              if (savedMessages) {
+            const savedMessages = localStorage.getItem(messagesStorageKey)
+            // Only load if messages exist AND not empty
+            if (savedMessages && savedMessages.trim() !== '[]' && savedMessages.trim() !== '') {
+              try {
                 const parsedMessages = JSON.parse(savedMessages)
                 if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
                   // Restore Date objects from ISO strings
@@ -77,9 +78,17 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
                   }))
                   setMessages(restoredMessages)
                   setShowHistory(true)
-                  console.log("[Chat] Loaded", restoredMessages.length, "messages from localStorage")
+                  console.log("[Chat] Loaded", restoredMessages.length, "messages from localStorage (pre-backend)")
+                } else {
+                  console.log("[Chat] No messages in localStorage (empty array) - starting fresh")
                 }
+              } catch (parseError) {
+                console.warn("[Chat] Failed to parse messages from localStorage:", parseError)
+                // Clear invalid data
+                localStorage.removeItem(messagesStorageKey)
               }
+            } else {
+              console.log("[Chat] No messages in localStorage (cleared or empty) - starting fresh")
             }
           } catch (e) {
             console.warn("[Chat] Failed to load messages from localStorage:", e)
@@ -98,7 +107,7 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
             const sessionResponse = await fetch(`/api/chat/sessions?session_id=${savedSessionId}`)
             if (sessionResponse.ok) {
               const sessionData = await sessionResponse.json()
-              console.log("[Chat] Using existing session:", savedSessionId)
+              console.log("[Chat] ✅ Verified existing session:", savedSessionId)
               
               // Load chat history from backend and merge with localStorage
               if (sessionData.messages && sessionData.messages.length > 0) {
@@ -141,14 +150,33 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
                   console.log("[Chat] Synced", historyMessages.length, "messages from backend")
                 }
               }
+            } else if (sessionResponse.status === 404) {
+              // Session not found in DB, but we have it in localStorage
+              // This might mean DB was reset or session expired
+              console.log("[Chat] ⚠️ Session not found in database (404), will create new one")
+              // Clear localStorage to avoid confusion
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem(storageKey)
+                localStorage.removeItem(messagesStorageKey)
+              }
+              await createNewSession()
             } else {
-              // Session not found, create new one
-              throw new Error("Session not found")
+              // Other error (500, 503, etc.) - don't create new session yet
+              // Just log and keep using localStorage session ID
+              console.warn("[Chat] ⚠️ Failed to verify session:", sessionResponse.status, "Keeping localStorage session ID")
+              // Don't throw error, just use what we have
             }
-          } catch (error) {
-            console.log("[Chat] Session not found, creating new one")
-            // Session expired or not found, create new one
-            await createNewSession()
+          } catch (error: any) {
+            // Network error or other exception
+            console.warn("[Chat] ⚠️ Error verifying session:", error.message || error)
+            // Don't create new session on network errors - keep existing one
+            // Only create if we don't have a saved session at all
+            if (!savedSessionId) {
+              console.log("[Chat] No saved session, creating new one")
+              await createNewSession()
+            } else {
+              console.log("[Chat] Keeping existing session ID from localStorage despite verification error")
+            }
           }
         } else {
           // No saved session, create new one
@@ -215,12 +243,60 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
     }
 
     initializeSession()
+    // Start polling pipeline readiness
+    let cancelled = false
+    let timer: any
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/qa/status")
+        const data = await res.json().catch(() => ({}))
+        if (!cancelled) {
+          setIsPipelineReady(Boolean(data?.ready))
+          setPipelineStatus(data)
+        }
+        if (!data?.ready && !cancelled) {
+          timer = setTimeout(poll, 2000)
+        }
+      } catch {
+        if (!cancelled) {
+          timer = setTimeout(poll, 2000)
+        }
+      }
+    }
+    poll()
+    return () => {
+      cancelled = true
+      if (timer) clearTimeout(timer)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdfFile.name])
 
   const handleAskQuestion = async () => {
+    // Block asking if pipeline is not ready
+    if (isPipelineReady === false) {
+      toast({
+        title: "Preparing documents…",
+        description: "We're still processing and indexing your PDF. Please wait a moment.",
+      })
+      return
+    }
     // Ensure we have a session ID before asking
     let currentSessionId = sessionId
+    
+    console.log("[Chat] handleAskQuestion called")
+    console.log("[Chat] Current sessionId from state:", sessionId)
+    console.log("[Chat] Checking localStorage for sessionId...")
+    
+    // Also check localStorage to ensure we have the latest session_id
+    if (typeof window !== 'undefined') {
+      const storedSessionId = localStorage.getItem(storageKey)
+      console.log("[Chat] Stored sessionId in localStorage:", storedSessionId)
+      if (storedSessionId && storedSessionId !== currentSessionId) {
+        console.log("[Chat] ⚠️ Warning: localStorage sessionId differs from state, using localStorage value")
+        currentSessionId = storedSessionId
+        setSessionId(storedSessionId)
+      }
+    }
     
     // If no session ID, create one first
     if (!currentSessionId) {
@@ -270,6 +346,9 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
     setQuestion("")
 
     try {
+      console.log("[Chat] Sending question to backend with session_id:", currentSessionId)
+      console.log("[Chat] Question:", currentQuestion)
+      
       const response = await fetch("/api/chat/ask", {
         method: "POST",
         headers: {
@@ -352,21 +431,29 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
   }
 
   const handleClearHistory = async () => {
+    // Store old session ID before clearing to verify new one is different
+    const oldSessionId = sessionId
+    
+    // CRITICAL: Clear state FIRST to prevent UI showing old messages
     setMessages([])
     setShowHistory(false)
-    // Clear localStorage messages AND session_id
+    setSessionId(null)  // Reset immediately to prevent loading old session
+    
+    // Clear localStorage messages AND session_id COMPLETELY
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(messagesStorageKey)
         localStorage.removeItem(storageKey) // Clear session_id too
-        setSessionId(null) // Reset session ID
+        console.log("[Chat] ✅ Cleared localStorage - messages and session_id removed")
       } catch (e) {
         console.warn("[Chat] Failed to clear messages from localStorage:", e)
       }
     }
     
-    // Create new session to ensure clean start
+    // Create new session with unique title (timestamp + random) to ensure it's a new session
     try {
+      const timestamp = new Date().toISOString()
+      const randomId = Math.random().toString(36).substring(7) // Add random to ensure uniqueness
       const response = await fetch("/api/chat/sessions", {
         method: "POST",
         headers: {
@@ -374,7 +461,7 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
         },
         body: JSON.stringify({
           user_id: null,
-          title: `Chat: ${pdfFile.name}`,
+          title: `Chat: ${pdfFile.name} - ${timestamp} - ${randomId}`, // Add timestamp + random to ensure unique session
           initial_message: null,
         }),
       })
@@ -383,12 +470,28 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
         const sessionData = await response.json()
         const newSessionId = sessionData.session_id
         
-        // Save new session_id to localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(storageKey, newSessionId)
+        // Verify it's actually a new session (not the old one)
+        if (newSessionId !== oldSessionId) {
+          // Save new session_id to localStorage IMMEDIATELY
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(storageKey, newSessionId)
+            // CRITICAL: Also clear messagesStorageKey again to ensure it's empty
+            localStorage.removeItem(messagesStorageKey)
+          }
+          setSessionId(newSessionId)
+          console.log("[Chat] ✅ Created NEW session after clear:", newSessionId)
+          console.log("[Chat] Old session was:", oldSessionId)
+        } else {
+          console.warn("[Chat] ⚠️ Warning: New session ID matches old one! Backend may have returned existing session.")
+          // Still set it anyway to continue
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(storageKey, newSessionId)
+            localStorage.removeItem(messagesStorageKey)
+          }
+          setSessionId(newSessionId)
         }
-        setSessionId(newSessionId)
-        console.log("[Chat] Created new session after clear:", newSessionId)
+      } else {
+        console.error("[Chat] Failed to create new session - response not OK:", response.status)
       }
     } catch (error) {
       console.error("[Chat] Failed to create new session after clear:", error)
@@ -396,7 +499,7 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
     
     toast({
       title: "History cleared",
-      description: "All Q&A history has been cleared",
+      description: "All Q&A history has been cleared. Starting new session.",
     })
   }
 
@@ -678,6 +781,35 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
               </div>
             )}
 
+            {/* Pipeline Status Progress */}
+            {isPipelineReady === false && (
+              <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <span className="font-mono text-sm font-medium text-foreground">
+                      Preparing documents...
+                    </span>
+                  </div>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {typeof pipelineStatus.percent === 'number' ? `${pipelineStatus.percent}%` : ''}
+                    {pipelineStatus.chunks !== undefined && pipelineStatus.chunks > 0 ? ` • ${pipelineStatus.chunks} chunks` : ''}
+                  </span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div 
+                    className="h-full bg-primary transition-all duration-500 ease-out"
+                    style={{
+                      width: `${Math.max(10, Math.min(99, Number(pipelineStatus.percent ?? 10)))}%`
+                    }}
+                  />
+                </div>
+                <p className="mt-2 font-mono text-xs text-muted-foreground">
+                  {pipelineStatus.message || 'Building search index and embeddings. This may take 1-2 minutes...'}
+                </p>
+              </div>
+            )}
+
             {/* Input Field */}
             <div className="flex items-end gap-3">
               <div className="flex-1">
@@ -685,14 +817,20 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={isInitializing ? "Initializing chat..." : "Ask anything about this document..."}
-                  disabled={isLoading || isInitializing || !sessionId}
+                  placeholder={
+                    isInitializing 
+                      ? "Initializing chat..." 
+                      : isPipelineReady === false
+                      ? "Preparing documents, please wait..."
+                      : "Ask anything about this document..."
+                  }
+                  disabled={isLoading || isInitializing || !sessionId || isPipelineReady === false}
                   className="h-12 resize-none border-2 font-mono text-sm shadow-sm focus:border-primary"
                 />
               </div>
               <Button
                 onClick={handleAskQuestion}
-                disabled={isLoading || !question.trim() || isInitializing || !sessionId}
+                disabled={isLoading || !question.trim() || isInitializing || !sessionId || isPipelineReady === false}
                 size="lg"
                 className="h-12 gap-2 px-6 shadow-sm"
               >

@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from paperreader.api import pdf_routes  # main backend routes
 from paperreader.api.routes import router as qa_router  # QA RAG routes
 from paperreader.api.chat_routes import router as chat_router  # Chat routes
-from paperreader.api.chat_embedding_routes import router as chat_embedding_router  # Chat embedding routes
+# from paperreader.api.chat_embedding_routes import router as chat_embedding_router  # Chat embedding routes (removed as unused)
 
 # Import database connection
 from paperreader.database.mongodb import mongodb
@@ -49,7 +49,8 @@ def create_app() -> FastAPI:
     app.include_router(pdf_routes.router, prefix="/api/pdf", tags=["PDF"])
     app.include_router(qa_router, prefix="/api/qa", tags=["QA"])
     app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
-    app.include_router(chat_embedding_router, prefix="/api/chat-embedding", tags=["Chat Embedding"])
+    # Chat Embedding API disabled as unused
+    # app.include_router(chat_embedding_router, prefix="/api/chat-embedding", tags=["Chat Embedding"])
 
     # ------------------------
     # Static files (for parsed figures)
@@ -64,12 +65,25 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         """Initialize database and schedule warmup in background"""
-        try:
-            await mongodb.connect()
-            print("✅ MongoDB connection established")
-        except Exception as e:
-            print(f"❌ Failed to connect to MongoDB: {e}")
-            # Don't raise exception to allow app to start without DB for testing
+        # Connect to MongoDB immediately and wait for it (blocking)
+        # This ensures MongoDB is ready before accepting requests
+        print("[STARTUP] Connecting to MongoDB...")
+        max_retries = 3
+        retry_delay = 2
+        for attempt in range(max_retries):
+            try:
+                await mongodb.connect()
+                print("✅ MongoDB connection established on startup")
+                break
+            except Exception as e:
+                print(f"❌ Attempt {attempt + 1}/{max_retries} failed to connect to MongoDB: {e}")
+                if attempt < max_retries - 1:
+                    print(f"[STARTUP] Retrying in {retry_delay} seconds...")
+                    await asyncio.sleep(retry_delay)
+                else:
+                    print(f"[STARTUP] ⚠️ MongoDB connection failed after {max_retries} attempts")
+                    print("[STARTUP] ⚠️ App will start but chat features may not work until MongoDB is available")
+                    # Don't raise exception to allow app to start without DB for testing
         
         # Warmup in background so startup is non-blocking
         import asyncio
@@ -79,11 +93,17 @@ def create_app() -> FastAPI:
             try:
                 print("[STARTUP] (bg) Preloading Visualized_BGE embedder...")
                 embedder = get_embedder(None)
-                # Trigger lazy load
-                await asyncio.to_thread(embedder.embed, ["warmup"])  # run in thread to avoid blocking loop
-                print("[STARTUP] (bg) Embedder ready")
+                # CRITICAL: Preload model AND tokenizer to avoid download delay during first chat
+                # This triggers both model loading and tokenizer download
+                print("[STARTUP] (bg) Triggering model load (this will download tokenizer files if needed)...")
+                await asyncio.to_thread(embedder._ensure_model)  # Load model which loads tokenizer
+                print("[STARTUP] (bg) Model loaded, now testing embedding...")
+                await asyncio.to_thread(embedder.embed, ["warmup"])  # Test embedding works
+                print("[STARTUP] (bg) ✅ Embedder fully ready (model + tokenizer)")
             except Exception as e:
                 print(f"[STARTUP] (bg) Embedder preload failed (will retry on first use): {e}")
+                import traceback
+                print(f"[STARTUP] (bg) Traceback: {traceback.format_exc()}")
             
             # Warm QA pipeline with current parsed docs
             try:

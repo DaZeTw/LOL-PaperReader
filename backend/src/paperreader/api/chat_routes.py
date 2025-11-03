@@ -18,243 +18,6 @@ from paperreader.services.qa.pipeline import get_pipeline
 
 router = APIRouter()
 
-
-@router.get("/debug/database-info")
-async def get_database_info():
-    """Debug endpoint to check MongoDB connection and database info"""
-    try:
-        from paperreader.database.mongodb import mongodb
-        from paperreader.config.settings import settings
-        
-        # Check if MongoDB is connected (proper way to check motor database objects)
-        # Motor database objects cannot be compared with None directly, so we check by accessing name
-        try:
-            db_name = mongodb.database.name
-        except (AttributeError, TypeError):
-            return {
-                "connected": False,
-                "error": "MongoDB not connected",
-                "database": None,
-                "collections": [],
-                "mongodb_url_configured": False
-            }
-        
-        collection_names = await mongodb.database.list_collection_names()
-        
-        # Count documents in chat_sessions
-        chat_collection = mongodb.database["chat_sessions"]
-        chat_count = await chat_collection.count_documents({})
-        
-        # Get sample sessions
-        sample_sessions = []
-        async for session in chat_collection.find({}).limit(5):
-            sample_sessions.append({
-                "session_id": session.get("session_id"),
-                "title": session.get("title"),
-                "message_count": len(session.get("messages", [])),
-                "created_at": str(session.get("created_at")),
-                "_id": str(session.get("_id"))
-            })
-        
-        # Get MongoDB URL info (partial for security)
-        mongodb_url = settings.mongodb_url
-        url_info = mongodb_url[:30] + "..." if len(mongodb_url) > 30 else mongodb_url
-        
-        return {
-            "connected": True,
-            "database": db_name,
-            "collections": collection_names,
-            "chat_sessions_count": chat_count,
-            "sample_sessions": sample_sessions,
-            "mongodb_url_configured": bool(mongodb.client is not None),
-            "mongodb_url_preview": url_info,
-            "client_type": type(mongodb.client).__name__ if mongodb.client else None
-        }
-    except Exception as e:
-        import traceback
-        return {
-            "connected": False,
-            "error": str(e),
-            "traceback": traceback.format_exc(),
-            "database": None,
-            "collections": []
-        }
-
-
-@router.get("/debug/session/{session_id}")
-async def debug_session(session_id: str):
-    """Debug endpoint to check if a session exists in MongoDB"""
-    try:
-        from paperreader.database.mongodb import mongodb
-        from paperreader.services.chat.chat_service import chat_service
-        
-        # Check connection
-        try:
-            db_name = mongodb.database.name
-        except (AttributeError, TypeError):
-            return {
-                "found": False,
-                "error": "MongoDB not connected",
-                "database": None
-            }
-        
-        collection = mongodb.database["chat_sessions"]
-        
-        # Search by session_id (UUID string)
-        session_data = await collection.find_one({"session_id": session_id})
-        
-        if session_data:
-            return {
-                "found": True,
-                "database": db_name,
-                "collection": "chat_sessions",
-                "session_id": session_data.get("session_id"),
-                "mongodb_id": str(session_data.get("_id")),
-                "title": session_data.get("title"),
-                "user_id": session_data.get("user_id"),
-                "message_count": len(session_data.get("messages", [])),
-                "created_at": str(session_data.get("created_at")),
-                "updated_at": str(session_data.get("updated_at")),
-                "messages_preview": [
-                    {
-                        "role": msg.get("role"),
-                        "content_preview": msg.get("content", "")[:100] + "..." if len(msg.get("content", "")) > 100 else msg.get("content", ""),
-                        "timestamp": str(msg.get("timestamp"))
-                    }
-                    for msg in session_data.get("messages", [])[:5]  # First 5 messages
-                ]
-            }
-        else:
-            # Also try searching by MongoDB _id in case user passed that
-            try:
-                from bson import ObjectId
-                if len(session_id) == 24:  # ObjectId length
-                    session_by_id = await collection.find_one({"_id": ObjectId(session_id)})
-                    if session_by_id:
-                        return {
-                            "found": True,
-                            "note": "Found by MongoDB _id (not session_id)",
-                            "database": db_name,
-                            "collection": "chat_sessions",
-                            "session_id": session_by_id.get("session_id"),
-                            "mongodb_id": str(session_by_id.get("_id")),
-                            "title": session_by_id.get("title"),
-                            "message_count": len(session_by_id.get("messages", []))
-                        }
-            except:
-                pass
-            
-            # List all session_ids to help debug
-            all_session_ids = []
-            async for doc in collection.find({}).limit(10):
-                all_session_ids.append({
-                    "session_id": doc.get("session_id"),
-                    "mongodb_id": str(doc.get("_id")),
-                    "title": doc.get("title")
-                })
-            
-            return {
-                "found": False,
-                "database": db_name,
-                "collection": "chat_sessions",
-                "searched_session_id": session_id,
-                "total_sessions": await collection.count_documents({}),
-                "sample_session_ids": all_session_ids,
-                "help": "Use session_id (UUID string), not MongoDB _id (ObjectId)"
-            }
-    except Exception as e:
-        import traceback
-        return {
-            "found": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }
-
-@router.post("/debug/test-save")
-async def test_save_to_mongodb():
-    """Test endpoint to manually test saving to MongoDB"""
-    try:
-        from paperreader.database.mongodb import mongodb
-        from paperreader.services.chat.chat_service import chat_service
-        from paperreader.models.chat import ChatSessionCreate, ChatMessageCreate
-        import uuid
-        
-        # Check connection
-        try:
-            db_name = mongodb.database.name
-        except (AttributeError, TypeError):
-            return {
-                "success": False,
-                "error": "MongoDB not connected"
-            }
-        
-        # Create a test session
-        test_session_id = str(uuid.uuid4())
-        test_title = f"TEST_SESSION_{test_session_id[:8]}"
-        
-        print(f"[TEST] Creating test session: {test_session_id}")
-        session_data = ChatSessionCreate(
-            session_id=test_session_id,
-            user_id="test_user",
-            title=test_title,
-            initial_message=None
-        )
-        
-        session = await chat_service.create_session(session_data)
-        print(f"[TEST] Session created: {session.session_id}")
-        
-        # Add a test message
-        test_message = ChatMessageCreate(
-            role="user",
-            content="This is a test message",
-            metadata={"test": True}
-        )
-        
-        print(f"[TEST] Adding test message to session: {test_session_id}")
-        saved = await chat_service.add_message(test_session_id, test_message)
-        
-        if saved:
-            # Verify it was saved
-            collection = mongodb.database["chat_sessions"]
-            verify = await collection.find_one({"session_id": test_session_id})
-            
-            if verify:
-                msg_count = len(verify.get("messages", []))
-                return {
-                    "success": True,
-                    "database": db_name,
-                    "session_id": test_session_id,
-                    "message_count": msg_count,
-                    "session_found": True,
-                    "messages": [
-                        {
-                            "role": msg.get("role"),
-                            "content": msg.get("content")[:50] + "..." if len(msg.get("content", "")) > 50 else msg.get("content")
-                        }
-                        for msg in verify.get("messages", [])
-                    ]
-                }
-            else:
-                return {
-                    "success": False,
-                    "error": "Session created but not found after save",
-                    "database": db_name
-                }
-        else:
-            return {
-                "success": False,
-                "error": "Failed to save message",
-                "database": db_name
-            }
-            
-    except Exception as e:
-        import traceback
-        return {
-            "success": False,
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }
-
 class ChatAskRequest(BaseModel):
     session_id: str
     question: str
@@ -285,9 +48,29 @@ class ChatSessionListResponse(BaseModel):
 
 @router.post("/sessions", response_model=ChatSessionResponse)
 async def create_chat_session(request: ChatSessionCreateRequest):
-    """Create a new chat session"""
+    """Create a new chat session, or return existing one if found"""
     try:
-        # Generate a unique session ID
+        # First, check if there's an existing session with the same title and user_id
+        # This prevents creating duplicate sessions for the same PDF
+        if request.title:
+            existing_session = await chat_service.find_session_by_title(
+                title=request.title,
+                user_id=request.user_id
+            )
+            
+            if existing_session:
+                # Return existing session instead of creating new one
+                print(f"[LOG] Found existing session for title '{request.title}': {existing_session.session_id}")
+                return ChatSessionResponse(
+                    session_id=existing_session.session_id,
+                    title=existing_session.title,
+                    messages=existing_session.messages,
+                    created_at=existing_session.created_at,
+                    updated_at=existing_session.updated_at,
+                    message_count=len(existing_session.messages)
+                )
+        
+        # No existing session found, create new one
         session_id = str(uuid.uuid4())
         
         session_data = ChatSessionCreate(
@@ -297,7 +80,14 @@ async def create_chat_session(request: ChatSessionCreateRequest):
             initial_message=request.initial_message
         )
         
-        session = await chat_service.create_session(session_data)
+        # Add timeout for MongoDB operations
+        import asyncio
+        session = await asyncio.wait_for(
+            chat_service.create_session(session_data),
+            timeout=10.0  # 10 second timeout for session creation
+        )
+        
+        print(f"[LOG] Created new session: {session.session_id} for title '{request.title}'")
         
         return ChatSessionResponse(
             session_id=session.session_id,
@@ -307,7 +97,12 @@ async def create_chat_session(request: ChatSessionCreateRequest):
             updated_at=session.updated_at,
             message_count=len(session.messages)
         )
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=504, detail="Connection timeout: MongoDB operation took too long. Please check if MongoDB is running and accessible.")
     except Exception as e:
+        error_msg = str(e)
+        if "timeout" in error_msg.lower() or "connection" in error_msg.lower():
+            raise HTTPException(status_code=503, detail=f"Backend connection issue: {error_msg}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sessions/{session_id}", response_model=ChatSessionResponse)
@@ -366,28 +161,111 @@ async def ask_question(request: ChatAskRequest):
             print(f"[LOG] MongoDB _id: {session.id if hasattr(session, 'id') and session.id else 'N/A'}")
             print(f"[LOG] Session has {len(session.messages) if session.messages else 0} existing messages")
         
-        # Get recent chat history for context (last 5 messages)
-        chat_history = await chat_service.get_recent_messages(request.session_id, limit=5)
+        # Get recent chat history for context (last 10 messages for better context)
+        # CRITICAL: Verify we're using the correct session_id
+        print(f"[DEBUG] ===== RETRIEVING CHAT HISTORY =====")
+        print(f"[DEBUG] Request session_id: {request.session_id}")
+        print(f"[DEBUG] Session from DB has {len(session.messages) if session.messages else 0} messages")
+        print(f"[DEBUG] Session ID from DB: {session.session_id if hasattr(session, 'session_id') else 'N/A'}")
+        
+        # Verify session_id matches
+        if hasattr(session, 'session_id') and session.session_id != request.session_id:
+            print(f"[ERROR] ❌ SESSION ID MISMATCH!")
+            print(f"[ERROR] Request session_id: {request.session_id}")
+            print(f"[ERROR] DB session_id: {session.session_id}")
+            raise HTTPException(status_code=500, detail="Session ID mismatch detected")
+        
+        chat_history = await chat_service.get_recent_messages(request.session_id, limit=10)
+        
+        # Debug: Print chat history retrieved
+        print(f"[DEBUG] ===== CHAT HISTORY RETRIEVED =====")
+        print(f"[DEBUG] Retrieved {len(chat_history)} messages from database for session_id: {request.session_id}")
+        for i, msg in enumerate(chat_history):
+            content_preview = msg.content[:100] + "..." if len(msg.content) > 100 else msg.content
+            print(f"[DEBUG] Message {i+1}: {msg.role} - {content_preview}")
+        print(f"[DEBUG] ================================")
         
         # No more embedding search - just use recent chat history
         
-        # Prepare chat history for generator - use recent messages directly
+        # Prepare chat history for generator - add system prompt first, then user/assistant messages
         history_for_generator = []
         
-        # Add recent chat history messages (including assistant messages from OpenAI)
-        for msg in chat_history:
-            history_for_generator.append({
-                "role": msg.role,
-                "content": msg.content,
-                "metadata": msg.metadata or {}
-            })
+        # Add system prompt (not saved in DB, added dynamically here)
+        # STRONGER PROMPT for chat history usage
+        system_prompt = (
+            "You are a helpful assistant that answers questions using chat history, images, and document context."
+            "\n\nCRITICAL: You MUST use the chat history provided below to answer questions about previous conversations."
+            "\nWhen the user asks questions about previous messages or conversation history, you MUST review the chat history "
+            "and provide a clear summary of ALL previous questions and answers."
+            "\n\nPRIORITY ORDER:"
+            "\n1. CHAT HISTORY FIRST: For ANY question about previous messages or conversation history, you MUST check and summarize the chat history provided below. "
+            "List all previous user questions and your corresponding answers clearly. DO NOT include the current question in your summary."
+            "\n2. Analyze user-uploaded images directly for image questions."
+            "\n3. Use provided document context only to support explanations."
+            "\n\nRULES:"
+            "\n- NEVER ignore chat history when asked about previous messages or conversation history. The chat history below contains ALL previous messages."
+            "\n- When summarizing previous messages, be specific: mention what was asked and what was answered."
+            "\n- CRITICAL: When asked about previous messages or conversation history, summarize ONLY the messages that came BEFORE the current question. Do NOT include the current question in your summary."
+            "\n- If you reference citations [cN] from previous answers, use those exact citation numbers as they appeared in the previous answer."
+            "\n- Never quote raw document text when answering."
+            "\n- Focus on what is visible in images for image-related queries."
+            "\n- Be concise and factual. Add [cN] markers when referencing document context."
+            "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
+        )
+        history_for_generator.append({
+            "role": "system",
+            "content": system_prompt,
+            "metadata": {}
+        })
+        
+        # Add recent chat history messages (only user and assistant - no system messages from DB)
+        # CRITICAL: Only add if chat_history has actual messages (not just empty)
+        # CRITICAL: Filter out current question from history to avoid confusion (shouldn't be there, but double-check for race conditions)
+        current_question = request.question.strip()
+        if chat_history and len(chat_history) > 0:
+            print(f"[DEBUG] Adding {len(chat_history)} messages from chat history to generator")
+            filtered_count = 0
+            for msg in chat_history:
+                # Skip system messages (shouldn't be in DB, but double-check)
+                if msg.role == "system":
+                    print(f"[DEBUG] ⚠️ WARNING: System message found in DB chat_history, skipping")
+                    continue
+                # CRITICAL: Exclude current question from history to prevent model confusion
+                # If somehow current question is already in history (race condition), skip it
+                if msg.role == "user" and msg.content.strip() == current_question:
+                    print(f"[DEBUG] ⚠️ WARNING: Current question found in chat_history, excluding it (this shouldn't happen normally)")
+                    filtered_count += 1
+                    continue
+                history_for_generator.append({
+                    "role": msg.role,
+                    "content": msg.content,
+                    "metadata": msg.metadata or {}
+                })
+            if filtered_count > 0:
+                print(f"[DEBUG] ⚠️ Filtered out {filtered_count} message(s) that matched current question")
+            print(f"[DEBUG] ✅ Added messages to history_for_generator. Total now: {len(history_for_generator)}")
+        else:
+            print(f"[DEBUG] ⚠️ No chat history messages to add (empty or None). Only system prompt will be used.")
         
         # Debug: Count messages by role to confirm assistant messages are included
         user_count = sum(1 for msg in history_for_generator if msg.get("role") == "user")
         assistant_count = sum(1 for msg in history_for_generator if msg.get("role") == "assistant")
-        print(f"[DEBUG] Chat history prepared for generator: {len(history_for_generator)} total messages")
+        system_count = sum(1 for msg in history_for_generator if msg.get("role") == "system")
+        print(f"[DEBUG] ===== CHAT HISTORY PREPARED FOR GENERATOR =====")
+        print(f"[DEBUG] Total messages: {len(history_for_generator)}")
+        print(f"[DEBUG]   - System messages: {system_count}")
         print(f"[DEBUG]   - User messages: {user_count}")
         print(f"[DEBUG]   - Assistant messages (OpenAI responses): {assistant_count}")
+        if user_count > 0 or assistant_count > 0:
+            print(f"[DEBUG] ✅ Chat history will be passed to OpenAI")
+            # Show preview of first few messages
+            for i, msg in enumerate(history_for_generator[:5]):
+                role = msg.get("role")
+                content_preview = msg.get("content", "")[:80] + "..." if len(msg.get("content", "")) > 80 else msg.get("content", "")
+                print(f"[DEBUG]   [{i+1}] {role}: {content_preview}")
+        else:
+            print(f"[DEBUG] ⚠️ WARNING: No user/assistant messages in history - this is a new conversation")
+        print(f"[DEBUG] ===============================================")
         
         # Extract images from chat history for comparison
         history_images = []
@@ -551,13 +429,22 @@ async def ask_question(request: ChatAskRequest):
         import re
         answer_text = result.get("answer", "")
         citation_pattern = re.compile(r"\[c(\d+)\]")
-        used_citation_numbers = []
+        
+        # Collect ALL citation markers (including duplicates) to preserve order
+        all_citation_markers = []
         for match in citation_pattern.finditer(answer_text):
             citation_num = int(match.group(1))
-            if citation_num not in used_citation_numbers:
+            all_citation_markers.append(citation_num)
+        
+        # Get unique citation numbers in order of first appearance
+        seen = set()
+        used_citation_numbers = []
+        for citation_num in all_citation_markers:
+            if citation_num not in seen:
+                seen.add(citation_num)
                 used_citation_numbers.append(citation_num)
         
-        print(f"[DEBUG] Citations used in answer: {used_citation_numbers}")
+        print(f"[DEBUG] Citations used in answer (total markers: {len(all_citation_markers)}, unique: {len(used_citation_numbers)}): {used_citation_numbers}")
         print(f"[DEBUG] Total citations from pipeline: {len(result.get('cited_sections', []))}")
         print(f"[DEBUG] Pipeline citations (hit indices): {result.get('citations', [])}")
         
@@ -575,13 +462,47 @@ async def ask_question(request: ChatAskRequest):
         
         used_citations = []
         old_to_new_map = {}  # Map old citation number to new sequential number
+        hit_index_to_new_num = {}  # Map hit_index to new citation number (for deduplication)
+        
+        # CRITICAL: Check if answer is about previous questions - if so, citations might be from previous messages
+        # Collect citations from previous assistant messages to use as fallback
+        previous_citations_map = {}  # Map old citation numbers from previous messages
+        is_about_previous_questions = any(keyword in answer_text.lower() for keyword in [
+            "previous questions", "previous answers", "what did i ask", "what were", "earlier"
+        ])
+        
+        if is_about_previous_questions:
+            print(f"[DEBUG] ⚠️ Answer appears to be about previous questions - checking previous messages for citations")
+            # Get previous assistant messages that have citations
+            for msg in chat_history:
+                if msg.role == "assistant" and msg.metadata and msg.metadata.get("cited_sections"):
+                    prev_cited = msg.metadata.get("cited_sections", [])
+                    print(f"[DEBUG] Found previous message with {len(prev_cited)} citations")
+                    # Map previous citations by their citation_number
+                    for prev_cit in prev_cited:
+                        cit_num = prev_cit.get("citation_number") or prev_cit.get("citation_label", "").replace("c", "")
+                        if cit_num:
+                            try:
+                                cit_num_int = int(cit_num) if isinstance(cit_num, str) and cit_num.isdigit() else cit_num
+                                previous_citations_map[cit_num_int] = prev_cit
+                                print(f"[DEBUG] Mapped previous citation c{cit_num_int}")
+                            except:
+                                pass
         
         # Build mapping: citation number in answer -> hit index -> citation info
-        for new_num, original_citation_num in enumerate(used_citation_numbers, start=1):
+        for original_citation_num in used_citation_numbers:
             # Convert citation number to hit index: [c1] -> 0, [c2] -> 1, etc.
             hit_index = original_citation_num - 1
             
-            # Find citation by hit_index in our mapping
+            # Check if we've already mapped this hit_index to a citation
+            if hit_index in hit_index_to_new_num:
+                # This hit_index was already mapped - reuse the same citation number
+                new_num = hit_index_to_new_num[hit_index]
+                old_to_new_map[original_citation_num] = new_num
+                print(f"[DEBUG] Citation c{original_citation_num} (hit index {hit_index}) already mapped to c{new_num}, reusing")
+                continue
+            
+            # Find citation by hit_index in our mapping (from current retrieval)
             cit = hit_index_to_citation.get(hit_index)
             if not cit and hit_index in pipeline_citations:
                 # Fallback: try to find by position in pipeline_citations (should not be needed)
@@ -589,12 +510,97 @@ async def ask_question(request: ChatAskRequest):
                 if position_in_pipeline < len(cited_sections):
                     cit = cited_sections[position_in_pipeline]
             
+            # CRITICAL: If citation not found in current retrieval AND answer is about previous questions,
+            # try to get citation from previous messages
+            is_from_previous = False
+            if not cit and is_about_previous_questions and original_citation_num in previous_citations_map:
+                cit = previous_citations_map[original_citation_num]
+                is_from_previous = True
+                print(f"[DEBUG] ✅ Found citation c{original_citation_num} from previous message (answer about previous questions)")
+                # When using citation from previous message, preserve original citation number if possible
+                # or assign new sequential number
+                new_num = len(used_citations) + 1
+                old_to_new_map[original_citation_num] = new_num
+                # Don't map hit_index for previous citations since they don't have hit_index
+                print(f"[DEBUG] Mapping previous citation c{original_citation_num} -> c{new_num}")
+            elif cit:
+                # Citation found in current retrieval - normal flow
+                # Assign new sequential number
+                new_num = len(used_citations) + 1
+                hit_index_to_new_num[hit_index] = new_num
+                old_to_new_map[original_citation_num] = new_num
+            
             if cit:
-                excerpt = cit.get("excerpt", "")
-                # Extract summary from excerpt: first 600 chars + "..." + last 100 chars
-                # This gives context from both beginning and end of the excerpt
-                if len(excerpt) > 700:  # 600 + 100 + space for "..."
-                    summary_text = excerpt[:600] + "..." + excerpt[-100:]
+                # When citation is from previous message, use excerpt or summary if excerpt is truncated
+                if is_from_previous:
+                    # Previous citations may have summary (truncated) and excerpt (full)
+                    # Prefer excerpt if available and not empty, otherwise use summary
+                    excerpt = cit.get("excerpt", "")
+                    if not excerpt or len(excerpt.strip()) == 0:
+                        # Fallback to summary from previous message
+                        excerpt = cit.get("summary", "") or cit.get("text", "") or cit.get("content", "") or ""
+                        print(f"[DEBUG] Citation from previous message - using summary (excerpt was empty)")
+                    else:
+                        print(f"[DEBUG] Citation from previous message - using full excerpt")
+                else:
+                    # Citation from current retrieval - normal flow
+                    excerpt = cit.get("excerpt", "")
+                    # Ensure excerpt is not empty and preserve full context
+                    if not excerpt or len(excerpt.strip()) == 0:
+                        # Try to get from other fields if excerpt is missing
+                        excerpt = cit.get("text", "") or cit.get("content", "") or ""
+                
+                # CRITICAL: Log excerpt to debug missing characters
+                if excerpt:
+                    print(f"[DEBUG] Citation c{new_num} excerpt preview: '{excerpt[:100]}...'")
+                    print(f"[DEBUG] Citation c{new_num} excerpt length: {len(excerpt)}")
+                    if len(excerpt) > 0:
+                        print(f"[DEBUG] Citation c{new_num} excerpt first 50 chars: '{excerpt[:50]}'")
+                
+                # For summary: if citation is from previous message and already has a summary, use it
+                # Otherwise, create summary from excerpt
+                if is_from_previous and cit.get("summary"):
+                    # Use existing summary from previous message (already formatted)
+                    summary_text = cit.get("summary")
+                    print(f"[DEBUG] Citation c{new_num} from previous - using existing summary")
+                elif len(excerpt) > 950:  # 800 + 150 + space for "..."
+                    # Preserve more at the beginning to avoid losing important context
+                    # Try to start from a word boundary (space or punctuation)
+                    first_part = excerpt[:800]
+                    # If the 800-char mark is in the middle of a word, try to extend to word boundary
+                    if len(excerpt) > 800 and excerpt[800] not in ' \n\t.,;:!?':
+                        # Find last space before position 850 (max 50 chars back)
+                        last_space = first_part.rfind(' ', max(0, 750))
+                        if last_space > 0:
+                            first_part = excerpt[:last_space + 1]
+                    
+                    last_part = excerpt[-150:]
+                    # If the -150 mark is in the middle of a word, try to extend back
+                    if len(excerpt) > 150 and excerpt[-151] not in ' \n\t.,;:!?':
+                        # Find first space after position -200 (max 50 chars forward)
+                        first_space = last_part.find(' ', 50)
+                        if first_space > 0:
+                            last_part = excerpt[-(150 + first_space):]
+                    
+                    summary_text = first_part + "..." + last_part
+                    print(f"[DEBUG] Citation c{new_num} summary first 50 chars: '{summary_text[:50]}'")
+                elif len(excerpt) > 500:
+                    # For medium excerpts, preserve more at start
+                    first_part = excerpt[:400]
+                    # Try word boundary
+                    if len(excerpt) > 400 and excerpt[400] not in ' \n\t.,;:!?':
+                        last_space = first_part.rfind(' ', max(0, 350))
+                        if last_space > 0:
+                            first_part = excerpt[:last_space + 1]
+                    
+                    last_part = excerpt[-100:]
+                    if len(excerpt) > 100 and excerpt[-101] not in ' \n\t.,;:!?':
+                        first_space = last_part.find(' ', 30)
+                        if first_space > 0:
+                            last_part = excerpt[-(100 + first_space):]
+                    
+                    summary_text = first_part + "..." + last_part
+                    print(f"[DEBUG] Citation c{new_num} summary first 50 chars: '{summary_text[:50]}'")
                 else:
                     # If excerpt is short enough, use the full text
                     summary_text = excerpt
@@ -605,17 +611,18 @@ async def ask_question(request: ChatAskRequest):
                     "doc_id": cit.get("doc_id"),
                     "title": cit.get("title"),
                     "page": cit.get("page"),
-                    "excerpt": excerpt
+                    "excerpt": excerpt  # Keep full excerpt for reference
                 })
-                old_to_new_map[original_citation_num] = new_num
             else:
                 print(f"[WARNING] Citation c{original_citation_num} (hit index {hit_index}) not found in valid citations. This citation will be skipped but marker remains in answer.")
         
         # Update answer text to use new sequential citation numbers
+        # Replace ALL instances (including duplicates) with the new number
         updated_answer = answer_text
         for old_num, new_num in sorted(old_to_new_map.items(), key=lambda x: x[0], reverse=True):
             # Replace from largest to smallest to avoid conflicts (e.g., [c10] before [c1])
-            updated_answer = updated_answer.replace(f"[c{old_num}]", f"[c{new_num}]")
+            # Use regex to match the full pattern exactly
+            updated_answer = re.sub(rf"\[c{old_num}\]", f"[c{new_num}]", updated_answer)
         
         formatted_citations = used_citations
         print(f"[DEBUG] Filtered citations: {len(formatted_citations)} (only those actually used in answer)")
@@ -640,6 +647,33 @@ async def ask_question(request: ChatAskRequest):
         if saved_session:
             msg_count = len(saved_session.messages) if saved_session.messages else 0
             print(f"[DEBUG] ✅ Message saved successfully! Session now has {msg_count} messages")
+            
+            # Detailed verification AFTER pipeline.answer() completes (after chunk processing)
+            # Wait longer to ensure MongoDB write is fully committed
+            import asyncio
+            await asyncio.sleep(0.5)  # Longer delay to ensure write is committed after chunk processing
+            
+            # Verify in database with timeout
+            try:
+                from paperreader.database.mongodb import mongodb
+                collection = mongodb.get_collection("chat_sessions")
+                verify_session = await asyncio.wait_for(
+                    collection.find_one({"session_id": request.session_id}),
+                    timeout=10.0  # 10 second timeout for verification
+                )
+                if verify_session:
+                    verified_msg_count = len(verify_session.get("messages", []))
+                    print(f"[DEBUG] ✅ Verified: Session now has {verified_msg_count} messages in database")
+                    print(f"[DEBUG] 📋 Session Info:")
+                    print(f"[DEBUG]   - session_id (UUID): {verify_session.get('session_id')}")
+                    print(f"[DEBUG]   - MongoDB _id (ObjectId): {verify_session.get('_id')}")
+                    print(f"[DEBUG] 💡 To query in MongoDB Atlas, use: {{'session_id': '{request.session_id}'}}")
+                else:
+                    print(f"[WARNING] ⚠️ Verification: Session not found in database after save")
+            except asyncio.TimeoutError:
+                print(f"[WARNING] ⚠️ Verification timeout - MongoDB may be slow, but message was saved")
+            except Exception as e:
+                print(f"[WARNING] ⚠️ Verification error: {e}")
         else:
             print(f"[ERROR] ❌ Failed to save assistant message - saved_session is None")
         
@@ -721,15 +755,49 @@ async def ask_with_upload(
                         print(f"[WARNING] Failed to process uploaded image: {e}")
                         continue
         
-        # Get recent chat history for context (last 5 messages)
-        chat_history = await chat_service.get_recent_messages(session_id, limit=5)
+        # Get recent chat history for context (last 10 messages for better context)
+        chat_history = await chat_service.get_recent_messages(session_id, limit=10)
+        
+        # Debug: Print chat history retrieved
+        print(f"[DEBUG] ===== CHAT HISTORY RETRIEVED (ask-with-upload) =====")
+        print(f"[DEBUG] Retrieved {len(chat_history)} messages from database")
+        for i, msg in enumerate(chat_history):
+            content_preview = msg.content[:100] + "..." if len(msg.content) > 100 else msg.content
+            print(f"[DEBUG] Message {i+1}: {msg.role} - {content_preview}")
+        print(f"[DEBUG] ================================")
         
         # No more embedding search - just use recent chat history
         
-        # Prepare chat history for generator - use recent messages directly
+        # Prepare chat history for generator - add system prompt first, then user/assistant messages
         history_for_generator = []
         
-        # Add recent chat history messages (including assistant messages from OpenAI)
+        # Add system prompt (not saved in DB, added dynamically here)
+        # STRONGER PROMPT for chat history usage (same as /ask endpoint)
+        system_prompt = (
+            "You are a helpful assistant that answers questions using chat history, images, and document context."
+            "\n\nCRITICAL: You MUST use the chat history provided below to answer questions about previous conversations."
+            "\nWhen the user asks 'What did I ask before?', 'What were my previous questions?', 'What did we discuss?', "
+            "or similar questions, you MUST review the chat history and provide a clear summary of ALL previous questions and answers."
+            "\n\nPRIORITY ORDER:"
+            "\n1. CHAT HISTORY FIRST: For ANY question about previous messages, you MUST check and summarize the chat history provided below. "
+            "List all previous user questions and your corresponding answers clearly."
+            "\n2. Analyze user-uploaded images directly for image questions."
+            "\n3. Use provided document context only to support explanations."
+            "\n\nRULES:"
+            "\n- NEVER ignore chat history when asked about previous questions. The chat history below contains ALL previous messages."
+            "\n- When summarizing previous questions, be specific: mention what was asked and what was answered."
+            "\n- Never quote raw document text when answering."
+            "\n- Focus on what is visible in images for image-related queries."
+            "\n- Be concise and factual. Add [cN] markers when referencing document context."
+            "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
+        )
+        history_for_generator.append({
+            "role": "system",
+            "content": system_prompt,
+            "metadata": {}
+        })
+        
+        # Add recent chat history messages (only user and assistant - no system messages from DB)
         for msg in chat_history:
             history_for_generator.append({
                 "role": msg.role,
@@ -740,9 +808,22 @@ async def ask_with_upload(
         # Debug: Count messages by role to confirm assistant messages are included
         user_count = sum(1 for msg in history_for_generator if msg.get("role") == "user")
         assistant_count = sum(1 for msg in history_for_generator if msg.get("role") == "assistant")
-        print(f"[DEBUG] Chat history prepared for generator: {len(history_for_generator)} total messages")
+        system_count = sum(1 for msg in history_for_generator if msg.get("role") == "system")
+        print(f"[DEBUG] ===== CHAT HISTORY PREPARED FOR GENERATOR (ask-with-upload) =====")
+        print(f"[DEBUG] Total messages: {len(history_for_generator)}")
+        print(f"[DEBUG]   - System messages: {system_count}")
         print(f"[DEBUG]   - User messages: {user_count}")
         print(f"[DEBUG]   - Assistant messages (OpenAI responses): {assistant_count}")
+        if user_count > 0 or assistant_count > 0:
+            print(f"[DEBUG] ✅ Chat history will be passed to OpenAI")
+            # Show preview of first few messages
+            for i, msg in enumerate(history_for_generator[:5]):
+                role = msg.get("role")
+                content_preview = msg.get("content", "")[:80] + "..." if len(msg.get("content", "")) > 80 else msg.get("content", "")
+                print(f"[DEBUG]   [{i+1}] {role}: {content_preview}")
+        else:
+            print(f"[DEBUG] ⚠️ WARNING: No user/assistant messages in history - this is a new conversation")
+        print(f"[DEBUG] ===============================================")
         
         # Extract images from chat history for comparison
         history_base64_images = []
@@ -876,10 +957,19 @@ async def ask_with_upload(
             
             if cit:
                 excerpt = cit.get("excerpt", "")
-                # Extract summary from excerpt: first 600 chars + "..." + last 100 chars
-                # This gives context from both beginning and end of the excerpt
-                if len(excerpt) > 700:  # 600 + 100 + space for "..."
-                    summary_text = excerpt[:600] + "..." + excerpt[-100:]
+                # Ensure excerpt is not empty and preserve full context
+                if not excerpt or len(excerpt.strip()) == 0:
+                    # Try to get from other fields if excerpt is missing
+                    excerpt = cit.get("text", "") or cit.get("content", "") or ""
+                
+                # For summary, preserve more context at the beginning (where most info is)
+                # Use first 800 chars + "..." + last 150 chars for better context
+                if len(excerpt) > 950:  # 800 + 150 + space for "..."
+                    # Preserve more at the beginning to avoid losing important context
+                    summary_text = excerpt[:800] + "..." + excerpt[-150:]
+                elif len(excerpt) > 500:
+                    # For medium excerpts, preserve more at start
+                    summary_text = excerpt[:400] + "..." + excerpt[-100:]
                 else:
                     # If excerpt is short enough, use the full text
                     summary_text = excerpt

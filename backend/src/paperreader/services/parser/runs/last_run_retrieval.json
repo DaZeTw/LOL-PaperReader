@@ -1,58 +1,58 @@
 {
-  "question": "compare attention and rnn",
+  "question": "What methodology was used?",
   "hits": [
     {
-      "index": 13,
-      "score": 0.35529686820387424,
-      "text": "The two most commonly used attention functions are additive attention [ 2 ], and dot-product (multi-\nplicative) attention. Dot-product attention is identical to our algorithm, except for the scaling factor\nof\n1\n√ d k . Additive attention computes the compatibility function using a feed-forward network with\na single hidden layer. While the two are similar in theoretical complexity, dot-product attention is\nmuch faster and more space-efficient in practice, since it can be implemented using highly optimized\nmatrix multiplication code.\nWhile for small values of d k the two mechanisms perform similarly, additive attention outperforms\ndot product attention without scaling for larger values of d k [ 3 ]. We suspect that for large values of\nd k , the dot products grow large in magnitude, pushing the softmax function into regions where it has\nextremely small gradients 4 . To counteract this effect, we scale the dot products by\n1\n√ d k .\n3.2.2\nMulti-Head Attention",
+      "index": 24,
+      "score": 0.26898091956031706,
+      "text": "n, Scim uses a pretrained lan-\nguage model [ 99 ] to classify salient sentences within papers into\none of four information facets: research objectives, novel aspects\nof the research, methodology, and results, coupled with heuristics\nthat ensure an even distribution of highlights. Usability studies\nof Scim have shown these highlights can reduce the time it takes\nreaders to find specific information within a paper. Readers found\nScim particularly useful when skimming text-dense papers, or for\npapers that fell outside their area of expertise. Moreover, readers\nlearned to use both Scim’s inline highlights and a sidebar summary\nof highlights to augment their existing reading strategies.",
       "metadata": {
-        "doc_id": "1706.03762v7-embedded",
+        "doc_id": "2303.14334v2-embedded",
         "title": "Page 4",
-        "page": 7,
-        "images": []
-      }
-    },
-    {
-      "index": 8,
-      "score": 0.3495531203692403,
-      "text": "Self-attention, sometimes called intra-attention is an attention mechanism relating different positions\nof a single sequence in order to compute a representation of the sequence. Self-attention has been\nused successfully in a variety of tasks including reading comprehension, abstractive summarization,\ntextual entailment and learning task-independent sentence representations [4, 27, 28, 22].\nEnd-to-end memory networks are based on a recurrent attention mechanism instead of sequence-\naligned recurrence and have been shown to perform well on simple-language question answering and\nlanguage modeling tasks [34].\nTo the best of our knowledge, however, the Transformer is the first transduction model relying\nentirely on self-attention to compute representations of its input and output without using sequence-\naligned RNNs or convolution. In the following sections, we will describe the Transformer, motivate\nself-attention and discuss its advantages over models such as [17, 18] and [9].\n3\nModel Architecture",
-      "metadata": {
-        "doc_id": "1706.03762v7-embedded",
-        "title": "Page 2",
-        "page": 5,
-        "images": []
-      }
-    },
-    {
-      "index": 33,
-      "score": 0.33968121218475167,
-      "text": "In contrast to RNN sequence-to-sequence models [ 37 ], the Transformer outperforms the Berkeley-\nParser [29] even when training only on the WSJ training set of 40K sentences.\n7\nConclusion\nIn this work, we presented the Transformer, the first sequence transduction model based entirely on\nattention, replacing the recurrent layers most commonly used in encoder-decoder architectures with\nmulti-headed self-attention.\nFor translation tasks, the Transformer can be trained significantly faster than architectures based\non recurrent or convolutional layers. On both WMT 2014 English-to-German and WMT 2014\nEnglish-to-French translation tasks, we achieve a new state of the art. In the former task our best\nmodel outperforms even all previously reported ensembles.\nWe are excited about the future of attention-based models and plan to apply them to other tasks. We\nplan to extend the Transformer to problems involving input and output modalities other than text and\nto investigate local, restricted attention mechanisms to efficiently handle large inputs and outputs\nsuch as images, audio and video. Making generation less sequential is another research goals of ours.",
-      "metadata": {
-        "doc_id": "1706.03762v7-embedded",
-        "title": "Page 10",
-        "page": 13,
-        "images": []
-      }
-    },
-    {
-      "index": 15,
-      "score": 0.3314092504288557,
-      "text": "output values. These are concatenated and once again projected, resulting in the final values, as\ndepicted in Figure 2.\nMulti-head attention allows the model to jointly attend to information from different representation\nsubspaces at different positions. With a single attention head, averaging inhibits this.\nMultiHead( Q, K, V ) = Concat(head 1 , ..., head h ) W O\nwhere head i = Attention( QW Q\ni , KW K\ni , V W V\ni )\nWhere the projections are parameter matrices W Q\ni\n∈ R d model × d k , W K\ni\n∈ R d model × d k , W V\ni\n∈ R d model × d v\nand W O ∈ R hd v × d model .\nIn this work we employ h = 8 parallel attention layers, or heads. For each of these we use\nd k = d v = d model /h = 64 . Due to the reduced dimension of each head, the total computational cost\nis similar to that of single-head attention with full dimensionality.\n3.2.3\nApplications of Attention in our Model\nThe Transformer uses multi-head attention in three different ways:",
-      "metadata": {
-        "doc_id": "1706.03762v7-embedded",
-        "title": "Page 5",
         "page": 8,
         "images": []
       }
     },
     {
-      "index": 20,
-      "score": 0.3134313512851753,
-      "text": "In this section we compare various aspects of self-attention layers to the recurrent and convolu-\ntional layers commonly used for mapping one variable-length sequence of symbol representations\n( x 1 , ..., x n ) to another sequence of equal length ( z 1 , ..., z n ) , with x i , z i ∈ R d , such as a hidden\nlayer in a typical sequence transduction encoder or decoder. Motivating our use of self-attention we\nconsider three desiderata.\nOne is the total computational complexity per layer. Another is the amount of computation that can\nbe parallelized, as measured by the minimum number of sequential operations required.",
+      "index": 42,
+      "score": 0.2272311056526085,
+      "text": "( e.g., threads of prior work instead of tables [ 13 , 58 ]), and research\npaper discovery ( e.g., based on inline citations in clipped text).\nFor this, Threddy [ 43 ] is a thread-focused clipping tool integrated\ninto scholars’ paper reading process to support literature review\nand discovery. Using Threddy, readers can select and save sentences\ninto a sidebar from the related work sections of a paper. The sys-\ntem maintains rich context for each clip, including its provenance\nand inline citations. This allows readers to navigate back to the\nclipped paper and cited papers afterward. In the sidebar, readers\ncan further organize clips collected across papers into a hierarchy\nof threads to form their view of the research landscape. The content\nof the sidebar is preserved across papers that were read over time,\nand provides valuable context for subsequent reading based on\nthe emerging threads of research the reader have curated. Finally,\nreaders can further expand their coverage by exploring paper rec-\nommendations for each thread, based on the referenced papers in\nthe corresponding clips. A lab study showed that Threddy was able\nto lower the interaction costs of saving clips while main",
       "metadata": {
-        "doc_id": "1706.03762v7-embedded",
+        "doc_id": "2303.14334v2-embedded",
+        "title": "Page 7",
+        "page": 11,
+        "images": []
+      }
+    },
+    {
+      "index": 84,
+      "score": 0.22613509693432793,
+      "text": "oned by OCLC\nResearch. Published online at: www. oclc. org/programs/publications/reports/2009-\n02. pdf (2009).\n[75] Soya Park, Jonathan Bragg, Michael Chang, Kevin Larson, and Danielle Bragg.\n2022. Exploring Team-Sourced Hyperlinks to Address Navigation Challenges\nfor Low-Vision Readers of Scientific Papers. In Proceedings of the 25th ACM\nConference On Computer-Supported Cooperative Work And Social Computing .\n[76] Amy Pavel, Colorado Reed, Björn Hartmann, and Maneesh Agrawala. 2014.\nVideo digests: a browsable, skimmable format for informational lecture videos.\nProceedings of the 27th annual ACM symposium on User interface software and\ntechnology (2014).\n[77] Silvio Peroni, Alexander Dutton, Tanya Gray, and David M. Shotton. 2015.\nSetting our bibliographic references free: towards open citation data. J. Docu-\nmentation 71 (2015), 253–277.\n[78] Simon Philip, Peter Bamidele Shola, and Abari Ovye John. 2014. Application\nof Content-Based Approach in Research Paper Recommendation System for\na Digital Library. International Journal of Advanced Computer Science and\nApplications 5 (2014).\n[79] Peter Pirolli and Stuart Card. 1999. Information Foraging. Psychological Review\n106, 4 (1999), 64",
+      "metadata": {
+        "doc_id": "2303.14334v2-embedded",
+        "title": "Page 10",
+        "page": 14,
+        "images": []
+      }
+    },
+    {
+      "index": 43,
+      "score": 0.22498799193607477,
+      "text": "g paper rec-\nommendations for each thread, based on the referenced papers in\nthe corresponding clips. A lab study showed that Threddy was able\nto lower the interaction costs of saving clips while maintaining\ncontext, allowed participants to curate research threads without\nbreaking reading flows, and discover interesting new papers to\nfurther grow their understanding of the research fields.",
+      "metadata": {
+        "doc_id": "2303.14334v2-embedded",
+        "title": "Page 7",
+        "page": 11,
+        "images": []
+      }
+    },
+    {
+      "index": 39,
+      "score": 0.2240710742174033,
+      "text": "iews of fast-paced domains. The Threddy [ 43 ] and\nRelated [ 73 ] projects explored this opportunity using two different\napproaches: clipping and organizing research threads mentioned\nacross papers [ 43 ], and directly exploring and reading related work\nsections extracted across many papers [73].",
+      "metadata": {
+        "doc_id": "2303.14334v2-embedded",
         "title": "Page 6",
-        "page": 9,
+        "page": 10,
         "images": []
       }
     }

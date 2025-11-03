@@ -7,8 +7,8 @@ export async function POST(request: NextRequest) {
   try {
     const { user_id, title, initial_message } = await request.json()
 
-    // Increase timeout to 60 seconds for MongoDB connection
-    const timeout = 60000
+    // Increase timeout to 180 seconds to allow backend/MongoDB warm-up
+    const timeout = 180000
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeout)
 
@@ -103,8 +103,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Increase timeout for GET requests as well
-    const timeout = 60000
+    // Increase timeout for GET requests as well (match POST)
+    const timeout = 180000
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeout)
 
