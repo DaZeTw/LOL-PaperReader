@@ -22,7 +22,7 @@
 4. **Access the application:**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
-   - MongoDB: localhost:27017
+   - Database: MongoDB Atlas (cloud) or local MongoDB if configured
 
 ## Services
 
@@ -39,16 +39,25 @@
 - **Health Check:** http://localhost:8000/health
 
 ### Database (MongoDB)
-- **Port:** 27017
-- **Data Volume:** `mongodb_data`
-- **Database:** paperreader
+- **Type:** MongoDB Atlas (cloud) - recommended for production
+- **Alternative:** Local MongoDB (see docker-compose.yml for local setup)
+- **Database Name:** paperreader_chat
+- **Connection:** Configured via `MONGODB_URL` environment variable
 
 ## Environment Variables
 
-Create `.env` file for local development:
+### For MongoDB Atlas (Recommended)
+Set `MONGODB_URL` in `docker-compose.yml` or create `.env` file:
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
-MONGODB_URL=mongodb://localhost:27017/paperreader
+MONGODB_URL=mongodb+srv://username:password@cluster.mongodb.net/paperreader_chat?retryWrites=true&w=majority
+```
+
+### For Local MongoDB (Development)
+If using local MongoDB, uncomment the `mongodb` service in `docker-compose.yml`:
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+MONGODB_URL=mongodb://mongodb:27017/paperreader_chat
 ```
 
 ## Troubleshooting
@@ -64,9 +73,15 @@ MONGODB_URL=mongodb://localhost:27017/paperreader
 - Verify backend is healthy: `curl http://localhost:8000/health`
 
 ### MongoDB connection issues
-- Check if MongoDB container is running
-- Verify MONGODB_URL format
-- Check logs: `docker compose logs mongodb`
+- **For MongoDB Atlas:** 
+  - Verify `MONGODB_URL` format: `mongodb+srv://...`
+  - Check network access - ensure your IP is whitelisted in Atlas
+  - Verify database name is `paperreader_chat`
+- **For Local MongoDB:**
+  - Uncomment `mongodb` service in docker-compose.yml if needed
+  - Check if MongoDB container is running: `docker compose ps`
+  - Check logs: `docker compose logs mongodb`
+- Verify connection: Check backend logs for MongoDB connection status
 
 ## Development
 

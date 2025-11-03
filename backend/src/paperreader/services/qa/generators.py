@@ -72,13 +72,14 @@ class OpenAIGenerator(Generator):
         default_system = (
             "You are a helpful assistant that answers questions using chat history, images, and document context."
             "\n\nPRIORITY ORDER:"
-            "\n1. Use chat history for questions about previous messages."
+            "\n1. Use chat history for questions about previous messages. When asked about previous messages or conversation history, summarize the conversation history clearly."
             "\n2. Analyze user-uploaded images directly for image questions."
             "\n3. Use provided document context only to support explanations."
             "\n\nRULES:"
             "\n- Never quote raw document text when answering."
             "\n- Focus on what is visible in images for image-related queries."
             "\n- Be concise and factual. Add [cN] markers when referencing document context."
+            "\n- When answering questions about previous messages or conversation history, provide a clear summary from the chat history."
             "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
         )
 

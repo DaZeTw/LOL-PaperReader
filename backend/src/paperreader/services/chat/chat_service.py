@@ -30,29 +30,11 @@ class ChatService:
         
         collection = mongodb.get_collection(self.collection_name)
         
-        # Create initial messages - always add system message first
+        # Create initial messages - DO NOT save system messages to database
+        # System prompt will be added dynamically when preparing chat history for generator
         messages = []
         
-        # Add system message with default system prompt
-        system_prompt = (
-            "You are a helpful assistant that answers questions using chat history, images, and document context."
-            "\n\nPRIORITY ORDER:"
-            "\n1. Use chat history for questions about previous messages."
-            "\n2. Analyze user-uploaded images directly for image questions."
-            "\n3. Use provided document context only to support explanations."
-            "\n\nRULES:"
-            "\n- Never quote raw document text when answering."
-            "\n- Focus on what is visible in images for image-related queries."
-            "\n- Be concise and factual. Add [cN] markers when referencing document context."
-            "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
-        )
-        messages.append(ChatMessage(
-            role="system",
-            content=system_prompt,
-            timestamp=datetime.utcnow()
-        ))
-        
-        # Create initial message if provided
+        # Only add user messages if provided (never save system messages to DB)
         if session_data.initial_message:
             messages.append(ChatMessage(
                 role="user",
@@ -134,6 +116,14 @@ class ChatService:
             timestamp=datetime.utcnow()
         )
         
+        # Filter: Do NOT save system messages to database
+        # Only save user and assistant messages
+        if message.role == "system":
+            print(f"[DEBUG] Skipping system message - system messages are not saved to database")
+            print(f"[DEBUG] System messages are added dynamically when preparing chat history for generator")
+            # Still return the session even though we didn't save
+            return await self.get_session(session_id)
+        
         # Log message being saved
         print(f"[DEBUG] Saving message to database - Session: {session_id}, Role: {message.role}")
         print(f"[DEBUG] Message metadata keys: {list(message.metadata.keys()) if message.metadata else 'None'}")
@@ -186,21 +176,8 @@ class ChatService:
             
             print(f"[DEBUG] Message saved successfully. Modified count: {result.modified_count}")
             
-            # Verify the message was saved - try multiple times with slight delay
-            import asyncio
-            await asyncio.sleep(0.1)  # Small delay to ensure write is committed
-            verify_session = await collection.find_one({"session_id": session_id})
-            if verify_session:
-                msg_count = len(verify_session.get("messages", []))
-                print(f"[DEBUG] ✅ Verified: Session now has {msg_count} messages in database")
-                print(f"[DEBUG] 📋 Session Info:")
-                print(f"[DEBUG]   - session_id (UUID): {verify_session.get('session_id')}")
-                print(f"[DEBUG]   - MongoDB _id (ObjectId): {verify_session.get('_id')}")
-                print(f"[DEBUG]   - Database: {db_name}, Collection: {self.collection_name}")
-                print(f"[DEBUG] 💡 To query in MongoDB Atlas, use: {{'session_id': '{session_id}'}}")
-            else:
-                print(f"[ERROR] ❌ Verification failed - session not found after save!")
-                print(f"[ERROR] Searched for session_id: {session_id}")
+            # Note: Detailed verification moved to after pipeline.answer() completes
+            # This ensures we wait for all operations (chunk processing) to finish
             
         except Exception as e:
             import traceback
@@ -213,14 +190,29 @@ class ChatService:
         return await self.get_session(session_id)
     
     async def get_session_messages(self, session_id: str, limit: Optional[int] = None) -> List[ChatMessage]:
-        """Get messages from a chat session"""
+        """Get messages from a chat session (excludes system messages)"""
+        print(f"[DEBUG] get_session_messages called with session_id: {session_id}")
         session = await self.get_session(session_id)
         if not session:
+            print(f"[DEBUG] ⚠️ Session {session_id} not found - returning empty messages list")
             return []
         
-        messages = session.messages
+        print(f"[DEBUG] ✅ Found session {session_id} with {len(session.messages) if session.messages else 0} total messages")
+        
+        # Filter out system messages - only return user and assistant messages
+        messages = [msg for msg in session.messages if msg.role != "system"]
+        print(f"[DEBUG] After filtering system messages: {len(messages)} messages (user + assistant)")
+        
         if limit:
             messages = messages[-limit:]  # Get last N messages
+            print(f"[DEBUG] After applying limit={limit}: {len(messages)} messages")
+        
+        # Debug: Show message preview
+        if messages:
+            print(f"[DEBUG] Messages preview (last {min(3, len(messages))}):")
+            for i, msg in enumerate(messages[-3:], 1):
+                content_preview = msg.content[:60] + "..." if len(msg.content) > 60 else msg.content
+                print(f"[DEBUG]   [{i}] {msg.role}: {content_preview}")
         
         return messages
     
@@ -284,6 +276,29 @@ class ChatService:
             updated_at=session.updated_at,
             message_count=len(session.messages)
         )
+    
+    async def find_session_by_title(self, title: str, user_id: Optional[str] = None) -> Optional[ChatSession]:
+        """Find the most recent session with matching title (and user_id if provided)"""
+        collection = mongodb.get_collection(self.collection_name)
+        
+        # Build query
+        query = {"title": title}
+        if user_id is not None:
+            query["user_id"] = user_id
+        else:
+            # For anonymous sessions, match where user_id is null
+            query["user_id"] = None
+        
+        # Find most recent session matching the title
+        session_data = await collection.find_one(
+            query,
+            sort=[("updated_at", -1)]  # Most recently updated first
+        )
+        
+        if not session_data:
+            return None
+        
+        return ChatSession(**session_data)
 
 # Global chat service instance
 chat_service = ChatService()

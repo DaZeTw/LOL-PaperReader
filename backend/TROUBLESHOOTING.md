@@ -65,9 +65,17 @@ pip install transformers>=4.30.0
 
 ### 5. MongoDB connection issues
 
-**Check:**
+**Cho MongoDB Atlas (khuyến nghị):**
+- Kiểm tra MONGODB_URL trong docker-compose.yml đúng format: `mongodb+srv://username:password@cluster.mongodb.net/paperreader_chat?retryWrites=true&w=majority`
+- Đảm bảo database name là `paperreader_chat`
+- Kiểm tra IP whitelist trong MongoDB Atlas - IP của bạn phải được thêm vào allowed list
+- Kiểm tra username/password đúng
+- Xem logs backend: `docker compose logs python-backend`
+
+**Cho MongoDB Local:**
+- Uncomment service `mongodb` trong docker-compose.yml nếu cần
 - MongoDB container đang chạy: `docker compose ps`
-- MONGODB_URL trong docker-compose.yml đúng: `mongodb://mongodb:27017/paperreader`
+- MONGODB_URL: `mongodb://mongodb:27017/paperreader_chat`
 - Logs: `docker compose logs mongodb`
 
 ### 6. Backend không start

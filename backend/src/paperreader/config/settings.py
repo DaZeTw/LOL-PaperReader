@@ -7,5 +7,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        # Note: Environment variables (from docker-compose.yml) take precedence over .env file
 
 settings = Settings()

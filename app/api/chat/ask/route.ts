@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
         max_tokens,
         user_images,
       }),
-      // Add timeout to prevent hanging (120 seconds for chat requests)
-      signal: AbortSignal.timeout(120000), // 120 seconds timeout for chat requests
+      // Add timeout to prevent hanging (180 seconds for chat requests to allow for model loading)
+      signal: AbortSignal.timeout(180000), // 180 seconds timeout (3 minutes) to allow for model/tokenizer loading on first chat
     })
 
     if (!backendResponse.ok) {
