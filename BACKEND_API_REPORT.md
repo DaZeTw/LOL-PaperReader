@@ -151,7 +151,7 @@ Detailed description of **Hybrid Search** in the retrieval pipeline.
   * `text` chunk
   * `metadata` (title, page, images...)
   
-
+# API 
 ### System
 
 - GET `/health`
