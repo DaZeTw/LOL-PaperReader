@@ -1,6 +1,156 @@
-## LOL PaperReader API — Remaining Endpoints (v0.1.0)
 
 FastAPI backend for parsing and querying academic PDFs and QA RAG features.
+
+# QA Overview
+
+Overview of the QA flow and listing of models/techniques used.
+
+## Overall Flow
+```mermaid
+flowchart LR
+    U[User Query: text + image] --> E[Embedding]
+    E --> C[Chunking PDF / Docs]
+    C --> R[Hybrid Retrieval: Dense + TF-IDF]
+    R --> G[Generator: GPT]
+    G --> O[Output: Answer + Citations]
+```
+
+## PDF Chunking and Image Extraction
+
+Detailed description of how to chunk PDFs and attach images to chunks.
+
+#### 1. Semantic Chunking
+
+```python
+_EMBED_MODEL = "BAAI/bge-small-en-v1.5"
+_SPLITTER = SemanticSplitterNodeParser(
+    buffer_size=1,
+    breakpoint_percentile_threshold=95,
+    embed_model=_EMBED_MODEL
+)
+```
+
+* Split PDF/documents into semantic chunks based on embedding similarity.
+* buffer_size=1 prevents information loss when splitting.
+* breakpoint_percentile_threshold=95 favors splitting at clear semantic boundaries.
+
+#### 2. Image Extraction
+
+* The `extract_images` function scans Markdown syntax: `![alt](path)` in the text.
+* Interpolates `figure_id` near the text chunk to identify which images are related to the text.
+
+#### 3. Attach Images to Chunks
+
+```python
+chunks.append({
+    "doc_id": doc_id,
+    "title": title,
+    "page": page,
+    "text": chunk_text,
+    "images": chunk_images if chunk_images else None
+})
+
+* If no related images → "images": None.
+* If there are related images → "images" is a list of paths / metadata of the images.
+
+---
+
+#### 4. Flow Chunking + Image Association
+
+```mermaid
+flowchart LR
+    P[PDF / Document] --> T[Extract Text & Images]
+    T --> S[Semantic Chunking using BGE Small + Splitter]
+    S --> C[Associate images to nearby text by figure_id]
+    C --> O[Chunks: doc_id, title, page, text, images/None]
+```
+
+## Multi-Modal Embedding using Visualized BGE
+
+Describes how to create embeddings for **queries and chunks** using the Visualized BGE model for text + image retrieval.
+
+#### 1. Prepare the Model
+
+* Model: [BAAI/bge-visualized](https://huggingface.co/BAAI/bge-visualized)
+* Two available weights: `bge-visualized-base-en-v1.5` and `bge-visualized-m3`
+* Use `bge-visualized-m3` to support **multi-language**.
+
+```python
+import torch
+from visual_bge.modeling import Visualized_BGE
+
+# Load the model with the downloaded weight
+model = Visualized_BGE(
+    model_name_bge="BAAI/bge-base-en-v1.5",
+    model_weight="path/to/bge-visualized-m3.pth"
+)
+model.eval()
+
+#### 2. Create Embedding for Query
+
+```python
+with torch.no_grad():
+    query_emb = model.encode(text="Are there sidewalks on both sides of the Mid-Hudson Bridge?")
+
+* If only text is available, pass text.
+* If both text and image are available, pass both text and the image path.
+
+#### 3. Create Embedding for Candidate Chunks
+
+```python
+with torch.no_grad():
+    candi_emb_1 = model.encode(
+        text="The Mid-Hudson Bridge, spanning the Hudson River between Poughkeepsie and Highland.",
+        image="./imgs/wiki_candi_1.jpg"
+    )
+    candi_emb_2 = model.encode(
+        text="Golden_Gate_Bridge",
+        image="./imgs/wiki_candi_2.jpg"
+    )
+    candi_emb_3 = model.encode(
+        text="The Mid-Hudson Bridge was designated as a New York State Historic Civil Engineering Landmark by the American Society of Civil Engineers in 1983. The bridge was renamed the \"Franklin Delano Roosevelt Mid-Hudson Bridge\" in 1994."
+    )
+```
+
+* encode supports text + optional image, enabling multi-modal retrieval.
+* If a chunk only has text → pass text.
+* If a chunk has both text and image → pass text + image.
+* 
+## Hybrid Search Flow
+
+Detailed description of **Hybrid Search** in the retrieval pipeline.
+
+#### 1. Processing Steps
+
+1. **Keyword Generation**
+
+   * Use GPT (e.g., `gpt-4`) to generate a list of keywords from the query.
+
+2. **Keyword Search**
+
+   * Retrieve chunks based on TF-IDF similarity with the generated keywords.
+
+3. **Dense Search**
+
+   * Encode the query (text + optional image) into a vector embedding.
+   * Compute cosine similarity with the dense vectors of the chunks.
+
+4. **Score Merging**
+
+   * Combine scores: `score = alpha * dense_score + (1 - alpha) * keyword_score`
+   * Rank and select the top-k chunks according to the merged score.
+ - alpha) * keyword_score`
+   * Sắp xếp và chọn top-k chunk theo merged score.
+
+#### 2. Output
+
+* List of **top-k relevant chunks** with:
+
+  * `index` trong corpus
+  * `score` (sau khi kết hợp)
+  * `text` chunk
+  * `metadata` (title, page, images...)
+  
 
 ### System
 
