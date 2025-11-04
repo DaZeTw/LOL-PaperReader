@@ -103,11 +103,68 @@ FastAPI backend for parsing and querying academic PDFs and QA RAG features.
 
 ---
 
-### Notes
+## Data Flow
 
-- OpenAPI: OAS 3.1 (`/openapi.json` served by FastAPI)
-- PDF parsing outputs (markdown/images) are copied into the configured `data_dir` for downstream QA.
-- The QA pipeline is built or warmed as needed; `/api/pdf/status` can be polled to monitor readiness.
-- Unused/Debug endpoints (Chat Embedding and Chat Debug) have been removed from routing to reduce surface area.
+### Request Flow
 
+```
+User Input
+    ↓
+QAInterface Component
+    ↓
+POST /api/chat/ask (Next.js API Route)
+    ↓
+POST /api/chat/ask (Backend FastAPI)
+    ↓
+ChatService.get_history(session_id)
+    ↓
+QAPipeline.answer(question, chat_history)
+    ↓
+Retriever.retrieve() → Generator.generate()
+    ↓
+Response
+```
+
+### Response Flow
+
+```
+QAPipeline Result
+    ↓
+{answer, cited_sections, confidence}
+    ↓
+ChatService.add_message() → MongoDB
+    ↓
+Backend API Response
+    ↓
+Next.js API Response
+    ↓
+QAInterface Update State
+    ↓
+localStorage Persistence
+    ↓
+UI Display
+```
+
+## Chat History
+
+### Format
+```python
+[
+  {
+    "role": "user",
+    "content": "What is the main finding?",
+    "timestamp": "2024-01-01T00:00:00Z",
+    "metadata": {}
+  },
+  {
+    "role": "assistant",
+    "content": "The main finding is...",
+    "timestamp": "2024-01-01T00:00:01Z",
+    "metadata": {
+      "cited_sections": [...],
+      "confidence": 0.89
+    }
+  }
+]
+```
 
