@@ -3,11 +3,10 @@
 import type React from "react"
 
 import { useState, useEffect, useCallback } from "react"
-import { FileText, MessageSquare, X, Plus } from "lucide-react"
+import { FileText, X, Plus } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
 import { PDFViewer } from "@/components/pdf-viewer"
-import { CitationSidebar } from "@/components/citation-sidebar"
 import { CitationPopup } from "@/components/citation-popup"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { QAInterface } from "@/components/qa-interface"
@@ -47,8 +46,7 @@ export function PDFReader() {
   const [highlightColor, setHighlightColor] = useState("#fef08a")
   const [annotationMode, setAnnotationMode] = useState<"highlight" | "erase" | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [citationSidebarOpen, setCitationSidebarOpen] = useState(false)
-  const [qaOpen, setQaOpen] = useState(false)
+  const [qaOpen, setQaOpen] = useState(true)
   const [currentPage, setCurrentPage] = useState(1) // Track current page for sidebar highlighting
 
   // Citation popup state
@@ -279,49 +277,31 @@ export function PDFReader() {
                 annotationMode={annotationMode}
                 onModeChange={setAnnotationMode}
               />
-
-              {qaOpen && (
-                <QAInterface
-                  pdfFile={activeTab.file}
-                  onHighlight={() => {}}
-                  onClose={() => setQaOpen(false)}
-                  onNewMessage={(question, answer) => {
-                    if (!activeTabId) return
-                    setTabs((prev) =>
-                      prev.map((tab) =>
-                        tab.id === activeTabId
-                          ? {
-                              ...tab,
-                              qaHistory: [
-                                ...tab.qaHistory,
-                                { question, answer, timestamp: new Date() },
-                              ],
-                            }
-                          : tab
-                      )
-                    )
-                  }}
-                />
-              )}
             </div>
 
-            {/* Right Sidebar - Citations/References */}
-            <CitationSidebar
-              selectedCitation={selectedCitation}
-              onCitationSelect={setSelectedCitation}
-              isOpen={citationSidebarOpen}
-              onToggle={() => setCitationSidebarOpen(!citationSidebarOpen)}
-              extractedCitations={activeTab.extractedCitations}
+            {/* Right Sidebar - Q&A Interface */}
+            <QAInterface
+              pdfFile={activeTab.file}
+              onHighlight={() => {}}
+              isOpen={qaOpen}
+              onToggle={() => setQaOpen(!qaOpen)}
+              onNewMessage={(question, answer) => {
+                if (!activeTabId) return
+                setTabs((prev) =>
+                  prev.map((tab) =>
+                    tab.id === activeTabId
+                      ? {
+                          ...tab,
+                          qaHistory: [
+                            ...tab.qaHistory,
+                            { question, answer, timestamp: new Date() },
+                          ],
+                        }
+                      : tab
+                  )
+                )
+              }}
             />
-
-            {!qaOpen && (
-              <button
-                onClick={() => setQaOpen(true)}
-                className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110 hover:shadow-xl"
-              >
-                <MessageSquare className="h-6 w-6" />
-              </button>
-            )}
 
             {/* Citation Popup with metadata fetching */}
             <CitationPopup
