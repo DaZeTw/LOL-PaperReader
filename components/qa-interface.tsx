@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Send, Loader2, X, Sparkles, History, Trash2, MessageSquarePlus } from "lucide-react"
+import { Send, Loader2, X, Sparkles, History, Trash2, MessageSquarePlus, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -15,6 +15,8 @@ interface QAInterfaceProps {
   onHighlight?: (text: string | null) => void
   onClose?: () => void
   onNewMessage?: (question: string, answer: string) => void
+  isOpen?: boolean
+  onToggle?: () => void
 }
 
 interface CitedSection {
@@ -34,7 +36,7 @@ interface QAMessage {
   timestamp: Date
 }
 
-export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAInterfaceProps) {
+export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpen = true, onToggle }: QAInterfaceProps) {
   const [question, setQuestion] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isPipelineReady, setIsPipelineReady] = useState<boolean | null>(null)
@@ -579,10 +581,21 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
   }, [messages, showHistory])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-sm">
-      <Card className="w-full max-w-4xl rounded-b-none border-x-0 border-b-0 border-t-2 border-primary/20 bg-card shadow-2xl">
+    <>
+      {!isOpen && onToggle && (
+        <button
+          onClick={onToggle}
+          className="absolute right-0 top-1/2 z-10 flex h-16 w-8 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-border bg-background shadow-md transition-colors hover:bg-muted"
+        >
+          <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+        </button>
+      )}
+      <aside className={cn(
+        "relative flex flex-col border-l border-border bg-sidebar transition-all duration-300 h-full",
+        isOpen ? "w-96" : "w-0 overflow-hidden"
+      )}>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-primary/5 to-accent/5 px-6 py-4">
+      <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-primary/5 to-accent/5 px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
               <Sparkles className="h-5 w-5 text-primary" />
@@ -610,16 +623,16 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
                 </Button>
               </>
             )}
-            {onClose && (
-              <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-                <X className="h-4 w-4" />
-              </Button>
+            {onToggle && (
+              <button onClick={onToggle} className="rounded p-1.5 transition-colors hover:bg-muted">
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
             )}
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex max-h-[70vh] flex-col overflow-hidden">
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
           {/* History Section */}
           {showHistory && messages.length > 0 && (
             <div
@@ -854,7 +867,7 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage }: QAI
             </p>
           </div>
         </div>
-      </Card>
-    </div>
+      </aside>
+    </>
   )
 }
