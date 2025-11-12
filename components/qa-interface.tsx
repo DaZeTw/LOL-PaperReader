@@ -9,8 +9,12 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
+import { usePipelineStatus } from "@/hooks/usePipelineStatus"
+import { safeLocalStorage } from "@/lib/localStorage"
+import { formatMessageAnswer } from "@/lib/formatMessageAnswer"
 
 interface QAInterfaceProps {
+  tabId: string // Tab ID for session isolation
   pdfFile: File
   onHighlight?: (text: string | null) => void
   onClose?: () => void
@@ -36,11 +40,9 @@ interface QAMessage {
   timestamp: Date
 }
 
-export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpen = true, onToggle }: QAInterfaceProps) {
+export function QAInterface({ tabId, pdfFile, onHighlight, onClose, onNewMessage, isOpen = true, onToggle }: QAInterfaceProps) {
   const [question, setQuestion] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [isPipelineReady, setIsPipelineReady] = useState<boolean | null>(null)
-  const [pipelineStatus, setPipelineStatus] = useState<{building?: boolean, ready?: boolean, chunks?: number, percent?: number, stage?: string, message?: string}>({})
   const [messages, setMessages] = useState<QAMessage[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -48,9 +50,13 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
   const { toast } = useToast()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
-  // Storage key based on PDF filename to maintain separate sessions per PDF
-  const storageKey = `chat_session_${pdfFile.name}`
-  const messagesStorageKey = `chat_messages_${pdfFile.name}`
+  // Use custom hook for pipeline status polling
+  const { isPipelineReady, status: pipelineStatus } = usePipelineStatus()
+
+  // Storage keys now include tabId for complete session isolation
+  // This prevents different tabs (even with same file) from sharing sessions
+  const storageKey = `chat_session_${tabId}_${pdfFile.name}`
+  const messagesStorageKey = `chat_messages_${tabId}_${pdfFile.name}`
 
   const suggestedQuestions = [
     "What is the main finding?",
@@ -64,41 +70,22 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
     const initializeSession = async () => {
       try {
         // FIRST: Load messages from localStorage immediately (instant restore)
-        // Always try to restore history regardless of session verification/pipeline readiness
-        if (typeof window !== 'undefined') {
-          try {
-            const savedMessages = localStorage.getItem(messagesStorageKey)
-            // Only load if messages exist AND not empty
-            if (savedMessages && savedMessages.trim() !== '[]' && savedMessages.trim() !== '') {
-              try {
-                const parsedMessages = JSON.parse(savedMessages)
-                if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
-                  // Restore Date objects from ISO strings
-                  const restoredMessages = parsedMessages.map((msg: any) => ({
-                    ...msg,
-                    timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
-                  }))
-                  setMessages(restoredMessages)
-                  setShowHistory(true)
-                  console.log("[Chat] Loaded", restoredMessages.length, "messages from localStorage (pre-backend)")
-                } else {
-                  console.log("[Chat] No messages in localStorage (empty array) - starting fresh")
-                }
-              } catch (parseError) {
-                console.warn("[Chat] Failed to parse messages from localStorage:", parseError)
-                // Clear invalid data
-                localStorage.removeItem(messagesStorageKey)
-              }
-            } else {
-              console.log("[Chat] No messages in localStorage (cleared or empty) - starting fresh")
-            }
-          } catch (e) {
-            console.warn("[Chat] Failed to load messages from localStorage:", e)
-          }
+        const savedMessages = safeLocalStorage.getJSON<any[]>(messagesStorageKey)
+        if (savedMessages && savedMessages.length > 0) {
+          // Restore Date objects from ISO strings
+          const restoredMessages = savedMessages.map((msg: any) => ({
+            ...msg,
+            timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+          }))
+          setMessages(restoredMessages)
+          setShowHistory(true)
+          console.log("[Chat] Loaded", restoredMessages.length, "messages from localStorage (pre-backend)")
+        } else {
+          console.log("[Chat] No messages in localStorage - starting fresh")
         }
 
         // THEN: Check if we have a saved session_id in localStorage
-        const savedSessionId = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
+        const savedSessionId = safeLocalStorage.getItem(storageKey)
         
         if (savedSessionId) {
           // Set session ID immediately so user can chat while we verify
@@ -136,19 +123,13 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
                 if (historyMessages.length > 0) {
                   setMessages(historyMessages)
                   setShowHistory(true)
-                  
+
                   // Save to localStorage for next time (convert Date to ISO string)
-                  if (typeof window !== 'undefined') {
-                    try {
-                      const messagesToSave = historyMessages.map((msg) => ({
-                        ...msg,
-                        timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
-                      }))
-                      localStorage.setItem(messagesStorageKey, JSON.stringify(messagesToSave))
-                    } catch (e) {
-                      console.warn("[Chat] Failed to save messages to localStorage:", e)
-                    }
-                  }
+                  const messagesToSave = historyMessages.map((msg) => ({
+                    ...msg,
+                    timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
+                  }))
+                  safeLocalStorage.setJSON(messagesStorageKey, messagesToSave)
                   console.log("[Chat] Synced", historyMessages.length, "messages from backend")
                 }
               }
@@ -157,10 +138,8 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
               // This might mean DB was reset or session expired
               console.log("[Chat] ⚠️ Session not found in database (404), will create new one")
               // Clear localStorage to avoid confusion
-              if (typeof window !== 'undefined') {
-                localStorage.removeItem(storageKey)
-                localStorage.removeItem(messagesStorageKey)
-              }
+              safeLocalStorage.removeItem(storageKey)
+              safeLocalStorage.removeItem(messagesStorageKey)
               await createNewSession()
             } else {
               // Other error (500, 503, etc.) - don't create new session yet
@@ -231,11 +210,9 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
 
         const sessionData = await response.json()
         const newSessionId = sessionData.session_id
-        
+
         // Save session_id to localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(storageKey, newSessionId)
-        }
+        safeLocalStorage.setItem(storageKey, newSessionId)
         setSessionId(newSessionId)
         console.log("[Chat] Created new session:", newSessionId)
       } catch (error: any) {
@@ -245,33 +222,8 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
     }
 
     initializeSession()
-    // Start polling pipeline readiness
-    let cancelled = false
-    let timer: any
-    const poll = async () => {
-      try {
-        const res = await fetch("/api/qa/status")
-        const data = await res.json().catch(() => ({}))
-        if (!cancelled) {
-          setIsPipelineReady(Boolean(data?.ready))
-          setPipelineStatus(data)
-        }
-        if (!data?.ready && !cancelled) {
-          timer = setTimeout(poll, 2000)
-        }
-      } catch {
-        if (!cancelled) {
-          timer = setTimeout(poll, 2000)
-        }
-      }
-    }
-    poll()
-    return () => {
-      cancelled = true
-      if (timer) clearTimeout(timer)
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pdfFile.name])
+  }, [tabId, pdfFile.name]) // Re-initialize when tab changes
 
   const handleAskQuestion = async () => {
     // Block asking if pipeline is not ready
@@ -290,14 +242,12 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
     console.log("[Chat] Checking localStorage for sessionId...")
     
     // Also check localStorage to ensure we have the latest session_id
-    if (typeof window !== 'undefined') {
-      const storedSessionId = localStorage.getItem(storageKey)
-      console.log("[Chat] Stored sessionId in localStorage:", storedSessionId)
-      if (storedSessionId && storedSessionId !== currentSessionId) {
-        console.log("[Chat] ⚠️ Warning: localStorage sessionId differs from state, using localStorage value")
-        currentSessionId = storedSessionId
-        setSessionId(storedSessionId)
-      }
+    const storedSessionId = safeLocalStorage.getItem(storageKey)
+    console.log("[Chat] Stored sessionId in localStorage:", storedSessionId)
+    if (storedSessionId && storedSessionId !== currentSessionId) {
+      console.log("[Chat] ⚠️ Warning: localStorage sessionId differs from state, using localStorage value")
+      currentSessionId = storedSessionId
+      setSessionId(storedSessionId)
     }
     
     // If no session ID, create one first
@@ -323,11 +273,9 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
 
         const sessionData = await response.json()
         currentSessionId = sessionData.session_id
-        
+
         // Save session_id to localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(storageKey, currentSessionId)
-        }
+        safeLocalStorage.setItem(storageKey, currentSessionId)
         setSessionId(currentSessionId)
         console.log("[Chat] Created new session before asking:", currentSessionId)
       } catch (error: any) {
@@ -395,17 +343,11 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
       setShowHistory(true)
 
       // Save messages to localStorage for persistence (convert Date to ISO string)
-      if (typeof window !== 'undefined') {
-        try {
-          const messagesToSave = updatedMessages.map((msg) => ({
-            ...msg,
-            timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
-          }))
-          localStorage.setItem(messagesStorageKey, JSON.stringify(messagesToSave))
-        } catch (e) {
-          console.warn("[Chat] Failed to save messages to localStorage:", e)
-        }
-      }
+      const messagesToSave = updatedMessages.map((msg) => ({
+        ...msg,
+        timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
+      }))
+      safeLocalStorage.setJSON(messagesStorageKey, messagesToSave)
 
       // Notify parent of new Q&A message
       if (onNewMessage) {
@@ -442,15 +384,9 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
     setSessionId(null)  // Reset immediately to prevent loading old session
     
     // Clear localStorage messages AND session_id COMPLETELY
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.removeItem(messagesStorageKey)
-        localStorage.removeItem(storageKey) // Clear session_id too
-        console.log("[Chat] ✅ Cleared localStorage - messages and session_id removed")
-      } catch (e) {
-        console.warn("[Chat] Failed to clear messages from localStorage:", e)
-      }
-    }
+    safeLocalStorage.removeItem(messagesStorageKey)
+    safeLocalStorage.removeItem(storageKey) // Clear session_id too
+    console.log("[Chat] ✅ Cleared localStorage - messages and session_id removed")
     
     // Create new session with unique title (timestamp + random) to ensure it's a new session
     try {
@@ -475,21 +411,17 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
         // Verify it's actually a new session (not the old one)
         if (newSessionId !== oldSessionId) {
           // Save new session_id to localStorage IMMEDIATELY
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(storageKey, newSessionId)
-            // CRITICAL: Also clear messagesStorageKey again to ensure it's empty
-            localStorage.removeItem(messagesStorageKey)
-          }
+          safeLocalStorage.setItem(storageKey, newSessionId)
+          // CRITICAL: Also clear messagesStorageKey again to ensure it's empty
+          safeLocalStorage.removeItem(messagesStorageKey)
           setSessionId(newSessionId)
           console.log("[Chat] ✅ Created NEW session after clear:", newSessionId)
           console.log("[Chat] Old session was:", oldSessionId)
         } else {
           console.warn("[Chat] ⚠️ Warning: New session ID matches old one! Backend may have returned existing session.")
           // Still set it anyway to continue
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(storageKey, newSessionId)
-            localStorage.removeItem(messagesStorageKey)
-          }
+          safeLocalStorage.setItem(storageKey, newSessionId)
+          safeLocalStorage.removeItem(messagesStorageKey)
           setSessionId(newSessionId)
         }
       } else {
@@ -514,13 +446,7 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
       setShowHistory(false)
       
       // Clear localStorage messages
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.removeItem(messagesStorageKey)
-        } catch (e) {
-          console.warn("[Chat] Failed to clear messages from localStorage:", e)
-        }
-      }
+      safeLocalStorage.removeItem(messagesStorageKey)
 
       // Create new session with same PDF filename
       const response = await fetch("/api/chat/sessions", {
@@ -549,11 +475,9 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
 
       const sessionData = await response.json()
       const newSessionId = sessionData.session_id
-      
+
       // Save new session_id to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(storageKey, newSessionId)
-      }
+      safeLocalStorage.setItem(storageKey, newSessionId)
       setSessionId(newSessionId)
       console.log("[Chat] Created new chat session:", newSessionId)
       
@@ -657,35 +581,9 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
 
                     {/* Answer */}
                     <div className="ml-9 rounded-lg border border-border bg-muted/30 p-4">
-                      <div 
+                      <div
                         className="font-mono text-sm leading-relaxed text-foreground [&_strong]:font-semibold [&_em]:italic [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-xs"
-                        dangerouslySetInnerHTML={{ 
-                          __html: (() => {
-                            // Escape HTML first to prevent XSS
-                            const escapeHtml = (text: string) => {
-                              const map: Record<string, string> = {
-                                '&': '&amp;',
-                                '<': '&lt;',
-                                '>': '&gt;',
-                                '"': '&quot;',
-                                "'": '&#039;',
-                              }
-                              return text.replace(/[&<>"']/g, (m) => map[m])
-                            }
-                            
-                            let html = escapeHtml(message.answer)
-                            // Process markdown - bold first (to avoid conflicts with italic)
-                            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            // Then italic (single asterisks, avoiding ones that are part of bold)
-                            // Match single * that are not immediately preceded or followed by another *
-                            html = html.replace(/(?<!\*)\*([^*<]+?)\*(?!\*)/g, '<em>$1</em>')
-                            // Code blocks (backticks)
-                            html = html.replace(/`([^`]+?)`/g, '<code>$1</code>')
-                            // Line breaks
-                            html = html.replace(/\n/g, '<br />')
-                            return html
-                          })()
-                        }}
+                        dangerouslySetInnerHTML={{ __html: formatMessageAnswer(message.answer) }}
                       />
 
                       {/* Citations from backend */}

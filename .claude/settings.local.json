@@ -8,7 +8,11 @@
       "Bash(wc:*)",
       "Bash(git checkout:*)",
       "Bash(find:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(dir \"C:\\Users\\ADMIN\\OneDrive\\Desktop\\Personal_project\\New folder (3)\\LOL-PaperReader\\components\")",
+      "Bash(rm:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []

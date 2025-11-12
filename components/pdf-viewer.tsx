@@ -6,7 +6,7 @@ import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
 import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail"
 import { bookmarkPlugin } from "@react-pdf-viewer/bookmark"
-import { useCitationPlugin } from "@/hooks/useCitatioPlugin";
+import { useCitationPlugin } from "@/hooks/useCitationPlugin";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -20,6 +20,7 @@ import "@react-pdf-viewer/bookmark/lib/styles/index.css"
 import "@/styles/pdf-components.css"
 
 interface PDFViewerProps {
+  tabId: string // Tab ID for state isolation
   file: File
   selectedSection?: string | null
   navigationTarget?: { page: number; yPosition: number } | undefined
@@ -30,6 +31,7 @@ interface PDFViewerProps {
 }
 
 export function PDFViewer({
+  tabId,
   file,
   selectedSection,
   navigationTarget,
@@ -51,7 +53,10 @@ export function PDFViewer({
   const zoomPluginInstance = zoomPlugin()
   const thumbnailPluginInstance = thumbnailPlugin()
   const bookmarkPluginInstance = bookmarkPlugin()
+
+  // Citation plugin with per-tab state isolation
   const citationPluginInstance = useCitationPlugin({
+    tabId: tabId, // Pass tabId for isolated state
     // Don't pass onCitationClick - let the plugin show its own built-in popup
     // This avoids routing through the parent component and uses the plugin's API fetching
     // onCitationClick: (citation, event) => {

@@ -18,12 +18,13 @@ interface ExtractionResult {
 }
 
 interface ExtractionsCache {
-  [fileName: string]: ExtractionResult
+  [cacheKey: string]: ExtractionResult
 }
 
 /**
  * Hook for extracting citation references from PDF files
  * Uses the extraction API to get full reference text from PDF
+ * Cache is isolated per-tab to prevent collisions
  */
 export function useExtractCitations() {
   const [loading, setLoading] = useState(false)
@@ -34,12 +35,14 @@ export function useExtractCitations() {
   /**
    * Extract citations from a PDF file
    * Returns cached result if available
+   * @param file - The PDF file to extract citations from
+   * @param tabId - Tab ID for cache isolation (optional, but recommended)
    */
-  const extractCitations = useCallback(async (file: File): Promise<ExtractionResult | null> => {
-    // Check cache first
-    const cacheKey = `${file.name}-${file.size}`
+  const extractCitations = useCallback(async (file: File, tabId?: string): Promise<ExtractionResult | null> => {
+    // Check cache first - include tabId in cache key for complete isolation
+    const cacheKey = tabId ? `${tabId}_${file.name}_${file.size}` : `${file.name}_${file.size}`
     if (cacheRef.current[cacheKey]) {
-      console.log("[useExtractCitations] Using cached extraction for:", file.name)
+      console.log("[useExtractCitations] Using cached extraction for:", file.name, "tab:", tabId || "global")
       return cacheRef.current[cacheKey]
     }
 
@@ -64,9 +67,9 @@ export function useExtractCitations() {
 
       const result: ExtractionResult = await response.json()
 
-      console.log("[useExtractCitations] Extracted", result.totalCitations, "citations from", file.name)
+      console.log("[useExtractCitations] Extracted", result.totalCitations, "citations from", file.name, "tab:", tabId || "global")
 
-      // Cache the result
+      // Cache the result with tab-specific key
       cacheRef.current[cacheKey] = result
 
       setProgress("Complete!")
@@ -83,10 +86,14 @@ export function useExtractCitations() {
 
   /**
    * Get extracted citation by ID
+   * @param fileName - Name of the PDF file
+   * @param fileSize - Size of the PDF file
+   * @param citationId - ID of the citation to retrieve
+   * @param tabId - Optional tab ID for cache lookup
    */
   const getCitationById = useCallback(
-    (fileName: string, fileSize: number, citationId: string): ExtractedCitation | null => {
-      const cacheKey = `${fileName}-${fileSize}`
+    (fileName: string, fileSize: number, citationId: string, tabId?: string): ExtractedCitation | null => {
+      const cacheKey = tabId ? `${tabId}_${fileName}_${fileSize}` : `${fileName}_${fileSize}`
       const extraction = cacheRef.current[cacheKey]
       if (!extraction) return null
 
@@ -97,9 +104,12 @@ export function useExtractCitations() {
 
   /**
    * Get all extracted citations for a file
+   * @param fileName - Name of the PDF file
+   * @param fileSize - Size of the PDF file
+   * @param tabId - Optional tab ID for cache lookup
    */
-  const getCitationsForFile = useCallback((fileName: string, fileSize: number): ExtractedCitation[] => {
-    const cacheKey = `${fileName}-${fileSize}`
+  const getCitationsForFile = useCallback((fileName: string, fileSize: number, tabId?: string): ExtractedCitation[] => {
+    const cacheKey = tabId ? `${tabId}_${fileName}_${fileSize}` : `${fileName}_${fileSize}`
     const extraction = cacheRef.current[cacheKey]
     return extraction?.citations || []
   }, [])

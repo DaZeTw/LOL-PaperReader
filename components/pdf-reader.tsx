@@ -17,6 +17,7 @@ import { ImageGallery, mockImages } from "@/components/image-gallery"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractCitations"
+import { CitationProvider, useCitationContext } from "@/contexts/CitationContext"
 
 interface NavigationTarget {
   page: number
@@ -38,11 +39,14 @@ interface PDFTab {
   parsedOutputs?: any
 }
 
-export function PDFReader() {
+/**
+ * Main PDF Reader component with multi-tab support
+ * Wrapped with CitationProvider for per-tab citation state isolation
+ */
+function PDFReaderContent() {
   const [tabs, setTabs] = useState<PDFTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
-  const [selectedCitation, setSelectedCitation] = useState<any>(null)
   const [highlightColor, setHighlightColor] = useState("#fef08a")
   const [annotationMode, setAnnotationMode] = useState<"highlight" | "erase" | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -52,6 +56,9 @@ export function PDFReader() {
   // Citation popup state
   const [popupCitation, setPopupCitation] = useState<any>(null)
   const [citationPopupOpen, setCitationPopupOpen] = useState(false)
+
+  // Get citation context for cleanup
+  const citationContext = useCitationContext()
 
   // Citation extraction hook
   const { extractCitations, getCitationById, loading: extracting, progress } = useExtractCitations()
@@ -104,43 +111,41 @@ export function PDFReader() {
   const handleFileSelect = async (file: File, parsedData?: any) => {
     console.log("[PDF Reader] Upload detected:", file.name, "parsed:", parsedData)
 
+    // Create a new tab first to get the tab ID
+    const newTab: PDFTab = {
+      id: Date.now().toString(),
+      file,
+      selectedSection: null,
+      bookmarks: [],
+      qaHistory: [],
+      pdfId: parsedData?.pdfId,
+      parsedOutputs: parsedData?.outputs || parsedData?.backendResult?.results?.[0]?.outputs
+    }
+
+    setTabs((prev) => {
+      const newTabs = [...prev, newTab]
+      console.log("[PDF Reader] Updated tabs:", newTabs.length)
+      return newTabs
+    })
+
+    setActiveTabId(newTab.id)
+    console.log("[PDF Reader] Active tab set to:", newTab.id)
+
     // Extract citations from the PDF in the background
-    extractCitations(file).then((result) => {
+    // Pass tabId for cache isolation
+    extractCitations(file, newTab.id).then((result) => {
       if (result) {
-        console.log("[PDFReader] Extracted", result.totalCitations, "citations")
+        console.log("[PDFReader] Extracted", result.totalCitations, "citations for tab:", newTab.id)
         // Update the tab with extracted citations
         setTabs((prevTabs) =>
           prevTabs.map((tab) =>
-            tab.file.name === file.name ? { ...tab, extractedCitations: result.citations } : tab
+            tab.id === newTab.id ? { ...tab, extractedCitations: result.citations } : tab
           )
         )
       }
+    }).catch(error => {
+      console.error("[PDF Reader] Error extracting citations:", error)
     })
-  
-    try {
-      // Create a new tab and store parsed info/pdfId (from Next API)
-      const newTab: PDFTab = {
-        id: Date.now().toString(),
-        file,
-        selectedSection: null,
-        bookmarks: [],
-        qaHistory: [],
-        pdfId: parsedData?.pdfId,
-        parsedOutputs: parsedData?.outputs || parsedData?.backendResult?.results?.[0]?.outputs
-      }
-    
-      setTabs((prev) => {
-        const newTabs = [...prev, newTab]
-        console.log("[PDF Reader] Updated tabs:", newTabs.length)
-        return newTabs
-      })
-    
-      setActiveTabId(newTab.id)
-      console.log("[PDF Reader] Active tab set to:", newTab.id)
-      
-    } catch (error) {
-      console.error("[PDF Reader] Error processing PDF:", error)
-    }
   }
 
   // Function to update a tab's parsed data when API completes
@@ -160,8 +165,16 @@ export function PDFReader() {
     )
   }, [])
 
+  /**
+   * Handle closing a tab
+   * Cleans up citation state to prevent memory leaks
+   */
   const handleCloseTab = (tabId: string, e: React.MouseEvent) => {
     e.stopPropagation()
+
+    // Cleanup citation state for this tab
+    citationContext.cleanupTab(tabId)
+
     setTabs((prev) => {
       const newTabs = prev.filter((tab) => tab.id !== tabId)
       if (activeTabId === tabId && newTabs.length > 0) {
@@ -262,6 +275,7 @@ export function PDFReader() {
             {/* Center - PDF Viewer with Annotation Toolbar */}
             <div className="relative flex flex-1 flex-col">
               <PDFViewer
+                tabId={activeTab.id} // Pass tabId for state isolation
                 file={activeTab.file}
                 selectedSection={activeTab.selectedSection}
                 navigationTarget={navigationTarget}
@@ -281,6 +295,7 @@ export function PDFReader() {
 
             {/* Right Sidebar - Q&A Interface */}
             <QAInterface
+              tabId={activeTab.id} // Pass tabId for session isolation
               pdfFile={activeTab.file}
               onHighlight={() => {}}
               isOpen={qaOpen}
@@ -316,5 +331,17 @@ export function PDFReader() {
         )}
       </div>
     </div>
+  )
+}
+
+/**
+ * Wrapper component that provides CitationContext to all child components
+ * This ensures per-tab state isolation for citations
+ */
+export function PDFReader() {
+  return (
+    <CitationProvider>
+      <PDFReaderContent />
+    </CitationProvider>
   )
 }

@@ -1,6 +1,7 @@
 import { Plugin } from "@react-pdf-viewer/core";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import { useRef, useEffect } from "react";
+import { useCitationContext } from "@/contexts/CitationContext";
 
 // Required for PDF.js to work in browser environments
 GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
@@ -20,33 +21,39 @@ interface Citation {
 }
 
 interface CitationPluginProps {
+    tabId: string; // Tab ID for state isolation
     onCitationClick?: (citation: Citation, event: MouseEvent) => void;
     pdfUrl?: string; // PDF URL or file path for loading annotations
     extractedCitations?: any[]; // Extracted citation data from API
 }
 
-// Store valid citation IDs globally
-let validCitationIds: Set<string> = new Set();
+/**
+ * Citation plugin with per-tab state isolation
+ * Uses CitationContext to prevent state pollution between different PDFs
+ */
+export const useCitationPlugin = (props: CitationPluginProps): Plugin => {
+    const { tabId, onCitationClick, pdfUrl, extractedCitations = [] } = props;
 
-// Store mapping from annotation ID to citation destination (cite.xxx)
-let annotationIdToDestination: Map<string, string> = new Map();
+    // Get context for managing per-tab citation state
+    const citationContext = useCitationContext();
 
-// Store extracted citations in module scope so click handlers can access the latest version
-let moduleExtractedCitations: any[] = [];
+    // Get state for this specific tab
+    const tabState = citationContext.getTabState(tabId);
 
-export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
-    const { onCitationClick, pdfUrl, extractedCitations = [] } = props || {};
+    // Update extracted citations in context whenever prop changes
+    useEffect(() => {
+        citationContext.updateCitations(tabId, extractedCitations);
+    }, [tabId, extractedCitations, citationContext]);
 
-    // Update module-level citations whenever prop changes
-    moduleExtractedCitations = extractedCitations;
-
-    console.log('[CitationPlugin] Initialized/Updated with', extractedCitations.length, 'citations');
+    console.log('[CitationPlugin] Initialized/Updated for tab', tabId, 'with', extractedCitations.length, 'citations');
 
     // Load and filter PDF.js annotations on plugin initialization
+    // Now stores state per-tab instead of globally
     const loadPDFAnnotations = async (url: string) => {
         try {
             const pdf = await getDocument(url).promise;
             const allValidIds = new Set<string>();
+            const idToDestMapping = new Map<string, string>();
 
             // Process all pages
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
@@ -54,27 +61,29 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                 const annotations = await page.getAnnotations();
 
                 // Filter for citation annotations only
-                const citationAnnotations = annotations.filter((ann: any) => 
-                    ann.subtype === "Link" && 
-                    typeof ann.dest === "string" && 
+                const citationAnnotations = annotations.filter((ann: any) =>
+                    ann.subtype === "Link" &&
+                    typeof ann.dest === "string" &&
                     ann.dest.startsWith("cite.")
                 );
 
-                // Extract IDs and store mapping
+                // Extract IDs and store mapping for this tab
                 citationAnnotations.forEach((ann: any) => {
                     if (ann.id && ann.dest) {
                         allValidIds.add(ann.id);
-                        annotationIdToDestination.set(ann.id, ann.dest);
-                        console.log(`✓ Valid citation found: ${ann.id} -> ${ann.dest}`);
+                        idToDestMapping.set(ann.id, ann.dest);
+                        console.log(`✓ Tab ${tabId}: Valid citation found: ${ann.id} -> ${ann.dest}`);
                     }
                 });
             }
 
-            validCitationIds = allValidIds;
-            console.log(`📚 Loaded ${validCitationIds.size} valid citation IDs`);
-            
+            // Update context state for this tab
+            citationContext.updateValidIds(tabId, allValidIds);
+            citationContext.updateAnnotationMapping(tabId, idToDestMapping);
+            console.log(`📚 Tab ${tabId}: Loaded ${allValidIds.size} valid citation IDs`);
+
         } catch (error) {
-            console.error("Failed to load PDF annotations:", error);
+            console.error(`Tab ${tabId}: Failed to load PDF annotations:`, error);
         }
     };
 
@@ -105,35 +114,39 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
             const annotationLayer = e.container || e.ele;
             if (!annotationLayer) return;
 
-            console.log('[onAnnotationLayerRender] extractedCitations available:', moduleExtractedCitations.length);
+            // Get current state for this tab (refreshed on each render)
+            const currentTabState = citationContext.getTabState(tabId);
+
+            console.log(`[Tab ${tabId}] onAnnotationLayerRender - extractedCitations available:`, currentTabState.extractedCitations.length);
 
             // Find all annotation links
             const citationLinks = annotationLayer.querySelectorAll("a[data-annotation-link]");
-            
+
             citationLinks.forEach((link: Element) => {
                 const anchorLink = link as HTMLAnchorElement;
                 const annotationId = anchorLink.getAttribute("data-annotation-link");
-                
+
                 // Skip if already processed
                 if (anchorLink.getAttribute("data-citation-processed") === "true") {
                     return;
                 }
 
-                // ✨ KEY FILTER: Only process if this ID is in our valid citations list
-                if (!annotationId || !validCitationIds.has(annotationId)) {
-                    console.log(`❌ Skipping non-citation link: ${annotationId}`);
+                // ✨ KEY FILTER: Only process if this ID is in our valid citations list for THIS tab
+                if (!annotationId || !currentTabState.validCitationIds.has(annotationId)) {
+                    console.log(`❌ Tab ${tabId}: Skipping non-citation link: ${annotationId}`);
                     return;
                 }
 
-                console.log(`✅ Processing valid citation: ${annotationId}`);
+                console.log(`✅ Tab ${tabId}: Processing valid citation: ${annotationId}`);
 
                 // Use capture phase to ensure we get the event first
+                // IMPORTANT: Create closure over tabId to ensure correct state is accessed
                 anchorLink.addEventListener("click", (ev: MouseEvent) => {
                     ev.preventDefault();
                     ev.stopPropagation();
                     ev.stopImmediatePropagation();
 
-                    console.log(`🖱️ Citation clicked: ${annotationId}`, ev);
+                    console.log(`🖱️ Tab ${tabId}: Citation clicked: ${annotationId}`, ev);
 
                     // Remove any existing popup before showing new one
                     const existingPopup = document.querySelector('.citation-popup');
@@ -145,19 +158,20 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                     const popupX = rect.left + (rect.width / 2);
                     const popupY = rect.bottom + 10;
 
-                    // Try to find matching extracted citation data
-                    // Use module-level citations to avoid closure issues
-                    console.log(`🔍 Searching for citation. AnnotationId: ${annotationId}, Available citations:`, moduleExtractedCitations.length);
+                    // Get fresh state from context (not closure) to avoid stale data
+                    const freshTabState = citationContext.getTabState(tabId);
 
-                    // Get the citation destination (cite.xxx) from the annotation ID
-                    const citationDestination = annotationIdToDestination.get(annotationId);
-                    console.log(`📍 Annotation ${annotationId} maps to destination:`, citationDestination);
+                    console.log(`🔍 Tab ${tabId}: Searching for citation. AnnotationId: ${annotationId}, Available citations:`, freshTabState.extractedCitations.length);
 
-                    // Match by destination
-                    const extractedCitation = moduleExtractedCitations.find(extracted => {
+                    // Get the citation destination (cite.xxx) from the annotation ID for THIS tab
+                    const citationDestination = freshTabState.annotationIdToDestination.get(annotationId);
+                    console.log(`📍 Tab ${tabId}: Annotation ${annotationId} maps to destination:`, citationDestination);
+
+                    // Match by destination using THIS tab's citations
+                    const extractedCitation = freshTabState.extractedCitations.find(extracted => {
                         // Try exact match with destination first
                         if (citationDestination && extracted.id === citationDestination) {
-                            console.log(`✓ Found exact match for ${annotationId}:`, extracted.id, 'Text length:', extracted.text?.length);
+                            console.log(`✓ Tab ${tabId}: Found exact match for ${annotationId}:`, extracted.id, 'Text length:', extracted.text?.length);
                             return true;
                         }
 
@@ -167,18 +181,18 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                             extracted.id.includes(annotationId.replace('cite.', ''));
 
                         if (idMatch) {
-                            console.log(`✓ Found partial match for ${annotationId}:`, extracted.id, 'Text length:', extracted.text?.length);
+                            console.log(`✓ Tab ${tabId}: Found partial match for ${annotationId}:`, extracted.id, 'Text length:', extracted.text?.length);
                         }
                         return idMatch;
                     });
 
                     if (!extractedCitation) {
-                        console.warn(`❌ No extracted citation found for ${annotationId} (dest: ${citationDestination}). Available IDs:`,
-                            moduleExtractedCitations.slice(0, 5).map(c => c.id));
+                        console.warn(`❌ Tab ${tabId}: No extracted citation found for ${annotationId} (dest: ${citationDestination}). Available IDs:`,
+                            freshTabState.extractedCitations.slice(0, 5).map(c => c.id));
                     }
 
                     const citationText = extractedCitation?.text || anchorLink.textContent || `Citation ${annotationId}`;
-                    console.log(`📝 Citation text (length ${citationText.length}):`, citationText.substring(0, 100));
+                    console.log(`📝 Tab ${tabId}: Citation text (length ${citationText.length}):`, citationText.substring(0, 100));
 
                     const citation: Citation = {
                         id: annotationId,
@@ -190,15 +204,15 @@ export const useCitationPlugin = (props?: CitationPluginProps): Plugin => {
                         extractedData: extractedCitation
                     };
 
-                    console.log(`📋 Citation data created. Text length: ${citation.text.length}, Has extracted data: ${!!extractedCitation}`);
+                    console.log(`📋 Tab ${tabId}: Citation data created. Text length: ${citation.text.length}, Has extracted data: ${!!extractedCitation}`);
 
                     if (onCitationClick) {
-                        console.log(`📤 Calling onCitationClick handler`);
+                        console.log(`📤 Tab ${tabId}: Calling onCitationClick handler`);
                         onCitationClick(citation, ev);
                     } else {
-                        console.log(`📱 Showing built-in popup`);
+                        console.log(`📱 Tab ${tabId}: Showing built-in popup`);
                         showCitationPopup(citation, popupX, popupY).catch(err => {
-                            console.error('Failed to show citation popup:', err);
+                            console.error(`Tab ${tabId}: Failed to show citation popup:`, err);
                         });
                     }
                 }, { capture: true });
