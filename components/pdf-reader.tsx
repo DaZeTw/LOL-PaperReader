@@ -43,6 +43,7 @@ interface PDFTab {
 function PDFReaderContent() {
   const [tabs, setTabs] = useState<PDFTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
+  const [showUpload, setShowUpload] = useState(false) // Track if upload view should be shown
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
   const [highlightColor, setHighlightColor] = useState("#fef08a")
   const [annotationMode, setAnnotationMode] = useState<"highlight" | "erase" | null>(null)
@@ -126,6 +127,7 @@ function PDFReaderContent() {
     })
 
     setActiveTabId(newTab.id)
+    setShowUpload(false) // Hide upload view after file is selected
     console.log("[PDF Reader] Active tab set to:", newTab.id)
 
     // Extract citations from the PDF in the background
@@ -225,7 +227,11 @@ function PDFReaderContent() {
 
   // Handler for opening upload view
   const handleOpenUpload = () => {
-    setActiveTabId(null)
+    if (tabs.length === 0) {
+      setShowUpload(true)
+    } else {
+      setActiveTabId(null)
+    }
   }
 
   return (
@@ -253,8 +259,10 @@ function PDFReaderContent() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {tabs.length === 0 ? (
+        {tabs.length === 0 && !showUpload ? (
           <Homepage onGetStarted={handleOpenUpload} />
+        ) : tabs.length === 0 && showUpload ? (
+          <PDFUpload onFileSelect={handleFileSelect} onParseComplete={handleParseComplete} />
         ) : !activeTab ? (
           <PDFUpload onFileSelect={handleFileSelect} onParseComplete={handleParseComplete} />
         ) : (

@@ -13,6 +13,8 @@ from paperreader.api.chat_routes import router as chat_router  # Chat routes
 # from paperreader.api.chat_embedding_routes import router as chat_embedding_router  # Chat embedding routes (removed as unused)
 
 # Import database connection
+from paperreader.config.settings import settings
+from paperreader.database.file_storage import file_storage
 from paperreader.database.mongodb import mongodb
 from paperreader.services.qa.embeddings import get_embedder
 from paperreader.services.qa.pipeline import get_pipeline
@@ -65,25 +67,31 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         """Initialize database and schedule warmup in background"""
-        # Connect to MongoDB immediately and wait for it (blocking)
-        # This ensures MongoDB is ready before accepting requests
-        print("[STARTUP] Connecting to MongoDB...")
-        max_retries = 3
-        retry_delay = 2
-        for attempt in range(max_retries):
-            try:
-                await mongodb.connect()
-                print("✅ MongoDB connection established on startup")
-                break
-            except Exception as e:
-                print(f"❌ Attempt {attempt + 1}/{max_retries} failed to connect to MongoDB: {e}")
-                if attempt < max_retries - 1:
-                    print(f"[STARTUP] Retrying in {retry_delay} seconds...")
-                    await asyncio.sleep(retry_delay)
-                else:
-                    print(f"[STARTUP] ⚠️ MongoDB connection failed after {max_retries} attempts")
-                    print("[STARTUP] ⚠️ App will start but chat features may not work until MongoDB is available")
-                    # Don't raise exception to allow app to start without DB for testing
+        # Choose storage backend based on settings
+        if settings.use_file_storage:
+            print("[STARTUP] Using local file storage (MongoDB disabled)")
+            await file_storage.connect()
+            print("✅ File storage initialized")
+        else:
+            # Connect to MongoDB immediately and wait for it (blocking)
+            # This ensures MongoDB is ready before accepting requests
+            print("[STARTUP] Connecting to MongoDB...")
+            max_retries = 3
+            retry_delay = 2
+            for attempt in range(max_retries):
+                try:
+                    await mongodb.connect()
+                    print("✅ MongoDB connection established on startup")
+                    break
+                except Exception as e:
+                    print(f"❌ Attempt {attempt + 1}/{max_retries} failed to connect to MongoDB: {e}")
+                    if attempt < max_retries - 1:
+                        print(f"[STARTUP] Retrying in {retry_delay} seconds...")
+                        await asyncio.sleep(retry_delay)
+                    else:
+                        print(f"[STARTUP] ⚠️ MongoDB connection failed after {max_retries} attempts")
+                        print("[STARTUP] ⚠️ App will start but chat features may not work until MongoDB is available")
+                        # Don't raise exception to allow app to start without DB for testing
         
         # Warmup in background so startup is non-blocking
         import asyncio
@@ -120,10 +128,14 @@ def create_app() -> FastAPI:
     async def shutdown_event():
         """Close database connection on shutdown"""
         try:
-            await mongodb.disconnect()
-            print("✅ MongoDB connection closed")
+            if settings.use_file_storage:
+                await file_storage.disconnect()
+                print("✅ File storage closed")
+            else:
+                await mongodb.disconnect()
+                print("✅ MongoDB connection closed")
         except Exception as e:
-            print(f"❌ Error closing MongoDB connection: {e}")
+            print(f"❌ Error closing database connection: {e}")
 
     # ------------------------
     # Health and Root routes

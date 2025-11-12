@@ -191,7 +191,7 @@ export function QAInterface({ tabId, pdfFile, onHighlight, onClose, onNewMessage
           },
           body: JSON.stringify({
             user_id: null, // Use null for anonymous sessions
-            title: `Chat: ${pdfFile.name}`,
+            title: `Chat: ${tabId}_${pdfFile.name}`, // Include tabId for session isolation
             initial_message: null,
           }),
         })
@@ -261,7 +261,7 @@ export function QAInterface({ tabId, pdfFile, onHighlight, onClose, onNewMessage
           },
           body: JSON.stringify({
             user_id: null,
-            title: `Chat: ${pdfFile.name}`,
+            title: `Chat: ${tabId}_${pdfFile.name}`, // Include tabId for session isolation
             initial_message: null,
           }),
         })
@@ -399,7 +399,7 @@ export function QAInterface({ tabId, pdfFile, onHighlight, onClose, onNewMessage
         },
         body: JSON.stringify({
           user_id: null,
-          title: `Chat: ${pdfFile.name} - ${timestamp} - ${randomId}`, // Add timestamp + random to ensure unique session
+          title: `Chat: ${tabId}_${pdfFile.name} - ${timestamp} - ${randomId}`, // Include tabId + timestamp + random to ensure unique session
           initial_message: null,
         }),
       })
@@ -456,7 +456,7 @@ export function QAInterface({ tabId, pdfFile, onHighlight, onClose, onNewMessage
         },
         body: JSON.stringify({
           user_id: null, // Use null for anonymous sessions
-          title: `Chat: ${pdfFile.name}`,
+          title: `Chat: ${tabId}_${pdfFile.name}`, // Include tabId for session isolation
           initial_message: null,
         }),
       })

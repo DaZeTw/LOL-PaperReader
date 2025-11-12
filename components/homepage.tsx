@@ -14,7 +14,7 @@ interface HomepageProps {
  */
 export function Homepage({ onGetStarted }: HomepageProps) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-background to-muted/20 p-8">
+    <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-b from-background to-muted/20 p-8">
       <div className="mx-auto max-w-4xl space-y-8 text-center">
         {/* Hero Section */}
         <div className="space-y-4">

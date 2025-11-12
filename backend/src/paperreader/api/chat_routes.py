@@ -653,20 +653,30 @@ async def ask_question(request: ChatAskRequest):
             import asyncio
             await asyncio.sleep(0.5)  # Longer delay to ensure write is committed after chunk processing
             
-            # Verify in database with timeout
+            # Verify in storage with timeout
             try:
+                from paperreader.config.settings import settings
+                from paperreader.database.file_storage import file_storage
                 from paperreader.database.mongodb import mongodb
-                collection = mongodb.get_collection("chat_sessions")
+
+                if settings.use_file_storage:
+                    collection = file_storage
+                    storage_type = "FileStorage"
+                else:
+                    collection = mongodb.get_collection("chat_sessions")
+                    storage_type = "MongoDB"
+
                 verify_session = await asyncio.wait_for(
                     collection.find_one({"session_id": request.session_id}),
                     timeout=10.0  # 10 second timeout for verification
                 )
                 if verify_session:
                     verified_msg_count = len(verify_session.get("messages", []))
-                    print(f"[DEBUG] ✅ Verified: Session now has {verified_msg_count} messages in database")
+                    print(f"[DEBUG] ✅ Verified: Session now has {verified_msg_count} messages in {storage_type}")
                     print(f"[DEBUG] 📋 Session Info:")
                     print(f"[DEBUG]   - session_id (UUID): {verify_session.get('session_id')}")
-                    print(f"[DEBUG]   - MongoDB _id (ObjectId): {verify_session.get('_id')}")
+                    if not settings.use_file_storage:
+                        print(f"[DEBUG]   - MongoDB _id (ObjectId): {verify_session.get('_id')}")
                     print(f"[DEBUG] 💡 To query in MongoDB Atlas, use: {{'session_id': '{request.session_id}'}}")
                 else:
                     print(f"[WARNING] ⚠️ Verification: Session not found in database after save")
