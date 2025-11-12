@@ -3,19 +3,16 @@
 import type React from "react"
 
 import { useState, useEffect, useCallback } from "react"
-import { FileText, X, Plus } from "lucide-react"
+import { FileText } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { CitationPopup } from "@/components/citation-popup"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { QAInterface } from "@/components/qa-interface"
-import { BookmarkPanel, type BookmarkItem } from "@/components/bookmark-panel"
-import { KeyboardShortcutsPanel, useKeyboardShortcuts } from "@/components/keyboard-shortcuts-panel"
-import { ExportDialog } from "@/components/export-dialog"
-import { ImageGallery, mockImages } from "@/components/image-gallery"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Homepage } from "@/components/homepage"
+import { TabBar, type TabItem } from "@/components/tab-bar"
+import { type BookmarkItem } from "@/components/bookmark-panel"
 import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractCitations"
 import { CitationProvider, useCitationContext } from "@/contexts/CitationContext"
 
@@ -220,6 +217,17 @@ function PDFReaderContent() {
 
   console.log("[PDF Reader] Render - tabs:", tabs.length, "activeTab:", activeTab?.file.name)
 
+  // Convert tabs to TabItem format for TabBar
+  const tabItems: TabItem[] = tabs.map((tab) => ({
+    id: tab.id,
+    label: tab.file.name,
+  }))
+
+  // Handler for opening upload view
+  const handleOpenUpload = () => {
+    setActiveTabId(null)
+  }
+
   return (
     <div className="flex h-screen flex-col bg-background">
       <header className="flex items-center justify-between border-b border-border px-6 py-3 shadow-sm">
@@ -235,40 +243,19 @@ function PDFReaderContent() {
         </div>
       </header>
 
-      {tabs.length > 0 && (
-        <div className="flex items-center gap-1 border-b border-border bg-muted/30 px-2 py-1">
-          <div className="flex flex-1 items-center gap-1 overflow-x-auto">
-            {tabs.map((tab) => (
-              <div
-                key={tab.id}
-                onClick={() => setActiveTabId(tab.id)}
-                className={cn(
-                  "group flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors cursor-pointer",
-                  activeTabId === tab.id
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <FileText className="h-3.5 w-3.5 shrink-0" />
-                <span className="max-w-[150px] truncate font-mono text-xs">{tab.file.name}</span>
-                <button
-                  onClick={(e) => handleCloseTab(tab.id, e)}
-                  className="rounded p-0.5 opacity-0 transition-opacity hover:bg-muted-foreground/20 group-hover:opacity-100"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => setActiveTabId(null)} className="h-7 gap-1.5 px-2 text-xs">
-            <Plus className="h-3.5 w-3.5" />
-            New
-          </Button>
-        </div>
-      )}
+      <TabBar
+        tabs={tabItems}
+        activeTabId={activeTabId}
+        onTabClick={setActiveTabId}
+        onTabClose={handleCloseTab}
+        onNewTab={handleOpenUpload}
+        showNewButton={tabs.length > 0}
+      />
 
       <div className="flex flex-1 overflow-hidden">
-        {!activeTab ? (
+        {tabs.length === 0 ? (
+          <Homepage onGetStarted={handleOpenUpload} />
+        ) : !activeTab ? (
           <PDFUpload onFileSelect={handleFileSelect} onParseComplete={handleParseComplete} />
         ) : (
           <>
