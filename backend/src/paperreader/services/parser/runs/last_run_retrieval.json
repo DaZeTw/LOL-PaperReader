@@ -1,57 +1,57 @@
 {
-  "question": "What methodology was used?",
+  "question": "dual anchors là gì",
   "hits": [
     {
-      "index": 24,
-      "score": 0.26898091956031706,
-      "text": "n, Scim uses a pretrained lan-\nguage model [ 99 ] to classify salient sentences within papers into\none of four information facets: research objectives, novel aspects\nof the research, methodology, and results, coupled with heuristics\nthat ensure an even distribution of highlights. Usability studies\nof Scim have shown these highlights can reduce the time it takes\nreaders to find specific information within a paper. Readers found\nScim particularly useful when skimming text-dense papers, or for\npapers that fell outside their area of expertise. Moreover, readers\nlearned to use both Scim’s inline highlights and a sidebar summary\nof highlights to augment their existing reading strategies.",
+      "index": 5,
+      "score": 0.4804331988896884,
+      "text": "Functional Dual Anchor",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 4",
+        "doc_id": "2510.21223v1-embedded",
+        "title": "^",
+        "page": 5,
+        "images": []
+      }
+    },
+    {
+      "index": 17,
+      "score": 0.33607587324086974,
+      "text": "We aim to construct a set of inputs whose induced gradients on the pretrained model align with\nthe task vector. These gradients can be refined by comparing representation discrepancies between\nthe downstream checkpoints { φ ( θ i ) } m\ni =1 and the pretrained model φ ( θ 0 ) on the constructed inputs.\nFormally, assuming the model φ operates in a d -dimensional input space, we consider a set of n\ninput points { x ij } n\nj =1 ⊂ R d for the downstream checkpoint φ ( θ i ) . We refer to these points as\nanchors, as they link φ ( θ 0 ) and φ ( θ i ) . When these anchors ideally satisfy the following objective,\nthey constitute a set of Functional Dual Anchors (FDAs) for φ ( θ 0 ) and φ ( θ i ) ( i.e. , τ i ):\nmin\nx i 1 ,..., x in cos dist\n\u0012\n∇ θ\nn\nX\nj =1\nDist\n\u0000\nφ ( θ , x ij ) , φ ( θ i , x ij )\n\u0001\nθ = θ 0\n, τ i\n\u0013\n,\n(1)\nwhere cos dist( A , B ) = 1 − vec( A )vec( B )",
+      "metadata": {
+        "doc_id": "2510.21223v1-embedded",
+        "title": "Page 3",
         "page": 8,
         "images": []
       }
     },
     {
-      "index": 42,
-      "score": 0.2272311056526085,
-      "text": "( e.g., threads of prior work instead of tables [ 13 , 58 ]), and research\npaper discovery ( e.g., based on inline citations in clipped text).\nFor this, Threddy [ 43 ] is a thread-focused clipping tool integrated\ninto scholars’ paper reading process to support literature review\nand discovery. Using Threddy, readers can select and save sentences\ninto a sidebar from the related work sections of a paper. The sys-\ntem maintains rich context for each clip, including its provenance\nand inline citations. This allows readers to navigate back to the\nclipped paper and cited papers afterward. In the sidebar, readers\ncan further organize clips collected across papers into a hierarchy\nof threads to form their view of the research landscape. The content\nof the sidebar is preserved across papers that were read over time,\nand provides valuable context for subsequent reading based on\nthe emerging threads of research the reader have curated. Finally,\nreaders can further expand their coverage by exploring paper rec-\nommendations for each thread, based on the referenced papers in\nthe corresponding clips. A lab study showed that Threddy was able\nto lower the interaction costs of saving clips while main",
+      "index": 9,
+      "score": 0.3153605427708534,
+      "text": "In contrast to existing approaches, we focus on modeling the input-representation space to mitigate\ntask-specific knowledge conflicts. Rather than directly manipulating parameter offsets, we propose\ngenerating synthetic inputs, termed functional dual anchors (FDAs), that can effectively simulate the\nrole of task vectors. An illustration of this idea is provided in Figure 1 . Conceptually, this is akin\nto projecting task-specific knowledge into the input-representation space by constructing inputs that\nreproduce the downstream model’s functional shift relative to the pretrained model. Specifically,\nfor each downstream checkpoint, we construct a set of inputs whose induced gradients on the pre-\ntrained parameters align with the corresponding task vector. In this way, FDAs effectively act as\nthe dual of task vectors. While task vectors encode task-specific knowledge in the parameter space,\nFDAs capture the analogous knowledge in the input space through their induced gradients. This\n1",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 7",
-        "page": 11,
+        "doc_id": "2510.21223v1-embedded",
+        "title": "θ B = FT( X B , θ 0 )",
+        "page": 6,
         "images": []
       }
     },
     {
-      "index": 84,
-      "score": 0.22613509693432793,
-      "text": "oned by OCLC\nResearch. Published online at: www. oclc. org/programs/publications/reports/2009-\n02. pdf (2009).\n[75] Soya Park, Jonathan Bragg, Michael Chang, Kevin Larson, and Danielle Bragg.\n2022. Exploring Team-Sourced Hyperlinks to Address Navigation Challenges\nfor Low-Vision Readers of Scientific Papers. In Proceedings of the 25th ACM\nConference On Computer-Supported Cooperative Work And Social Computing .\n[76] Amy Pavel, Colorado Reed, Björn Hartmann, and Maneesh Agrawala. 2014.\nVideo digests: a browsable, skimmable format for informational lecture videos.\nProceedings of the 27th annual ACM symposium on User interface software and\ntechnology (2014).\n[77] Silvio Peroni, Alexander Dutton, Tanya Gray, and David M. Shotton. 2015.\nSetting our bibliographic references free: towards open citation data. J. Docu-\nmentation 71 (2015), 253–277.\n[78] Simon Philip, Peter Bamidele Shola, and Abari Ovye John. 2014. Application\nof Content-Based Approach in Research Paper Recommendation System for\na Digital Library. International Journal of Advanced Computer Science and\nApplications 5 (2014).\n[79] Peter Pirolli and Stuart Card. 1999. Information Foraging. Psychological Review\n106, 4 (1999), 64",
+      "index": 2,
+      "score": 0.3091235435023579,
+      "text": "A BSTRACT\nModel merging is an efficient post-training strategy for integrating knowledge\nfrom multiple finetuned checkpoints of a shared foundation model. Existing meth-\nods operate in the parameter space, combining task vectors to mitigate conflicts,\nbut remain constrained by parameter inconsistencies. We propose Functional Dual\nAnchors (FDAs), a framework that instead models the input-representation space.\nFDAs are synthetic inputs whose induced gradients align with task vectors, captur-\ning task-specific functional shifts relative to the pretrained model. This perspec-\ntive bridges joint multi-task training and post-hoc merging, offering both robust-\nness and flexibility. We further introduce a principled initialization scheme and\nshow that FDAs are complementary to parameter-space model merging. Compre-\nhensive experiments demonstrate the effectiveness of FDAs in model merging.\n1\nI NTRODUCTION",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 10",
-        "page": 14,
+        "doc_id": "2510.21223v1-embedded",
+        "title": "SphereLab.ai/fda",
+        "page": 3,
         "images": []
       }
     },
     {
-      "index": 43,
-      "score": 0.22498799193607477,
-      "text": "g paper rec-\nommendations for each thread, based on the referenced papers in\nthe corresponding clips. A lab study showed that Threddy was able\nto lower the interaction costs of saving clips while maintaining\ncontext, allowed participants to curate research threads without\nbreaking reading flows, and discover interesting new papers to\nfurther grow their understanding of the research fields.",
+      "index": 26,
+      "score": 0.29548691434253405,
+      "text": "Technical Report\nAlgorithm 1: Model Merging with Functional Dual Anchors\nInput: Model architecture φ , pretrained parameters θ 0 , downstream parameters { θ i } m\ni =1\nOutput: Merged parameter ˆ θ , FDAs { x ( l )\nij } n\nj =1 , 1 ≤ i ≤ m, 1 ≤ l ≤ L\nfor l = 1 to L do\n/* --- Stage I: FDA Construction ---\n* /\nfor i = 1 to m do\nInitialization & Optimization: Initialize { x ( l )\nij } n\nj =1 using linear weight sampling or scalable\nGaussian sampling as starting points and then solve the following objective with gradient\ndescent:\n{ x ( l )\nij } n\nj =1 = arg min\nx ( l )\ni 1 ,..., x ( l )\nin\ncos dist\n\u0012\n∇ θ ( l )\nn\nX\nj =1\nDist\n\u0000 φ ( l ) ( θ ( l ) , x ( l )\nij ) , φ ( θ ( l )\ni , x ( l )\nij )\n\u0001 θ ( l ) = θ ( l )\n0\n, τ ( l )\ni\n\u0013\n.\nStore the optimized anchors { x ( l )\nij } n\nj =1 .\nend\n/* --- Stage II: Parameter Optimization using FDAs ---\n* /\nAggregate anchors across tasks { x ( l )\nij } .\nAcquire the merged parameter by solving:\nˆ θ ( l ) = arg min\nθ ( l )\nm\nX\ni =1\nn\nX\nj =1\nDist\n\u0010\nφ ( l ) ( θ ( l ) , x ( l )\nij ) , φ ( l ) ( θ ( l )\ni , x ( l )\nij )\n\u0011\n,\nfrom θ ( l )\n0 .\nend\nreturn ˆ θ , { x ( l )\nij } n\nj =1 for 1 ≤ i ≤ m, 1 ≤ l ≤ L .",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 7",
-        "page": 11,
-        "images": []
-      }
-    },
-    {
-      "index": 39,
-      "score": 0.2240710742174033,
-      "text": "iews of fast-paced domains. The Threddy [ 43 ] and\nRelated [ 73 ] projects explored this opportunity using two different\napproaches: clipping and organizing research threads mentioned\nacross papers [ 43 ], and directly exploring and reading related work\nsections extracted across many papers [73].",
-      "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 6",
+        "doc_id": "2510.21223v1-embedded",
+        "title": "Page 5",
         "page": 10,
         "images": []
       }

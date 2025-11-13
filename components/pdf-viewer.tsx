@@ -6,7 +6,7 @@ import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
 import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail"
 import { bookmarkPlugin } from "@react-pdf-viewer/bookmark"
-import { useCitationPlugin } from "@/hooks/useCitatioPlugin";
+import { useCitationPlugin } from "@/hooks/useCitationPlugin";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -20,6 +20,7 @@ import "@react-pdf-viewer/bookmark/lib/styles/index.css"
 import "@/styles/pdf-components.css"
 
 interface PDFViewerProps {
+  tabId?: string // Tab ID for state isolation (optional for legacy single-view usage)
   file: File
   selectedSection?: string | null
   navigationTarget?: { page: number; yPosition: number } | undefined
@@ -30,6 +31,7 @@ interface PDFViewerProps {
 }
 
 export function PDFViewer({
+  tabId,
   file,
   selectedSection,
   navigationTarget,
@@ -52,6 +54,7 @@ export function PDFViewer({
   const thumbnailPluginInstance = thumbnailPlugin()
   const bookmarkPluginInstance = bookmarkPlugin()
   const citationPluginInstance = useCitationPlugin({
+    tabId,
     // Don't pass onCitationClick - let the plugin show its own built-in popup
     // This avoids routing through the parent component and uses the plugin's API fetching
     // onCitationClick: (citation, event) => {
@@ -60,8 +63,8 @@ export function PDFViewer({
     //     onCitationClick(citation, event);
     //   }
     // },
-    pdfUrl: pdfUrl,
-    extractedCitations: extractedCitations,
+    pdfUrl,
+    extractedCitations,
   });
 
   const { jumpToNextPage, jumpToPreviousPage } = pageNavigationPluginInstance
@@ -98,7 +101,7 @@ export function PDFViewer({
   }
 
   return (
-    <div className="pdf-viewer-container flex flex-1 h-full bg-muted/30 min-h-0">
+    <div className="pdf-viewer-container flex flex-1 h-full bg-muted/30 min-h-0" data-tab-id={tabId}>
       {/* Sidebar */}
       <div
         className={cn(

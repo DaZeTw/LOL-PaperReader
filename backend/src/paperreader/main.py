@@ -65,6 +65,52 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         """Initialize database and schedule warmup in background"""
+        # Clear parser output directory on startup to start fresh
+        try:
+            from pathlib import Path
+            from paperreader.services.qa.config import PipelineConfig
+            import shutil
+            import threading
+            
+            # Reset cancel flag on startup (access via module attribute)
+            try:
+                from paperreader.api import pdf_routes
+                if hasattr(pdf_routes, '_PARSE_CANCEL_FLAG'):
+                    pdf_routes._PARSE_CANCEL_FLAG.clear()
+                    print("[STARTUP] ✅ Cancel flag reset")
+            except Exception as e:
+                print(f"[STARTUP] ⚠️ Could not reset cancel flag: {e}")
+            
+            cfg = PipelineConfig()
+            data_dir = Path(cfg.data_dir)
+            
+            if data_dir.exists():
+                print(f"[STARTUP] Clearing parser output directory: {data_dir}")
+                deleted_count = 0
+                for item in data_dir.iterdir():
+                    try:
+                        if item.is_file():
+                            item.unlink()
+                            deleted_count += 1
+                        elif item.is_dir():
+                            shutil.rmtree(item)
+                            deleted_count += 1
+                    except Exception as e:
+                        print(f"[STARTUP] Failed to delete {item}: {e}")
+                        continue
+                print(f"[STARTUP] ✅ Cleared {deleted_count} items from output directory")
+            else:
+                print(f"[STARTUP] Output directory does not exist: {data_dir}")
+            
+            # Reset pipeline cache
+            from paperreader.services.qa.pipeline import reset_pipeline_cache
+            reset_pipeline_cache()
+            print("[STARTUP] ✅ Pipeline cache reset")
+        except Exception as e:
+            print(f"[STARTUP] ⚠️ Error clearing output directory: {e}")
+            import traceback
+            print(f"[STARTUP] Traceback: {traceback.format_exc()}")
+        
         # Connect to MongoDB immediately and wait for it (blocking)
         # This ensures MongoDB is ready before accepting requests
         print("[STARTUP] Connecting to MongoDB...")

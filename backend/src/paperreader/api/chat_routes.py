@@ -388,6 +388,28 @@ async def ask_question(request: ChatAskRequest):
         
         # No more embedding - just save to chat history
         
+        # Get session to extract PDF name from title
+        session = await chat_service.get_session(request.session_id)
+        pdf_name = None
+        if session and session.title:
+            # Extract PDF name from title format "Chat: {pdfFile.name}" or "Chat: {pdfFile.name} - {timestamp} - {randomId}"
+            if session.title.startswith("Chat: "):
+                # Remove "Chat: " prefix
+                title_without_prefix = session.title.replace("Chat: ", "").strip()
+                # Extract PDF name (everything before first " - " separator, if present)
+                # Format can be: "filename.pdf" or "filename.pdf - timestamp - randomId"
+                if " - " in title_without_prefix:
+                    pdf_name = title_without_prefix.split(" - ")[0].strip()
+                else:
+                    pdf_name = title_without_prefix.strip()
+                # Remove file extension if present (but keep the name for matching)
+                if pdf_name.endswith(".pdf"):
+                    pdf_name = pdf_name[:-4]
+                # Normalize: remove any whitespace and ensure consistent format
+                pdf_name = pdf_name.strip()
+                print(f"[DEBUG] Extracted PDF name from session title: '{pdf_name}' (original: '{session.title}')")
+                print(f"[DEBUG] PDF name will be used to filter chunks by doc_id matching '{pdf_name}' or '{pdf_name}-embedded'")
+        
         # Configure and get cached QA pipeline (reuses chunks and embeddings)
         config = PipelineConfig(
             retriever_name=request.retriever,
@@ -398,8 +420,9 @@ async def ask_question(request: ChatAskRequest):
         )
         
         # Use cached pipeline - only rebuilds when PDFs change
-        print(f"[DEBUG] Getting pipeline for question: {request.question[:50]}...")
-        pipeline = await get_pipeline(config)
+        # Pass pdf_name to get PDF-specific pipeline
+        print(f"[DEBUG] Getting pipeline for question: {request.question[:50]}... (PDF: {pdf_name or 'default'})")
+        pipeline = await get_pipeline(config, pdf_name=pdf_name)
         print(f"[DEBUG] Pipeline retrieved, calling answer()")
         
         result = await pipeline.answer(

@@ -1,0 +1,3355 @@
+[
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 1",
+    "page": 1,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "M ODEL M ERGING WITH F UNCTIONAL D UAL A NCHORS",
+    "page": 2,
+    "text": "Kexuan Shi 1\nYandong Wen 2\nWeiyang Liu 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "M ODEL M ERGING WITH F UNCTIONAL D UAL A NCHORS",
+    "page": 2,
+    "text": "1 The Chinese University of Hong Kong\n2 Westlake University",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "A BSTRACT",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "Model merging is an efficient post-training strategy for integrating knowledge\nfrom multiple finetuned checkpoints of a shared foundation model. Existing meth-\nods operate in the parameter space, combining task vectors to mitigate conflicts,\nbut remain constrained by parameter inconsistencies. We propose Functional Dual\nAnchors (FDAs), a framework that instead models the input-representation space.\nFDAs are synthetic inputs whose induced gradients align with task vectors, captur-\ning task-specific functional shifts relative to the pretrained model. This perspec-\ntive bridges joint multi-task training and post-hoc merging, offering both robust-\nness and flexibility. We further introduce a principled initialization scheme and\nshow that FDAs are complementary to parameter-space model merging. Compre-\nhensive experiments demonstrate the effectiveness of FDAs in model merging.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "1\nI NTRODUCTION",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "Model merging has emerged as a promising post-training strategy for integrating knowledge from\nmultiple finetuned checkpoints of foundation models. The core idea is to combine diverse domain\nknowledge from multiple homologous downstream models into a single unified one ( Matena &\nRaffel , 2022 ; Jin et al. , 2022 ). Compared to multi-task learning ( Ruder , 2017 ) and continual learn-\ning ( Wang et al. , 2024 ), model merging is appealing because it consolidates knowledge directly\nthrough the parameters of downstream models finetuned from the same pretrained backbone.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "FDA-induced vector",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "Simple task arithmetic",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "Task vector θ A",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "II. Parameter\noptimization\nusing FDAs",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "I. FDA construction",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "Input space\nParameter space",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "SphereLab.ai/fda",
+    "page": 3,
+    "text": "Task vector θ B",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "θ Joint = FT( X A ∪ X B , θ 0 )",
+    "page": 4,
+    "text": "Multi-task Joint Training",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "^",
+    "page": 5,
+    "text": "Functional Dual Anchor",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "θ B = FT( X B , θ 0 )",
+    "page": 6,
+    "text": "Simple Task Arithmetic",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "θ B = FT( X B , θ 0 )",
+    "page": 6,
+    "text": "Parameter-space\nknowledge\nInput-space\nknowledge\nInput-space\nknowledge",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "θ B = FT( X B , θ 0 )",
+    "page": 6,
+    "text": "Figure 1: Illustration of our input-space model merging framework using FDAs. On the left,\nwe compare multi-task joint training, task arithmetic and FDA. Inspired by joint training,\nFDA models the knowledge in the input space. θ A = F T ( X A , θ 0 ) denotes the model\nfinetuned by the task data X A from the initial model θ 0 with some loss function.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "θ B = FT( X B , θ 0 )",
+    "page": 6,
+    "text": "However,\nmodel merging still\nfaces fundamental challenges due\nto conflicts arising from diverse\ntask-specific knowledge.\nSince\nthis knowledge is encoded in\nthe parameters of downstream\nmodels, such conflicts inevitably\nmanifest as parameter conflicts.\nThe prevailing paradigm for ad-\ndressing them is to scale the task\nvectors ( Ilharco et al. , 2022 ) ( i.e. , parameter offsets between these downstream checkpoints and the\npretrained model), and then add them back to the pretrained parameters. Within this paradigm, prior\nworks interpret parameter conflicts as task vector conflicts ( Yadav et al. , 2023 ; Yu et al. , 2024 ) and\npropose various adjustment strategies. These methods either exploit intrinsic properties of the pa-\nrameter space ( e.g. , magnitude ( Yadav et al. , 2023 ; Yu et al. , 2024 ), similarity ( Du et al. , 2024 ),\northogonality ( Xiong et al. , 2024 ), or subspace structure ( Wei et al. , 2025b ; Gargiulo et al. , 2025 ;\nCheng et al. , 2025 )) or leverage task-specific data to guide adjustments ( e.g. , entropy measures\n( Yang et al. , 2023 ; 2025 ) or representation distributions ( Jin et al. , 2022 ; Wei et al. , 2025a ; Xu et al. ,\n2025 )). A unifying characteri",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "θ B = FT( X B , θ 0 )",
+    "page": 6,
+    "text": " data to guide adjustments ( e.g. , entropy measures\n( Yang et al. , 2023 ; 2025 ) or representation distributions ( Jin et al. , 2022 ; Wei et al. , 2025a ; Xu et al. ,\n2025 )). A unifying characteristic of both approaches is their emphasis on modeling the parameter\nspace, either through structural priors or through data-driven priors.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "θ B = FT( X B , θ 0 )",
+    "page": 6,
+    "text": "In contrast to existing approaches, we focus on modeling the input-representation space to mitigate\ntask-specific knowledge conflicts. Rather than directly manipulating parameter offsets, we propose\ngenerating synthetic inputs, termed functional dual anchors (FDAs), that can effectively simulate the\nrole of task vectors. An illustration of this idea is provided in Figure 1 . Conceptually, this is akin\nto projecting task-specific knowledge into the input-representation space by constructing inputs that\nreproduce the downstream model’s functional shift relative to the pretrained model. Specifically,\nfor each downstream checkpoint, we construct a set of inputs whose induced gradients on the pre-\ntrained parameters align with the corresponding task vector. In this way, FDAs effectively act as\nthe dual of task vectors. While task vectors encode task-specific knowledge in the parameter space,\nFDAs capture the analogous knowledge in the input space through their induced gradients. This",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "θ B = FT( X B , θ 0 )",
+    "page": 6,
+    "text": "1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "perspective introduces a new way of thinking about knowledge consolidation. Instead of constrain-\ning adjustments to the parameter space, we shift the merging process into the input space, where\nrepresentations can naturally capture task-specific variations. The key intuition is to bridge the\ngap between joint multi-task training, where knowledge integration inherently happens in the input\nspace, and model merging, where it is typically confined to the parameter space. By obtaining FDAs\nfor different task vectors, our approach can emulate the effect of joint multi-task training.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "Loss",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "Figure 2: Comparison between task arithmetic\nand FDAs on the loss landscape of the pre-\ntrained across all 8 downstream datasets. FDAs\ncan effectively follow the loss landscape and\nguide the model toward better local minima.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "To gain an intuitive understanding of FDAs, we compare their\noptimization trajectories with those of task arithmetic in Fig-\nure 2 . We treat the obtained FDAs as finetuning data and op-\ntimize the model parameters accordingly. As shown in the fig-\nure, optimizing with FDAs moves the model closer to the local\nminima of the loss landscape (computed over eight downstream\ndatasets). While task vectors provide useful guidance from the\npretrained model, they quickly drift away from the loss basin,\nwhereas FDAs consistently guide optimization toward more fa-\nvorable regions. Moreover, by capturing functional shifts in the\ninput space, FDAs offer greater robustness for model merging.\nUnlike task vectors, which are sensitive to initialization and can\ndrift under different starting points, FDAs exhibit robustness to\nsuch variations, facilitating more reliable model merging.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "Another motivation behind FDAs is that modeling the input\nspace is generally easier than modeling the parameter space, as the input space tends to be more\nstructured. The effectiveness of modeling the input space for knowledge transfer is has been exten-\nsively explored and empirically validated in the context of dataset distillation ( Wang et al. , 2018b ;\nCazenavette et al. , 2022 ), iterative teaching ( Liu et al. , 2017a ; Qiu et al. , 2023 ), dataset condensa-\ntion ( Zhao et al. , 2021 ; Zhao & Bilen , 2023 ) and continual learning ( Shin et al. , 2017 ; Yu et al. ,\n2023 ). Building on these insights, FDAs provide an alternative perspective on model merging by\nextending input-space modeling to this setting. Our major contributions are listed as follows:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "• Instead of modeling the parameter space, we propose a novel model merging framework that lever-\nages functional dual anchors to model the input-representation space for knowledge encoding.\n• Building on theoretical insights from a linear model, we introduce a principled initialization\nscheme for FDAs, which leads to substantial performance improvements.\n• While FDAs can be used independently and yield significant gains, they are also complemen-\ntary to standard parameter-centric model merging methods, such as TA ( Ilharco et al. , 2022 ),\nTSV ( Gargiulo et al. , 2025 ), and WUDI ( Cheng et al. , 2025 ). Our empirical results show that in-\ncorporating FDAs consistently improves the performance of these parameter-centric approaches.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "2\nA M ODEL M ERGING F RAMEWORK WITH F UNCTIONAL D UAL A NCHORS",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "Our model merging framework consists of two stages: (1) FDA construction, and (2) parameter\noptimization using FDAs. Finally, we discuss the practical implementation of this framework for\nlarge-scale foundation models and present the complete procedure in Algorithm 1 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "2.1\nP RELIMINARIES AND B ACKGROUND",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "Before introducing our framework, we briefly recap the formulation of model merging. Consider a\nfoundation model φ with pretrained parameters θ 0 ∈ R p and a collection of downstream finetuned\ncheckpoints with parameters { θ i } m\ni =1 . The goal of model merging is to derive a merged parameter\nˆ θ from θ 0 and { θ i } m\ni =1 that consolidates knowledge across tasks and achieves multi-task capability\nwithout requiring retraining on the original task data. The prevailing approach to model merging is\nto first compute the task vectors ( Ilharco et al. , 2022 ) { τ i = θ i − θ 0 } m\ni =1 , apply adjustments ( Yadav\net al. , 2023 ; Yu et al. , 2024 ; Wei et al. , 2025b ) to { τ i } m\ni =1 , and then add the adjusted task vectors\nback to the pretrained parameter θ 0 . The merged parameter ˆ θ is given by ˆ θ = θ 0 + P m\ni =1 ϕ i ( τ i )\nwhere ϕ i : R p → R p is introduced to denote possible adjustments of the task vectors { τ } m\ni =1 . In\ntask arithmetic (TA) ( Ilharco et al. , 2022 ), { ϕ i } m\ni =1 are linear transformations with a uniform scaling\nfactor between 0 and 1 . { ϕ i } m\ni =1 can also take other forms, e.g. , the magnitude of parameter values\n( Yadav et al. , 2023 ) or the ",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "i } m\ni =1 are linear transformations with a uniform scaling\nfactor between 0 and 1 . { ϕ i } m\ni =1 can also take other forms, e.g. , the magnitude of parameter values\n( Yadav et al. , 2023 ) or the subspace spanned by { τ i } m\ni =1 ( Xiong et al. , 2024 ). Recently, several works",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 2",
+    "page": 7,
+    "text": "2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "incorporate task-specific entropy measures ( Yang et al. , 2023 ; 2025 ) or representation distribution\n( Wei et al. , 2025a ; Xu et al. , 2025 ) to determine ϕ i through iterative optimization. For notational\nconvenience, we use φ ( θ 0 ) to denote the model φ ( θ = θ 0 ) .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "Instead of leveraging knowledge in the parameter space, we propose to project the knowledge en-\ncoded in checkpoints into the input-representation space. Concretely, we construct a set of synthetic\ninputs ( i.e. , FDAs) whose induced gradients on the pretrained model align with task vectors.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "2.2\nFDA C ONSTRUCTION : K NOWLEDGE P ROJECTION VIA G RADIENT M ATCHING",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "We aim to construct a set of inputs whose induced gradients on the pretrained model align with\nthe task vector. These gradients can be refined by comparing representation discrepancies between\nthe downstream checkpoints { φ ( θ i ) } m\ni =1 and the pretrained model φ ( θ 0 ) on the constructed inputs.\nFormally, assuming the model φ operates in a d -dimensional input space, we consider a set of n\ninput points { x ij } n\nj =1 ⊂ R d for the downstream checkpoint φ ( θ i ) . We refer to these points as\nanchors, as they link φ ( θ 0 ) and φ ( θ i ) . When these anchors ideally satisfy the following objective,\nthey constitute a set of Functional Dual Anchors (FDAs) for φ ( θ 0 ) and φ ( θ i ) ( i.e. , τ i ):",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "min\nx i 1 ,..., x in cos dist\n\u0012\n∇ θ",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "n\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "j =1\nDist\n\u0000\nφ ( θ , x ij ) , φ ( θ i , x ij )\n\u0001\nθ = θ 0\n, τ i",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "\u0013\n,\n(1)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "where cos dist( A , B ) = 1 − vec( A )vec( B )",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "∥ A ∥ F ∥ B ∥ F , vec denotes the operation that vectorizes a matrix into\na vector in a row-major order, and Dist( · ) denotes a differentiable distance function measuring the\nrepresentation discrepancy between φ ( θ 0 ) and φ ( θ i ) . We primarily use cosine distance ( cos dist ),\nas semantic information is often encoded in direction rather than magnitude ( Liu et al. , 2017b ; 2018 ).\nWe also evaluate ℓ 1 and ℓ 2 distances in Section 5.3 . Importantly, the set { x ij } n\nj =1 induces gradi-\nents from representation discrepancies that align with the task vector τ i in the input-representation\nspace, and thereby serves as the FDAs of τ i . Correspondingly, we construct a separate set of FDAs\n{ x ij } n\nj =1 for each downstream checkpoint φ ( θ i ) , i.e. , for each task vector τ i .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "Gradient-based construction for FDAs. Due to the non-convex nature of Eq. 1 , we solve it with\ngradient descent. We perform gradient-based search in the data space X , where the loss landscape\nis shaped by fixed model parameters. We refer the process of the gradient-based search in the data\nspace as the construction process of FDAs . This process can be formalized as:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "X t +1 = X t + η · U\n\u001a\n∇ X t cos dist\n\u0010\n∇ θ",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "n\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "j =1\nDist\n\u0000\nφ ( θ , x t\nij ) , φ ( θ i , x t\nij )\n\u0001\nθ = θ 0\n, τ i\n\u0011 \u001b\n,\n(2)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "where X t = [ x t\ni 1 , . . . , x t\nin ] ∈ R d × n denotes the candidate FDAs at t -th iteration; U denotes the\ngradient-based optimizer and η denotes the update step. While the above gradient-based optimiza-\ntion offers a practical solution in high-dimensional space, it may suffer from slow convergence or\nlimited generalization due to non-convexity. To mitigate these issues, a carefully designed initial-\nization X 0 is essential ( Glorot & Bengio , 2010 ; He et al. , 2015 ). We therefore focus on improving\ninitialization to address these optimization challenges. To illustrate how the choice of initialization\ninfluences the resulting solution, we begin with an analysis based on a simplified linear model.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "Linear model analysis for initialization. We consider a linear encoder φ , i.e. , y = W x with\nW ∈ R d × d , x ∈ R d . The pretrained parameters and the downstream parameters on the i -th task are\ndenoted by W 0 and W i , respectively. Assuming that Dist( W 0 x , W i x ) = 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "2 ∥ W 0 x − W i x ∥ 2\n2 , we\nanalyze the optimization dynamics of a single anchor x t (with the task index omitted for clarity):",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "x t +1 = x t + ηβ t ∆ W ⊤ ∆ W x t , t = 0 , . . . , T − 1 ,\n(3)\nwhere ∆ W = W i − W 0 and β t = − 1 / ( ∥ ∆ W ∥ F ∥ ∆ W x t ∥ 2 ∥ x t ∥ 2 ) . The derivation of Eq. 3 is\nprovided in Appendix A . We assume that ∆ W is a full-rank matrix and the eigenvalue magnitudes\nfollow a long-tailed distribution. These assumptions are mild, as empirical evidence shows that\nparameter updates often follow an approximately low-rank structure ( Gur-Ari et al. , 2018 ; Hu et al. ,\n2022 ; Zhang et al. , 2025 ). Therefore, there exists a spectral decomposition that ∆ W ⊤ ∆ W =\nU Λ U ⊤ , U = [ u 1 , . . . , u d ] ∈ R d × d , Λ = diag( λ 1 , . . . , λ d ) , with eigenvalues λ 1 > · · · > λ d > 0\nfollowing a long-tailed distribution. By construction, { u i } d\ni =1 form a complete basis of the d -\ndimensional space and remain fixed throughout optimization. Thus, we analyze the optimization\ntrajectory by projecting x t onto this basis and tracking the dynamics of its coefficients, as formalized\nin the following proposition. The proof is provided in Appendix B .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 3",
+    "page": 8,
+    "text": "3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "Proposition 2.1. Under the above setting, for any iteration t , x t can be expressed as the linear\ncombination of { u i } d\ni =1 . Specifically, the coefficient c i\nt associated with basis vector u i is given by\nc i\nt = c i\n0\nQ t\nj =1\n\u0000\n1 − γ j λ i\n\u0001\n, where γ j = − ηβ j > 0 and β j = − 1 / ( ∥ ∆ W ∥ F ∥ ∆ W x j ∥ 2 ∥ x j ∥ 2 ) .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "Remark 2.1.\nFor a finite number of iterations T , when | 1 − γ j λ i | deviates significantly from 1 ,\nthen | c i\nt | is dominated by | 1 − γ j λ i | due to the exponential growth or decay of the product term,\nand the effect of initialization is negligible. Conversely, if | 1 − γ j λ i | is close enough to 1 that no\nexponential growth or decay arises within T iterations, then | c i\nt | remains primarily determined by\n| c i\n0 | . This latter case typically occurs when λ i is close to zero.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "The initialization strategy. The above analysis suggests that the optimization has almost no effect\non components u i corresponding to near-zero eigenvalues. This motivates an investigation into how\ninitial values of these components affect the convergence of the cosine similarity. Following the\nabove decomposition, we express ∆ W = Q Λ ′ U ⊤ , where Q is an orthogonal matrix and Λ ′ 2 = Λ .\nFor the j -th row, we can write ∆ W j, : = P d\ni =1 α ji u ⊤\ni , α ji = ( Q Λ ′ ) j,i . Here, we consider that Q\ndoes not amplify the low-energy directions of Λ ′ and Λ and assume that the eigenvalues of Λ beyond\nthe k -th index are near-zero, i.e. , α j,i>k ≈ 0 . From Proposition 2.1 , that means that c i>k\nt\n≈ c i>k\n0\n.\nWe denote the j -th row of gradients induced by x t as ∆ W t\nj, : . Under the above assumptions, the\ncosine similarity between ∆ W j, : and ∆ W t\nj, : can be approximated as:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "⟨ P d\ni =1 α ji u ⊤\ni , P d\ni =1 c i\nt u ⊤\ni ⟩\nqP d\ni =1 α 2\nji\nqP d\ni =1 c i\nt\n2\n≈\nP k\ni =1 α ji c i\nt\nqP d\ni =1 α 2\nji\nqP k\ni =1 c i\nt\n2 + P d\ni = k +1 c i\n0\n2 <",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "qP k\ni =1 α 2\nji\nqP k\ni =1 α ji 2 + P d\ni = k +1 c i\n0\n2 , (4)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "where ∆ W ′\nj, : = γ j x ⊤\nt = γ j\nP d\ni =1 c i\nt u ⊤\ni , γ j = −\n∂ L ( φ )\n∂ ( W 0 x t ) j, : ; L denotes the finetuning loss. From",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "this expression, the fixed energy in the tail components P d\ni = k +1 c i\n0\n2 hinders the increase of the\ncosine similarity at step t , which in turn slows down the convergence of the optimization. Moreover,\nin the idealized case where the first k coefficients are perfectly aligned, the upper bound is given in\nEq. 4 . Thus, larger initial tail energy leads to lower optimal cosine similarity, whereas smaller tail\neigenvalue energy enables faster convergence and results in higher optimal cosine similarity. Given\nthe analysis above, we summarize an initialization principle for FDAs as follows:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "Principle 2.2 (Initialization Principle) . An effective initialization strategy should limit the energy of\nthe initialization point within the tail subspace spanned by the task vector.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "Following the insight from the simplified linear model analysis, we propose two simple yet effective\ninitialization strategies that can control the tail energy.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "Initialization strategy I: Linear Weight Sampling. We propose to sample the row vectors of\nthe weight matrix as anchor initializations, since they typically also follow a long-tailed spectrum\nand their total energy is similar to that of the overall ∆ W , thereby avoiding excessive tail energy.\nSpecifically, we initialize an anchor x ij ∈ R d by sampling a row of weight matrix W i ∈ R q × d of\nφ ( θ i ) . The process is formalized as x ij = ( W i ) l j , : , l j ∈{ 1 , . . . , q } .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "Initialization strategy II: Scaled Gaussian Sampling. We first draw samples from a standard\nnormal distribution and then scale them using a coefficient σ . Sampling from a Gaussian ensures\nthat the initialization spans the entire R d , avoiding zero coefficients in the decomposition along u i .\nBy controlling σ , we directly constrain the energy of the whole vector, which in turn limits the\nenergy allocated to the tail subspace. The process is formalized as x ij = σ · ˜ x ij , ˜ x ij ∼N ( 0 , I d ) .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "2.3\nP ARAMETER O PTIMIZATION : L EVERAGING FDA S FOR M ULTI - TASK M ODEL M ERGING",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "We leverage the knowledge encoded in FDAs by conducting the dual process of Eq. 1 . We first\ninitialize the merged model with the pretrained checkpoint, and then align the output of the model\nwith the downstream checkpoints at all the FDAs. Assume that we have obtained m groups of FDAs\n{ x ij } n\nj =1 , one for each τ i . We then optimize the model parameters with the following objective:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "min\nθ 0",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "m\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "i =1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "n\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "j =1\nDist\n\u0010\nφ ( θ 0 , x ij ) , φ ( θ i , x ij )\n\u0011\n,\n(5)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "which is the standard adaptation from the pretrained model ( i.e. , the first usage of FDAs). The\ndefault Dist in Eq. 5 can be consistent with that in Eq. 1 , and our ablation studies in Section 5.3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 4",
+    "page": 9,
+    "text": "4",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "Algorithm 1: Model Merging with Functional Dual Anchors",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "Input: Model architecture φ , pretrained parameters θ 0 , downstream parameters { θ i } m\ni =1\nOutput: Merged parameter ˆ θ , FDAs { x ( l )\nij } n\nj =1 , 1 ≤ i ≤ m, 1 ≤ l ≤ L\nfor l = 1 to L do",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "/* --- Stage I: FDA Construction ---\n* /\nfor i = 1 to m do",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "Initialization & Optimization: Initialize { x ( l )\nij } n\nj =1 using linear weight sampling or scalable\nGaussian sampling as starting points and then solve the following objective with gradient\ndescent:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "{ x ( l )\nij } n\nj =1 = arg min",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "x ( l )\ni 1 ,..., x ( l )\nin\ncos dist\n\u0012\n∇ θ ( l )",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "n\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "j =1\nDist\n\u0000 φ ( l ) ( θ ( l ) , x ( l )\nij ) , φ ( θ ( l )\ni , x ( l )\nij )\n\u0001 θ ( l ) = θ ( l )\n0\n, τ ( l )\ni",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "\u0013\n.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "Store the optimized anchors { x ( l )\nij } n\nj =1 .\nend\n/* --- Stage II: Parameter Optimization using FDAs ---\n* /\nAggregate anchors across tasks { x ( l )\nij } .\nAcquire the merged parameter by solving:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "ˆ θ ( l ) = arg min\nθ ( l )",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "m\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "i =1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "n\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "j =1\nDist\n\u0010\nφ ( l ) ( θ ( l ) , x ( l )\nij ) , φ ( l ) ( θ ( l )\ni , x ( l )\nij )\n\u0011\n,\nfrom θ ( l )\n0 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "end\nreturn ˆ θ , { x ( l )\nij } n\nj =1 for 1 ≤ i ≤ m, 1 ≤ l ≤ L .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "show that adaptation by FDAs remains robust to different choices of Dist . Please note that in the\nearly optimization stage of Eq. 5 , the guidance provided by FDAs approximates to the sum of task\nvectors. As the optimization proceeds, the guidance provided by FDAs adapts dynamically to the\nloss landscape of θ t , while task vectors only prescribe a fixed linear path starting from θ 0 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "Refinement for the merged model . In particular, we propose the second usage of FDAs by employ-\ning them to refine the task vectors obtained from such methods. Given a task vector based merged\nmodel φ ( θ + P m\ni =1 ϕ i ( τ i )) , we can refine { ϕ i ( τ i ) } m\ni =1 by minimizing the following objective:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "min\n{ ϕ ( τ i ) } m\ni =1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "m\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "i =1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "n\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "j =1\nDist\n\u0010\nφ\n\u0000\nθ +",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "m\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "i =1\nϕ i ( τ i ) , x ij\n\u0001\n, φ ( θ i , x ij )\n\u0011\n.\n(6)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "As previously introduced, ϕ i : R p → R p denotes possible adjustments of the task vector τ i .\nTo demonstrate FDAs potential on complementing parameter-centric model merging, we eval-\nuate FDAs on three representative data-free approaches, including TA ( Ilharco et al. , 2022 ),\nTSV ( Gargiulo et al. , 2025 ) and WUDI ( Cheng et al. , 2025 ). TSV derives ϕ i ( τ i ) by performing\nSingular Value Decomposition (SVD) and retaining the top components, while WUDI constructs\nthem by reducing the discrepancy between P m\ni =1 ϕ i ( τ i ) and { τ i } m\ni =1 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "2.4\nP RACTICAL I MPLEMENTATION",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "We discuss the practical implementation for Transformer-based foundation models in natural lan-\nguage ( Vaswani et al. , 2017 ; Liu et al. , 2019 ), vision ( Dosovitskiy et al. , 2020 ; Caron et al. , 2021 ).",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "Layer-wise Construction and Adaptation. The construction process (Eq. 2 ) involves second-\norder gradients, which is challenging for the whole foundation models.\nInstead, we adopt a\nlayer-wise strategy by partitioning the architecture φ , parameters θ 0 , θ i into L parts: { φ ( l ) } L\nl =1 ,\n{ θ ( l )\n0 } L\nl =1 , { θ ( l )\ni } L\nl =1 . For each layer l , we construct FDAs for τ ( l )\ni\n= θ ( l )\ni\n− θ ( l )\n0\nand perform\nadaptation accordingly. Please note that this strategy only requires replacing the entire model in the\nobjectives (Eq. 1 , 5 , 6 ) with the corresponding layer-wise components. In our settings, one Resblock\nis deemed one layer. The overall procedure is summarized as pseudocode in Algorithm 1 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "Shape of FDAs. Generally, we construct n anchors { x ij } n\nj =1 ⊂ R d for the i -th task, where d\nis the representation dimensionality. For Transformer-based models, the representation space is of\nthe size token num × embedding dim , as they operate at the token level. As embedding dim\nis fixed, the shape of FDAs is determined by n and token num . For vision tasks, we follow the",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 5",
+    "page": 10,
+    "text": "5",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Figure 3: Evolution of Normalized singular values of FDAs in the FDA construction. We visualize the results of FDAs from the 12 -th layer of\nthe ViT-B/32 checkpoint on MNIST. σ = 10 1 denotes FDAs initialized by sampling from N ( 0 , I d ) and scaling by 10 1 ; “Weight” denotes\nFDAs initialized from linear weight. FDAs of different initialization schemes tend to evolve into long-tailed structures.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "default token num . For natural language tasks, we set a fixed token num . Increasing n enlarges\nthe solution space but at the cost of higher computational overhead. We discuss the effect of these\nhyperparameters in Section 5.2 and also list the detailed settings for experiments in Appendix C.3 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "The scale coefficient σ . A smaller scaling factor σ reduces the tail energy of anchors. However,\nif σ is too small, the head energy is also suppressed, requiring more iterations. A discussion on\ndetermining σ in practice is in Appendix C.5 . For our experiments, we use σ = 0 . 01 . The effect of\nσ is given in Figure 4 and Table 4 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "3\nT OWARDS U NDERSTANDING FDA- ENCODED K NOWLEDGE",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "In this section, we investigate the knowledge encoded by FDAs. We analyze their energy distribution\nand loss during construction, and compare them with real data in both input-representation and\nparameter spaces. For analysis, FDAs are constructed from ViT-B/32 ( Ilharco et al. , 2022 ) and\nunfolded into [ n × token num , embedding dim] matrices. Details are in Appendix D .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "0\n200\n400\n600\n800\n1000\n1200\nIteration Steps",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "0.2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "0.3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "0.4",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "0.5",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "0.6",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "0.7",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "0.8",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "0.9",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "1.0",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Optimization Loss",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "= 10\n4",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "= 10\n2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "= 10 0",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "= 10 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Weight",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Figure 4: Average loss curves.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Observation 1: FDAs evolve into a long-tailed spectrum structure\nduring optimization. We perform SVD on the unfolded FDA matrices\nand normalize singular values by the largest one. From the example in\nFigure 3 , the normalized tail singular values decays rapidly in construc-\ntion. This implies that optimization guides FDAs to allocate less energy\nto the tail, therefore exhibiting a long-tailed structure. The larger tail\nenergy ( σ = 10 ) results in slower allocation. Furthermore, loss curves\n( cos dist ) of different initializations in Figure 4 are consistent with our\nanalysis: the convergence speed first rises and then falls as σ decreases\nfrom 10 1 to 10 − 4 . Notably, initializing FDAs with weights achieves the fastest convergence.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Figure 5: Evolution of subspace similarity of FDAs in the FDA construction. We visualize the results of FDAs from the 12 -th layer of the\nViT-B/32 checkpoint. σ = 10 1 denotes the FDAs initialized by sampling from N ( 0 , I d ) and scaling by 10 1 ; “Weight” denotes the FDAs\ninitialized from linear weight. FDAs of different initialization schemes tend to align the subspace spanned by real data.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Reference Ratio by\nReal Data",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Reference Ratio by\nReal Data",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Reference Ratio by\nReal Data",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Reference Ratio by\nReal Data",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "(a) Projection Energy on Pretrained Model.\n(b) Projection Energy on Merged Model.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Figure 6: Evolution of projection energy ratio on pretrained model and merged model (TA). We visualize the results of FDAs from the 12 -th\nlayer of the ViT-B/32 checkpoints. σ = 10 1 denotes the FDAs initialized by sampling from N ( 0 , I d ) and scaling by 10 1 ; “Weight” denotes\nthe FDAs initialized from linear weight. The dashed line indicates the projection energy ratio of task vector induced by real data.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "Observation 2: The high-energy subspace of FDAs gradually aligns with that of real data. We\nadopt the features of real task-specific data as reference and also unfolded them. As both real data",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 6",
+    "page": 11,
+    "text": "6",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "( Pope et al. , 2021 ) and FDAs exhibit long-tailed distributions, we measure subspace similarity of top\n20% singular vectors via Projection Matrix ( Fernando et al. , 2013 ). From Figure 5 , the similarity\ngradually increases as the optimization proceeds, which is consistent across all datasets. An analysis\non whether optimization brings FDAs closer to the manifold of real features is in Appendix D .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "Figure 7: Effects of FDAs on the representations.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "Observation 3: FDAs-induced adaptation increas-\ningly aligns with that induced by real data. We an-\nalyze FDAs by re-projecting them into the parameter\nspace, i.e. , the adaptation they induce. We repeat the\nfinetuning procedure in Ilharco et al. ( 2022 ) to sample\nparameter update vectors by real data and project the\nFDAs-induced adaptation onto their non-negative cone.\nAs shown in Figure 6 , the projection energy onto the\nsampled cone steadily increases during optimization,\nboth for the pretrained model and merged model by TA.\nThis indicates that the adaptation induced by FDAs is partially consistent with that of real data. Fur-\nther, following Yang et al. ( 2024 ), we measure the representation discrepancies on real data and\nobserve that FDAs also effectively mitigate representation bias as shown in Figure 7 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "4\nM AIN E XPERIMENTS AND R ESULTS",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "In this section, we first introduce the experimental settings for FDAs and then the main results. Due\nto page limits, the remaining setups and results are presented in the Appendix C .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "4.1\nE XPERIMENTAL S ETTINGS",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "Downstream Models for Merging. The foundation models in vision and natural language are both\nconsidered. For vision tasks, we follow prior works ( Ilharco et al. , 2022 ; Yadav et al. , 2023 ) and\nuse eight publicly available domain-specific checkpoints of CLIP Vision Encoder ( Radford et al. ,\n2021 ). All three backbones, ViT-B/32, ViT-B/16, and ViT-L/14, are considered. For natural lan-\nguage tasks, following previous works ( Yu et al. , 2024 ; Xu et al. , 2025 ), we adopt the downstream\ncheckpoints on GLUE benchmark ( Wang et al. , 2018a ) of RoBERTa-Base and RoBERTa-Large\n( Liu et al. , 2019 ). We further extend FDAs to auto-regressive models, WizardMath-13B ( Luo et al. ,\n2023 ) and LLaMA-2-13B-code-Alpaca 1 , which are based on LLaMA-2-13B ( Touvron et al. , 2023 ),\nto validate the effectiveness on large models.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "Settings for FDAs. The layer-wise strategy of FDAs are adopted for the above foundation models.\nFor construction, we use Gaussian and weight initialization. σ for Gaussian initialization is fixed at\n0 . 01 . For adaptation, two usages (Eq. 5 , 6 ) of FDAs are both considered. For Eq. 6 , we consider TA\n( Ilharco et al. , 2022 ), TSV ( Gargiulo et al. , 2025 ), and WUDI ( Cheng et al. , 2025 ), where TA serves\nas a classical baseline, while TSV and WUDI represent recent state-of-the-art approaches. For auto-\nregressive models, FDAs are constructed and adapted only in each Resblock’s feed-forward layer.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "Baseline Methods. In addition to the mentioned data-free merging methods, we include baselines\nthat use task-specific data to guide adjustments: RegMean ( Jin et al. , 2022 ), Fisher merging ( Matena\n& Raffel , 2022 ), AdaMerging ( Yadav et al. , 2023 ), and ProDistill ( Xu et al. , 2025 ).",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "4.2\nE XPERIMENTS ON V ISION AND L ANGUAGE M ODELS",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "Table 1 , 2 and 3 show the results on the ViT-B/16, RoBERTa-Large and auto-aggressive models,\nrespectively. We leave other results in Appendix C . We made the following observations:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "FDAs can effectively leverage existing task-specific knowledge for multi-task model merging.\nSpecifically, comparing to the dual framework TA, our framework bring a significant improvement:\nthe multi-task performance of pretrained model adapted by FDAs achieves 87 . 26 , compared with\n73 . 94 of TA, representing an improvement of nearly 18% ; meanwhile, the average GLUE score\nachieves 15 . 4% improvement. Moreover, FDAs also surpass many post-hoc enhancements of vanilla\ntask vectors ( Daheim et al. , 2023 ; Yadav et al. , 2023 ; Du et al. , 2024 ; Xiong et al. , 2024 ), while\napproaching the performance of current state-of-the-art methods.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "1 https://huggingface.co/layoric/llama-2-13b-code-alpaca",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 7",
+    "page": 12,
+    "text": "7",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "Method\nSUN397\nCars\nRESISC45\nEuroSAT\nSVHN\nGTSRB\nMNIST\nDTD\nAvg\n∆\nPretrained\n63.80\n64.60\n65.70\n54.50\n52.00\n43.30\n51.70\n45.10\n55.00\n-\nIndividual\n78.56\n87.08\n96.92\n99.78\n97.86\n99.17\n99.76\n82.07\n92.65\n-\nRegMean\n70.84\n75.18\n83.13\n94.44\n90.80\n82.43\n98.66\n60.74\n82.03\n-\nFisher merging\n66.78\n70.49\n72.17\n80.19\n88.33\n68.14\n96.60\n48.46\n73.89\n-\nAdaMerging\n64.30\n74.37\n74.63\n94.89\n91.19\n94.94\n97.95\n69.63\n82.74\n-\nRepresentation Surgery\n73.60\n81.50\n90.40\n98.50\n93.20\n97.40\n98.90\n77.00\n88.80\n-\nProDistill\n72.82\n81.94\n91.94\n99.52\n97.11\n97.65\n99.60\n70.74\n88.92\n-\nTA\n62.07\n66.14\n74.00\n76.48\n88.02\n73.79\n98.52\n52.50\n73.94\n-\nTSV\n72.83\n80.20\n88.97\n97.22\n93.93\n93.94\n99.27\n72.66\n87.38\n-\nWUDI\n75.40\n81.71\n90.14\n98.52\n95.30\n96.55\n99.44\n73.78\n88.85\n-\nFDA (Pretrained, Gauss)\n72.54\n80.62\n87.75\n98.44\n94.31\n93.43\n99.38\n70.11\n87.07\n+32.07\nFDA (Pretrained, Weight)\n73.60\n80.48\n88.00\n98.26\n94.35\n93.41\n99.31\n70.64\n87.26\n+32.26\nFDA (TA, Gauss)\n73.72\n81.42\n88.63\n98.37\n94.61\n94.44\n99.39\n71.54\n87.77\n+13.83\nFDA (TA, Weight)\n74.53\n81.25\n88.37\n98.37\n94.55\n94.28\n99.34\n71.65\n87.79\n+13.85\nFDA (TSV, Gauss)\n74.79\n82.65\n89.75\n98.37\n94.25\n94.47\n99.40\n73.67\n88.42\n+1.04\nFDA (TSV, Weight)\n74.93\n81.92\n89.79\n98.33\n94.10\n93.78\n99.36\n73.78\n88.25\n",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "5\n88.37\n98.37\n94.55\n94.28\n99.34\n71.65\n87.79\n+13.85\nFDA (TSV, Gauss)\n74.79\n82.65\n89.75\n98.37\n94.25\n94.47\n99.40\n73.67\n88.42\n+1.04\nFDA (TSV, Weight)\n74.93\n81.92\n89.79\n98.33\n94.10\n93.78\n99.36\n73.78\n88.25\n+0.87\nFDA (WUDI, Gauss)\n76.21\n82.84\n91.03\n98.93\n94.58\n96.32\n99.40\n74.52\n89.23\n+0.38\nFDA (WUDI, Weight)\n76.15\n82.75\n91.21\n98.89\n94.49\n96.24\n99.39\n74.41\n89.19\n+0.34",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "Table 1: Performance of merging ViT-B-16 models across eight downstream vision tasks. The second section (from RegMean to ProDistill)\ninclude methods that use task-specific data, and the third section is data-free methods. “FDA ( init model , FDA init )” denotes the choice of the\ninitial model and the initialization strategies for FDAs, respectively. “ ∆ ” denotes the performance improvement compared to the initial model.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "Method\nCoLA\nSST-2\nMRPC\nSTS-B\nQQP\nMNLI\nQNLI\nRTE\nAvg\n∆\nPretrained\n0.1679\n0.4897\n0.7480\n-0.0471\n0.3159\n0.3545\n0.5054\n0.4693\n0.3754\n-\nIndividual\n0.6335\n0.9001\n0.9224\n0.9418\n0.9055\n0.8267\n0.9507\n0.9222\n0.8754\n-\nRegMean\n0.3449\n0.8922\n0.5949\n0.3509\n0.8045\n0.5894\n0.6132\n0.6534\n0.6054\n-\nFisher merging\n0.2700\n0.7856\n0.7517\n0.2624\n0.3159\n0.4385\n0.5367\n0.6426\n0.5004\n-\nAdaMerging\n0.1027\n0.9335\n0.7480\n0.7432\n0.3159\n0.7506\n0.8578\n0.6245\n0.6345\n-\nProDistill\n0.4833\n0.9427\n0.8655\n0.7310\n0.8269\n0.8122\n0.8825\n0.7545\n0.7873\n-\nTA\n0.1635\n0.8716\n0.7480\n0.6603\n0.3159\n0.6101\n0.8716\n0.7366\n0.5918\n-\nTSV\n0.4791\n0.9323\n0.7459\n0.6660\n0.3300\n0.6750\n0.7761\n0.6751\n0.6599\n-\nWUDI\n0.4201\n0.9232\n0.7487\n0.7345\n0.5393\n0.6430\n0.5746\n0.5740\n0.6447\n-\nFDAs (Pretrained, Gauss)\n0.3198\n0.8463\n0.7790\n0.6828\n0.7423\n0.5605\n0.6021\n0.7726\n0.6632\n+0.2878\nFDAs (Pretrained, Weight)\n0.3883\n0.8911\n0.7858\n0.7230\n0.7410\n0.5791\n0.6207\n0.7329\n0.6827\n+0.3073\nFDAs (TA, Gauss)\n0.4043\n0.9461\n0.7692\n0.7897\n0.6916\n0.7190\n0.7487\n0.7076\n0.7220\n+0.1302\nFDAs (TA, Weight)\n0.4511\n0.9404\n0.7578\n0.7926\n0.6518\n0.7411\n0.6965\n0.7148\n0.7183\n+0.1265\nFDAs (TSV, Gauss)\n0.5036\n0.9438\n0.7521\n0.7975\n0.4128\n0.7075\n0.8477\n0.7365\n0.7127\n+0.0528\nFDAs (TSV, Weight)\n0.50",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "DAs (TA, Weight)\n0.4511\n0.9404\n0.7578\n0.7926\n0.6518\n0.7411\n0.6965\n0.7148\n0.7183\n+0.1265\nFDAs (TSV, Gauss)\n0.5036\n0.9438\n0.7521\n0.7975\n0.4128\n0.7075\n0.8477\n0.7365\n0.7127\n+0.0528\nFDAs (TSV, Weight)\n0.5021\n0.9427\n0.7490\n0.7418\n0.5062\n0.7292\n0.8146\n0.7365\n0.7153\n+0.0554\nFDAs (WUDI, Gauss)\n0.4841\n0.9404\n0.7647\n0.7645\n0.6778\n0.7004\n0.5911\n0.6643\n0.6984\n+0.0537\nFDAs (WUDI, Weight)\n0.4848\n0.9392\n0.7573\n0.7546\n0.6979\n0.7072\n0.5656\n0.6643\n0.6964\n+0.0517",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "Table 2: Performance of merging RoBERTa-Large models across eight NLU tasks. The second section (from RegMean to ProDistill) include\nmethods that use task-specific data, and the third section is data-free methods. “FDA ( init model , FDA init )” denotes the choice of the initial\nmodel and the initialization strategies for FDAs, respectively. “ ∆ ” denotes the performance improvement compared to the initial model.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "Method\nGSM8K\nMATH\nMBPP\nHEval\nAvg",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "Individual\n0.634\n0.147\n0.282\n0.226\n0.322\nTA\n0.560\n0.111\n0.082\n0.085\n0.209\nFDAs (TA, W)\n0.602\n0.124\n0.098\n0.079\n0.226\nFDAs (TA, G)\n0.600\n0.126\n0.100\n0.098\n0.231",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "Table 3:\nPerformance of merging LLama2-13b-Alpaca and\nWizardMath-13B on Code and Math tasks. “W” denotes the weight\ninitialization; “G” denotes the Gaussian initialization.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "Flexible knowledge modeling . FDA establishes\nthat projecting task-specific knowledge into the\ninput-representation space uncovers richer task-\nspecific information, enabling more effective\nmodel merging.\nSpecifically, although FDAs\nand data-free parameter-centric methods leverage\nthe same task-specific knowledge, FDAs still im-\nprove the merged models by these methods. The\naverage improvement via FDAs on TA, TSV, and\nWUDI is nearly 5 . 10% on ViT-B/16, and about 13% on RoBERTa-Large. For the auto-regressive\nmodel, as we only adapt for feed-forward network, FDA still achieves 10% improvement on TA.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "5\nA BLATION AND E XPLORATIVE S TUDY",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "We investigate the impact of different construction choices on the quality of the FDAs. The quality\nis defined by the average multi-task performance of models from Eq. 5 , with higher performance\nindicating better-quality FDAs. Experimental details are provided in Appendix E .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "5.1\nC OMPARISON OF I NITIALIZATION S CHEMES",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "We evaluate effects of initialization schemes on previous eight ViT-B/32 checkpoints. For Gaussian\ninitialization, we consider: σ = 10 1 , 10 0 , 10 − 2 , 10 − 4 . As shown in Table 4 , initialization signifi-",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 8",
+    "page": 13,
+    "text": "8",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Figure 8: Multi-task performance of FDAs with different shape of FDAs on ViT-B/32 and RoBERTa-Base.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "cantly affects the quality of FDAs. As σ decreases from 10 1 , the performance increases and then\ndecreases, consistent with our analysis. FDAs by weights perform best, aligning with their lowest\noptimization loss (Figure 4 ). Despite a wide range of settings, FDAs consistently outperform TA.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "5.2\nT HE S HAPE OF FDA S",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Init.\nScheme",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "ViT-\nB/32",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "σ = 10 1\n77.42\nσ = 10 0\n81.78\nσ = 10 − 2\n83.03\nσ = 10 − 4\n71.15\nWeight\n83.75",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Table 4: Multi-task perfor-\nmance of FDAs with differ-\nent initialization schemes.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "We study the impact of the number of anchors ( anchor num ) and to-\nkens ( token num ) on the quality of FDAs.\nWe vary anchor num over\n{ 32 , 64 , 128 , 256 } and token num over { 25 , 50 , 75 , 100 } for ViT-B/32 and\n{ 1 , 5 , 10 , 20 } for RoBERTa-Base, evaluating FDAs across their respective\ndatasets. Performances at different adaptation epochs are also reported. From\nFigure 8 , larger FDAs generally lead to better quality, as reflected in the multi-\ntask performance. This is reasonable as larger optimization space makes it\neasier to reach a lower loss. However, for RoBERTa-Base, the average per-\nformance decreases when token num increases from 5 to 20 . Further related\nanalysis is in Appendix E .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "5.3\nT HE E FFECT OF D ISTANCE FUNCTIONS",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Cosine\n2\n1\nDist in Adaptation",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Cosine\n2\n1\nDist in Construction",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "83.03\n82.39\n82.55",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "82.97\n83.15\n83.35",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "80.39\n79.78\n81.61",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Avg Peformance (ViT)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Cosine\n2\n1\nDist in Adaptation",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Cosine\n2\n1\nDist in Construction",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.68\n0.68\n0.70",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.66\n0.66\n0.69",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.62\n0.61\n0.63",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Avg Peformance (RoBERTa)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "80",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "81",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "82",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "83",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.62",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.64",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.66",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.68",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Figure 9: Multi-task performance of FDAs with different Dist\nfunctions on ViT-B/32 and RoBERTa-Base.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Distance function Dist influences both the con-\nstruction (Eq. 1 ) and the adaptation (Eq. 5 , 6 ). We\nevaluate three metrics, cosine, ℓ 1 , and ℓ 2 , for their\nimpacts on FDAs. From Figure 9 , Dist matters\nmore during construction than adaptation. Over-\nall, cosine distance constructs the highest-quality\nFDAs, ℓ 1 performs the worst, and our method con-\nsistently outperforms TA across all metrics.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "5.4\nO PTIMIZATION S TEPS IN FDA C ONSTRUCTION",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0\n20 40 60 80 100 200 400 800\n1200\n1600\n50",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "60",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "70",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "80",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Avg Performance",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "ViT-B/32",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "FDAs\nTA",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0\n20 40 60 80 100 200 400 800\n1200\n1600\nOptimization Steps",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.4",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.5",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "0.6",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Avg Performance",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "RoBERTa-Base",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "FDAs\nTA",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Figure 10: Multi-task performance of\nFDAs with different optimization steps.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "We observe the effect of the number of optimization steps on FDAs.\nFrom Figure 10 , more steps consistently improve their quality. For\nViT-B/32, high-quality FDAs can be obtained from random noise in\nas few as 40 steps, indicating that our optimization is efficient.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "6\nR ELATED W ORK AND C ONCLUDING R EMARKS",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Related work. Recently, the prevailing paradigm in model merg-\ning is the scaled addition of task vectors ( Ilharco et al. , 2022 ). This\nparadigm offers a perspective that knowledge could be transferred\nthrough parameters. Motivated by this insight, diverse parameter-centric methods for model merg-\ning have emerged. One line of works exploit the structural priors in the parameter space and adjust\nthe task vectors ( Yadav et al. , 2023 ; Yu et al. , 2024 ; Davari & Belilovsky , 2024 ; Zheng & Wang ,\n2024 ; Wei et al. , 2025b ; Xiong et al. , 2024 ; Gargiulo et al. , 2025 ; Cheng et al. , 2025 ). In parallel,\nanother line of works tries to introduce the data-driven priors to guide the adjustments ( Matena &\nRaffel , 2022 ; Jin et al. , 2022 ; Yang et al. , 2023 ; 2024 ; Wei et al. , 2025a ; Xu et al. , 2025 ; Yang et al. ,\n2025 ). The unifying characteristic of both approaches is their emphasis on modeling the parameter\nspace. Instead of modeling in the parameter space, FDAs encode the task-specific knowledge in the\ninput-representation space, which provides an alternative perspective on model merging.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "Concluding remarks. This paper introduces a novel input-space-centric model merging framework.\nThe obtained synthetic data (FDAs) models the task-specific knowledge in the parameters through\ntheir induced gradient. FDAs can be used independently or alongside existing parameter-centric\nmethods. Experiments demonstrate the effectiveness of FDAs in model merging.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 9",
+    "page": 14,
+    "text": "9",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "R EFERENCES",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Jacob Austin, Augustus Odena, Maxwell Nye, Maarten Bosma, Henryk Michalewski, David Dohan,\nEllen Jiang, Carrie Cai, Michael Terry, Quoc Le, et al. Program synthesis with large language\nmodels. arXiv preprint arXiv:2108.07732 , 2021. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Luisa Bentivogli, Ido Dagan, Hoa Trang Dang, Danilo Giampiccolo, and Bernardo Magnini. The\nfifth PASCAL recognizing textual entailment challenge. 2009. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Mathilde Caron, Hugo Touvron, Ishan Misra, Herv´e J´egou, Julien Mairal, Piotr Bojanowski, and\nArmand Joulin. Emerging properties in self-supervised vision transformers. In ICCV , 2021. 5",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "George Cazenavette, Tongzhou Wang, Antonio Torralba, Alexei A Efros, and Jun-Yan Zhu. Dataset\ndistillation by matching training trajectories. In CVPR , 2022. 2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Daniel Cer, Mona Diab, Eneko Agirre, I˜nigo Lopez-Gazpio, and Lucia Specia. Semeval-2017 task 1:\nSemantic textual similarity — multilingual and cross-lingual focused evaluation. In International\nWorkshop on Semantic Evaluation , 2017. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, Henrique Ponde De Oliveira Pinto, Jared\nKaplan, Harri Edwards, Yuri Burda, Nicholas Joseph, Greg Brockman, et al. Evaluating large\nlanguage models trained on code. arXiv preprint arXiv:2107.03374 , 2021. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Gong Cheng, Junwei Han, and Xiaoqiang Lu. Remote sensing image scene classification: Bench-\nmark and state of the art. IEEE Geoscience and Remote Sensing Magazine , 5(4):8–36, 2017.\n17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Runxi Cheng, Feng Xiong, Yongxian Wei, Wanyun Zhu, and Chun Yuan. Whoever started the\ninterference should end it: Guiding data-free model merging via task vectors. arXiv preprint\narXiv:2503.08099 , 2025. 1 , 2 , 5 , 7 , 9 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Mircea Cimpoi, Subhransu Maji, Ioannis Kokkinos, Svetlana Lazebnik, and Andrea Vedaldi. De-\nscribing textures in the wild. In Proceedings of the IEEE Conference on Computer Vision and\nPattern Recognition (CVPR) , pp. 3606–3613, 2014. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Kevin Clark, Urvashi Khandelwal, Omer Levy, and Christopher D Manning. What does bert look\nat? an analysis of bert’s attention. arXiv preprint arXiv:1906.04341 , 2019. 20",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser,\nMatthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, et al. Training verifiers to\nsolve math word problems. arXiv preprint arXiv:2110.14168 , 2021. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Nico Daheim, Thomas M¨ollenhoff, Edoardo Maria Ponti, Iryna Gurevych, and Mohammad Emtiyaz\nKhan. Model merging by uncertainty-based gradient matching. arXiv preprint arXiv:2310.12808 ,\n2023. 7",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "MohammadReza Davari and Eugene Belilovsky. Model breadcrumbs: Scaling multi-task model\nmerging with sparse masks. In ECCV , 2024. 9",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "William B. Dolan and Chris Brockett. Automatically constructing a corpus of sentential paraphrases.\nIn Proceedings of the International Workshop on Paraphrasing , 2005. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas\nUnterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, et al. An\nimage is worth 16x16 words: Transformers for image recognition at scale.\narXiv preprint\narXiv:2010.11929 , 2020. 5 , 20",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Guodong Du, Junlin Lee, Jing Li, Runhua Jiang, Yifei Guo, Shuyang Yu, Hanting Liu, Sim K Goh,\nHo-Kin Tang, Daojing He, et al. Parameter competition balancing for model merging. In NeurIPS ,\n2024. 1 , 7",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "Basura Fernando, Amaury Habrard, Marc Sebban, and Tinne Tuytelaars. Unsupervised visual do-\nmain adaptation using subspace alignment. In ICCV , 2013. 7",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 10",
+    "page": 15,
+    "text": "10",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Antonio Andrea Gargiulo, Donato Crisostomi, Maria Sofia Bucarelli, Simone Scardapane, Fabrizio\nSilvestri, and Emanuele Rodola. Task singular vectors: Reducing task interference in model\nmerging. In CVPR , 2025. 1 , 2 , 5 , 7 , 9 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Danilo Giampiccolo, Bernardo Magnini, Ido Dagan, and Bill Dolan. The third PASCAL recog-\nnizing textual entailment challenge. In Proceedings of the ACL-PASCAL Workshop on Textual\nEntailment and Paraphrasing , 2007. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Xavier Glorot and Yoshua Bengio. Understanding the difficulty of training deep feedforward neural\nnetworks. In AISTATS , 2010. 3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Guy Gur-Ari, Daniel A Roberts, and Ethan Dyer. Gradient descent happens in a tiny subspace. arXiv\npreprint arXiv:1812.04754 , 2018. 3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "R Bar Haim, Ido Dagan, Bill Dolan, Lisa Ferro, Danilo Giampiccolo, Bernardo Magnini, and Idan\nSzpektor. The second pascal recognising textual entailment challenge. In Proceedings of the\nSecond PASCAL Challenges Workshop on Recognising Textual Entailment , volume 7, pp. 785–\n794, 2006. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Delving deep into rectifiers: Surpassing\nhuman-level performance on imagenet classification. In ICCV , 2015. 3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Patrick Helber, Benjamin Bischke, Andreas Dengel, and Damian Borth.\nEurosat:\nA novel\ndataset and deep learning benchmark for land use and land cover classification. arXiv preprint\narXiv:1709.00029 , 2019. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and\nJacob Steinhardt.\nMeasuring massive multitask language understanding.\narXiv preprint\narXiv:2009.03300 , 2020. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang,\nWeizhu Chen, et al. Lora: Low-rank adaptation of large language models. In ICLR , 2022. 3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Gabriel Ilharco, Marco Tulio Ribeiro, Mitchell Wortsman, Suchin Gururangan, Ludwig Schmidt,\nHannaneh Hajishirzi, and Ali Farhadi.\nEditing models with task arithmetic.\narXiv preprint\narXiv:2212.04089 , 2022. 1 , 2 , 5 , 6 , 7 , 9 , 17 , 21",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Shankar\nIyer,\nNikhil\nDandekar,\nand\nKorn´el\nCsernai.\nFirst\nquora\ndataset\nrelease:\nQuestion\npairs.\nhttps://data.quora.com/\nFirst-Quora-Dataset-Release-Question-Pairs , 2017. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Xisen Jin, Xiang Ren, Daniel Preotiuc-Pietro, and Pengxiang Cheng. Dataless knowledge fusion by\nmerging weights of language models. arXiv preprint arXiv:2212.09849 , 2022. 1 , 7 , 9 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Jonathan Krause, Jia Deng, Michael Stark, and Li Fei-Fei. Collecting a large-scale dataset of fine-\ngrained cars. arXiv preprint arXiv:1312.2234 , 2013. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Yann LeCun, Corinna Cortes, and Christopher J.C. Burges. Gradient-based learning applied to\ndocument recognition. Proceedings of the IEEE , 86(11):2278–2324, 1998. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Weiyang Liu, Bo Dai, Ahmad Humayun, Charlene Tay, Chen Yu, Linda B Smith, James M Rehg,\nand Le Song. Iterative machine teaching. In ICML , 2017a. 2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Weiyang Liu, Yan-Ming Zhang, Xingguo Li, Zhiding Yu, Bo Dai, Tuo Zhao, and Le Song. Deep\nhyperspherical learning. In NeurIPS , 2017b. 3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Weiyang Liu, Zhen Liu, Zhiding Yu, Bo Dai, Rongmei Lin, Yisen Wang, James M Rehg, and\nLe Song. Decoupled networks. In CVPR , 2018. 3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Levy, Mike\nLewis, Luke Zettlemoyer, and Veselin Stoyanov. Roberta: A robustly optimized bert pretraining\napproach. arXiv preprint arXiv:1907.11692 , 2019. 5 , 7",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "Ilya Loshchilov and Frank Hutter.\nDecoupled weight decay regularization.\narXiv preprint\narXiv:1711.05101 , 2017. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 11",
+    "page": 16,
+    "text": "11",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Haipeng Luo, Qingfeng Sun, Can Xu, Pu Zhao, Jianguang Lou, Chongyang Tao, Xiubo Geng, Qing-\nwei Lin, Shifeng Chen, and Dongmei Zhang. Wizardmath: Empowering mathematical reasoning\nfor large language models via reinforced evol-instruct. arXiv preprint arXiv:2308.09583 , 2023.\n7 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Michael S Matena and Colin A Raffel. Merging models with fisher-weighted averaging. In NeurIPS ,\n2022. 1 , 7 , 9 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Yuval Netzer, Tao Wang, Adam Coates, Alessandro Bissacco, Baolin Wu, Andrew Y Ng, et al.\nReading digits in natural images with unsupervised feature learning. In NIPS workshop on deep\nlearning and unsupervised feature learning , 2011. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Phillip Pope, Chen Zhu, Ahmed Abdelkader, Micah Goldblum, and Tom Goldstein. The intrinsic\ndimension of images and its impact on learning. arXiv preprint arXiv:2104.08894 , 2021. 7",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Zeju Qiu, Weiyang Liu, Tim Z Xiao, Zhen Liu, Umang Bhatt, Yucen Luo, Adrian Weller, and\nBernhard Sch¨olkopf. Iterative teaching by data hallucination. In AISTATS , 2023. 2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal,\nGirish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual\nmodels from natural language supervision. In ICML , 2021. 7 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Maithra Raghu, Thomas Unterthiner, Simon Kornblith, Chiyuan Zhang, and Alexey Dosovitskiy.\nDo vision transformers see like convolutional neural networks? In NeurIPS , 2021. 20",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Pranav Rajpurkar, Jian Zhang, Konstantin Lopyrev, and Percy Liang. Squad: 100,000+ questions\nfor machine comprehension of text. In EMNLP , 2016. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Sebastian Ruder.\nAn overview of multi-task learning in deep neural networks.\narXiv preprint\narXiv:1706.05098 , 2017. 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Hanul Shin, Jung Kwon Lee, Jaehong Kim, and Jiwon Kim. Continual learning with deep generative\nreplay. In NeurIPS , 2017. 2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Richard Socher, Alex Perelygin, Jean Wu, Jason Chuang, Christopher D Manning, Andrew Ng,\nand Christopher Potts. Recursive deep models for semantic compositionality over a sentiment\ntreebank. In EMNLP , 2013. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Johannes Stallkamp, Marc Schlipsing, Jens Salmen, and Christian Igel. The german traffic sign\nrecognition benchmark: A multi-class classification competition. International Journal of Com-\nputer Vision , 94(3):137–150, 2011. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Niko-\nlay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, et al. Llama 2: Open founda-\ntion and fine-tuned chat models. arXiv preprint arXiv:2307.09288 , 2023. 7",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,\nŁukasz Kaiser, and Illia Polosukhin. Attention is all you need. In NeurIPS , 2017. 5",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel R Bowman.\nGlue: A multi-task benchmark and analysis platform for natural language understanding. arXiv\npreprint arXiv:1804.07461 , 2018a. 7 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Liyuan Wang, Xingxing Zhang, Hang Su, and Jun Zhu.\nA comprehensive survey of continual\nlearning: Theory, method and application. IEEE transactions on pattern analysis and machine\nintelligence , 46(8):5362–5383, 2024. 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Tongzhou Wang, Jun-Yan Zhu, Antonio Torralba, and Alexei A Efros. Dataset distillation. arXiv\npreprint arXiv:1811.10959 , 2018b. 2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Alex Warstadt, Amanpreet Singh, and Samuel R. Bowman. Neural network acceptability judgments.\narXiv preprint arXiv:1805.12471 , 2018. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "Qi Wei, Shuo He, Enneng Yang, Tingcong Liu, Haobo Wang, Lei Feng, and Bo An. Representation\nsurgery in model merging with probabilistic modeling. In ICML , 2025a. 1 , 3 , 9",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 12",
+    "page": 17,
+    "text": "12",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Yongxian Wei, Anke Tang, Li Shen, Zixuan Hu, Chun Yuan, and Xiaochun Cao. Modeling multi-\ntask model merging as adaptive projective gradient descent. arXiv preprint arXiv:2501.01230 ,\n2025b. 1 , 2 , 9",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Adina Williams, Nikita Nangia, and Samuel R Bowman. A broad-coverage challenge corpus for\nsentence understanding through inference. arXiv preprint arXiv:1704.05426 , 2017. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Jianxiong Xiao, Krista A. Ehinger, James Hays, Antonio Torralba, and Aude Oliva. Sun database:\nExploring a large collection of scene categories. International Journal of Computer Vision , 119\n(1):3–22, 2016. 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Feng Xiong, Runxi Cheng, Wang Chen, Zhanqiu Zhang, Yiwen Guo, Chun Yuan, and Ruifeng\nXu.\nMulti-task model merging via adaptive weight disentanglement.\narXiv preprint\narXiv:2411.18729 , 2024. 1 , 2 , 7 , 9",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Jing Xu, Jiazheng Li, and Jingzhao Zhang. Scalable model merging with progressive layer-wise\ndistillation. arXiv preprint arXiv:2502.12706 , 2025. 1 , 3 , 7 , 9 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Prateek Yadav, Derek Tam, Leshem Choshen, Colin A Raffel, and Mohit Bansal. Ties-merging: Re-\nsolving interference when merging models. Advances in Neural Information Processing Systems ,\n36:7093–7115, 2023. 1 , 2 , 7 , 9 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Enneng Yang, Zhenyi Wang, Li Shen, Shiwei Liu, Guibing Guo, Xingwei Wang, and Dacheng Tao.\nAdamerging: Adaptive model merging for multi-task learning. arXiv preprint arXiv:2310.02575 ,\n2023. 1 , 3 , 9 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Enneng Yang, Li Shen, Zhenyi Wang, Guibing Guo, Xiaojun Chen, Xingwei Wang, and Dacheng\nTao. Representation surgery for multi-task model merging. arXiv preprint arXiv:2402.02705 ,\n2024. 7 , 9",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Zongzhen Yang, Binhang Qi, Hailong Sun, Wenrui Long, Ruobing Zhao, and Xiang Gao.\nCabs: Conflict-aware and balanced sparsification for enhancing model merging. arXiv preprint\narXiv:2503.01874 , 2025. 1 , 3 , 9",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Le Yu, Bowen Yu, Haiyang Yu, Fei Huang, and Yongbin Li. Language models are super mario:\nAbsorbing abilities from homologous models as a free lunch. In ICML , 2024. 1 , 2 , 7 , 9 , 17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Longhui Yu, Tianyang Hu, Lanqing Hong, Zhen Liu, Adrian Weller, and Weiyang Liu. Continual\nlearning by modeling intra-class variation. Transactions on Machine Learning Research , 2023. 2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Yuanhe Zhang, Fanghui Liu, and Yudong Chen. Lora-one: One-step full gradient could suffice for\nfine-tuning large language models, provably and efficiently. arXiv preprint arXiv:2502.01235 ,\n2025. 3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Bo Zhao and Hakan Bilen. Dataset condensation with distribution matching. In WACV , 2023. 2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Bo Zhao, Konda Reddy Mopuri, and Hakan Bilen. Dataset condensation with gradient matching. In\nICLR , 2021. 2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "Shenghe Zheng and Hongzhi Wang. Free-merging: Fourier transform for efficient model merging.\narXiv preprint arXiv:2411.16815 , 2024. 9",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 13",
+    "page": 18,
+    "text": "13",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 14",
+    "page": 19,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Appendix",
+    "page": 20,
+    "text": "Table of Contents",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Appendix",
+    "page": 20,
+    "text": "A\nDerivation for equation 3\n15",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Appendix",
+    "page": 20,
+    "text": "B\nProof for Proposition 2.1\n16",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Appendix",
+    "page": 20,
+    "text": "C\nExperiment Details\n17\nC.1\nDetails of downstream models for Merging\n. . . . . . . . . . . . . . . . . . .\n17\nC.2\nDetails of Baseline methods\n. . . . . . . . . . . . . . . . . . . . . . . . . . .\n17\nC.3\nDetails of FDAs\n. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n17\nC.4\nRemaining Results. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n19\nC.5\nA practical method for choosing the scaling coefficient\n. . . . . . . . . . . . .\n19",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Appendix",
+    "page": 20,
+    "text": "D\nMore Results and Disucssions for Section 3\n20",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Appendix",
+    "page": 20,
+    "text": "E\nMore Results and Discussions for Section 5\n23",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Appendix",
+    "page": 20,
+    "text": "14",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "A\nD ERIVATION FOR EQUATION 3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "We first recall the settings. Given a linear encoder φ , i.e. , y = W x with W ∈ R d × d , x ∈ R d , the\ncorresponding pretrained parameter and the downstream parameter on the i -th task are denoted by\nW 0 and W i , respectively. Assuming that Dist( W 0 x , W i x ) = 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "2 ∥ W 0 x − W i x ∥ 2\n2 , we derive the\niteration formula via gradient descent.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Proof. The objective function can be written as follows:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "min\nx\ncos dist\n\u0012\n∇ W 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "2\nW x − W i x\n2\n2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "W = W 0 , W i − W 0",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "\u0013\n.\n(7)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Let η > 0 be the step size and t ∈{ 0 , 1 , 2 , . . . } the iteration index. The gradient-descent update is",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "x t +1 = x t − η ∇ x t cos dist\n\u0012\n∇ W 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "2\nW x t − W i x t\n2\n2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "W = W 0 , W i − W 0",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "\u0013\n.\n(8)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Since cos dist( A, B ) = 1 −\n⟨ A,B ⟩ F\n∥ A ∥ F ∥ B ∥ F with ⟨ A, B ⟩ F := tr( A ⊤ B ) , we rewrite equation 8 as",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "x t +1 = x t + η ∆ t ,\n∆ t := ∇ x t",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "∇ W 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "2\nW x t − W i x t\n2\n2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "W = W 0 , W i − W 0",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "F\n∇ W 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "2\nW x t − W i x t\n2\n2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "W = W 0",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "F\n∥ W i − W 0 ∥ F\n.\n(9)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Step 1: Computing the W -gradient. For the j -th row W j, : ,",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "∇ W j, :\n1\n2\nW x t − W i x t\n2\n2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "W = W 0 =\n\u0000\nW 0 x t − W i x t\n\u0001",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "j x ⊤\nt .\n(10)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Stacking rows gives",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "∇ W 1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "2\nW x t − W i x t\n2\n2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "W = W 0\n= ( W 0 − W i ) x t x ⊤\nt = − ∆ W x t x ⊤\nt ,\n∆ W := W i − W 0 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "(11)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Step 2: Plugging equation 11 into ∆ t . The numerator in equation 9 becomes\n− ∆ W x t x ⊤\nt , ∆ W",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "F = − tr\n\u0000\nx t x ⊤\nt ∆ W ⊤ ∆ W\n\u0001\n= − x ⊤\nt ∆ W ⊤ ∆ W x t = −∥ ∆ W x t ∥ 2\n2 .\n(12)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "The denominator equals\n− ∆ W x t x ⊤\nt\nF ∥ ∆ W ∥ F = ∥ ∆ W x t ∥ 2 ∥ x t ∥ 2 ∥ ∆ W ∥ F .\n(13)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Hence the scalar inside the gradient is",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "−\n∥ ∆ W x t ∥ 2\n∥ x t ∥ 2 ∥ ∆ W ∥ F\n.\n(14)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Therefore,",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "∆ t = ∇ x t",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "\u0012\n−\n∥ ∆ W x t ∥ 2\n∥ x t ∥ 2 ∥ ∆ W ∥ F",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "\u0013\n.\n(15)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Step 3: Evaluating ∆ t (assume x t ̸ = 0 and ∆ W x t ̸ = 0 ). Using ∇ u ∥ A u ∥ 2 =\nA ⊤ A u",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "∥ A u ∥ 2 and\n∇ u ∥ u ∥ 2 =\nu\n∥ u ∥ 2 ,",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "∆ t = −\n1\n∥ ∆ W ∥ F",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "\u0014 ∆ W ⊤ ∆ W x t",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "∥ ∆ W x t ∥ 2 ∥ x t ∥ 2\n− ∥ ∆ W x t ∥ 2",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "∥ x t ∥ 3\n2\nx t",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "\u0015\n.\n(16)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "Step 4: Iteration in affine form. Write",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "∆ t = σ t x t + β t ∆ W ⊤ ∆ W x t ,\n(17)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 15",
+    "page": 21,
+    "text": "15",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "where",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "σ t =\n∥ ∆ W x t ∥ 2\n∥ ∆ W ∥ F ∥ x t ∥ 3\n2\n> 0 ,\nβ t = −\n1\n∥ ∆ W ∥ F ∥ ∆ W x t ∥ 2 ∥ x t ∥ 2\n< 0 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "Hence\nx t +1 = x t + η ∆ t = (1 + ησ t ) x t + ηβ t ∆ W ⊤ ∆ W x t .\n(18)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "Note that ησ t generally is a small positive number. Thus, for better analysis, we approximate the\niteration as\nx t +1 = x t + η ∆ t = x t + ηβ t ∆ W ⊤ ∆ W x t .\n(19)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "B\nP ROOF FOR P ROPOSITION 2.1",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "Proof of Proposition 2.1 . We start from the iteration in equation 3 :",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "x t +1 = x t + ηβ t ∆ W ⊤ ∆ W x t ,\n∆ W = W i − W 0 ,\nt = 0 , . . . , T − 1 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "And we have that: ∆ W ⊤ ∆ W = U Λ U ⊤ , where U = [ u 1 , . . . , u d ] ∈ R d × d is orthogonal and\nΛ = diag( λ 1 , . . . , λ d ) with λ 1 > · · · > λ d > 0 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "Step 1: Project x t onto the eigenbasis. Let",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "x t =",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "d\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "i =1\nc i\nt u i ,",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "where c i\nt = u ⊤\ni x t . Then",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "∆ W ⊤ ∆ W x t = ∆ W ⊤ ∆ W",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "d\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "i =1\nc i\nt u i =",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "d\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "i =1\nc i\nt λ i u i .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "Step 2: Plugging the projection into equation 3 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "x t +1 = x t + ηβ t",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "d\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "i =1\nc i\nt λ i u i =",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "d\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "i =1\nc i\nt u i +",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "d\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "i =1\n( ηβ t λ i c i\nt ) u i =",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "d\nX",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "i =1\nc i\nt (1 + ηβ t λ i ) u i .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "Define γ t = − ηβ t > 0 , then c i\nt +1 = c i\nt (1 − γ t λ i ) ,\nt = 0 , . . . , T − 1 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "Step 3: Recursion. By recursion, we can get the formula in proposition 2.1 :",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "c i\nt = c i\n0",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "t − 1\nY",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "j =0\n(1 − γ j λ i ) ,\ni = 1 , . . . , d.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 16",
+    "page": 22,
+    "text": "16",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "C\nE XPERIMENT D ETAILS",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "C.1\nD ETAILS OF DOWNSTREAM MODELS FOR M ERGING",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "For vision task, we follow the setup in previous works ( Ilharco et al. , 2022 ; Yadav et al. , 2023 ).\nSpecifically, we adopt eight public, domain-specific foundation models from Ilharco et al. ( 2022 ),\nwhich obtained by finetuning the pretrained Vision Encoder of CLIP ( Radford et al. , 2021 ) on the\nfollowing datasets: SUN397 ( Xiao et al. , 2016 ), Cars ( Krause et al. , 2013 ), RESISC45 ( Cheng\net al. , 2017 ), EuroSAT ( Helber et al. , 2019 ), SVHN ( Netzer et al. , 2011 ), GTSRB ( Stallkamp et al. ,\n2011 ), MNIST ( LeCun et al. , 1998 ) and DTD ( Cimpoi et al. , 2014 ). All sizes of these models, i.e.,\nViT-B/32, ViT-B/16 and ViT-L/14, are taken into consideration.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "For natural language processing task, we also follow previous works ( Yu et al. , 2024 ; Xu et al. ,\n2025 ). Specifically, we consider the downstream models of eight datasets from the GLUE bench-\nmark ( Wang et al. , 2018a ), including CoLA ( Warstadt et al. , 2018 ), SST-2 ( Socher et al. , 2013 ),\nMRPC ( Dolan & Brockett , 2005 ), STS-B ( Cer et al. , 2017 ), QQP ( Iyer et al. , 2017 ), MNLI ( Williams\net al. , 2017 ), QNLI ( Wang et al. , 2018a ; Rajpurkar et al. , 2016 ), RTE ( Wang et al. , 2018a ; Haim et al. ,\n2006 ; Giampiccolo et al. , 2007 ; Bentivogli et al. , 2009 ). To obtain the downstream models, we fol-\nlow the finetuning procedure of Yu et al. ( 2024 ) on publicly available pretrained RoBERTa-Base and\nRoBERTa-Large.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "For auto-regressive models, we follow the practice in Yu et al. ( 2024 ) and consider two expert\nmodels: the Math expert model WizardMath-13B ( Luo et al. , 2023 ) and the Code expert model\nLLaMA-2-13B-Code-Alpaca. We use four datasets for evaluation, including GSM8K ( Cobbe et al. ,\n2021 ), MATH ( Hendrycks et al. , 2020 ), HumanEval ( Chen et al. , 2021 ) and MBPP ( Austin et al. ,\n2021 ). For evaluation, we adopt the evaluation codes of Xu et al. ( 2025 ).",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "C.2\nD ETAILS OF B ASELINE METHODS",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "For data-based baselines ( i.e. , RegMean ( Jin et al. , 2022 ), Fisher merging ( Matena & Raffel , 2022 ),\nAdaMerging ( Yang et al. , 2023 ), and ProDistill ( Xu et al. , 2025 )), we follow the released implemen-\ntations. For ViT, we adopt the results reported in Xu et al. ( 2025 ) as they rely on the same public\ncheckpoints. For LLM, we simply set the coefficient of TA method as 0 . 5 , which is adopted in Xu\net al. ( 2025 ). For data-free baseline methods ( i.e. , TA ( Ilharco et al. , 2022 ), TSV ( Gargiulo et al. ,\n2025 ), and WUDI ( Cheng et al. , 2025 )), we use their publicly available open-source code. We try\nour best to ensure fair and strong baselines.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "C.3\nD ETAILS OF FDA S",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "All FDAs in our experiments follows the layer-wise manner. We keep the settings of the construction\nand adaptation consistent across layers. Both Gaussian and parameter initializations are considered.\nFor Gaussian initialization, we set σ = 0 . 01 . Both initializations share the same settings.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "FDA Construction. For ViT and RoBERTa, we first set the number n of anchors as 64 for each\ntask. Then, the token num of FDAs for ViT follows the default settings: 50 for ViT-B/32, 197 for\nViT-B/16, and 257 for ViT-L/14. For RoBERTa-Base and RoBERTa-Large, we fix the token num\nas 5 . To optimize these anchors, we adopt the AdamW optimizer ( Loshchilov & Hutter , 2017 ),\niterating for 1200 steps with a learning rate of 1 e − 2 . For WizardMATH and llama-2-13b-alpaca,\nwe construct FDAs for feed-forword networks. Thus, we only set the number n of anchors as 8192 .\nWe also adopt AdamW optimizer, iterating for 200 steps with a learning rate of 1 e − 2 . All the above\noptimizations are performed with a full batch size.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "Parameter Optimization. We adopt the Adam optimizer to optimize parameters. There are three\nhyperparameters: learning rate, batch size and optimization epochs. For FDAs from different ini-\ntialization schemes, we adopt the same settings. When the initial model is initialized by pretrained\nparameter, we adopt Eq. 5 . We use a batch size of 128 for all models. For all ViT models, we\nset the learning rate to 1 e- 5 and train for 100 epochs. For all RoBERTa, we use a learning rate of\n5 e- 5 , training for 100 epochs on the base model and 50 epochs on the large model. When the ini-\ntial model is initialized by task-vector-based merging method, we adopt Eq. 6 . We follow previous\nworks ( Yang et al. , 2023 ; Xu et al. , 2025 ) and use a large learning rate 1 e − 2 . Generally, for ViT and",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 17",
+    "page": 23,
+    "text": "17",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Method\nSUN397\nCars\nRESISC45\nEuroSAT\nSVHN\nGTSRB\nMNIST\nDTD\nAvg",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Individual\n75.34\n77.73\n95.98\n99.89\n97.46\n98.73\n99.69\n79.36\n90.52\nRegMean\n67.47\n66.63\n81.75\n93.33\n86.68\n79.92\n97.30\n60.16\n79.15\nFisher merging\n63.95\n63.84\n66.86\n83.48\n79.54\n60.11\n91.27\n49.36\n69.80\nAdaMerging\n63.69\n65.74\n77.65\n91.00\n82.48\n93.12\n98.27\n62.29\n79.28\nRepresentation Surgery\n71.20\n72.00\n92.30\n99.00\n92.20\n97.90\n99.00\n76.10\n87.50\nProDistill\n68.90\n71.21\n89.89\n99.37\n96.13\n95.29\n99.46\n68.03\n86.04\nTA\n55.16\n54.98\n66.68\n78.89\n80.21\n69.68\n97.34\n50.37\n69.16\nTSV-M\n69.08\n70.92\n85.67\n95.15\n92.02\n91.93\n99.25\n69.20\n84.15\nWUDI\n70.92\n71.38\n85.68\n96.33\n94.27\n94.51\n99.47\n69.47\n85.26\nFDAs (Pretrained, Gauss)\n67.46\n69.05\n81.87\n96.89\n94.02\n89.58\n99.28\n66.12\n83.03\nFDAs (Pretrained, Weight)\n68.12\n70.46\n83.94\n97.07\n94.08\n90.03\n99.33\n66.97\n83.75\nFDAs (TA, Gauss)\n69.48\n71.43\n83.79\n96.89\n94.43\n91.20\n99.36\n68.67\n84.41\nFDAs (TA, Weight)\n69.61\n71.83\n85.27\n97.00\n94.33\n91.59\n99.39\n69.10\n84.76\nFDA (TSV, Gauss)\n71.17\n73.25\n86.46\n91.19\n94.25\n92.03\n99.39\n70.64\n85.55\nFDA (TSV, Weight)\n71.23\n73.71\n86.76\n97.19\n94.11\n91.79\n99.44\n70.74\n85.62\nFDA (WUDI, Gauss)\n72.71\n73.71\n86.97\n96.67\n94.20\n93.99\n99.42\n70.32\n86.00\nFDA (WUDI, Weight)\n72.82\n73.88\n87.02\n96.70\n94.13\n93.76\n99.40\n70.59\n86.04",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Table 5: Performance of merging ViT-B/32 models across eight downstream vision tasks. “FDA ( init model , FDA init )” denotes the choice of\nthe initial model and the initialization strategies for FDAs, respectively. “Pretrained” denotes the initial model is the pretrained model.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Method\nSUN397\nCars\nRESISC45\nEuroSAT\nSVHN\nGTSRB\nMNIST\nDTD\nAvg",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Individual\n82.32\n92.35\n97.38\n99.78\n98.11\n99.24\n99.69\n84.15\n94.13\nRegMean\n74.04\n87.22\n88.52\n98.15\n92.89\n90.22\n99.27\n69.84\n87.52\nFisher merging\n71.28\n85.18\n81.59\n89.67\n81.51\n83.39\n96.31\n65.48\n81.80\nAdaMerging\n75.96\n89.42\n90.08\n96.59\n91.78\n97.52\n98.91\n77.61\n89.73\nRepresentation Surgery\n80.30\n90.80\n94.30\n98.20\n94.10\n98.70\n99.20\n82.50\n92.30\nProDistill\n77.73\n90.04\n94.43\n99.48\n97.71\n98.26\n99.63\n78.24\n91.94\nTA\n74.16\n82.09\n86.67\n94.07\n87.91\n86.77\n98.94\n65.69\n84.54\nTSV\n79.00\n89.99\n93.95\n99.15\n95.34\n96.16\n99.51\n79.10\n91.52\nWUDI\n81.15\n90.95\n94.00\n99.33\n96.21\n98.04\n99.63\n80.64\n92.49\nFDAs (Pretrained, Gauss)\n77.59\n90.05\n92.75\n99.04\n95.42\n96.78\n99.56\n76.76\n90.99\nFDAs (Pretrained, Weight)\n77.91\n90.14\n92.84\n99.04\n95.44\n96.56\n99.59\n76.86\n91.05\nFDAs (TA, Gauss)\n78.96\n90.41\n93.13\n99.07\n95.63\n97.15\n99.58\n77.23\n91.40\nFDAs (TA, Weight)\n78.92\n90.35\n93.19\n99.11\n95.53\n96.83\n99.61\n77.13\n91.33\nFDAs (TSV, Gauss)\n79.84\n90.66\n93.95\n99.19\n95.81\n97.35\n99.61\n79.04\n91.93\nFDAs (TSV, Weight)\n79.69\n90.60\n93.68\n99.19\n95.51\n97.05\n99.60\n78.40\n91.71\nFDAs (WUDI, Gauss)\n81.09\n91.16\n94.41\n99.26\n96.21\n97.86\n99.68\n80.37\n92.51\nFDAs (WUDI, Weight)\n81.07\n91.27\n94.48\n99.26\n96.11\n97.72\n99.67\n80.05\n92.45",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Table 6: Performance of merging ViT-L/14 models across eight downstream vision tasks. “FDA ( init model , FDA init )” denotes the choice of\nthe initial model and the initialization strategies for FDAs, respectively. “Pretrained” denotes the initial model is the pretrained model.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Method\nCoLA\nSST-2\nMRPC\nSTS-B\nQQP\nMNLI\nQNLI\nRTE\nAvg",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Individual\n0.626\n0.9427\n0.8946\n0.9070\n0.8986\n0.8721\n0.9257\n0.7581\n0.8531\nRegMean\n0.2078\n0.9266\n0.8215\n0.5350\n0.8141\n0.7551\n0.8541\n0.7256\n0.7050\nFisher merging\n0.123\n0.8188\n0.7598\n-0.1194\n0.7319\n0.6056\n0.507\n0.4874\n0.4893\nAdaMerging\n0.0864\n0.8968\n0.795\n0.398\n0.7936\n0.7579\n0.7128\n0.7076\n0.6435\nProDistill\n0.4968\n0.9209\n0.8340\n0.6623\n0.8044\n0.7987\n0.8918\n0.7148\n0.7655\nTA\n0.0257\n0.9048\n0.7916\n0.2873\n0.8169\n0.7437\n0.7216\n0.7220\n0.6267\nTSV\n0.0722\n0.9014\n0.806\n0.3081\n0.8365\n0.8031\n0.7893\n0.7401\n0.6571\nWUDI\n0.1459\n0.922\n0.7925\n0.3832\n0.8393\n0.7917\n0.7972\n0.7292\n0.6751\nFDAs (Pretrained, Gauss)\n0.2178\n0.9232\n0.8144\n0.4256\n0.8019\n0.7065\n0.7928\n0.7365\n0.6773\nFDAs (Pretrained, Weight)\n0.2229\n0.9209\n0.8057\n0.2291\n0.8117\n0.6871\n0.8294\n0.7329\n0.6550\nFDAs (TA, Gauss)\n0.2304\n0.9174\n0.8124\n0.6029\n0.7763\n0.7679\n0.7366\n0.6968\n0.6926\nFDAs (TA, Weight)\n0.2119\n0.9083\n0.8215\n0.5445\n0.7929\n0.75\n0.7424\n0.7112\n0.6853\nFDAs (TSV, Gauss)\n0.1923\n0.8865\n0.7962\n0.4612\n0.8064\n0.7796\n0.7695\n0.6895\n0.6727\nFDAs (TSV, Weight)\n0.2604\n0.8979\n0.8200\n0.2487\n0.8231\n0.7930\n0.8052\n0.7256\n0.6717\nFDAs (WUDI, Gauss)\n0.2231\n0.9278\n0.7838\n0.3999\n0.8218\n0.8015\n0.7926\n0.7292\n0.6850\nFDAs (WUDI, Weight)\n0.2872\n0.9289\n0.8108\n0.3450\n0.826",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": ")\n0.2604\n0.8979\n0.8200\n0.2487\n0.8231\n0.7930\n0.8052\n0.7256\n0.6717\nFDAs (WUDI, Gauss)\n0.2231\n0.9278\n0.7838\n0.3999\n0.8218\n0.8015\n0.7926\n0.7292\n0.6850\nFDAs (WUDI, Weight)\n0.2872\n0.9289\n0.8108\n0.3450\n0.8263\n0.7992\n0.8038\n0.7292\n0.6913",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "Table 7: Performance of merging RoBERTa-Base models across eight NLU tasks.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "RoBERTa, we use a batch size of 128 , also training for 100 epochs ( 15 epochs for RoBERTa-Large).\nFor the initial ViT model by WUDI, we set the batch size as 512 and train for 25 epochs. For the\nauto-regressive model, we use a batch size of 8192 , training for 50 epochs.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 18",
+    "page": 24,
+    "text": "18",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 19",
+    "page": 25,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 19",
+    "page": 25,
+    "text": "C.4\nR EMAINING R ESULTS .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 19",
+    "page": 25,
+    "text": "We present the experimental results on ViT-B/32, ViT-B/L-14 and RoBERTa-Base on Table 5 , 6 and\n7 , respectively. FDAs bring slight improvements on the WUDI-initialized merged model. Please\nnote that WUDI-initialzed model has already achieves 98 . 3% of the performance of eight individual\nmodels. That means that this initialization is already situated in a well-optimized local minima.\nGenerally, the remaining results are consistent with the observations in our main paper.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 19",
+    "page": 25,
+    "text": "C.5\nA PRACTICAL METHOD FOR CHOOSING THE SCALING COEFFICIENT",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 19",
+    "page": 25,
+    "text": "As discussed in the main paper, the scaling coefficient σ is crucial for the convergence. We provide a\npractical heuristic to choose σ . Specifically, we fix one layer with the same initial FDAs and evaluate\na set of candidate σ values by comparing their alignment after a fixed number of iterations, selecting\nthe σ that yields the best alignment as the scaling coefficient.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 19",
+    "page": 25,
+    "text": "19",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "D\nM ORE R ESULTS AND D ISUCSSIONS FOR S ECTION 3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "In this section, we describe the details in the investigation for the knowledge in FDAs, and then\npresent further examples.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "Details of Observation 1. We first follow the same construction procedure in Section C.3 and obtain\nsets of FDAs { x ( l )\nij } 64\nj =1 , x ij ∈ R 50 × 768 , i = 1 , . . . , 8; l = 1 , . . . , 12 . Then we unfold each set into",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "the matrix X ( l )\ni\n∈ R 3200 × 768 , treating each token embedding as a representation unit ( Clark et al. ,\n2019 ; Dosovitskiy et al. , 2020 ; Raghu et al. , 2021 ). We conduct the singular value decomposition\nfor X ( l )\ni\nand obtain the sorted singular values: λ ( l )\ni, 1 , . . . , λ ( l )\ni, 768 . The normalized singular values ˜ λ ( l )\nij\nare computed as ˜ λ ( l )\nij = λ ( l )\nij /λ ( l )\ni, 1 . We visualize more results in Figure 11 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "(a) MNIST-layer-12",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "(b) Cars-layer-12",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "(c) MNIST-layer-6",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "(d) Cars-layer-6",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "Figure 11: Evolution of Normalized singular values of FDAs in the FDA construction. σ = 10 1 denotes FDAs initialized by sampling from\nN ( 0 , I d ) and scaling by 10 1 ; “Weight” denotes that of FDAs initialized from linear weight. FDAs of different initialization schemes tend to\nevolve into long-tailed structures.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "Details of Observation 2. For the features of real task-specific data in the l -th layer, we attach hooks\nat the corresponding layers of the downstream checkpoints to extract features. 64 real examples are\nrandomly sampled from validation dataset for each task. We unfold them into the matrices denoted\nas ˆ\nX l\ni , i = 1 , . . . , 8; l = 1 , . . . , 12 . Then we perform the projection matrix method to analyze the\nsimilarity of subspaces spanned by the top 20% singular vectors. Assume that U ( l )\ni\nand ˆ U ( l )\ni\nare\nspanned by their top 20% singular vectors, the similarity is measured by:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "Sim = tr( P l\ni ˆ P l\ni )\n768 × 20% ,",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 20",
+    "page": 26,
+    "text": "20",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "(a) Layer-12",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "(b) Layer-6",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "(c) Layer-3",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "Figure 12: Evolution of subspace similarity of FDAs in the FDA construction. σ = 10 1 denotes the FDAs initialized by sampling from\nN ( 0 , I d ) and scaling by 10 1 ; “Weight” denotes the FDAs initialized from linear weight. FDAs of different initialization schemes tend to\nalign the subspace spanned by real data.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "Figure 13: The low-dimensional visualization via t-SNE of FDAs and real data.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "where P l\ni , ˆ P l\ni\nare the projection matrices computed by P ( l )\ni\n=\nU ( l )\ni ( U ( l )\ni ) ⊤ ,\nˆ P ( l )\ni\n=",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "( ˆ\nU ( l )\ni )( ˆ\nU ( l )\ni ) ⊤ . We present more results in Figure 12 .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "Moreover, we adopt the t-SNE visualization to observe whether the optimization process drives\nFDAs closer to the manifold of real features. As shown in Figure 13 , there is no clear evidence that\noptimization process makes the initial anchors closer to the manifold of real data.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "Details of Observation 3. To acquire the parameter update vectors, we follow the finetuning proce-\ndure in Ilharco et al. ( 2022 ) and sample the parameter update vectors from consecutive batches. The\nfine-tuning procedure is performed starting from both the pretrained model and the merged model\nobtained by TA. This yields two sets of updated task vectors: one initialized from the pretrained\nmodel and the other from the merged model. Instead of completing full fine-tuning, we sample 512\nvectors per task and then stop. These sampled vectors are used to span the corresponding cones.\nWe denote the sampled vectors for i -th task as ∆ w i, 1 , . . . , ∆ w i, 512 ∈ R p . We use the τ ′\ni ∈ R p to\ndenote the adaptation direction induced by FDAs. Then, we solve the following non-negative least\nsquare problem to obtain the projection energy ratio:",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "Ratio i = ∥ [∆ w i, 1 , . . . , ∆ w i, 512 ] α i ∥ F",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "∥ τ i ∥ F\n,\nwhere α i = arg min\nα ij ≥ 0\nj =1 ,..., 512\n∥ τ i − [∆ w i, 1 , . . . , ∆ w i, 512 ] α i ∥ 2\nF .",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 21",
+    "page": 27,
+    "text": "21",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "(a) Projection Energy on Pretrained Model (Layer 12)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "(c) Projection Energy on Pretrained Model (Layer 6)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "(b) Projection Energy on Merged Model (Layer 12)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "(d) Projection Energy on Merged Model (Layer 6)",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "Figure 14: Evolution of projection energy ratio on pretrained model and merged model (TA). σ = 10 1 denotes the FDAs initialized by\nsampling from N ( 0 , I d ) and scaling by 10 1 ; “Weight” denotes the FDAs initialized from linear weight.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "(a) Representation bias on Pretrained Model",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "(b) Representation bias on Merged Model",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "Figure 15: The Effect of FDAs in the representation. In general, the adaptation with FDAs substantially mitigates the representation bias\nobserved in both pretrained and merged models.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "Note that solving the above optimization problem, even for a single layer, is nearly intractable.\nTherefore, we compute it separately for the attention block and the MLP layer, and then report the\naveraged energy. We present more visualization of projection energy in Figure 14 and the effects on\nthe representation in Figure 15 . Although the improvement in shallow-layer projection energy is not\nsignificant during the optimization, FDAs still effectively alleviate the overall representation bias.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "In the paper, the task vectors obtained from real data are also projected onto these cones. We take the\nprojection energy ratio as the reference. Specifically, for the pretrained model, we directly use the\ntask vectors corresponding to the publicly available fine-tuned checkpoints; for the merged model,\nwe fine-tune for one epoch to obtain checkpoints, from which the task vectors are generated.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 22",
+    "page": 28,
+    "text": "22",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "Technical Report",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "E\nM ORE R ESULTS AND D ISCUSSIONS FOR S ECTION 5",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "In this section, we first present more experimental details about ablation study. Then, we further\nanalyze the effect of token num in RoBERTa-Base.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "Experimental Details. To observe the effect of different initialization schemes, we follow the same\nconstruction and adaptation settings as in the experiments on ViT-B/32, while only varying the\ninitialization scheme. For the shape of FDAs, we also follow the same construction settings and\nkeep the batch size and learning rates in the adaptation, while varying the shape of FDAs and the\nadaptation steps. For the effect of distance function, we only varies the distance functions both in\nconstruction and adaptation process. For optimization steps, we only vary the optimization steps in\nthe construction phase.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "token num\nCoLA\nSST-2\nMRPC\nSTSB\nQQP\nMNLI\nQNLI\nRTE\nAvg",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "5\n0.2178\n0.9232\n0.8144\n0.4256\n0.8019\n0.7065\n0.7928\n0.7365\n0.6773\n10\n0.2685\n0.9197\n0.8043\n0.1604\n0.8214\n0.7256\n0.8215\n0.7365\n0.6572\n20\n0.2421\n0.9243\n0.8082\n0.0904\n0.8226\n0.7410\n0.8294\n0.7148\n0.6466",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "5\n0.2020\n0.9243\n0.8046\n–\n0.8030\n0.7137\n0.8078\n0.7112\n0.7100\n10\n0.2432\n0.9255\n0.8004\n–\n0.8206\n0.7289\n0.8252\n0.7184\n0.7232\n20\n0.2468\n0.9186\n0.7981\n–\n0.8218\n0.7487\n0.8270\n0.7148\n0.7251",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "Table 8: Performance on each dataset of RoBERTa-Base with different token num . The upper part includes STSB, while the lower part\nexcludes STSB (STSB is denoted as “–”).",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "Further analysis on token num . As shown in the Figure 8 , we observe that the average perfor-\nmance decreases when the token num increases from 5 to 20 for RoBERTa-Base models, which\nappears to contradict the trends observed in ViT-B/32. We further analyze the performance of each\ndataset. As shown in Table 8 , we find that the performance drop is mainly attributed to STSB.\nTherefore, we conduct merging without STSB and observe that the performance consistently in-\ncreases with larger token num , which is consistent with the trend in ViT-B/32. We hypothesize that\nFDAs yield better performance when their shape is closer to that of the real data space.",
+    "images": null
+  },
+  {
+    "doc_id": "2510.21223v1",
+    "title": "Page 23",
+    "page": 29,
+    "text": "23",
+    "images": null
+  }
+]

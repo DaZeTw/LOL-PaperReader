@@ -2,16 +2,18 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useLayoutEffect, useRef, useMemo } from "react"
 import { Send, Loader2, X, Sparkles, History, Trash2, MessageSquarePlus, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils";
 
 interface QAInterfaceProps {
   pdfFile: File
+  tabId?: string // Optional tab ID for unique localStorage keys
   onHighlight?: (text: string | null) => void
   onClose?: () => void
   onNewMessage?: (question: string, answer: string) => void
@@ -36,21 +38,129 @@ interface QAMessage {
   timestamp: Date
 }
 
-export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpen = true, onToggle }: QAInterfaceProps) {
+export function QAInterface({ pdfFile, tabId, onHighlight, onClose, onNewMessage, isOpen = true, onToggle }: QAInterfaceProps) {
+  // CRITICAL: Log immediately when function is called (before any hooks)
+  console.log("[Chat] 🚀 QAInterface FUNCTION CALLED - PDF:", pdfFile?.name, "Tab:", tabId, "isOpen:", isOpen)
+  
   const [question, setQuestion] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isPipelineReady, setIsPipelineReady] = useState<boolean | null>(null)
   const [pipelineStatus, setPipelineStatus] = useState<{building?: boolean, ready?: boolean, chunks?: number, percent?: number, stage?: string, message?: string}>({})
+  // Use simple state - we'll load from localStorage in useLayoutEffect
   const [messages, setMessages] = useState<QAMessage[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  // Add a force update trigger to ensure re-render
+  const [, setForceUpdate] = useState(0)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
   const { toast } = useToast()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const clearedSessionIdsRef = useRef<Set<string>>(new Set())
+  const sessionIdRef = useRef<string | null>(null)
 
-  // Storage key based on PDF filename to maintain separate sessions per PDF
-  const storageKey = `chat_session_${pdfFile.name}`
-  const messagesStorageKey = `chat_messages_${pdfFile.name}`
+  useEffect(() => {
+    sessionIdRef.current = sessionId
+  }, [sessionId])
+  
+  const clearStorageKeysForPdf = (pdfName: string): number => {
+    if (typeof window === "undefined" || !pdfName) {
+      return 0
+    }
+
+    const baseMessagePrefix = `chat_messages_${pdfName}`
+    const baseSessionPrefix = `chat_session_${pdfName}`
+    const keysToRemove: string[] = []
+
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i)
+      if (!key) {
+        continue
+      }
+      if (key.startsWith(baseMessagePrefix) || key.startsWith(baseSessionPrefix)) {
+        keysToRemove.push(key)
+      }
+    }
+
+    keysToRemove.forEach((key) => {
+      window.localStorage.removeItem(key)
+      console.log("[Chat] 🧹 Removed localStorage key during clear:", key)
+    })
+
+    return keysToRemove.length
+  }
+  
+  // Debug: Log when component mounts/updates
+  useEffect(() => {
+    console.log("[Chat] 🎯 QAInterface component mounted/updated - PDF:", pdfFile?.name, "Tab:", tabId)
+  }, [pdfFile?.name, tabId])
+  
+  // CRITICAL: Watch for pdfFile.name changes and force load messages when it becomes available
+  // This handles the case where component mounts before pdfFile.name is set
+  useEffect(() => {
+    if (!pdfFile?.name) {
+      console.log("[Chat] ⏳ Waiting for pdfFile.name to be available...")
+      return
+    }
+    
+    // Force check and load messages from localStorage when pdfFile.name becomes available
+    const currentUniqueKey = tabId ? `${pdfFile.name}_${tabId}` : pdfFile.name
+    const currentMessagesStorageKey = `chat_messages_${currentUniqueKey}`
+    
+    console.log("[Chat] 🔍 WATCHER: pdfFile.name is now available, checking localStorage:", currentMessagesStorageKey)
+    
+    if (typeof window !== 'undefined') {
+      try {
+        let savedMessages = localStorage.getItem(currentMessagesStorageKey)
+        
+        // Fallback: try without tabId
+        if ((!savedMessages || savedMessages.trim() === '[]' || savedMessages.trim() === '') && tabId) {
+          savedMessages = localStorage.getItem(`chat_messages_${pdfFile.name}`)
+        }
+        
+        if (savedMessages && savedMessages.trim() !== '[]' && savedMessages.trim() !== '') {
+          try {
+            const parsedMessages = JSON.parse(savedMessages)
+            if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+              const restoredMessages = parsedMessages.map((msg: any) => ({
+                ...msg,
+                timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+              }))
+              
+              // Only update if we don't already have these messages
+              setMessages((prev) => {
+                if (prev.length === restoredMessages.length) {
+                  const prevQuestions = prev.map(m => m.question).join('|')
+                  const restoredQuestions = restoredMessages.map(m => m.question).join('|')
+                  if (prevQuestions === restoredQuestions) {
+                    return prev
+                  }
+                }
+                console.log("[Chat] 🔍 WATCHER: Loading", restoredMessages.length, "messages from localStorage")
+                return restoredMessages
+              })
+              setShowHistory(true)
+              setForceUpdate(prev => prev + 1)
+              console.log("[Chat] 🔍 WATCHER: Messages loaded and state updated")
+            }
+          } catch (e) {
+            console.warn("[Chat] WATCHER: Failed to parse messages:", e)
+          }
+        }
+      } catch (e) {
+        console.warn("[Chat] WATCHER: Failed to check localStorage:", e)
+      }
+    }
+  }, [pdfFile?.name, tabId])
+
+  // Storage key based on PDF filename AND tab ID to maintain separate sessions per tab
+  // This ensures each tab has its own independent chat history
+  // Use useMemo to ensure stable reference and trigger useEffect correctly
+  const uniqueKey = useMemo(() => {
+    return tabId ? `${pdfFile?.name || ''}_${tabId}` : (pdfFile?.name || '')
+  }, [pdfFile?.name, tabId])
+  
+  const storageKey = useMemo(() => `chat_session_${uniqueKey}`, [uniqueKey])
+  const messagesStorageKey = useMemo(() => `chat_messages_${uniqueKey}`, [uniqueKey])
 
   const suggestedQuestions = [
     "What is the main finding?",
@@ -59,59 +169,172 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
     "What are the key conclusions?",
   ]
 
-  // Initialize session on mount
+  // STEP 1: Load messages from localStorage IMMEDIATELY and FORCE re-render
+  // This runs synchronously before paint, ensuring UI updates immediately
+  useLayoutEffect(() => {
+    // Only proceed if we have valid pdfFile.name
+    if (!pdfFile?.name) {
+      console.log("[Chat] Waiting for pdfFile.name...")
+      return
+    }
+    
+    // Calculate storage key inside useEffect to ensure it's always current
+    const currentUniqueKey = tabId ? `${pdfFile.name}_${tabId}` : pdfFile.name
+    const currentMessagesStorageKey = `chat_messages_${currentUniqueKey}`
+    
+    console.log("[Chat] 📦 STEP 1: Loading from localStorage - Key:", currentMessagesStorageKey, "PDF:", pdfFile.name, "Tab:", tabId)
+    
+    if (typeof window !== 'undefined') {
+      try {
+        // Try to load with current key (includes tabId if available)
+        let savedMessages = localStorage.getItem(currentMessagesStorageKey)
+        console.log("[Chat] 📦 STEP 1: Checking localStorage for key:", currentMessagesStorageKey, "PDF:", pdfFile.name, "Tab:", tabId, "Found:", savedMessages ? "Yes" : "No")
+        
+        // Fallback: If not found and we have tabId, try loading without tabId (for backward compatibility)
+        if ((!savedMessages || savedMessages.trim() === '[]' || savedMessages.trim() === '') && tabId) {
+          const fallbackKey = `chat_messages_${pdfFile.name}`
+          const fallbackMessages = localStorage.getItem(fallbackKey)
+          if (fallbackMessages && fallbackMessages.trim() !== '[]' && fallbackMessages.trim() !== '') {
+            console.log("[Chat] Found history with fallback key (without tabId), using it:", fallbackKey)
+            savedMessages = fallbackMessages
+            // Migrate to new key format for future use
+            try {
+              localStorage.setItem(currentMessagesStorageKey, fallbackMessages)
+            } catch (e) {
+              console.warn("[Chat] Failed to migrate to new key format:", e)
+            }
+          }
+        }
+        
+        // Only load if messages exist AND not empty
+        if (savedMessages && savedMessages.trim() !== '[]' && savedMessages.trim() !== '') {
+          try {
+            const parsedMessages = JSON.parse(savedMessages)
+            if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+              // Restore Date objects from ISO strings
+              const restoredMessages = parsedMessages.map((msg: any) => ({
+                ...msg,
+                timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+              }))
+              console.log("[Chat] ✅ STEP 1: Loaded", restoredMessages.length, "messages from localStorage for", pdfFile.name)
+              
+              // CRITICAL: Use React.startTransition or flushSync to ensure immediate update
+              // Set both states and force update in the same batch
+              setMessages(restoredMessages)
+              setShowHistory(true)
+              // Force a re-render by updating a dummy state
+              setForceUpdate(prev => prev + 1)
+              console.log("[Chat] ✅ STEP 1: State updated synchronously - messages:", restoredMessages.length, "showHistory: true, forceUpdate triggered")
+            } else {
+              console.log("[Chat] ⚠️ STEP 1: No messages in localStorage (empty array)")
+              setMessages([])
+              setShowHistory(false)
+            }
+          } catch (parseError) {
+            console.warn("[Chat] ❌ STEP 1: Failed to parse messages from localStorage:", parseError)
+            localStorage.removeItem(currentMessagesStorageKey)
+            setMessages([])
+            setShowHistory(false)
+          }
+        } else {
+          console.log("[Chat] ⚠️ STEP 1: No messages in localStorage (cleared or empty) for", pdfFile.name)
+          setMessages([])
+          setShowHistory(false)
+        }
+      } catch (e) {
+        console.warn("[Chat] Failed to load messages from localStorage:", e)
+        setMessages([])
+        setShowHistory(false)
+      }
+    }
+    // Run when pdfFile.name or tabId changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pdfFile?.name, tabId])
+
+  // STEP 2: Initialize session (async, but doesn't block history display)
   useEffect(() => {
+    // Only proceed if we have valid pdfFile.name
+    if (!pdfFile?.name) {
+      console.log("[Chat] Waiting for pdfFile.name before initializing session...")
+      return
+    }
+    
+    console.log("[Chat] 🔄 STEP 2: Initializing session for PDF:", pdfFile.name, "Tab:", tabId)
+    
     const initializeSession = async () => {
       try {
-        // FIRST: Load messages from localStorage immediately (instant restore)
-        // Always try to restore history regardless of session verification/pipeline readiness
+        // Recalculate storage keys inside useEffect to ensure they're always current
+        // This is critical because tabId might change and we need the correct keys
+        const currentUniqueKey = tabId ? `${pdfFile.name}_${tabId}` : pdfFile.name
+        const currentStorageKey = `chat_session_${currentUniqueKey}`
+        const currentMessagesStorageKey = `chat_messages_${currentUniqueKey}`
+
+        // CRITICAL: Load messages from localStorage FIRST, before checking session
+        // This ensures messages are available even if session check fails
+        console.log("[Chat] 🔍 STEP 2: Loading messages from localStorage FIRST")
         if (typeof window !== 'undefined') {
           try {
-            const savedMessages = localStorage.getItem(messagesStorageKey)
-            // Only load if messages exist AND not empty
+            let savedMessages = localStorage.getItem(currentMessagesStorageKey)
+            
+            // Fallback: try without tabId
+            if ((!savedMessages || savedMessages.trim() === '[]' || savedMessages.trim() === '') && tabId) {
+              savedMessages = localStorage.getItem(`chat_messages_${pdfFile.name}`)
+            }
+            
             if (savedMessages && savedMessages.trim() !== '[]' && savedMessages.trim() !== '') {
               try {
                 const parsedMessages = JSON.parse(savedMessages)
                 if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
-                  // Restore Date objects from ISO strings
                   const restoredMessages = parsedMessages.map((msg: any) => ({
                     ...msg,
                     timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
                   }))
+                  console.log("[Chat] ✅ STEP 2: Loaded", restoredMessages.length, "messages from localStorage BEFORE session check")
                   setMessages(restoredMessages)
                   setShowHistory(true)
-                  console.log("[Chat] Loaded", restoredMessages.length, "messages from localStorage (pre-backend)")
-                } else {
-                  console.log("[Chat] No messages in localStorage (empty array) - starting fresh")
+                  setForceUpdate(prev => prev + 1)
                 }
-              } catch (parseError) {
-                console.warn("[Chat] Failed to parse messages from localStorage:", parseError)
-                // Clear invalid data
-                localStorage.removeItem(messagesStorageKey)
+              } catch (e) {
+                console.warn("[Chat] STEP 2: Failed to parse messages:", e)
               }
-            } else {
-              console.log("[Chat] No messages in localStorage (cleared or empty) - starting fresh")
             }
           } catch (e) {
-            console.warn("[Chat] Failed to load messages from localStorage:", e)
+            console.warn("[Chat] STEP 2: Failed to load messages:", e)
           }
         }
-
-        // THEN: Check if we have a saved session_id in localStorage
-        const savedSessionId = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
+        
+        // Check if we have a saved session_id in localStorage
+        let savedSessionId = typeof window !== 'undefined' ? localStorage.getItem(currentStorageKey) : null
+        if (savedSessionId && clearedSessionIdsRef.current.has(savedSessionId)) {
+          console.log("[Chat] 🚫 STEP 2: Saved session was cleared earlier, ignoring:", savedSessionId)
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem(currentStorageKey)
+            localStorage.removeItem(currentMessagesStorageKey)
+          }
+          savedSessionId = null
+        }
+        console.log("[Chat] 🔍 STEP 2: Checking localStorage for session:", currentStorageKey, "Found:", savedSessionId ? "Yes" : "No")
         
         if (savedSessionId) {
           // Set session ID immediately so user can chat while we verify
           setSessionId(savedSessionId)
+          console.log("[Chat] ✅ Found saved session ID, verifying with backend:", savedSessionId)
           
-          // Verify session still exists and sync with backend
+          // Verify session still exists and sync with backend (background sync)
+          // This doesn't block UI - history is already shown from localStorage
           try {
+            console.log("[Chat] 🔍 Fetching session from backend:", savedSessionId)
             const sessionResponse = await fetch(`/api/chat/sessions?session_id=${savedSessionId}`)
             if (sessionResponse.ok) {
+              if (clearedSessionIdsRef.current.has(savedSessionId)) {
+                console.log("[Chat] 🚫 STEP 2: Received session verification for cleared session, ignoring:", savedSessionId)
+                return
+              }
               const sessionData = await sessionResponse.json()
               console.log("[Chat] ✅ Verified existing session:", savedSessionId)
               
               // Load chat history from backend and merge with localStorage
+              // Only update if backend has different/more messages
               if (sessionData.messages && sessionData.messages.length > 0) {
                 const historyMessages: QAMessage[] = []
                 let currentQ: { question: string; timestamp: Date } | null = null
@@ -120,8 +343,10 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
                   if (msg.role === "user") {
                     currentQ = { question: msg.content, timestamp: new Date(msg.timestamp) }
                   } else if (msg.role === "assistant" && currentQ) {
+                    // Use message timestamp or generate unique ID
+                    const messageId = msg.timestamp || `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
                     historyMessages.push({
-                      id: msg.timestamp || Date.now().toString(),
+                      id: messageId,
                       question: currentQ.question,
                       answer: msg.content,
                       cited_sections: msg.metadata?.cited_sections,
@@ -133,8 +358,32 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
                 }
                 
                 // Update with backend messages (backend is source of truth)
+                // Only update if we got messages from backend AND they're different from current
+                // This prevents overwriting messages that were just loaded from localStorage
                 if (historyMessages.length > 0) {
-                  setMessages(historyMessages)
+                  // Check if we already have messages (from localStorage) - only update if backend has more/different
+                  setMessages((currentMessages) => {
+                    // If we already have messages loaded from localStorage, be careful about overwriting
+                    if (currentMessages.length > 0) {
+                      // If backend has same or fewer messages, keep localStorage version (it's already displayed)
+                      if (historyMessages.length <= currentMessages.length) {
+                        // Check if messages are the same (compare by question text)
+                        const currentQuestions = currentMessages.map(m => m.question).join('|')
+                        const backendQuestions = historyMessages.map(m => m.question).join('|')
+                        if (currentQuestions === backendQuestions || historyMessages.length < currentMessages.length) {
+                          console.log("[Chat] ⚠️ STEP 2: Keeping localStorage messages (already displayed), backend has same/fewer messages")
+                          return currentMessages
+                        }
+                      }
+                      // Backend has more messages - use backend as source of truth
+                      console.log("[Chat] ✅ STEP 2: Backend has more messages, updating from backend")
+                    } else {
+                      // No current messages, use backend
+                      console.log("[Chat] ✅ STEP 2: No current messages, using backend messages")
+                    }
+                    console.log("[Chat] ✅ STEP 2: Updating messages from backend:", historyMessages.length, "messages")
+                    return historyMessages
+                  })
                   setShowHistory(true)
                   
                   // Save to localStorage for next time (convert Date to ISO string)
@@ -144,12 +393,14 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
                         ...msg,
                         timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
                       }))
-                      localStorage.setItem(messagesStorageKey, JSON.stringify(messagesToSave))
+                      localStorage.setItem(currentMessagesStorageKey, JSON.stringify(messagesToSave))
                     } catch (e) {
                       console.warn("[Chat] Failed to save messages to localStorage:", e)
                     }
                   }
-                  console.log("[Chat] Synced", historyMessages.length, "messages from backend")
+                  console.log("[Chat] Synced", historyMessages.length, "messages from backend (background)")
+                } else {
+                  console.log("[Chat] Backend has no messages, keeping localStorage messages if any")
                 }
               }
             } else if (sessionResponse.status === 404) {
@@ -158,8 +409,8 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
               console.log("[Chat] ⚠️ Session not found in database (404), will create new one")
               // Clear localStorage to avoid confusion
               if (typeof window !== 'undefined') {
-                localStorage.removeItem(storageKey)
-                localStorage.removeItem(messagesStorageKey)
+                localStorage.removeItem(currentStorageKey)
+                localStorage.removeItem(currentMessagesStorageKey)
               }
               await createNewSession()
             } else {
@@ -169,19 +420,14 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
               // Don't throw error, just use what we have
             }
           } catch (error: any) {
-            // Network error or other exception
-            console.warn("[Chat] ⚠️ Error verifying session:", error.message || error)
+            // Network error or other exception - non-blocking
+            console.warn("[Chat] ⚠️ Error verifying session (non-blocking):", error.message || error)
             // Don't create new session on network errors - keep existing one
-            // Only create if we don't have a saved session at all
-            if (!savedSessionId) {
-              console.log("[Chat] No saved session, creating new one")
-              await createNewSession()
-            } else {
-              console.log("[Chat] Keeping existing session ID from localStorage despite verification error")
-            }
+            // User can still chat using localStorage session
           }
         } else {
           // No saved session, create new one
+          console.log("[Chat] No saved session found, creating new session...")
           await createNewSession()
         }
       } catch (error: any) {
@@ -203,7 +449,7 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
       }
     }
 
-    const createNewSession = async () => {
+    const createNewSession = async (retryCount = 0, maxRetries = 2) => {
       try {
         const response = await fetch("/api/chat/sessions", {
           method: "POST",
@@ -221,6 +467,14 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
           const errorData = await response.json().catch(() => ({}))
           const errorMessage = errorData.details || errorData.error || `HTTP ${response.status}: Failed to create session`
           
+          // Special handling for timeout errors - retry with exponential backoff
+          if ((response.status === 504 || response.status === 503) && retryCount < maxRetries) {
+            const delay = Math.min(1000 * Math.pow(2, retryCount), 5000) // Max 5 seconds
+            console.log(`[Chat] Retrying session creation after ${delay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`)
+            await new Promise(resolve => setTimeout(resolve, delay))
+            return createNewSession(retryCount + 1, maxRetries)
+          }
+          
           // Special handling for timeout errors
           if (response.status === 504 || response.status === 503) {
             throw new Error(`Connection timeout: ${errorMessage}. Please check if MongoDB is running and backend is accessible.`)
@@ -232,9 +486,13 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
         const sessionData = await response.json()
         const newSessionId = sessionData.session_id
         
+        // Recalculate storage key inside function to ensure it's current
+        const currentUniqueKey = tabId ? `${pdfFile.name}_${tabId}` : pdfFile.name
+        const currentStorageKey = `chat_session_${currentUniqueKey}`
+        
         // Save session_id to localStorage
         if (typeof window !== 'undefined') {
-          localStorage.setItem(storageKey, newSessionId)
+          localStorage.setItem(currentStorageKey, newSessionId)
         }
         setSessionId(newSessionId)
         console.log("[Chat] Created new session:", newSessionId)
@@ -270,8 +528,10 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
       cancelled = true
       if (timer) clearTimeout(timer)
     }
+    // Include tabId and pdfFile.name in dependencies to ensure we initialize when PDF or tab changes
+    // Use pdfFile?.name to handle cases where pdfFile might be undefined initially
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pdfFile.name])
+  }, [pdfFile?.name, tabId])
 
   const handleAskQuestion = async () => {
     // Block asking if pipeline is not ready
@@ -289,9 +549,14 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
     console.log("[Chat] Current sessionId from state:", sessionId)
     console.log("[Chat] Checking localStorage for sessionId...")
     
+    // Recalculate storage keys to ensure they're current
+    const currentUniqueKey = tabId ? `${pdfFile.name}_${tabId}` : pdfFile.name
+    const currentStorageKey = `chat_session_${currentUniqueKey}`
+    const currentMessagesStorageKey = `chat_messages_${currentUniqueKey}`
+    
     // Also check localStorage to ensure we have the latest session_id
     if (typeof window !== 'undefined') {
-      const storedSessionId = localStorage.getItem(storageKey)
+      const storedSessionId = localStorage.getItem(currentStorageKey)
       console.log("[Chat] Stored sessionId in localStorage:", storedSessionId)
       if (storedSessionId && storedSessionId !== currentSessionId) {
         console.log("[Chat] ⚠️ Warning: localStorage sessionId differs from state, using localStorage value")
@@ -326,7 +591,7 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
         
         // Save session_id to localStorage
         if (typeof window !== 'undefined') {
-          localStorage.setItem(storageKey, currentSessionId)
+          localStorage.setItem(currentStorageKey, currentSessionId)
         }
         setSessionId(currentSessionId)
         console.log("[Chat] Created new session before asking:", currentSessionId)
@@ -380,8 +645,10 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
         throw new Error(data.details || data.error || "Backend service unavailable")
       }
 
+      // Generate unique message ID to avoid React key conflicts
+      const messageId = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
       const newMessage: QAMessage = {
-        id: Date.now().toString(),
+        id: messageId,
         question: currentQuestion,
         answer: data.answer,
         context: undefined,
@@ -391,8 +658,14 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
       }
 
       const updatedMessages = [...messages, newMessage]
+      console.log("[Chat] 💬 Adding new message - total messages:", updatedMessages.length)
+      
+      // CRITICAL: Set messages and showHistory, then force re-render
       setMessages(updatedMessages)
       setShowHistory(true)
+      // Force re-render to ensure UI updates
+      setForceUpdate(prev => prev + 1)
+      console.log("[Chat] 💬 State updated - messages:", updatedMessages.length, "showHistory: true, forceUpdate triggered")
 
       // Save messages to localStorage for persistence (convert Date to ISO string)
       if (typeof window !== 'undefined') {
@@ -401,7 +674,8 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
             ...msg,
             timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
           }))
-          localStorage.setItem(messagesStorageKey, JSON.stringify(messagesToSave))
+          localStorage.setItem(currentMessagesStorageKey, JSON.stringify(messagesToSave))
+          console.log("[Chat] 💬 Saved", updatedMessages.length, "messages to localStorage")
         } catch (e) {
           console.warn("[Chat] Failed to save messages to localStorage:", e)
         }
@@ -433,8 +707,16 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
   }
 
   const handleClearHistory = async () => {
+    // Recalculate storage keys to ensure they're current
+    const currentUniqueKey = tabId ? `${pdfFile.name}_${tabId}` : pdfFile.name
+    const currentStorageKey = `chat_session_${currentUniqueKey}`
+    const currentMessagesStorageKey = `chat_messages_${currentUniqueKey}`
+    
     // Store old session ID before clearing to verify new one is different
     const oldSessionId = sessionId
+    if (oldSessionId) {
+      clearedSessionIdsRef.current.add(oldSessionId)
+    }
     
     // CRITICAL: Clear state FIRST to prevent UI showing old messages
     setMessages([])
@@ -444,11 +726,35 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
     // Clear localStorage messages AND session_id COMPLETELY
     if (typeof window !== 'undefined') {
       try {
-        localStorage.removeItem(messagesStorageKey)
-        localStorage.removeItem(storageKey) // Clear session_id too
-        console.log("[Chat] ✅ Cleared localStorage - messages and session_id removed")
+        let removedCount = 0
+        if (localStorage.getItem(currentMessagesStorageKey) !== null) {
+          localStorage.removeItem(currentMessagesStorageKey)
+          removedCount += 1
+        }
+        if (localStorage.getItem(currentStorageKey) !== null) {
+          localStorage.removeItem(currentStorageKey)
+          removedCount += 1
+        }
+        removedCount += clearStorageKeysForPdf(pdfFile.name)
+        console.log("[Chat] ✅ Cleared localStorage - removed", removedCount, "keys for PDF:", pdfFile.name)
       } catch (e) {
         console.warn("[Chat] Failed to clear messages from localStorage:", e)
+      }
+    }
+    
+    if (oldSessionId) {
+      try {
+        const deleteResponse = await fetch(`/api/chat/sessions/${oldSessionId}`, {
+          method: "DELETE",
+          signal: AbortSignal.timeout(10000),
+        })
+        if (!deleteResponse.ok && deleteResponse.status !== 404) {
+          console.warn("[Chat] ⚠️ Failed to delete old session on clear:", oldSessionId, deleteResponse.status)
+        } else {
+          console.log("[Chat] 🗑️ Deleted old session on clear:", oldSessionId)
+        }
+      } catch (error) {
+        console.warn("[Chat] ⚠️ Error deleting old session on clear:", error)
       }
     }
     
@@ -466,6 +772,8 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
           title: `Chat: ${pdfFile.name} - ${timestamp} - ${randomId}`, // Add timestamp + random to ensure unique session
           initial_message: null,
         }),
+        // Add timeout to prevent hanging (10 seconds should be enough for session creation)
+        signal: AbortSignal.timeout(10000), // 10 seconds timeout
       })
 
       if (response.ok) {
@@ -476,9 +784,9 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
         if (newSessionId !== oldSessionId) {
           // Save new session_id to localStorage IMMEDIATELY
           if (typeof window !== 'undefined') {
-            localStorage.setItem(storageKey, newSessionId)
+            localStorage.setItem(currentStorageKey, newSessionId)
             // CRITICAL: Also clear messagesStorageKey again to ensure it's empty
-            localStorage.removeItem(messagesStorageKey)
+            localStorage.removeItem(currentMessagesStorageKey)
           }
           setSessionId(newSessionId)
           console.log("[Chat] ✅ Created NEW session after clear:", newSessionId)
@@ -487,8 +795,8 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
           console.warn("[Chat] ⚠️ Warning: New session ID matches old one! Backend may have returned existing session.")
           // Still set it anyway to continue
           if (typeof window !== 'undefined') {
-            localStorage.setItem(storageKey, newSessionId)
-            localStorage.removeItem(messagesStorageKey)
+            localStorage.setItem(currentStorageKey, newSessionId)
+            localStorage.removeItem(currentMessagesStorageKey)
           }
           setSessionId(newSessionId)
         }
@@ -506,6 +814,11 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
   }
 
   const handleNewChat = async () => {
+    // Recalculate storage keys to ensure they're current
+    const currentUniqueKey = tabId ? `${pdfFile.name}_${tabId}` : pdfFile.name
+    const currentStorageKey = `chat_session_${currentUniqueKey}`
+    const currentMessagesStorageKey = `chat_messages_${currentUniqueKey}`
+    
     try {
       setIsInitializing(true)
       
@@ -516,7 +829,13 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
       // Clear localStorage messages
       if (typeof window !== 'undefined') {
         try {
-          localStorage.removeItem(messagesStorageKey)
+          let removedCount = 0
+          if (localStorage.getItem(currentMessagesStorageKey) !== null) {
+            localStorage.removeItem(currentMessagesStorageKey)
+            removedCount += 1
+          }
+          removedCount += clearStorageKeysForPdf(pdfFile.name)
+          console.log("[Chat] ✅ Cleared", removedCount, "localStorage keys before starting new chat for PDF:", pdfFile.name)
         } catch (e) {
           console.warn("[Chat] Failed to clear messages from localStorage:", e)
         }
@@ -552,7 +871,7 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
       
       // Save new session_id to localStorage
       if (typeof window !== 'undefined') {
-        localStorage.setItem(storageKey, newSessionId)
+        localStorage.setItem(currentStorageKey, newSessionId)
       }
       setSessionId(newSessionId)
       console.log("[Chat] Created new chat session:", newSessionId)
@@ -573,6 +892,24 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
     }
   }
 
+  // CRITICAL: Auto-show history when messages are loaded
+  // This ensures history is visible even if showHistory wasn't set properly during load
+  useEffect(() => {
+    console.log("[Chat] 🔔 Checking messages state - messages.length:", messages.length, "showHistory:", showHistory)
+    if (messages.length > 0) {
+      if (!showHistory) {
+        console.log("[Chat] 🔔 Auto-showing history - messages found but showHistory was false")
+        setShowHistory(true)
+        setForceUpdate(prev => prev + 1)
+      }
+      console.log("[Chat] 🔔 History should be visible - messages:", messages.length, "showHistory:", showHistory)
+    }
+  }, [messages.length, showHistory, messages])
+  
+  // Debug: Log render with current state
+  const shouldShowHistory = messages.length > 0
+  console.log("[Chat] 🎨 RENDER - messages:", messages.length, "showHistory:", showHistory, "shouldShowHistory:", shouldShowHistory)
+  
   // Auto-scroll to bottom when new message is added
   useEffect(() => {
     if (showHistory && messages.length > 0 && scrollAreaRef.current) {
@@ -634,7 +971,8 @@ export function QAInterface({ pdfFile, onHighlight, onClose, onNewMessage, isOpe
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
           {/* History Section */}
-          {showHistory && messages.length > 0 && (
+          {/* CRITICAL: Always show history if we have messages - don't rely on showHistory state */}
+          {shouldShowHistory && (
             <div
               ref={scrollAreaRef}
               className="flex-1 min-h-0 overflow-y-auto border-b border-border"

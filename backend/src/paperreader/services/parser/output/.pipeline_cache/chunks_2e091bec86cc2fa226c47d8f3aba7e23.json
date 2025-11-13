@@ -1,0 +1,996 @@
+[
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Kyle Lo 𝛼 Joseph Chee Chang 𝛼 Andrew Head 𝜓 Jonathan Bragg 𝛼 Amy X. Zhang 𝜔 Cassidy Trier 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Chloe Anastasiades 𝛼 Tal August 𝛼 Russell Authur 𝛼 Danielle Bragg 𝜌 Erin Bransom 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Isabel Cachola 𝜄 Stefan Candra 𝛼 Yoganand Chandrasekhar 𝛼 Yen-Sung Chen 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Evie Yu-Yen Cheng 𝛼 Yvonne Chou 𝛼 Doug Downey 𝛼 Rob Evans 𝛼 Raymond Fok 𝜔",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Fangzhou Hu 𝛼 Regan Huff 𝛼 Dongyeop Kang 𝜐 Tae Soo Kim 𝜅 Rodney Kinney 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Aniket Kittur 𝜒 Hyeonsu Kang 𝜒 Egor Klevak 𝛼 Bailey Kuehl 𝛼 Michael Langan 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Matt Latzke 𝛼 Jaron Lochner 𝛼 Kelsey MacMillan 𝛼 Eric Marsh 𝛼 Tyler Murray 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Aakanksha Naik 𝛼 Ngoc-Uyen Nguyen 𝛼 Srishti Palani 𝜎 Soya Park 𝜏 Caroline Paulic 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Napol Rachatasumrit 𝜒 Smita Rao 𝛼 Paul Sayre 𝛼 Zejiang Shen 𝜏 Pao Siangliulue 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Luca Soldaini 𝛼 Huy Tran 𝛼 Madeleine van Zuylen 𝛼 Lucy Lu Wang 𝜔",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Christopher Wilhelm 𝛼 Caroline Wu 𝛼 Jiangjiang Yang 𝛼 Angele Zamarron 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Marti A. Hearst 𝛽 Daniel S. Weld 𝛼",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "𝛼 Allen Institute for AI 𝜔 University of Washington\n𝛽 University of California, Berkeley\n𝜓 University of Pennsylvania\n𝜒 Carnegie Mellon University 𝜏 Massachusetts Institute of Technology 𝜅 KAIST\n𝜄 Johns Hopkins University 𝜐 University of Minnesota 𝜎 University of California, San Diego\n𝜌 Microsoft Research",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "{kylel,josephc,jbragg,cassidyt,danw}@allenai.org,head@seas.penn.edu,axz@cs.uw.edu,hearst@berkeley.edu",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "ABSTRACT",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "Scholarly publications are key to the transfer of knowledge from\nscholars to others. However, research papers are information-dense,\nand as the volume of the scientific literature grows, the need for new\ntechnology to support the reading process grows. In contrast to the\nprocess of finding papers, which has been transformed by Internet\ntechnology, the experience of reading research papers has changed\nlittle in decades. The PDF format for sharing papers is widely used\ndue to its portability, but it has significant downsides including:\nstatic content, poor accessibility for low-vision readers, and diffi-\nculty reading on mobile devices. This paper explores the question\n“Can recent advances in AI and HCI power intelligent, interactive,\nand accessible reading interfaces—even for legacy PDFs?” We de-\nscribe the Semantic Reader Project, a collaborative effort across\nmultiple institutions to explore automatic creation of dynamic read-\ning interfaces for research papers. Through this project, we’ve de-\nveloped ten research prototype interfaces and conducted usability\nstudies with 300+ participants and real-world users showing im-\nproved reading experiences for scholars. We’ve also released",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "we’ve de-\nveloped ten research prototype interfaces and conducted usability\nstudies with 300+ participants and real-world users showing im-\nproved reading experiences for scholars. We’ve also released a pro-\nduction research paper reader that will incorporate novel features\nas they mature. We structure this paper around challenges scholars\nand the public face when reading research papers—discovery, effi-\nciency, comprehension, synthesis, and accessibility—and present\nan overview of our progress and remaining open challenges.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "1\nINTRODUCTION",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "The exponential growth of scientific publication [ 7 , 8 ] and increas-\ning interdisciplinary nature of scientific progress [ 71 , 94 ] makes",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "∗ [ .......\nClick...to.......\nopen....\nin.....\nthe ............\nSemantic..........\nReader ]\n[ .............\nDownload.....\nthe ..........\nversion.......\nwith .........\nalt-text ]",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "it increasingly hard for scholars to keep up with the latest devel-\nopments. Academic search engines, such as Google Scholar and\nSemantic Scholar help scholars discover research papers. Auto-\nmated summarization for research papers [ 11 ] helps scholars triage\nbetween research papers. But when it comes to actually reading\nresearch papers, the process, based on a static PDF format, has\nremained largely unchanged for many decades. This is a problem\nbecause digesting technical research papers is difficult [2, 5].\nIn contrast, interactive and personalized documents have seen\nsignificant adoption in domains outside of academic research. For\nexample, news websites such as the New York Times often present\ninteractive articles with explorable visualizations that allow read-\ners to understand complex data in a personalized way. E-readers,\nsuch as the Kindle, provide in-situ context to help readers better\ncomprehend complex documents, showing inline term definitions\nand tracking occurrence of characters in a long novel. While prior\nwork has focused on authoring support tools [ 21 , 22 , 54 ] that can\nreduce effort in creating interactive scientific documents [ 34 , 38 ],\nthey have not seen w",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "through AI-Powered Interactive Reading Interfaces ∗",
+    "page": 1,
+    "text": "aracters in a long novel. While prior\nwork has focused on authoring support tools [ 21 , 22 , 54 ] that can\nreduce effort in creating interactive scientific documents [ 34 , 38 ],\nthey have not seen widespread adoption due to a lack of incentive\nstructure [ 27 ]. Furthermore, millions of research papers are locked\nin the rigid and static PDF format, whose low-level syntax makes\nit extremely difficult for systems to access semantic content, aug-\nment interactivity, or even provide basic reading functionality for\nassistive tools like screen readers [6].\nFortunately, recent work on layout-aware document parsing [ 39 ,\n86 , 104 ] and large language models [ 4 , 10 , 83 ] show promise for\naccessing the content of PDF documents, and building systems that\ncan better understand their semantics. This raises an exciting chal-\nlenge: Can we create intelligent, interactive, and accessible reading\ninterfaces for research papers, even atop existing PDFs?",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 2",
+    "page": 2,
+    "text": "Lo and Chang, et al.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 2",
+    "page": 2,
+    "text": "Figure 1: The Semantic Reader Project consists of research, product, and open science resources. The Semantic Reader product 1",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 2",
+    "page": 2,
+    "text": "is a free interactive interface for research papers. It supports standard reading features (e.g., (A) table of contents), integration\nwith Semantic Scholar (e.g., (B) save to library), useful augmentations atop the existing PDF (e.g., (C) in-situ Paper Cards when\nclicking inline citations), and integration with third-party features (e.g. (D) Hypothes.is 5 for user highlights). We continues to\nintegrate research features into this product as they mature (e.g., (E) Scim automated highlights §3.1).",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 2",
+    "page": 2,
+    "text": "To explore this question, we present the Semantic Reader\nProject , a broad collaborative effort across multiple non-profit,\nindustry, and academic institutions to create interactive, intelligent\nreading interfaces for research papers. This project consists of three\npillars: research, product, and open science resources. On the re-\nsearch front, the Semantic Reader Project combines AI and HCI\nresearch to design novel, AI-powered interactive reading interfaces\nthat address a variety of user challenges faced by today’s scholars.\nWe developed research prototypes and conducted usability studies\nthat clarify their benefits. On the product front, we are developing\nthe Semantic Reader (Figure 1), 1 a freely available reading interface\nthat integrates features from research prototypes as they mature. 2",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 2",
+    "page": 2,
+    "text": "Finally, we are developing and releasing open science resources\nthat drive both the research and the product. These resources to-\ngether open-source software, 3,4 AI models [ 11 , 20 , 42 , 86 ], and open\ndatasets [50, 61] to support continued work in this area.\nIn this paper, we focus on summarizing our efforts under the\nresearch pillar of the Semantic Reader Project. We structure our\ndiscussion around five broad challenges faced by readers of research\npapers:",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 2",
+    "page": 2,
+    "text": "• Discovery: Following paper citations is one of the main\nstrategies that scholars employ to discover additional rel-\nevant papers, but keeping track of the large numbers of\ncitations can be overwhelming. In §2, we explore ways to\nvisually augment research papers to help readers prioritize\ntheir paper exploration during literature reviews.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 2",
+    "page": 2,
+    "text": "1 Semantic Reader: https://www.semanticscholar.org/product/semantic-reader\n2 Available for over 369K papers as of February 2023.\n3 For UI development: https://github.com/allenai/pdf-component-library\n4 For processing PDFs: https://github.com/allenai/papermage\n5 Hypothes.is: https://web.hypothes.ishttps://web.hypothes.is",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 2",
+    "page": 2,
+    "text": "• Efficiency: The exponential growth of publication makes it\ndifficult for scholars to keep up-to-date with the literature—\nscholars need to skim and read many papers while making\nsure they capture enough details in each. In §3, we explore\nhow support for non-linear reading can help readers con-\nsume research papers more efficiently.\n• Comprehension: Research papers can be dense and contain\nterms that are unfamiliar either because the author newly in-\ntroduces them or assumes readers have prerequisite domain\nknowledge. In §4, we explore how providing in-situ defini-\ntions and summaries can benefit readers especially when\nreading outside of their domains.\n• Synthesis: The sensemaking [ 84 ] process of synthesizing\nknowledge scattered across multiple papers is effortful but\nimportant. It allows scholars to make connections between\nprior work and identify opportunities for future research. In\n§5, we explore how to help readers collect information from\nand make sense of many papers to gain better understanding\nof broad research topics.\n• Accessibility: Static PDFs are an ill-suited format for many\nreading interfaces. For example, PDFs are notoriously in-\ncompatible with screen readers,",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 2",
+    "page": 2,
+    "text": " better understanding\nof broad research topics.\n• Accessibility: Static PDFs are an ill-suited format for many\nreading interfaces. For example, PDFs are notoriously in-\ncompatible with screen readers, and represent a significant\nbarrier for blind and low vision readers [ 6 ]. Furthermore,\nan increasing number of scholars access content on mobile\ndevices, on which PDFs of papers are difficult to read. In §6,\nwe explore methods for converting legacy papers to more\naccessible representations.\nSpecifically, we present ten research prototypes developed in the\nSemantic Reader Project—CiteSee [ 15 ], CiteRead [ 82 ], Scim [ 28 ],\nOcean [ 75 ], ScholarPhi [ 33 ], Paper Plain [ 1 ], Papeo [ 92 ], Threddy [ 43 ],",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "The Semantic Reader Project",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "Figure 2: CiteSee [15] highlights citations to familiar papers\n(e.g., recently read or saved in their libraries) as well as unfa-\nmiliar papers to help readers avoid overlooking important\ncitations when conducting literature reviews. Clicking on\nExpand surfaces additional context, such as citing sentences\nfrom recently read papers.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "Relatedly [ 73 ], and SciA11y [ 91 , 97 ]—and explain how they address\nthese reading challenges. We conclude by discussing ongoing re-\nsearch opportunities in both AI and HCI for developing the future\nof scholarly reading interfaces. We provide pointers to our produc-\ntion reading interface and associated open resources to invite the\nbroader research community to join our effort.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "2\nUNLOCKING CITATIONS FOR DISCOVERY",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "Scholars use many methods to discover relevant research papers\nto read, including search engines, word of mouth, and browsing\nfamiliar venues. However, once they find one research paper, it’s\nespecially common for scholars to use its references and citations\nto further expand their knowledge of a research area. This behavior,\nsometimes referred to as forward/backward chaining or footnote\nchasing , is ubiquitous and has been observed across many schol-\narly disciplines [ 74 ]. Supporting this, one popular feature in the\nSemantic Reader 1 is in-situ Paper Cards that pop up when readers\nclick on an inline citation, dramatically reducing the interaction\ncost caused by jumping back-and-forth between inline citations\nand their corresponding references at the end of a research paper\n(Figure 1). Despite this affordance, during literature reviews, read-\ners may still be overwhelmed trying to make sense of the tens to\nhundreds of inline citations in each paper [ 15 , 24 , 77 ]. Conversely,\nwhen reading a given paper, a reader cannot see relevant follow-on\nresearch papers that cited the current paper. Here we discuss how\ninteractive reading interfaces can help scholars more effectively\nexplor",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "reading a given paper, a reader cannot see relevant follow-on\nresearch papers that cited the current paper. Here we discuss how\ninteractive reading interfaces can help scholars more effectively\nexplore citations to important relevant work in both directions with\ntwo systems called CiteSee [15] and CiteRead [82].",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "2.1\nAugmenting Citations with CiteSee",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "While most prior work on supporting research paper discovery has\nfocused on developing bespoke interfaces of recommender systems\nor visualizations based on paper contents [ 78 , 89 ], the citation graph\n[ 16 , 30 , 32 , 40 , 63 , 80 , 103 ], or a combination of the two [ 20 , 96 ],\nresearch paper discovery via inline citations in a reading interface is\nimportant but under-explored. One study estimates that reading and",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "exploring inline citations accounts for around one in five research\npaper discoveries during active research [ 49 ]. However, while all\ninline citations are relevant to the current research paper, it is likely\nthat some are more relevant to the current reader than others. For\nexample, a reader reading papers about aspect extraction of online\nproduct reviews to learn more about natural language processing\ntechniques would be less interested in citations to research papers\naround e-commerce and marketing . In addition, citations to the same\nresearch papers often have different surface forms across papers\n(i.e., reference numbers), making it all the more difficult for readers\nto keep track of all the inline citations they should explore or have\nalready explored during literature reviews.\nTo address this, CiteSee provides a personalized research paper\nreading experience by automatically identifying and resolving in-\nline citations in PDFs to research paper entities in our academic\ngraph [ 50 ], and visually augmenting inline citations based on their\nconnections to the current reader. First, CiteSee leverages a reader’s\nreading behavior and history as a way to capture their short-term\na",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "50 ], and visually augmenting inline citations based on their\nconnections to the current reader. First, CiteSee leverages a reader’s\nreading behavior and history as a way to capture their short-term\nand fluid interests during literature reviews. Using this signal, Cite-\nSee scores and highlights inline citations to help the reader triage\nthem and discover prior work that are likely relevant to their liter-\nature review topics (Figure 2). Second, CiteSee leverages research\npapers saved in the reader’s Semantic Scholar paper library and the\nreader’s publication record [ 50 ] to understand their longer-term\nresearch interests. Using this signal, CiteSee changes the colors of\nthe inline citations to familiar papers so that the reader can both\nbetter contextualize the current paper and keep track of citations\nto papers they have already explored. In addition, CiteSee also\nhelps readers better make sense of the cited papers by showing\nhow they connect to a reader’s previous activities; for example,\nshowing which library folders they were saved under or the cit-\ning sentences from a familiar research paper (Figure 2). Based on\nlab and field studies, CiteSee showed promise that providing v",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "xample,\nshowing which library folders they were saved under or the cit-\ning sentences from a familiar research paper (Figure 2). Based on\nlab and field studies, CiteSee showed promise that providing vi-\nsual augmentation and personalized context around inline citations\nin an interactive reading environment can allow readers to more\neffectively discover relevant prior work and keep track of their\nexploration during real-world literature review tasks.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "2.2\nExploring Future Work with CiteRead",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 3",
+    "page": 3,
+    "text": "While augmenting inline citations helps readers to triage them,\nmany relevant research papers are not cited in a research paper in\nthe first place, for example, because they were published afterwards.\nCiteRead is a novel reading interface that helps readers discover\nhow follow-on work has built on or engaged with the research\npaper [ 82 ]. Much like social document annotation systems [ 109 ],\nCiteRead annotates text in the paper with margin notes containing\nrelevant commentary from citing papers [ 70 ], thereby helping the\nreader to become aware of the citing paper and its connection. In\norder to produce these annotations automatically, CiteRead first\nfilters citing research papers for ones that are most relevant to the\nreader using a trained model atop a number of features representing\ncitational discourse and textual similarity, i.e. from scientific paper\nembeddings [ 20 ]. CiteRead then localizes citing papers to partic-\nular spans of text in the paper being read, and extracts relevant\ninformation from the citing paper. Figure 3 shows a research paper\nannotated with this information from citing papers. Localization is",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "Lo and Chang, et al.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "Figure 3: CiteRead [82] finds subsequently published citing\nresearch papers, extracts the citation context, and localizes\nit to relevant parts of the current research paper as margin\nnotes. This allows readers to become aware of important fol-\nlow on work and explore them in-situ.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "a technical challenge because while inline citations reference cited\npapers, they do not typically reference specific locations in the cited\npaper; CiteRead determines location by looking for overlapping\nspans of text (e.g., a number in common in the citing paper and\nthe cited paper) or localizes to the relevant section when this over-\nlap is unavailable. With CiteRead, a reader can directly examine\nfollow-on work while keeping the citation contexts of both the\ncurrent paper and the citing paper. In a lab study, CiteRead helped\nreaders better understand a research paper and its follow-on work\ncompared to providing readers with a separate interface for faceted\nbrowsing of follow-on work.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "3\nNAVIGATION AND EFFICIENT READING",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "An important part of reading a paper is knowing what and where\nto read. Scholars often read papers non-linearly; they might return\nto a previously-read passage to recall some information, or jump\nforward to a different section of the paper (or to another paper) to\nsatisfy an information need before jumping back. While jumping\ncan help scholars orient their reading to sections of interest, it\ncan also be a distraction by causing readers to constantly switch\ncontexts. Non-linear navigation can be especially burdensome when\nthe reader is interested in a particular type of information (e.g.,\nskimming a paper for the main results), but doesn’t know precisely\nwhere to find it within the paper. In this section we discuss two\nsystems, Scim [ 28 ] and Ocean [ 75 ], which demonstrate different\napproaches to helping readers navigate efficiently through a paper\ntoward high-value, relevant information.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "3.1\nGuided Reading with Scim",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "Scholarly reading can be considered a type of sensemaking rep-\nresented as a continuous interplay between two processes: infor-\nmation foraging in which readers identify relevant paper content,\nand comprehension in which readers attempt to integrate the new\ninformation into their working model of the paper and with rel-\nevant prior knowledge [ 79 , 84 ]. Distinguishing between relevant\nand irrelevant content could help facilitate efficient reading. Paper",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "Figure 4: The Scim [28] interface guides reader attention\nusing color highlights corresponding to discourse facets. A\nsidebar allows users to toggle facets on/off. Clicking a color-\ncoded snippet scrolls the reader to the relevant passage.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "abstracts offer one such separation, in essence an author-crafted\ndetermination of relevant content. However, static paper abstracts\ncan leave readers to desire additional details that then require them\nto skim the paper itself.\nScim [ 28 ] addresses this problem via an augmented reading\ninterface designed to guide readers’ attention using automatically-\ncreated in-situ faceted highlights (Figure 4). Though prior work\nhas explored highlighting as a visual cue for guiding reader atten-\ntion [ 18 , 102 , 105 ], the efficacy for reading of scholarly text is less\nwell-understood. Scim investigated the following design goals for\nintelligent highlights in scholarly reading: highlights should be\n(1) evenly-distributed throughout a paper, (2) have just the right\ndensity (too few highlights will present the guise of an inept tool,\nand too many will slow a reader down), and (3) highlight several\nkey categories of information in the paper. Because readers often\nskim for common types of information, Scim uses a pretrained lan-\nguage model [ 99 ] to classify salient sentences within papers into\none of four information facets: research objectives, novel aspects\nof the research, methodology, and ",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "n, Scim uses a pretrained lan-\nguage model [ 99 ] to classify salient sentences within papers into\none of four information facets: research objectives, novel aspects\nof the research, methodology, and results, coupled with heuristics\nthat ensure an even distribution of highlights. Usability studies\nof Scim have shown these highlights can reduce the time it takes\nreaders to find specific information within a paper. Readers found\nScim particularly useful when skimming text-dense papers, or for\npapers that fell outside their area of expertise. Moreover, readers\nlearned to use both Scim’s inline highlights and a sidebar summary\nof highlights to augment their existing reading strategies.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "3.2\nLow-Vision Navigation Support and\nReader-Sourced Hyperlinks with Ocean",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 4",
+    "page": 4,
+    "text": "The task of navigating between sections and retrieving content\ncan be particularly challenging for blind and low-vision readers\ndue to limitations in auditory information access or small view-\nports under high magnification [ 90 ]. Even when related content\nis linked, a small viewport can make navigation difficult and ne-\ncessitate scrolling [ 75 ]. Most existing tools such as for auditory\nskimming [ 45 ] do not address such challenges associated with low-\nvision and magnification.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "The Semantic Reader Project",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "Ocean [ 75 ] minimizes scrolling requirements for low-vision read-\ners by providing bi-directional, viewport-preserving hyperlinks that\nenable navigating to and from associated content without disrupt-\ning the viewport. Based on reported findings from interviews with\nlow-vision readers, Ocean also allows for easily revisiting portions\nof the paper with tabbed reading. Since papers do not always pro-\nvide hyperlinks and automated link creation is imperfect, Ocean\nincludes an authoring interface that allows readers to create and\nshare paper links during reading. An exploratory field deployment\nstudy with mixed-ability groups of low-vision and sighted readers\nrevealed that readers found value in creating and consuming these\nlinks, and that reader-created links can increase trust.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "4\nIN-SITU EXPLANATIONS FOR BETTER\nCOMPREHENSION",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "Could an augmented reading application help readers understand\na paper by reducing the cognitive load associated with reading a\npaper? In this section, we discuss several ways in which interac-\ntive reading aids can help a reader understand a paper with less\nwork through three systems: ScholarPhi [ 33 ], PaperPlain [ 1 ] and\nPapeo [ 92 ]. In particular, papers can be augmented with definitions\nof terms and symbols, provide plain-language summaries of paper\npassages, and connect readers with alternative forms of expres-\nsion (for instance, video clips of research talks) that offer more\napproachable explanations of the paper’s content.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "4.1\nDefining Terms and Symbols with\nScholarPhi",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "Understanding a paper requires understanding its vocabulary. How-\never, this is by no means an easy task—a typical paper may contain\ndozens of acronyms, symbols, and invented terms. And often, these\nterms appear without accompanying definitions [ 69 ]. How can we\ndesign interactive aids that present definitions of terms when and\nwhere readers most need them? ScholarPhi [ 33 ] takes as its basis\nthe term gloss—an extension to a reading interface that shows a\nreader an explanation of a phrase when they click it. Glosses ap-\npeared in early research interfaces for reading hypertext [ 107 ] and",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "Figure 5: ScholarPhi [33] shows definitions of terms and\nsymbols in pop-up tooltips. When a reader selects a formula,\nall known definitions of symbols are shown simultaneously.\nTo let readers select nested symbols (e.g., “ ℎ ” in “ 𝑉 ( 𝑗 )\nℎ\n”), Schol-\narPhi supports “drill-down” subsymbol selection.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "Figure 6: Paper Plain [1] provides in-situ plain language\nsummaries of passages called “gists” to help readers who are\noverwhelmed by complex textual passages. Readers access\ngists by clicking a flag next to a section header. These gists\nare generated by large language models.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "have since become part of widely-used reading interfaces including\nWikipedia and Kindle.\nThat said, familiar gloss designs do not work well for scientific\npapers, where glosses run the risk of distracting readers, terms have\nmultiple meanings, and phrases (specifically math symbols) are dif-\nficult to unambiguously select. The ScholarPhi design addresses\nthese challenges. First, it aims to reduce distraction by showing def-\ninitions with high economy: glosses show multiple definitions and\nand in-context usages within a compact tooltip. Second, it provides\nposition-sensitive definitions, revealing definitions that appears\nmost recently prior to the selected usages of terms. Terms and def-\ninitions are automatically identified using a pretrained language\nmodel [ 42 ]. Finally, it provides easier access to definitions of math-\nematical symbols. Readers can access definitions of both a symbol\nand the subsymbols it is made of through a multi-click, “drill-down”\nselection mechanism. Furthermore, when a reader selects a formula,\nthey can see definitions for all symbols at once, automatically placed\nadjacent to the symbols in the formula’s margins (see Figure 5).\nIn a usability study, the ",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "ore, when a reader selects a formula,\nthey can see definitions for all symbols at once, automatically placed\nadjacent to the symbols in the formula’s margins (see Figure 5).\nIn a usability study, the above interactions reduced the time\nit took readers to find answers to questions involving the under-\nstanding of terminology. All readers reported they would use the\ndefinition tooltips and formula diagrams often or always if available\nin their PDF reader tools.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "4.2\nSimplifying Complex Passages with Paper\nPlain",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 5",
+    "page": 5,
+    "text": "Helping a reader understand individual terms and phrases only\naddresses part of the problem. Papers often contain passages so\ndense and complex that individual definitions are not enough to\nhelp someone read the passages, especially if they are a novice\nor non-expert in a field [ 9 ]. Can we make complex texts more\napproachable by incorporating plain language summaries in the\nmargins of the text? With Paper Plain [ 1 ], when a reader encounters\na section they find difficult to read, they can access a plain language\nsummary of that section by clicking a button adjacent to the section",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "Lo and Chang, et al.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "header (see Figure 6). These summaries are generated by prompting\na large language model with section text [10].\nFurthermore, Paper Plain helps guide readers using these sum-\nmaries as an “index” into the text. A sidebar containing questions\na reader may have about the text (e.g., What did the paper find?\nor What were the limitations? ) provides links into answering pas-\nsages identified using a question-answering system [ 106 ] alongside\ntheir associated plain language summaries. These features were\ndesigned to help readers understand the “gist” of passages that\ncontain unfamiliar vocabulary, providing support beyond that of\nindividual term definitions. Drawing inspiration from prior interac-\ntive reading affordances for term definitions [ 41 ], in-situ question\nanswering [ 17 , 108 ], and guiding reading [ 26 ], Paper Plain seeks\nto bring these features together into a holistic system capable of\nsupporting reading of a paper by a non-expert readership. In a us-\nability study, readers made more frequent use of passage summaries\nthan definition tooltips when both were available, suggesting the\npotential value of plain language summaries as allowing readers\nto bypass definitions of ",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": " made more frequent use of passage summaries\nthan definition tooltips when both were available, suggesting the\npotential value of plain language summaries as allowing readers\nto bypass definitions of individual terms when acquiring a broad\nunderstanding of a paper.\n4.3\nFusing Papers and Videos with Papeo",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "Sometimes, the best explanation of an idea is non-textual. Videos\ncan enhance understanding [ 65 ] while also requiring less mental\nload [ 66 ], and various tools have been designed to facilitate search-\ning and browsing for explanations in informational videos such\nas lectures [ 47 , 52 , 57 , 76 ] and tutorials [ 46 , 48 , 93 ]. Similarly, for\nresearch papers, an algorithm might be better explained through an\nanimation, a user interface might be better showcased through an\nscreen recording, compared to the proses of a paper [ 37 ]. Instead\nof consuming the two formats independently, could interactive\nreading interfaces offer readers access to these alternative, more\npowerful descriptive forms as they read? For this, Papeo [ 92 ] was\ndeveloped as a tool that supplements papers with more engaging,\nconcise, dynamic presentations of information by linking excerpts\nof talk videos to corresponding paper passages. To grant authors\nmore control over how their work is presented, we developed an AI-\nsupported authoring interface for linking paper passages and videos\nefficiently: candidate passages are linked to excerpts of videos as\nsuggestions using a pretrained language model [ 100 ], an",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "an AI-\nsupported authoring interface for linking paper passages and videos\nefficiently: candidate passages are linked to excerpts of videos as\nsuggestions using a pretrained language model [ 100 ], and an author\ninteractively confirms or refines them.\nUnlike text-skimming with Scim (§3.1) and Paper Plain (§4.2),\nvideo-skimming in Papeo combines multiple modalities to explain\ncomplex information. For example, instead of reading a long text\ndescription of an interactive system, readers could see the system’s\nbehavior in a screen recording video with the author’s commentary,\nand switch to corresponding passages to see implementation details\nor design motivations if desired. Our early-stage evaluations of\nPapeo suggest that readers can use these interactions to fluidly\ntransition between watching video and reading text, using video to\nquickly understand, and then selectively descending into the text\nwhen they desire a detailed understanding of the paper.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "5\nSCAFFOLDING SYNTHESIS WITH RELATED\nWORK SECTIONS",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "Scientific breakthroughs often rely upon scholars synthesizing mul-\ntiple published works into broad overviews to identify gaps in the",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "Figure 7: Papeo [92] enables authors to map segments of talk\nvideos to relevant passages in the paper, allowing readers to\nfluidly switch between the two formats. Color-coded bars\nshow the mapping between the two formats, and allow read-\ners to scrub through video segments for quick previews.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "current literature [ 81 ]. For this, scholars periodically compile sur-\nvey articles to help other scholars gain a comprehensive overview\nof important research topics. For example, some fields have ded-\nicated outlet for such articles (e.g., the Psychological Bulletin [ 5 ]).\nHowever, survey articles require significant time and effort to syn-\nthesize, and can quickly become outdated with the exponential\ngrowth of scientific publication [7].\nInstead, scholars in fast-paced disciplines often rely on the re-\nlated work section when they need to better understand the broader\nbackground when reading a paper. While related work sections also\nsummarize multiple prior works, unlike comprehensive survey arti-\ncles, they typically provide partial views of the larger research topic\nmost relevant to a single paper. There is an opportunity to build bet-\nter tooling for scholars to consume and synthesize multiple related\nwork sections across many papers to gain richer and more compre-\nhensive overviews of fast-paced domains. The Threddy [ 43 ] and\nRelated [ 73 ] projects explored this opportunity using two different\napproaches: clipping and organizing research threads mentioned\nacross papers [ ",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "iews of fast-paced domains. The Threddy [ 43 ] and\nRelated [ 73 ] projects explored this opportunity using two different\napproaches: clipping and organizing research threads mentioned\nacross papers [ 43 ], and directly exploring and reading related work\nsections extracted across many papers [73].",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "5.1\nClipping and Synthesizing across Papers\nwith Threddy",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 6",
+    "page": 6,
+    "text": "Clipping and note-taking is one common approach to supporting\nsynthesis across multiple documents. Prior work has pointed to\nthe importance of tightly integrating clipping and synthesis sup-\nport in the reading process, and how incurring significant context-\nswitching costs can be detrimental to sensemaking [ 51 , 79 , 84 ].\nTherefore, recent work has developed tools aimed at reducing the\ncognitive and interaction costs of clipping [ 12 , 60 ] and structur-\ning [ 13 , 53 , 58 , 59 , 88 ] to support everyday online researchers [ 13 ],\nprogrammers [ 58 ], and students [ 88 ]. However, designing clipping\nand synthesis support tools for research papers is relatively under-\nexplored and introduces exciting new research opportunities. For\nexample, additional organizational structures for literature reviews",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "The Semantic Reader Project",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "( e.g., threads of prior work instead of tables [ 13 , 58 ]), and research\npaper discovery ( e.g., based on inline citations in clipped text).\nFor this, Threddy [ 43 ] is a thread-focused clipping tool integrated\ninto scholars’ paper reading process to support literature review\nand discovery. Using Threddy, readers can select and save sentences\ninto a sidebar from the related work sections of a paper. The sys-\ntem maintains rich context for each clip, including its provenance\nand inline citations. This allows readers to navigate back to the\nclipped paper and cited papers afterward. In the sidebar, readers\ncan further organize clips collected across papers into a hierarchy\nof threads to form their view of the research landscape. The content\nof the sidebar is preserved across papers that were read over time,\nand provides valuable context for subsequent reading based on\nthe emerging threads of research the reader have curated. Finally,\nreaders can further expand their coverage by exploring paper rec-\nommendations for each thread, based on the referenced papers in\nthe corresponding clips. A lab study showed that Threddy was able\nto lower the interaction costs of saving clips while main",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "g paper rec-\nommendations for each thread, based on the referenced papers in\nthe corresponding clips. A lab study showed that Threddy was able\nto lower the interaction costs of saving clips while maintaining\ncontext, allowed participants to curate research threads without\nbreaking reading flows, and discover interesting new papers to\nfurther grow their understanding of the research fields.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "5.2\nReading and Exploring Related Work\nSections across Papers with Relatedly",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "In contrast to Threddy, which aims to improve readers’ existing\nliterature review process through enhanced in-situ clipping and\nsynthesis [ 43 ], the Relatedly system introduced a novel workflow\nthat allows readers to explore many related work sections across\npapers in an interactive search and reading interface to quickly\ngain a comprehensive overview of rich research topics [ 73 ]. While\nprior work have explored providing overview structure of multiple\ndocuments based on citations [ 16 , 80 ], semantic similarity [ 36 , 85 ],\nor human computation [ 14 , 31 , 62 ], they could still lead to com-\nplex structures that are hard to interpret [ 35 ] or require significant\ncrowdsourcing efforts. Relatedly sidesteps these issues by reusing\nexisting related work paragraphs in published papers which already\ncite sets of related references with descriptions connecting them\n[ 73 ]. As an example, consider a scholar trying to better understand\nthe space of online misinformation . With online misinformation as\nthe query term, Relatedly shows the reader a list of paragraphs\nthat describe and cite multiple relevant prior work. Using a pre-\ntrained language model for summarization [ 56 ], Relatedl",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "formation as\nthe query term, Relatedly shows the reader a list of paragraphs\nthat describe and cite multiple relevant prior work. Using a pre-\ntrained language model for summarization [ 56 ], Relatedly generates\nshort and descriptive titles for each paragraph, and uses a diversity-\nbased ranking algorithm so that the reader can quickly see and\nexplore paragraphs describing different research threads, such as\nFact Checking Datasets , Social Media and Misinformation , and Fake\nNews Detection Techniques .\nOne challenge here is that paragraphs of the same threads often\ncite overlapping prior work, making them hard to explore and read\nwhile keeping track of which papers were new versus already ex-\nplored. For this, Relatedly provides reading and cross-referencing\nsupport by keeping track of paragraphs and references explored by\nthe readers. This allows Relatedly to help readers prioritize their\nreading for both breadth and depth. Specifically, Relatedly dynam-\nically re-ranks paragraphs and highlights sentences to spotlight\nunexplored and dissimilar references for breadth, but also allow",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "readers to explore clusters of paragraphs that cited similar refer-\nences for depth. A usability study comparing Relatedly to a strong\ndocument-centric baseline showed that Relatedly led to participants\nwriting summaries that were rated significantly more coherent, in-\nsightful, and detailed after 20 minutes of literature review.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "6\nDYNAMIC DOCUMENTS FOR IMPROVED\nACCESSIBILITY",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "A range of disabilities cause people to read scientific documents\nusing a wide variety of devices and reading tools. For example,\nblind and low vision readers may use assistive reading technology\nsuch as screen readers, screen magnification, or text-to-speech to\nread documents [ 90 ]. Furthermore, people without disabilities face\nsituational impairments, such as the inability to view a screen while\ndriving or may have a preference for consuming content on a small,\nmobile device.\nMany of these reading tools, such as screen readers, do not\nfunction properly on document formats designed for print such as\nPDF unless the document has been manually post-processed to add\ninformation about reading order, content type, etc., which is rarely\nperformed on scientific documents [ 6 , 98 ]. Further, certain content\nelements such as figures require the addition of alternative text in\norder to be read aloud at all (figure captions typically assume the\nreader can see the figure and do not provide the same semantic\ncontent as alt text). High magnification reduces the viewport (the\namount of visible content) and can dramatically increase the amount\nof scrolling and panning required, especially for mu",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "ame semantic\ncontent as alt text). High magnification reduces the viewport (the\namount of visible content) and can dramatically increase the amount\nof scrolling and panning required, especially for multi-columnar\nformats that are commonly used by scientific documents. Visual\nscanning for information may be impacted or unavailable in these\nsettings, making it more difficult to find and navigate between\ncontent in the document [75].\nOne way to render legacy PDF content more accessibly is to parse\nand convert it into a more flexible format, such as XML or HTML,\nwhich can then be formatted for mobile devices and augmented\nfor reading by screen readers. The SciA11y system 6 demonstrates\nthis approach, automatically converting 12M academic PDFs to\nHTML [ 97 ]; a user study with blind and low vision participants\ndemonstrated strong user appreciation of the output, though some\nerrors remain (e.g., failing in certain cases to distinguish footnotes\nfrom body text, difficulty parsing math equations) [ 98 ]. When avail-\nable, alt text can be automatically categorized into semantic content\ntypes, enabling new reading experiences that allow skipping or\nprioritizing certain types [ 19 ]. Other ap",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "ns) [ 98 ]. When avail-\nable, alt text can be automatically categorized into semantic content\ntypes, enabling new reading experiences that allow skipping or\nprioritizing certain types [ 19 ]. Other approaches provide comple-\nmentary benefits, such as interfaces tailored for low-vision readers\n(§ 3.2), as well as the range of reading support systems outlined\nabove.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "7\nDISCUSSION AND FUTURE WORK",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "There are additional directions to explore to better support scholarly\nactivities through the Semantic Reader Project.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "Towards a full-featured reading experience. One question is how\nto integrate the different kinds of functionality across these projects\ninto one coherent user interface, especially as we migrate research\nfeatures into the production interface. Another question is how",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 7",
+    "page": 7,
+    "text": "6 A demo of a subsequent version is available at https://papertohtml.org/",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "Lo and Chang, et al.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "to develop support for the oftentimes social and collaborative na-\nture of scholarly reading. Scholars frequently leverage their social\nnetworks and other social signals for paper discovery [ 44 ], work\nin groups to conduct literature review triage and synthesis, or en-\ngage in reading group discussions to aid comprehension. Existing\naugmentations within the Semantic Reader product could imbue\nsocial information, such as providing signals from one’s co-author\nnetwork (e.g., in CiteSee §2.1) or aggregate navigation traces (e.g.,\nin Scim §3.1). The publicly-available Semantic Reader tool could\nalso scaffold the creation of novel crowd- or community-sourced\ncontent, such as author- or reader-provided explanations, commen-\ntary, or verification of paper content. Finally is the question of how\nwe can allow the scholarly community to step in where current AI\nsystems fall short, such as by fixing improperly-extracted content\nor incorrect generated text which are especially problematic for\ninterfaces such as SciA11y (§6).",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "Advancing AI for scholarly documents. The Semantic Reader\nProject presents an opportunity for further AI research in scholarly\ndocument processing, especially when paired with human-centered\nresearch grounded in user-validated systems and scenarios. The\nbar for deploying AI models to support real-world reading is high;\nwe often found during iterative design and usability studies that\neven slight errors in these models can have detrimental effects on\nthe readers. Until recently, interface design could require months\nof development of bespoke AI models which creates a barrier for\nquickly iterate different system designs. Recent advancements in\nscaling large language models (LLMs) has altered this landscape\nby enabling researchers to experiment with a wide range of new\nNLP capabilities at relatively low cost [ 10 ]. This has the potential of\nsignificantly lowering the cost of human-centered AI design by in-\ncorporating user feedback in earlier stages of system development\nto create AI systems that work in symphony with the users beyond\npure automation [ 87 ]. For example, when developing Paper Plain\n(§4.2), LLMs enabled us to quickly test different granularities and\ncomplexity-levels ",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "tems that work in symphony with the users beyond\npure automation [ 87 ]. For example, when developing Paper Plain\n(§4.2), LLMs enabled us to quickly test different granularities and\ncomplexity-levels of plain language summaries with participants,\neschewing the need for expensive changes to data requirements and\nmodel retraining. In the near-term, we will revisit interface designs\nrelying on bespoke AI models to evaluate whether LLMs can close\nthe gap between research prototype and ready-for-production (e.g.,\nmore accurate definition identification for ScholarPhi §4.1). Longer-\nterm, we will explore whether LLMs can power new interactions\n(e.g., user-provided natural language queries while reading [ 23 , 95 ]).\nWhile recent work has shown that these models can occasionally\nmake critical errors or generate factually incorrect text when pro-\ncessing scientific text [ 72 ], we remain cautiously optimistic about\ndeveloping ways to address their limitations [25, 55].",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "Ethics of augmented papers. Finally, all the new interfaces for\nreading that we propose pose a number of important ethical con-\nsiderations that will require further research and discussion. One\naspect that arises with any system for elevating certain papers\nor certain content over others is bias. For instance, using signals\nsuch as citation counts faces the risk of a “rich get richer” bias,\nwhich can reflect other kinds of documented biases [ 3 , 64 , 101 ]. As\na result, systems such as CiteSee (§2.1) or Relatedly (5.2) should\ncarefully consider additional signals of relevance such as semantic\nsimilarity to surface newer and overlooked papers. Another tension",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "that we have encountered is the potential discrepancy between\nauthor desires and reader desires for how a work is presented and\nhow much control to provide authors. For instance, in our work on\nPapeo (§4.3), we found that authors desired control over placement\nof their talk video snippets, even as they found automated mapping\nsupport to be helpful. In other cases, authors might not have the\nrequisite expertise (e.g., they may not have a good sense of reader\nneeds or what non-experts are confused by) or may have the wrong\nincentives. Future work should consider author perspectives on\nthese augmented experiences. A related issue is around systems for\nmore efficient reading or synthesis, which may encourage readers\nto take shortcuts that lead to incorrect understanding, sloppy re-\nsearch, or even outright plagiarism. Instead of simply seeking to\nincrease reading throughput uniformly, our systems should enable\ntriage , so that readers can dedicate time for thoughtful and careful\nreading when the content is important. For instance, our systems\ncould design pathways that, while they may be more efficient, do\nnot obfuscate the full context (e.g., Scim §3.1), and that encourage\ngood practi",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "en the content is important. For instance, our systems\ncould design pathways that, while they may be more efficient, do\nnot obfuscate the full context (e.g., Scim §3.1), and that encourage\ngood practices such as verification and provenance tracing. A final\nconsideration is around what is ethical reuse of a paper’s contents\nto support reader experiences outside of that paper and its licensing\nimplications. For instance, CiteRead (§2.2) extracts paper citances\nand places them in the cited paper, and Relatedly (§5.2) extracts\nrelated work sections from different papers for users to explore.\nRecent trends in open science and datasets [ 29 , 61 , 67 , 68 ] point to\na promising future where we could continue to explore different\nways to remix and reuse scholarly content across context so that\nfuture scientists can take fuller advantage of prior research.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "8\nCONCLUSION",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "This paper describes the Semantic Reader Project, which currently\nconsists of ten research prototypes focusing on supporting scien-\ntists around Discovery [ 15 , 82 ], Efficiency [ 28 , 75 ], Comprehen-\nsion [1, 33, 92], Synthesis [43, 73], and Accessibility [91, 97] when\nreading research papers. Validating our approach of augmenting\nexisting PDFs of research papers, we have seen tremendous adop-\ntion of the freely-available Semantic Reader product 1 which has\ngrown to 10k weekly users. 7 While we focused on augmenting PDF\ndocuments to support common scholar reading practices, all of\nour reading interfaces are built with web technologies—allowing\nthese novel interactions to extend to future publication formats\nwhich can be rendered in web browsers. We plan to continue exper-\nimenting with novel AI-powered intelligent reading interfaces, as\nwell as migrating successful interactive features into the product.\nFinally, we offer a collection of freely-available resources to the\nlarger research community, including datasets of open-access re-\nsearch papers [ 61 ], APIs for accessing the academic citation graph\n[ 50 ], machine learning models for processing and understanding\nresearch pape",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "rch community, including datasets of open-access re-\nsearch papers [ 61 ], APIs for accessing the academic citation graph\n[ 50 ], machine learning models for processing and understanding\nresearch papers [ 11 , 20 , 42 , 86 ], 4 and open-source software for ren-\ndering and augmenting PDF documents for developing reading\ninterfaces. 3 We hope by providing these resources we can enable\nand encourage the broader research community to work on exciting\nnovel intelligent reading interfaces for research papers with us.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 8",
+    "page": 8,
+    "text": "7 As of late February, 2023",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "The Semantic Reader Project",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "ACKNOWLEDGMENTS",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "This project is supported in part by NSF Grant OIA-2033558, NSF\nGrant CNS-2213656. NSF RAPID Award 2040196, and ONR Grant\nN00014-21-1-2707.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "REFERENCES",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "[1] Tal August, Lucy Lu Wang, Jonathan Bragg, Marti A. Hearst, Andrew Head, and\nKyle Lo. 2023. Paper Plain: Making Medical Research Papers Approachable to\nHealthcare Consumers with Natural Language Processing. ACM Transactions\non Computer-Human Interaction (2023). To appear.\n[2] Charles Bazerman. 1985. Physicists reading physics: Schema-Laden Purposes\nand Purpose-Laden Schema. Written Communication 2, 1 (Jan. 1985), 3–23.\n[3] Joeran Beel and Bela Gipp. 2009. Google Scholar’s ranking algorithm: The impact\nof citation counts (An empirical study). 2009 Third International Conference on\nResearch Challenges in Information Science (2009), 439–446.\n[4] Iz Beltagy, Kyle Lo, and Arman Cohan. 2019. SciBERT: A Pretrained Language\nModel for Scientific Text. In Conference on Empirical Methods in Natural Lan-\nguage Processing .\n[5] Daryl J Bem. 1995. Writing a review article for Psychological Bulletin. Psycho-\nlogical Bulletin 118, 2 (1995), 172.\n[6] Jeffrey P. Bigham, Erin L. Brady, Cole Gleason, Anhong Guo, and David A.\nShamma. 2016. An Uninteresting Tour Through Why Our Research Papers\nAren’t Accessible. In Proceedings of the 2016 CHI Conference Extended Abstracts\non Human Factors in Computin",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "nhong Guo, and David A.\nShamma. 2016. An Uninteresting Tour Through Why Our Research Papers\nAren’t Accessible. In Proceedings of the 2016 CHI Conference Extended Abstracts\non Human Factors in Computing Systems (San Jose, California, USA) (CHI EA ’16) .\nAssociation for Computing Machinery, New York, NY, USA, 621–631. https:\n//doi.org/10.1145/2851581.2892588\n[7] Lutz Bornmann, Ruediger Mutz, and Robin Haunschild. 2020. Growth rates of\nmodern science: a latent piecewise growth curve approach to model publication\nnumbers from established and new literature databases. Humanities and Social\nSciences Communications 8 (2020), 1–15.\n[8] Jeffrey Brainard. 2020. Scientists are drowning in COVID-19 papers. Can new\ntools keep them afloat. Science 13, 10 (2020), 1126.\n[9] Mary Anne Britt, Tobias Richter, and Jean-François Rouet. 2014. Scientific\nLiteracy: The Role of Goal-Directed Reading and Evaluation in Understanding\nScientific Information. Educational Psychologist 49 (2014), 104 – 122.\n[10] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Ka-\nplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry,\nAmanda Askell, Sandhini Agarwal, Ariel Herbert-Voss, Gretchen K",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Ka-\nplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry,\nAmanda Askell, Sandhini Agarwal, Ariel Herbert-Voss, Gretchen Krueger,\nTom Henighan, Rewon Child, Aditya Ramesh, Daniel Ziegler, Jeffrey Wu,\nClemens Winter, Chris Hesse, Mark Chen, Eric Sigler, Mateusz Litwin, Scott\nGray, Benjamin Chess, Jack Clark, Christopher Berner, Sam McCandlish, Alec\nRadford, Ilya Sutskever, and Dario Amodei. 2020.\nLanguage Models are\nFew-Shot Learners. In Advances in Neural Information Processing Systems ,\nH. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin (Eds.), Vol. 33.\nCurran Associates, Inc., 1877–1901. https://proceedings.neurips.cc/paper/2020/\nfile/1457c0d6bfcb4967418bfb8ac142f64a-Paper.pdf\n[11] Isabel Cachola, Kyle Lo, Arman Cohan, and Daniel S. Weld. 2020. TLDR: Extreme\nSummarization of Scientific Documents. In Findings of EMNLP .\n[12] Joseph Chee Chang, Nathan Hahn, and Aniket Kittur. 2016. Supporting Mobile\nSensemaking Through Intentionally Uncertain Highlighting. In Proceedings of\nthe 29th Annual Symposium on User Interface Software and Technology (Tokyo,\nJapan) (UIST ’16) . Association for Computing",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "le\nSensemaking Through Intentionally Uncertain Highlighting. In Proceedings of\nthe 29th Annual Symposium on User Interface Software and Technology (Tokyo,\nJapan) (UIST ’16) . Association for Computing Machinery, New York, NY, USA,\n61–68. https://doi.org/10.1145/2984511.2984538\n[13] Joseph Chee Chang, Nathan Hahn, and Aniket Kittur. 2020. Mesh: Scaffolding\nComparison Tables for Online Decision Making. In Proceedings of the 33rd\nAnnual ACM Symposium on User Interface Software and Technology (Virtual\nEvent, USA) (UIST ’20) . Association for Computing Machinery, New York, NY,\nUSA, 391–405. https://doi.org/10.1145/3379337.3415865\n[14] Joseph Chee Chang, Aniket Kittur, and Nathan Hahn. 2016. Alloy: Clustering\nwith crowds and computation. In Proceedings of the 2016 CHI Conference on\nHuman Factors in Computing Systems . 3180–3191.\n[15] Joseph Chee Chang, Amy X Zhang, Jonathan Bragg, Andrew Head, Kyle Lo,\nDoug Downey, and Daniel S Weld. 2023. CiteSee: Augmenting Citations in\nScientific Papers with Persistent and Personalized Historical Context. ArXiv\nabs/2022.99999 (2023).\n[16] Duen Horng Chau, Aniket Kittur, Jason I Hong, and Christos Faloutsos. 2011.\nApolo: making sense of large network d",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "ith Persistent and Personalized Historical Context. ArXiv\nabs/2022.99999 (2023).\n[16] Duen Horng Chau, Aniket Kittur, Jason I Hong, and Christos Faloutsos. 2011.\nApolo: making sense of large network data by combining rich user interaction\nand machine learning. In Proceedings of the SIGCHI conference on human factors\nin computing systems . 167–176.\n[17] Vinay K. Chaudhri, Britte Haugan Cheng, Adam Overholtzer, Jeremy Roschelle,\nAaron Spaulding, Peter E. Clark, Mark T. Greaves, and David Gunning. 2013.\nInquire Biology: A Textbook that Answers Questions. AI Mag. 34 (2013), 55–72.\n[18] Ed H. Chi, Lichan Hong, Michelle Gumbrecht, and Stuart K. Card. 2005. Scen-\ntHighlights: highlighting conceptually-related sentences during reading. In\nProceedings of the 10th International Conference on Intelligent User Interfaces .",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "Association for Computing Machinery, San Diego, CA, USA, 272.\n[19] Sanjana Shivani Chintalapati, Jonathan Bragg, and Lucy Lu Wang. 2022. A\nDataset of Alt Texts from HCI Publications: Analyses and Uses Towards Pro-\nducing More Descriptive Alt Texts of Data Visualizations in Scientific Pa-\npers. In Proceedings of the 24th International ACM SIGACCESS Conference on\nComputers and Accessibility (Athens, Greece) (ASSETS ’22) . Association for\nComputing Machinery, New York, NY, USA, Article 30, 12 pages.\nhttps:\n//doi.org/10.1145/3517428.3544796\n[20] Arman Cohan, Sergey Feldman, Iz Beltagy, Doug Downey, and Daniel S Weld.\n2020. Specter: Document-level representation learning using citation-informed\ntransformers. arXiv preprint arXiv:2004.07180 (2020).\n[21] Matthew Conlen and Jeffrey Heer. 2022. Fidyll: A Compiler for Cross-Format\nData Stories & Explorable Explanations. ArXiv abs/2205.09858 (2022).\n[22] Matthew Conlen, Megan Vo, Alan Tan, and Jeffrey Heer. 2021. Idyll studio: A\nstructured editor for authoring interactive & data-driven articles. In The 34th\nAnnual ACM Symposium on User Interface Software and Technology . 1–12.\n[23] Pradeep Dasigi, Kyle Lo, Iz Beltagy, Arman Cohan, Noah A. Smi",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": " for authoring interactive & data-driven articles. In The 34th\nAnnual ACM Symposium on User Interface Software and Technology . 1–12.\n[23] Pradeep Dasigi, Kyle Lo, Iz Beltagy, Arman Cohan, Noah A. Smith, and Matt\nGardner. 2021. A Dataset of Information-Seeking Questions and Answers An-\nchored in Research Papers. In Proceedings of the 2021 Conference of the North\nAmerican Chapter of the Association for Computational Linguistics: Human Lan-\nguage Technologies . Association for Computational Linguistics, Online, 4599–\n4610. https://doi.org/10.18653/v1/2021.naacl-main.365\n[24] Andrew S. Denney and Richard Allan Tewksbury. 2013. How to Write a Litera-\nture Review. Journal of Criminal Justice Education 24 (2013), 218 – 234.\n[25] Graham Dove, Kim Halskov, Jodi Forlizzi, and John Zimmerman. 2017. UX\ndesign innovation: Challenges for working with machine learning as a design\nmaterial. In Proceedings of the 2017 chi conference on human factors in computing\nsystems . 278–288.\n[26] Kristina Dzara and Ariel S Frey-Vogel. 2019. Medical Education Journal Club for\nthe Millennial Resident: An Interactive, No-Prep Approach. Academic pediatrics\n(2019).\n[27] Editorial Team. 2021. Distill Hiatus. Disti",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "and Ariel S Frey-Vogel. 2019. Medical Education Journal Club for\nthe Millennial Resident: An Interactive, No-Prep Approach. Academic pediatrics\n(2019).\n[27] Editorial Team. 2021. Distill Hiatus. Distill 6, 7 (July 2021). https://doi.org/10.\n23915/distill.00031\n[28] Raymond Fok, Hita Kambhamettu, Luca Soldaini, Jonathan Bragg, Kyle Lo,\nAndrew Head, Marti A. Hearst, and Daniel S. Weld. 2023. Scim: Intelligent\nSkimming Support for Scientific Papers. In 28th Annual Conference on Intelligent\nUser Interfaces (IUI ’23) .\n[29] Paul Ginsparg. 2011. ArXiv at 20. Nature 476, 7359 (2011), 145–147.\n[30] Marco Gori and Augusto Pucci. 2006. Research Paper Recommender Systems: A\nRandom-Walk Based Approach. 2006 IEEE/WIC/ACM International Conference on\nWeb Intelligence (WI 2006 Main Conference Proceedings)(WI’06) (2006), 778–781.\n[31] Nathan Hahn, Joseph Chang, Ji Eun Kim, and Aniket Kittur. 2016. The Knowl-\nedge Accelerator: Big picture thinking in small pieces. In Proceedings of the 2016\nCHI Conference on Human Factors in Computing Systems . 2258–2270.\n[32] Jiangen He, Q. Ping, Wen Lou, and Chaomei Chen. 2019. PaperPoles: Facilitating\nadaptive visual exploration of scientific publications by cita",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "ce on Human Factors in Computing Systems . 2258–2270.\n[32] Jiangen He, Q. Ping, Wen Lou, and Chaomei Chen. 2019. PaperPoles: Facilitating\nadaptive visual exploration of scientific publications by citation links. Journal\nof the Association for Information Science and Technology 70 (2019).\n[33] Andrew Head, Kyle Lo, Dongyeop Kang, Raymond Fok, Sam Skjonsberg,\nDaniel S. Weld, and Marti A. Hearst. 2021. Augmenting Scientific Papers with\nJust-in-Time, Position-Sensitive Definitions of Terms and Symbols. Proceedings\nof the 2021 CHI Conference on Human Factors in Computing Systems (2021).\n[34] Andrew Head, Amber Xie, and Marti A Hearst. 2022. Math Augmentation:\nHow Authors Enhance the Readability of Formulas using Novel Visual Design\nPractices. In CHI Conference on Human Factors in Computing Systems . 1–18.\n[35] Marti A Hearst. 1999. The use of categories and clusters for organizing retrieval\nresults. Natural language information retrieval (1999), 333–374.\n[36] Marti A Hearst. 2006. Clustering versus faceted categories for information\nexploration. Commun. ACM 49, 4 (2006), 59–61.\n[37] Tim Niclas Höffler and Detlev Leutner. 2007. Instructional animation versus\nstatic pictures: A meta-analy",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "g versus faceted categories for information\nexploration. Commun. ACM 49, 4 (2006), 59–61.\n[37] Tim Niclas Höffler and Detlev Leutner. 2007. Instructional animation versus\nstatic pictures: A meta-analysis. Learning and Instruction 17 (2007), 722–738.\n[38] Fred Hohman, Matthew Conlen, Jeffrey Heer, and Duen Horng Chau. 2020.\nCommunicating with Interactive Articles. Distill .\nhttps://doi.org/10.23915/\ndistill.00028\n[39] Yupan Huang, Tengchao Lv, Lei Cui, Yutong Lu, and Furu Wei. 2022. Lay-\noutLMv3: Pre-training for Document AI with Unified Text and Image Masking.\nProceedings of the 30th ACM International Conference on Multimedia (2022).\n[40] Zan Huang, Wingyan Chung, Thian-Huat Ong, and Hsinchun Chen. 2002. A\ngraph-based recommender system for digital library. In JCDL ’02 .\n[41] Abhinav Jain, Nitin Gupta, Shashank Mujumdar, Sameep Mehta, and Rishi\nMadhok. 2018. Content Driven Enrichment of Formal Text using Concept\nDefinitions and Applications. Proceedings of the 29th on Hypertext and Social\nMedia (2018).\n[42] Dongyeop Kang, Andrew Head, Risham Sidhu, Kyle Lo, Daniel Weld, and Marti A.\nHearst. 2020. Document-Level Definition Detection in Scholarly Documents:\nExisting Models, Error Ana",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 9",
+    "page": 9,
+    "text": "ial\nMedia (2018).\n[42] Dongyeop Kang, Andrew Head, Risham Sidhu, Kyle Lo, Daniel Weld, and Marti A.\nHearst. 2020. Document-Level Definition Detection in Scholarly Documents:\nExisting Models, Error Analyses, and Future Directions. In Proceedings of the\nFirst Workshop on Scholarly Document Processing . Association for Computational\nLinguistics, Online, 196–206. https://doi.org/10.18653/v1/2020.sdp-1.22",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "Lo and Chang, et al.",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "[43] Hyeonsu B Kang, Joseph Chee Chang, Yongsung Kim, and Aniket Kittur. 2022.\nThreddy: An Interactive System for Personalized Thread-based Exploration and\nOrganization of Scientific Literature. arXiv preprint arXiv:2208.03455 (2022).\n[44] Hyeonsu B Kang, Rafal Kocielnik, Andrew Head, Jiangjiang Yang, Matt Latzke,\nAniket Kittur, Daniel S Weld, Doug Downey, and Jonathan Bragg. 2022. From\nWho You Know to What You Read: Augmenting Scientific Recommendations\nwith Implicit Social Networks. In Proceedings of the 2022 CHI Conference on\nHuman Factors in Computing Systems (New Orleans, LA, USA) (CHI ’22) . Asso-\nciation for Computing Machinery, New York, NY, USA, Article 302, 23 pages.\nhttps://doi.org/10.1145/3491102.3517470\n[45] Taslim Arefin Khan, Dongwook Yoon, and Joanna McGrenere. 2020. Design-\ning an Eyes-Reduced Document Skimming App for Situational Impairments.\nProceedings of the 2020 CHI Conference on Human Factors in Computing Systems\n(2020).\n[46] Kandarp Khandwala and Philip J. Guo. 2018. Codemotion: expanding the de-\nsign space of learner interactions with computer programming tutorial videos.\nProceedings of the Fifth Annual ACM Conference on Learning at Scale (2018).\n[47] Juho ",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "2018. Codemotion: expanding the de-\nsign space of learner interactions with computer programming tutorial videos.\nProceedings of the Fifth Annual ACM Conference on Learning at Scale (2018).\n[47] Juho Kim, Philip J. Guo, Carrie J. Cai, Shang-Wen Li, Krzysztof Z Gajos, and\nRob Miller. 2014. Data-driven interaction techniques for improving navigation\nof educational videos. Proceedings of the 27th annual ACM symposium on User\ninterface software and technology (2014).\n[48] Juho Kim, Phu Tran Nguyen, Sarah A. Weir, Philip J. Guo, Rob Miller, and\nKrzysztof Z Gajos. 2014. Crowdsourcing step-by-step information extraction\nto enhance existing how-to videos. Proceedings of the SIGCHI Conference on\nHuman Factors in Computing Systems (2014).\n[49] Donald W. King, Carol Tenopir, Songphan Choemprayong, and Lei Wu. 2009.\nScholarly journal information-seeking and reading patterns of faculty at five\nUS universities. Learned Publishing 22 (2009).\n[50] Rodney Kinney, Chloe Anastasiades, Russell Authur, Iz Beltagy, Jonathan\nBragg, Alexandra Buraczynski, Isabel Cachola, Stefan Candra, Yoganand Chan-\ndrasekhar, Arman Cohan, et al . 2023. The Semantic Scholar Open Data Platform.\narXiv preprint arXiv:2301.1",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "Beltagy, Jonathan\nBragg, Alexandra Buraczynski, Isabel Cachola, Stefan Candra, Yoganand Chan-\ndrasekhar, Arman Cohan, et al . 2023. The Semantic Scholar Open Data Platform.\narXiv preprint arXiv:2301.10140 (2023).\n[51] Aniket Kittur, Andrew M. Peters, Abdigani Diriye, Trupti Telang, and Michael R.\nBove. 2013. Costs and Benefits of Structured Information Foraging. In Proceed-\nings of the SIGCHI Conference on Human Factors in Computing Systems (Paris,\nFrance) (CHI ’13) . Association for Computing Machinery, New York, NY, USA,\n2989–2998. https://doi.org/10.1145/2470654.2481415\n[52] Rebecca Krosnick. 2015. VideoDoc : combining videos and lecture notes for a\nbetter learning experience.\n[53] Andrew Kuznetsov, Joseph Chee Chang, Nathan Hahn, Napol Rachatasumrit,\nBradley Breneisen, Julina Coupland, and Aniket Kittur. 2022. Fuse: In-Situ\nSensemaking Support in the Browser. In Proceedings of the 35th Annual ACM\nSymposium on User Interface Software and Technology (Bend, OR, USA) (UIST\n’22) . Association for Computing Machinery, New York, NY, USA, Article 34,\n15 pages. https://doi.org/10.1145/3526113.3545693\n[54] Shahid Latif, Zhengzhong Zhou, Yoon Kim, Fabian Beck, and Nam Wook Kim.\n2021. Kori",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "iation for Computing Machinery, New York, NY, USA, Article 34,\n15 pages. https://doi.org/10.1145/3526113.3545693\n[54] Shahid Latif, Zhengzhong Zhou, Yoon Kim, Fabian Beck, and Nam Wook Kim.\n2021. Kori: Interactive Synthesis of Text and Charts in Data Documents. IEEE\nTransactions on Visualization and Computer Graphics PP (2021), 1–1.\n[55] Min Kyung Lee, Sara B. Kiesler, Jodi Forlizzi, Siddhartha S. Srinivasa, and Paul E.\nRybski. 2010. Gracefully mitigating breakdowns in robotic services. 2010 5th\nACM/IEEE International Conference on Human-Robot Interaction (HRI) (2010),\n203–210.\n[56] Mike Lewis, Yinhan Liu, Naman Goyal, Marjan Ghazvininejad, Abdelrahman\nMohamed, Omer Levy, Veselin Stoyanov, and Luke Zettlemoyer. 2020. BART:\nDenoising Sequence-to-Sequence Pre-training for Natural Language Generation,\nTranslation, and Comprehension. In Proceedings of the 58th Annual Meeting of\nthe Association for Computational Linguistics . Association for Computational\nLinguistics, Online, 7871–7880. https://doi.org/10.18653/v1/2020.acl-main.703\n[57] Ching Liu, Juho Kim, and Hao-Chuan Wang. 2018. ConceptScape: Collaborative\nConcept Mapping for Video Learning. Proceedings of the 2018 CHI Conference\non",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "ps://doi.org/10.18653/v1/2020.acl-main.703\n[57] Ching Liu, Juho Kim, and Hao-Chuan Wang. 2018. ConceptScape: Collaborative\nConcept Mapping for Video Learning. Proceedings of the 2018 CHI Conference\non Human Factors in Computing Systems (2018).\n[58] Michael Xieyang Liu, Jane Hsieh, Nathan Hahn, Angelina Zhou, Emily Deng,\nShaun Burley, Cynthia Taylor, Aniket Kittur, and Brad A Myers. 2019. Unakite:\nScaffolding developers’ decision-making using the web. In Proceedings of the\n32nd Annual ACM Symposium on User Interface Software and Technology . 67–80.\n[59] Michael Xieyang Liu, Aniket Kittur, and Brad A. Myers. 2022. Crystalline:\nLowering the Cost for Developers to Collect and Organize Information for\nDecision Making. In Proceedings of the 2022 CHI Conference on Human Fac-\ntors in Computing Systems (New Orleans, LA, USA) (CHI ’22) . Association\nfor Computing Machinery, New York, NY, USA, Article 68, 16 pages.\nhttps:\n//doi.org/10.1145/3491102.3501968\n[60] Michael Xieyang Liu, Andrew Kuznetsov, Yongsung Kim, Joseph Chee Chang,\nAniket Kittur, and Brad A. Myers. 2022. Wigglite: Low-Cost Information Col-\nlection and Triage. In Proceedings of the 35th Annual ACM Symposium on\nUser Interface So",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "v, Yongsung Kim, Joseph Chee Chang,\nAniket Kittur, and Brad A. Myers. 2022. Wigglite: Low-Cost Information Col-\nlection and Triage. In Proceedings of the 35th Annual ACM Symposium on\nUser Interface Software and Technology (Bend, OR, USA) (UIST ’22) . Associ-\nation for Computing Machinery, New York, NY, USA, Article 32, 16 pages.\nhttps://doi.org/10.1145/3526113.3545661",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "[61] Kyle Lo, Lucy Lu Wang, Mark Neumann, Rodney Kinney, and Daniel Weld. 2020.\nS2ORC: The Semantic Scholar Open Research Corpus. In Proceedings of the 58th\nAnnual Meeting of the Association for Computational Linguistics . Association\nfor Computational Linguistics, Online, 4969–4983. https://doi.org/10.18653/v1/\n2020.acl-main.447\n[62] Kurt Luther, Nathan Hahn, Steven P Dow, and Aniket Kittur. 2015. Crowdlines:\nSupporting synthesis of diverse information sources through crowdsourced\noutlines. In Third AAAI Conference on Human Computation and Crowdsourcing .\n[63] Jock D. Mackinlay, Ramana Rao, and Stuart K. Card. 1995. An organic user\ninterface for searching citation links. In CHI ’95 .\n[64] Daniel Maliniak, Ryan Powers, and Barbara F. Walter. 2013. The Gender Citation\nGap in International Relations. International Organization 67 (2013), 889 – 922.\n[65] Richard E. Mayer and Roxana Moreno. 1998. A Cognitive Theory of Multimedia\nLearning: Implications for Design Principles. In CHI 1998 .\n[66] Richard E. Mayer and Roxana Moreno. 1998. A Split-Attention Effect in Multi-\nmedia Learning: Evidence for Dual Processing Systems in Working Memory.\nJournal of Educational Psychology 90 (1998), 31",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "66] Richard E. Mayer and Roxana Moreno. 1998. A Split-Attention Effect in Multi-\nmedia Learning: Evidence for Dual Processing Systems in Working Memory.\nJournal of Educational Psychology 90 (1998), 312–320.\n[67] Erin C McKiernan, Philip E Bourne, C Titus Brown, Stuart Buck, Amye Kenall,\nJennifer Lin, Damon McDougall, Brian A Nosek, Karthik Ram, Courtney K\nSoderberg, et al . 2016. How open science helps researchers succeed. elife 5\n(2016).\n[68] Gerry McKiernan. 2000. arXiv.org: the Los Alamos National Laboratory e-print\nserver. International Journal on Grey Literature (2000).\n[69] Sonia K Murthy, Kyle Lo, Daniel King, Chandra Bhagavatula, Bailey Kuehl,\nSophie Johnson, Jonathan Borchardt, Daniel S Weld, Tom Hope, and Doug\nDowney. 2022. ACCoRD: A Multi-Document Approach to Generating Diverse\nDescriptions of Scientific Concepts. arXiv preprint arXiv:2205.06982 (2022).\n[70] Preslav I Nakov, Ariel S Schwartz, Marti Hearst, et al . 2004. Citances: Citation\nsentences for semantic analysis of bioscience text. In Proceedings of the SIGIR ,\nVol. 4. Citeseer, 81–88.\n[71] Keisuke Okamura. 2019. Interdisciplinarity revisited: evidence for research\nimpact and dynamism. Palgrave Communications 5, ",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "ioscience text. In Proceedings of the SIGIR ,\nVol. 4. Citeseer, 81–88.\n[71] Keisuke Okamura. 2019. Interdisciplinarity revisited: evidence for research\nimpact and dynamism. Palgrave Communications 5, 1 (2019), 1–9.\n[72] Yulia Otmakhova, Karin Verspoor, Timothy Baldwin, and Jey Han Lau. 2022.\nThe patient is more dead than alive: exploring the current state of the multi-\ndocument summarisation of the biomedical literature. In Proceedings of the 60th\nAnnual Meeting of the Association for Computational Linguistics (Volume 1: Long\nPapers) . Association for Computational Linguistics, Dublin, Ireland, 5098–5111.\nhttps://doi.org/10.18653/v1/2022.acl-long.350\n[73] Srishti Palani, Aakanksha Naik, Doug Downey, Amy X. Zhang, Jonathan Bragg,\nand Joseph Chee Chang. 2023. Relatedly: Scaffolding Literature Reviews with\nExisting Related Work Sections. 22 (2023).\n[74] Carole L Palmer, Lauren C Teffeau, and Carrie M Pirmann. 2009. Scholarly\ninformation practices in the online environment. Report commissioned by OCLC\nResearch. Published online at: www. oclc. org/programs/publications/reports/2009-\n02. pdf (2009).\n[75] Soya Park, Jonathan Bragg, Michael Chang, Kevin Larson, and Danielle Bragg.\n2022. Ex",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "oned by OCLC\nResearch. Published online at: www. oclc. org/programs/publications/reports/2009-\n02. pdf (2009).\n[75] Soya Park, Jonathan Bragg, Michael Chang, Kevin Larson, and Danielle Bragg.\n2022. Exploring Team-Sourced Hyperlinks to Address Navigation Challenges\nfor Low-Vision Readers of Scientific Papers. In Proceedings of the 25th ACM\nConference On Computer-Supported Cooperative Work And Social Computing .\n[76] Amy Pavel, Colorado Reed, Björn Hartmann, and Maneesh Agrawala. 2014.\nVideo digests: a browsable, skimmable format for informational lecture videos.\nProceedings of the 27th annual ACM symposium on User interface software and\ntechnology (2014).\n[77] Silvio Peroni, Alexander Dutton, Tanya Gray, and David M. Shotton. 2015.\nSetting our bibliographic references free: towards open citation data. J. Docu-\nmentation 71 (2015), 253–277.\n[78] Simon Philip, Peter Bamidele Shola, and Abari Ovye John. 2014. Application\nof Content-Based Approach in Research Paper Recommendation System for\na Digital Library. International Journal of Advanced Computer Science and\nApplications 5 (2014).\n[79] Peter Pirolli and Stuart Card. 1999. Information Foraging. Psychological Review\n106, 4 (1999), 64",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "\na Digital Library. International Journal of Advanced Computer Science and\nApplications 5 (2014).\n[79] Peter Pirolli and Stuart Card. 1999. Information Foraging. Psychological Review\n106, 4 (1999), 643–675. https://doi.org/10.1037/0033-295x.106.4.643\n[80] Antoine Ponsard, Francisco Escalona, and Tamara Munzner. 2016. PaperQuest:\nA Visualization Tool to Support Literature Review. Proceedings of the 2016 CHI\nConference Extended Abstracts on Human Factors in Computing Systems (2016).\n[81] Jason Portenoy, Marissa Radensky, Jevin D West, Eric Horvitz, Daniel S Weld,\nand Tom Hope. 2022. Bursting scientific filter bubbles: Boosting innovation via\nnovel author discovery. In Proceedings of the 2022 CHI Conference on Human\nFactors in Computing Systems . 1–13.\n[82] Napol Rachatasumrit, Jonathan Bragg, Amy X. Zhang, and Daniel S. Weld. 2022.\nCiteRead: Integrating Localized Citation Contexts into Scientific Paper Reading.\n27th International Conference on Intelligent User Interfaces (2022).\n[83] Colin Raffel, Noam M. Shazeer, Adam Roberts, Katherine Lee, Sharan Narang,\nMichael Matena, Yanqi Zhou, Wei Li, and Peter J. Liu. 2019. Exploring the\nLimits of Transfer Learning with a Unified Text-to-Tex",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 10",
+    "page": 10,
+    "text": "in Raffel, Noam M. Shazeer, Adam Roberts, Katherine Lee, Sharan Narang,\nMichael Matena, Yanqi Zhou, Wei Li, and Peter J. Liu. 2019. Exploring the\nLimits of Transfer Learning with a Unified Text-to-Text Transformer. ArXiv\nabs/1910.10683 (2019).\n[84] Daniel M. Russell, Mark J. Stefik, Peter Pirolli, and Stuart K. Card. 1993. The\nCost Structure of Sensemaking. In Proceedings of the INTERACT ’93 and CHI ’93",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 11",
+    "page": 11,
+    "text": "The Semantic Reader Project",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 11",
+    "page": 11,
+    "text": "Conference on Human Factors in Computing Systems (Amsterdam, The Nether-\nlands) (CHI ’93) . Association for Computing Machinery, New York, NY, USA,\n269–276. https://doi.org/10.1145/169059.169209\n[85] Dafna Shahaf, Carlos Guestrin, and Eric Horvitz. 2012. Metro maps of science.\nIn Proceedings of the 18th ACM SIGKDD international conference on Knowledge\ndiscovery and data mining . 1122–1130.\n[86] Zejiang Shen, Kyle Lo, Lucy Lu Wang, Bailey Kuehl, Daniel S. Weld, and Doug\nDowney. 2022. VILA: Improving Structured Content Extraction from Scientific\nPDFs Using Visual Layout Groups. Transactions of the Association for Computa-\ntional Linguistics 10 (2022), 376–392. https://doi.org/10.1162/tacl_a_00466\n[87] Ben Shneiderman. 2022. Human-centered AI . Oxford University Press.\n[88] Hariharan Subramonyam, Colleen Seifert, Priti Shah, and Eytan Adar. 2020.\nTexSketch: Active Diagramming through Pen-and-Ink Annotations. In Pro-\nceedings of the 2020 CHI Conference on Human Factors in Computing Systems\n(Honolulu, HI, USA) (CHI ’20) . Association for Computing Machinery, New York,\nNY, USA, 1–13. https://doi.org/10.1145/3313831.3376155\n[89] Kazunari Sugiyama and Min-Yen Kan. 2010. Scholarly paper rec",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 11",
+    "page": 11,
+    "text": "\n(Honolulu, HI, USA) (CHI ’20) . Association for Computing Machinery, New York,\nNY, USA, 1–13. https://doi.org/10.1145/3313831.3376155\n[89] Kazunari Sugiyama and Min-Yen Kan. 2010. Scholarly paper recommendation\nvia user’s recent research interests. In JCDL ’10 .\n[90] Sarit Felicia Anais Szpiro, Shafeka Hashash, Yuhang Zhao, and Shiri Azenkot.\n2016. How People with Low Vision Access Computing Devices: Understand-\ning Challenges and Opportunities. Proceedings of the 18th International ACM\nSIGACCESS Conference on Computers and Accessibility (2016).\n[91] Semantic Reader team. Unpublished demo application. Paper to HTML. https:\n//papertohtml.org\n[92] Semantic Reader team. Unpublished demo application; in submission.. Papeo.\nhttps://papeo.app\n[93] Anh Tuan Truong, Peggy Chi, D. Salesin, Irfan Essa, and Maneesh Agrawala.\n2021. Automatic Generation of Two-Level Hierarchical Tutorials from Instruc-\ntional Makeup Videos. Proceedings of the 2021 CHI Conference on Human Factors\nin Computing Systems (2021).\n[94] Richard Van Noorden et al . 2015. Interdisciplinary research by the numbers.\nNature 525, 7569 (2015), 306–307.\n[95] David Wadden, Shanchuan Lin, Kyle Lo, Lucy Lu Wang, Madeleine van Zu",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 11",
+    "page": 11,
+    "text": "ms (2021).\n[94] Richard Van Noorden et al . 2015. Interdisciplinary research by the numbers.\nNature 525, 7569 (2015), 306–307.\n[95] David Wadden, Shanchuan Lin, Kyle Lo, Lucy Lu Wang, Madeleine van Zuylen,\nArman Cohan, and Hannaneh Hajishirzi. 2020. Fact or Fiction: Verifying Sci-\nentific Claims. In Proceedings of the 2020 Conference on Empirical Methods in\nNatural Language Processing (EMNLP) . Association for Computational Linguis-\ntics, Online, 7534–7550. https://doi.org/10.18653/v1/2020.emnlp-main.609\n[96] Chong Wang and David M. Blei. 2011. Collaborative topic modeling for recom-\nmending scientific articles. In KDD .\n[97] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea\nHaupt, Matt Latzke, Bailey Kuehl, Madeleine N van Zuylen, Linda Wagner,\nand Daniel Weld. 2021. SciA11y: Converting Scientific Papers to Accessible\nHTML. In Proceedings of the 23rd International ACM SIGACCESS Conference\non Computers and Accessibility (Virtual Event, USA) (ASSETS ’21) . Association\nfor Computing Machinery, New York, NY, USA, Article 85, 4 pages.\nhttps:\n//doi.org/10.1145/3441852.3476545\n[98] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea Hess\nHaupt,",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 11",
+    "page": 11,
+    "text": "tion\nfor Computing Machinery, New York, NY, USA, Article 85, 4 pages.\nhttps:\n//doi.org/10.1145/3441852.3476545\n[98] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea Hess\nHaupt, Matt Latzke, Bailey Kuehl, Madeleine van Zuylen, Linda Wagner, and\nDaniel S. Weld. 2021. Improving the Accessibility of Scientific Documents:\nCurrent State, User Needs, and a System Solution to Enhance Scientific PDF\nAccessibility for Blind and Low Vision Users. arXiv: 2105.00076 [cs.DL] (2021).\narXiv:2105.00076 [cs.DL]\n[99] Wenhui Wang, Hangbo Bao, Shaohan Huang, Li Dong, and Furu Wei. 2021.\nMiniLMv2: Multi-Head Self-Attention Relation Distillation for Compressing\nPretrained Transformers. In Findings of the Association for Computational Lin-\nguistics: ACL-IJCNLP 2021 . Association for Computational Linguistics, Online,\n2140–2151. https://doi.org/10.18653/v1/2021.findings-acl.188\n[100] Wenhui Wang, Furu Wei, Li Dong, Hangbo Bao, Nan Yang, and Ming Zhou. 2020.\nMiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of\nPre-Trained Transformers. In Advances in Neural Information Processing Systems ,\nH. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin (Eds.), Vol",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 11",
+    "page": 11,
+    "text": "istillation for Task-Agnostic Compression of\nPre-Trained Transformers. In Advances in Neural Information Processing Systems ,\nH. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin (Eds.), Vol. 33.\nCurran Associates, Inc., 5776–5788. https://proceedings.neurips.cc/paper_files/\npaper/2020/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf\n[101] Samuel F Way, Allison C Morgan, Daniel B Larremore, and Aaron Clauset. 2019.\nProductivity, prominence, and the effects of academic environment. Proceedings\nof the National Academy of Sciences 116, 22 (2019), 10729–10733.\n[102] Alan J. Wecker, Joel Lanir, Osnat Mokryn, Einat Minkov, and Tsvi Kuflik. 2014.\nSemantize: visualizing the sentiment of individual document. In Proceedings\nof the 2014 International Working Conference on Advanced Visual Interfaces .\nAssociation for Computing Machinery, Como, Italy, 385–386.\n[103] Feng Xia, Haifeng Liu, Ivan Lee, and Longbing Cao. 2016. Scientific Article Rec-\nommendation: Exploiting Common Author Relations and Historical Preferences.\nIEEE Transactions on Big Data 2 (2016), 101–G112.\n[104] Yiheng Xu, Minghao Li, Lei Cui, Shaohan Huang, Furu Wei, and Ming Zhou. 2019.\nLayoutLM: Pre-training of Text and",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 11",
+    "page": 11,
+    "text": "ons and Historical Preferences.\nIEEE Transactions on Big Data 2 (2016), 101–G112.\n[104] Yiheng Xu, Minghao Li, Lei Cui, Shaohan Huang, Furu Wei, and Ming Zhou. 2019.\nLayoutLM: Pre-training of Text and Layout for Document Image Understanding.\nProceedings of the 26th ACM SIGKDD International Conference on Knowledge\nDiscovery & Data Mining (2019).",
+    "images": null
+  },
+  {
+    "doc_id": "2303.14334v2",
+    "title": "Page 11",
+    "page": 11,
+    "text": "[105] Qian Yang, Gerard de Melo, Yong Cheng, and Sen Wang. 2017. HiText: Text\nReading with Dynamic Salience Marking. In Proceedings of the 26th Interna-\ntional Conference on World Wide Web Companion . Association for Computing\nMachinery, Perth, Australia, 311–319.\n[106] Wonjin Yoon, Jinhyuk Lee, Donghyeon Kim, Minbyul Jeong, and Jaewoo Kang.\n2019. Pre-trained Language Model for Biomedical Question Answering. In\nPKDD/ECML Workshops .\n[107] Polle T. Zellweger, Bay-Wei Chang, and Jock D. Mackinlay. 1998. Fluid Links\nfor Informed and Incremental Link Transitions. In Proceedings of the Conference\non Hypertext and Hypermedia . ACM, 50–57.\n[108] Tian Zhao and Kyusong Lee. 2020. Talk to Papers: Bringing Neural Question\nAnswering to Academic Search. ArXiv abs/2004.02002 (2020).\n[109] Sacha Zyto, David Karger, Mark Ackerman, and Sanjoy Mahajan. 2012. Success-\nful classroom deployment of a social document annotation system. In Proceedings\nof the sigchi conference on human factors in computing systems . 1883–1892.",
+    "images": null
+  }
+]

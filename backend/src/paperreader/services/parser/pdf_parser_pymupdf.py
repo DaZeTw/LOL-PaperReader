@@ -12,6 +12,7 @@ import logging
 import re
 from pathlib import Path
 from typing import Dict, Any, List, Optional
+import threading
 
 try:
     import fitz  # PyMuPDF
@@ -25,6 +26,22 @@ _log = logging.getLogger(__name__)
 if not _log.handlers:
     logging.basicConfig(level=logging.INFO)
 _log.setLevel(logging.INFO)
+
+# Cancel flag - will be set from pdf_routes module
+_PARSE_CANCEL_FLAG = None  # Will be set to threading.Event from pdf_routes
+
+
+def set_parse_cancel_flag(cancel_flag):
+    """Set the cancel flag from pdf_routes module."""
+    global _PARSE_CANCEL_FLAG
+    _PARSE_CANCEL_FLAG = cancel_flag
+
+
+def _check_parse_cancel():
+    """Check if cancel flag is set and raise exception if so."""
+    if _PARSE_CANCEL_FLAG is not None and _PARSE_CANCEL_FLAG.is_set():
+        _log.warning("⚠️ PDF parsing cancelled - cancel flag is set")
+        raise RuntimeError("PDF parsing was cancelled - output directory was cleared")
 
 
 def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, Any]:
@@ -48,10 +65,16 @@ def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, 
             "PyMuPDF not installed. Install with: pip install pymupdf"
         )
     
+    # Check cancel flag before starting
+    _check_parse_cancel()
+    
     output_dir.mkdir(parents=True, exist_ok=True)
     pdf_stem = input_pdf_path.stem
     
     _log.info(f"Parsing PDF {input_pdf_path.name} với PyMuPDF...")
+    
+    # Check cancel flag before opening PDF
+    _check_parse_cancel()
     
     # Mở PDF
     doc = fitz.open(input_pdf_path)
@@ -71,6 +94,8 @@ def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, 
     page_count = len(doc)
     
     for page_num in range(page_count):
+        # Check cancel flag before processing each page
+        _check_parse_cancel()
         page = doc[page_num]
         
         # Extract text với layout preservation
@@ -125,16 +150,15 @@ def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, 
         
         markdown_lines.extend(page_lines)
         
-        # Extract page as image (optional)
-        try:
-            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x zoom for better quality
-            img_path = output_dir / f"{pdf_stem}-page-{page_num + 1}.png"
-            pix.save(img_path)
-            outputs["page_images"].append(str(img_path))
-        except Exception as e:
-            _log.warning(f"Failed to extract page {page_num + 1} image: {e}")
+        # SKIP page image extraction - not used in pipeline, only slows down parsing
+        # page_images are for preview/debug only and are skipped in pdf_routes.py anyway
+        # If needed for debugging, can be enabled with an environment variable
+        # For now, skip to speed up parsing significantly (saves ~1-2s per page)
     
     doc.close()
+    
+    # Check cancel flag before saving markdown
+    _check_parse_cancel()
     
     # Lưu markdown file
     md_embed = output_dir / f"{pdf_stem}-embedded.md"
@@ -143,11 +167,17 @@ def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, 
     # Clean up markdown
     markdown_content = _clean_markdown(markdown_content)
     
+    # Final cancel check before writing file
+    _check_parse_cancel()
+    
+    # Save markdown file (for backward compatibility, but also return content)
     with open(md_embed, "w", encoding="utf-8") as f:
         f.write(markdown_content)
     
     outputs["markdown_embedded"] = str(md_embed)
     outputs["markdown_referenced"] = str(md_embed)  # Same file for now
+    # Add markdown content directly to output (no need to read file later)
+    outputs["markdown_content"] = markdown_content
     
     _log.info(f"Đã parse PDF thành công. Output: {md_embed}")
     
