@@ -7,63 +7,99 @@ export async function POST(request: NextRequest) {
   try {
     const { user_id, title, initial_message } = await request.json()
 
-    // Increase timeout to 180 seconds to allow backend/MongoDB warm-up
-    const timeout = 180000
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
+    // Reduced timeout to 30 seconds - backend should respond faster
+    // If it takes longer, there's likely a connection issue
+    const timeout = 30000
+    const maxRetries = 2
+    
+    let lastError: any = null
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-    try {
-      const backendResponse = await fetch(`${BACKEND_URL}/api/chat/sessions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: user_id || null,
-          title: title || "Chat Session",
-          initial_message: initial_message || null,
-        }),
-        signal: controller.signal,
-      })
+      try {
+        if (attempt > 0) {
+          // Exponential backoff: 1s, 2s
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 2000)
+          console.log(`[ChatSession] Retry attempt ${attempt + 1}/${maxRetries + 1} after ${delay}ms`)
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
 
-      clearTimeout(timeoutId)
+        const backendResponse = await fetch(`${BACKEND_URL}/api/chat/sessions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user_id || null,
+            title: title || "Chat Session",
+            initial_message: initial_message || null,
+          }),
+          signal: controller.signal,
+        })
 
-      if (!backendResponse.ok) {
-        const errorText = await backendResponse.text()
-        const status = backendResponse.status
+        clearTimeout(timeoutId)
+
+        if (!backendResponse.ok) {
+          const errorText = await backendResponse.text()
+          const status = backendResponse.status
+          
+          // Better error handling for different status codes
+          if (status === 500) {
+            console.error("[ChatSession] Backend error:", errorText)
+            return NextResponse.json(
+              { 
+                error: "Backend service error",
+                details: errorText || "MongoDB connection may be unavailable. Please check backend logs."
+              },
+              { status: 503 } // Service Unavailable
+            )
+          }
+          
+          // Retry on 503/504 errors
+          if ((status === 503 || status === 504) && attempt < maxRetries) {
+            lastError = new Error(`Backend returned ${status}: ${errorText}`)
+            continue
+          }
+          
+          throw new Error(`Backend returned ${status}: ${errorText}`)
+        }
+
+        const sessionData = await backendResponse.json()
+        return NextResponse.json(sessionData)
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId)
         
-        // Better error handling for different status codes
-        if (status === 500) {
-          console.error("[ChatSession] Backend error:", errorText)
+        if (fetchError.name === 'AbortError' || fetchError.code === 23) {
+          // Timeout - retry if we have attempts left
+          if (attempt < maxRetries) {
+            lastError = fetchError
+            console.log(`[ChatSession] Timeout on attempt ${attempt + 1}, retrying...`)
+            continue
+          }
+          
+          console.error("[ChatSession] Timeout after all retries:", fetchError)
           return NextResponse.json(
             { 
-              error: "Backend service error",
-              details: errorText || "MongoDB connection may be unavailable. Please check backend logs."
+              error: "Request timeout",
+              details: "Backend took too long to respond after multiple attempts. This may indicate MongoDB connection issues or backend overload."
             },
-            { status: 503 } // Service Unavailable
+            { status: 504 } // Gateway Timeout
           )
         }
         
-        throw new Error(`Backend returned ${status}: ${errorText}`)
+        // Other errors - don't retry
+        throw fetchError
       }
-
-      const sessionData = await backendResponse.json()
-      return NextResponse.json(sessionData)
-    } catch (fetchError: any) {
-      clearTimeout(timeoutId)
-      
-      if (fetchError.name === 'AbortError' || fetchError.code === 23) {
-        console.error("[ChatSession] Timeout:", fetchError)
-        return NextResponse.json(
-          { 
-            error: "Request timeout",
-            details: "Backend took too long to respond. This may indicate MongoDB connection issues or backend overload."
-          },
-          { status: 504 } // Gateway Timeout
-        )
-      }
-      throw fetchError
     }
+    
+    // If we exhausted all retries
+    if (lastError) {
+      throw lastError
+    }
+    
+    throw new Error("Failed to create session after all retries")
   } catch (error: any) {
     console.error("[ChatSession] Error:", error)
     return NextResponse.json(

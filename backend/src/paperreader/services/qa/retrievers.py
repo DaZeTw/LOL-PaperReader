@@ -17,18 +17,100 @@ class Corpus:
 
 
 class Retriever:
-    def __init__(self, name: str, store: InMemoryVectorStore, embedder: Optional[Embedder] = None, persistent_store: Optional[PersistentVectorStore] = None):
+    def __init__(self, name: str, store: InMemoryVectorStore, embedder: Optional[Embedder] = None, persistent_store: Optional[PersistentVectorStore] = None, pdf_name_filter: Optional[str] = None):
         self.name = name
         self.store = store
         self.embedder = embedder
         self.persistent_store = persistent_store
+        self.pdf_name_filter = pdf_name_filter  # Filter chunks by PDF name (doc_id)
+        
+        # If PDF filter is set, create a filtered store that only contains chunks from that PDF
+        if pdf_name_filter and store.metadatas:
+            self._filter_store_by_pdf()
+        else:
+            self.filtered_store = store
+
+    def _filter_store_by_pdf(self):
+        """Filter store to only include chunks from the specified PDF"""
+        if not self.pdf_name_filter:
+            self.filtered_store = self.store
+            print(f"[DEBUG] No PDF filter specified, using all {len(self.store.metadatas)} chunks")
+            return
+        
+        # Find indices of chunks that match the PDF name (doc_id)
+        matching_indices = []
+        matching_metadatas = []
+        matching_vectors = []
+        
+        # Normalize PDF name filter (remove extension, strip whitespace, lowercase for comparison)
+        pdf_name_normalized = self.pdf_name_filter.replace(".pdf", "").replace(".PDF", "").strip().lower()
+        
+        print(f"[DEBUG] Filtering store by PDF: '{self.pdf_name_filter}' (normalized: '{pdf_name_normalized}')")
+        print(f"[DEBUG] Total chunks in store before filtering: {len(self.store.metadatas)}")
+        
+        for idx, metadata in enumerate(self.store.metadatas):
+            doc_id = metadata.get("doc_id", "")
+            # Normalize doc_id for comparison (remove extension, strip whitespace, lowercase)
+            doc_id_normalized = doc_id.replace(".pdf", "").replace(".PDF", "").strip().lower()
+            
+            # Match if:
+            # 1. Exact match (normalized, case-insensitive)
+            # 2. doc_id starts with pdf_name (handles "example-embedded" matching "example")
+            # 3. pdf_name is a prefix of doc_id (handles cases like "paper1" matching "paper1v2")
+            # 4. doc_id starts with pdf_name + "-" (handles "example-embedded" matching "example")
+            matches = (
+                doc_id_normalized == pdf_name_normalized or  # Exact match (normalized)
+                doc_id_normalized.startswith(pdf_name_normalized + "-") or  # doc_id is "pdf_name-suffix"
+                doc_id_normalized.startswith(pdf_name_normalized) or  # doc_id starts with pdf_name
+                (pdf_name_normalized and len(pdf_name_normalized) >= 3 and pdf_name_normalized in doc_id_normalized)  # pdf_name is in doc_id (but not too short)
+            )
+            
+            if matches:
+                matching_indices.append(idx)
+                matching_metadatas.append(metadata)
+                if self.store.dense_vectors is not None and idx < len(self.store.dense_vectors):
+                    matching_vectors.append(self.store.dense_vectors[idx])
+        
+        print(f"[DEBUG] ✅ Filtered store: {len(matching_indices)}/{len(self.store.metadatas)} chunks match PDF '{self.pdf_name_filter}'")
+        if len(matching_indices) == 0:
+            print(f"[WARNING] ⚠️ No chunks matched PDF filter '{self.pdf_name_filter}'!")
+            print(f"[WARNING] Sample doc_ids in store: {[m.get('doc_id', 'N/A')[:50] for m in self.store.metadatas[:5]]}")
+        
+        if matching_indices:
+            # Create filtered TF-IDF matrix if available
+            filtered_tfidf_matrix = None
+            if self.store.tfidf_matrix is not None:
+                # Filter TF-IDF matrix by matching indices
+                try:
+                    filtered_tfidf_matrix = self.store.tfidf_matrix[matching_indices]
+                except Exception as e:
+                    print(f"[WARNING] Failed to filter TF-IDF matrix: {e}, continuing without TF-IDF filtering")
+                    filtered_tfidf_matrix = None
+            
+            # Create new filtered store
+            from .vectorstore import InMemoryVectorStore
+            self.filtered_store = InMemoryVectorStore(
+                dense_vectors=np.array(matching_vectors) if matching_vectors else np.empty((0, 0)),
+                metadatas=matching_metadatas,
+                tfidf_matrix=filtered_tfidf_matrix,
+                tfidf_vectorizer=self.store.tfidf_vectorizer,  # Keep same vectorizer
+            )
+        else:
+            # No matching chunks - create empty store
+            from .vectorstore import InMemoryVectorStore
+            self.filtered_store = InMemoryVectorStore(
+                dense_vectors=np.empty((0, 0)),
+                metadatas=[],
+                tfidf_matrix=None,
+                tfidf_vectorizer=self.store.tfidf_vectorizer,
+            )
 
     def retrieve(self, question: str, top_k: int = 5, image: str | None = None):
         print(f"[DEBUG] Retrieving with {self.name} retriever, top_k={top_k}, image: {image}")
-        print(f"[DEBUG] Store has {len(self.store.metadatas)} documents")
+        print(f"[DEBUG] Store has {len(self.filtered_store.metadatas)} documents (filtered by PDF: {self.pdf_name_filter or 'none'})")
         
-        # Use memory store for chunk embeddings (no persistent store for chunks)
-        search_store = self.store
+        # Use filtered store for chunk embeddings (no persistent store for chunks)
+        search_store = self.filtered_store
         
         if self.name == "keyword":
             hits = search_store.keyword_search(question, top_k)
@@ -104,18 +186,33 @@ def build_corpus(chunks: List[Dict[str, Any]]) -> Corpus:
     return Corpus(texts=texts, metadatas=metadatas)
 
 
-def build_store(corpus: Corpus, embedder: Optional[Embedder]) -> InMemoryVectorStore:
+def build_store(corpus: Corpus, embedder: Optional[Embedder], cached_embeddings: Optional[List[List[float]]] = None) -> InMemoryVectorStore:
+    # Import cancel check function
+    from .pipeline import _check_cancel
+    
     # Build dense vectors; prefer image-aware chunk embedding if available
     dense_vectors: np.ndarray
-    if embedder is not None and hasattr(embedder, "embed_chunks"):
+    if cached_embeddings is not None:
+        # Use cached embeddings if provided (skip embedding step)
+        print(f"[LOG] Using cached embeddings ({len(cached_embeddings)} vectors)")
+        dense_vectors = np.array(cached_embeddings)
+    elif embedder is not None and hasattr(embedder, "embed_chunks"):
         # reconstruct chunk dicts from metadatas to allow image+text encoding
         try:
+            _check_cancel("Before embedding chunks")
             chunks = [dict(m, text=t) for t, m in zip(corpus.texts, corpus.metadatas)]
-            dense_vectors = np.array(getattr(embedder, "embed_chunks")(chunks)) if chunks else np.empty((0, 0))
-        except Exception:
+            # Extract PDF identifier from first chunk's doc_id if available
+            pdf_identifier = chunks[0].get("doc_id") if chunks else None
+            dense_vectors = np.array(getattr(embedder, "embed_chunks")(chunks, pdf_identifier=pdf_identifier)) if chunks else np.empty((0, 0))
+            _check_cancel("After embedding chunks")
+        except RuntimeError as e:
+            if "cancelled" in str(e).lower():
+                raise  # Re-raise cancel exception
             dense_vectors = np.array(embedder.embed(corpus.texts)) if corpus.texts else np.empty((0, 0))
     else:
+        _check_cancel("Before embedding texts")
         dense_vectors = np.array(embedder.embed(corpus.texts)) if (corpus.texts and embedder is not None) else np.empty((0, 0))
+        _check_cancel("After embedding texts")
 
     # Keep TF-IDF for hybrid if ever needed by callers; but primary retrieval is dense
     tfidf = TfidfVectorizer(max_features=50000, ngram_range=(1, 2))
@@ -143,7 +240,9 @@ async def build_persistent_store(corpus: Corpus, embedder: Optional[Embedder]) -
         # reconstruct chunk dicts from metadatas to allow image+text encoding
         try:
             chunks = [dict(m, text=t) for t, m in zip(corpus.texts, corpus.metadatas)]
-            dense_vectors = getattr(embedder, "embed_chunks")(chunks) if chunks else []
+            # Extract PDF identifier from first chunk's doc_id if available
+            pdf_identifier = chunks[0].get("doc_id") if chunks else None
+            dense_vectors = getattr(embedder, "embed_chunks")(chunks, pdf_identifier=pdf_identifier) if chunks else []
         except Exception as e:
             print(f"[WARNING] Chunk embedding failed, falling back to text-only: {e}")
             dense_vectors = embedder.embed(corpus.texts) if corpus.texts else []
@@ -158,5 +257,5 @@ async def build_persistent_store(corpus: Corpus, embedder: Optional[Embedder]) -
     return persistent_store
 
 
-def get_retriever(name: str, store: InMemoryVectorStore, embedder: Embedder, persistent_store: Optional[PersistentVectorStore] = None) -> Retriever:
-    return Retriever(name=name, store=store, embedder=embedder, persistent_store=persistent_store)
+def get_retriever(name: str, store: InMemoryVectorStore, embedder: Embedder, persistent_store: Optional[PersistentVectorStore] = None, pdf_name_filter: Optional[str] = None) -> Retriever:
+    return Retriever(name=name, store=store, embedder=embedder, persistent_store=persistent_store, pdf_name_filter=pdf_name_filter)

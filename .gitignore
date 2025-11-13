@@ -10,7 +10,7 @@ __pycache__/
 # next.js
 /.next/
 /out/
-
+/.claude/
 # production
 /build
 
@@ -38,4 +38,4 @@ next-env.d.ts
 /backend/src/*.pth
 /backend/src/*.bin
 /backend/src/*.safetensors
-
+//backend/src/*.pth

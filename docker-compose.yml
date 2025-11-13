@@ -13,9 +13,9 @@ services:
       CHOKIDAR_USEPOLLING: "true"
     volumes:
       - .:/app
-      - /app/node_modules       # ⚡ Giữ lại node_modules trong container
-      - /app/yarn.lock          # ⚡ Exclude yarn.lock để Next.js không detect yarn
-      - /app/.yarn              # ⚡ Exclude .yarn directory
+      - /app/node_modules       #Giữ lại node_modules trong container
+      - /app/yarn.lock          #Exclude yarn.lock để Next.js không detect yarn
+      - /app/.yarn              #Exclude .yarn directory
     ports:
       - "3000:3000"
     depends_on:
@@ -34,7 +34,11 @@ services:
     volumes:
       - ./backend/src:/app/src
     environment:
-      OPENAI_API_KEY: your_api_key
+<<<<<<< HEAD
+      OPENAI_API_KEY: your_api_key_here
+=======
+      OPENAI_API_KEY: your-api-key-here
+>>>>>>> 35a94cd (Remove key)
       MONGODB_URL: mongodb+srv://vanlethai12042002_db_user:zK7RXEY5ZBUWdD45@cluster0.4xnkms3.mongodb.net/paperreader_chat?retryWrites=true&w=majority
     restart: unless-stopped
     networks:

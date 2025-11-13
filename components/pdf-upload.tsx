@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 
 interface PDFUploadProps {
   onFileSelect: (file: File, parsedData?: any) => void
-  onParseComplete?: (fileName: string, parsedData: any) => void
+  onParseComplete?: (fileName: string, parsedData: any, fileSize?: number, fileLastModified?: number) => void
 }
 
 export function PDFUpload({ onFileSelect, onParseComplete }: PDFUploadProps) {
@@ -49,8 +49,9 @@ export function PDFUpload({ onFileSelect, onParseComplete }: PDFUploadProps) {
           console.log("[v0] Parsed data received in background:", data)
 
           // Update the tab with parsed data if callback is provided
+          // Pass file size and lastModified for precise tab matching
           if (onParseComplete) {
-            onParseComplete(file.name, data)
+            onParseComplete(file.name, data, file.size, file.lastModified)
           }
 
           toast({
