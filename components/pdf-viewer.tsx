@@ -6,7 +6,8 @@ import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
 import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail"
 import { bookmarkPlugin } from "@react-pdf-viewer/bookmark"
-import { useCitationPlugin } from "@/hooks/useCitationPlugin";
+import { useCitationPlugin } from "@/hooks/useCitatioPlugin"
+import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractCitations"
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -20,64 +21,88 @@ import "@react-pdf-viewer/bookmark/lib/styles/index.css"
 import "@/styles/pdf-components.css"
 
 interface PDFViewerProps {
-  tabId?: string // Tab ID for state isolation (optional for legacy single-view usage)
   file: File
   selectedSection?: string | null
   navigationTarget?: { page: number; yPosition: number } | undefined
   onPageChange?: (page: number) => void
   onSectionSelect?: (bookmark: any) => void
-  onCitationClick?: (citation: any, event: MouseEvent) => void
-  extractedCitations?: any[] // Extracted citation data
+  isActive?: boolean
 }
 
 export function PDFViewer({
-  tabId,
   file,
   selectedSection,
   navigationTarget,
   onPageChange,
   onSectionSelect,
-  onCitationClick,
-  extractedCitations = [],
+  isActive,
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
   const [numPages, setNumPages] = useState(0)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  
+  // Citation state - now managed in viewer
+  const [extractedCitations, setExtractedCitations] = useState<ExtractedCitation[]>([])
+
+  // Citation extraction hook
+  const { extractCitations, getCitationById, loading: extracting, progress } = useExtractCitations()
 
   const currentPageRef = useRef(1)
   const pageLabelRef = useRef<HTMLSpanElement>(null)
   const zoomRef = useRef(1)
   const zoomLabelRef = useRef<HTMLSpanElement>(null)
 
-  const pageNavigationPluginInstance = pageNavigationPlugin()
-  const zoomPluginInstance = zoomPlugin()
-  const thumbnailPluginInstance = thumbnailPlugin()
-  const bookmarkPluginInstance = bookmarkPlugin()
+  // 🔑 CREATE PLUGIN INSTANCES USING useRef - This prevents recreation
+  const pageNavigationPluginInstance = useRef(pageNavigationPlugin()).current
+  const zoomPluginInstance = useRef(zoomPlugin()).current
+  const thumbnailPluginInstance = useRef(thumbnailPlugin()).current
+  const bookmarkPluginInstance = useRef(bookmarkPlugin()).current
+  
+  // 🔑 CITATION PLUGIN - Call hook at top level
   const citationPluginInstance = useCitationPlugin({
-    tabId,
-    // Don't pass onCitationClick - let the plugin show its own built-in popup
-    // This avoids routing through the parent component and uses the plugin's API fetching
-    // onCitationClick: (citation, event) => {
-    //   console.log("[PDFViewer] Citation clicked in PDF:", citation);
-    //   if (onCitationClick) {
-    //     onCitationClick(citation, event);
-    //   }
-    // },
-    pdfUrl,
-    extractedCitations,
+    pdfUrl: pdfUrl,
+    extractedCitations: extractedCitations,
   });
+
+  // 🔑 CREATE PLUGINS ARRAY - Use useRef to keep it stable
+  const pluginsRef = useRef([
+    pageNavigationPluginInstance,
+    zoomPluginInstance,
+    thumbnailPluginInstance,
+    bookmarkPluginInstance,
+  ])
+
+  // Add citation plugin dynamically when it changes
+  const plugins = [...pluginsRef.current, citationPluginInstance]
 
   const { jumpToNextPage, jumpToPreviousPage } = pageNavigationPluginInstance
   const { zoomTo } = zoomPluginInstance
 
-  // Convert file to blob URL
+  // Convert file to blob URL and extract citations
   useEffect(() => {
     if (file) {
       const url = URL.createObjectURL(file);
       setPdfUrl(url);
+
+      // Extract citations when file is loaded
+      extractCitations(file).then((result) => {
+        if (result) {
+          console.log("[PDFViewer] Extracted", result.totalCitations, "citations")
+          setExtractedCitations(result.citations)
+        }
+      })
+
       return () => URL.revokeObjectURL(url);
     }
-  }, [file])
+  }, [file, extractCitations])
+
+  // Handle navigation target changes
+  useEffect(() => {
+    if (navigationTarget && navigationTarget.page !== currentPageRef.current) {
+      // TODO: Implement navigation to specific page
+      console.log("[PDFViewer] Navigation target:", navigationTarget)
+    }
+  }, [navigationTarget])
 
   // 🔍 Zoom controls without re-render
   const handleZoomIn = () => {
@@ -100,8 +125,23 @@ export function PDFViewer({
     })
   }
 
+  const handlePageChangeInternal = (e: any) => {
+    const newPage = e.currentPage + 1
+    currentPageRef.current = newPage
+    
+    // Update UI
+    requestAnimationFrame(() => {
+      if (pageLabelRef.current) {
+        pageLabelRef.current.textContent = String(newPage)
+      }
+    })
+
+    // Notify parent
+    onPageChange?.(newPage)
+  }
+
   return (
-    <div className="pdf-viewer-container flex flex-1 h-full bg-muted/30 min-h-0" data-tab-id={tabId}>
+    <div className="pdf-viewer-container flex flex-1 h-full bg-muted/30 min-h-0">
       {/* Sidebar */}
       <div
         className={cn(
@@ -175,7 +215,7 @@ export function PDFViewer({
             )}
           </div>
 
-          {/* Zoom Controls (no state) */}
+          {/* Zoom Controls */}
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -218,13 +258,7 @@ export function PDFViewer({
                 <div className="bg-white shadow-lg rounded-lg overflow-hidden h-full">
                   <Viewer
                     fileUrl={pdfUrl}
-                    plugins={[
-                      pageNavigationPluginInstance,
-                      zoomPluginInstance,
-                      thumbnailPluginInstance,
-                      bookmarkPluginInstance,
-                      citationPluginInstance
-                    ]}
+                    plugins={plugins}
                     onDocumentLoad={(e) => {
                       setNumPages(e.doc.numPages)
                       currentPageRef.current = 1
@@ -232,14 +266,7 @@ export function PDFViewer({
                       if (pageLabelRef.current) pageLabelRef.current.textContent = "1"
                       if (zoomLabelRef.current) zoomLabelRef.current.textContent = "100%"
                     }}
-                    onPageChange={(e) => {
-                      const newPage = e.currentPage + 1
-                      currentPageRef.current = newPage
-                      requestAnimationFrame(() => {
-                        if (pageLabelRef.current)
-                          pageLabelRef.current.textContent = String(newPage)
-                      })
-                    }}
+                    onPageChange={handlePageChangeInternal}
                   />
                 </div>
               </Worker>
@@ -247,8 +274,6 @@ export function PDFViewer({
           )}
         </div>
       </div>
-
-
     </div>
   );
 }

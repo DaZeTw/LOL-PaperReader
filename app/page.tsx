@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic"
 
-const PDFReader = dynamic(() => import("@/components/pdf-reader").then(mod => ({ default: mod.PDFReader })), {
+const PDFWorkspace = dynamic(() => import("@/components/pdf-workspace").then(mod => ({ default: mod.PDFWorkspace })), {
   ssr: false,
 })
 
 export default function Home() {
-  return <PDFReader />
+  return <PDFWorkspace />
 }

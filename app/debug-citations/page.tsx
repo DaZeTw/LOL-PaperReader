@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import CitationDebugger from "@/components/CitationDebugger";
 
 interface ExtractedCitation {
   id: string;
@@ -98,7 +97,7 @@ export default function DebugCitationsPage() {
             </p>
           </div>
         ) : (
-          <CitationDebugger citations={citations} />
+          <div />
         )}
       </div>
     </div>

@@ -1,70 +1,50 @@
 import { useState, useEffect } from 'react'
 
-export interface PipelineStatus {
-  ready?: boolean
+interface PipelineStatus {
   building?: boolean
+  ready?: boolean
   chunks?: number
   percent?: number
   stage?: string
   message?: string
 }
 
-interface UsePipelineStatusOptions {
-  pollInterval?: number
-  enabled?: boolean
-}
-
-/**
- * Hook to poll the QA pipeline status
- * @param options - Configuration options
- * @returns Pipeline status and readiness state
- */
-export function usePipelineStatus(options: UsePipelineStatusOptions = {}) {
-  const { pollInterval = 2000, enabled = true } = options
+export function usePipelineStatus() {
   const [isPipelineReady, setIsPipelineReady] = useState<boolean | null>(null)
-  const [status, setStatus] = useState<PipelineStatus>({})
+  const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus>({})
 
   useEffect(() => {
-    if (!enabled) return
-
     let cancelled = false
-    let timerId: NodeJS.Timeout
+    let timer: any
 
     const poll = async () => {
-      if (cancelled) return
-
       try {
-        const res = await fetch('/api/qa/status')
+        const res = await fetch("/api/qa/status")
         const data = await res.json().catch(() => ({}))
-
         if (!cancelled) {
           setIsPipelineReady(Boolean(data?.ready))
-          setStatus(data)
+          setPipelineStatus(data)
         }
-
-        // Continue polling if not ready
         if (!data?.ready && !cancelled) {
-          timerId = setTimeout(poll, pollInterval)
+          timer = setTimeout(poll, 2000)
         }
-      } catch (error) {
-        console.warn('[Pipeline] Status check failed:', error)
-
-        // Retry on error
+      } catch {
         if (!cancelled) {
-          timerId = setTimeout(poll, pollInterval)
+          timer = setTimeout(poll, 2000)
         }
       }
     }
 
     poll()
-
+    
     return () => {
       cancelled = true
-      if (timerId) {
-        clearTimeout(timerId)
-      }
+      if (timer) clearTimeout(timer)
     }
-  }, [pollInterval, enabled])
+  }, [])
 
-  return { isPipelineReady, status }
+  return {
+    isPipelineReady,
+    pipelineStatus,
+  }
 }
