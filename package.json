@@ -52,6 +52,7 @@
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
     "next": "15.2.4",
+    "next-auth": "^5.0.0-beta.25",
     "next-themes": "latest",
     "pdfjs-dist": "^3.11.174",
     "react": "^19",

@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from "@/components/auth-provider"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -19,10 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <Suspense fallback={<div>Loading...</div>}>
-          {children}
-          <Toaster />
-        </Suspense>
+        <AuthProvider>
+          <Suspense fallback={<div>Loading...</div>}>
+            {children}
+            <Toaster />
+          </Suspense>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

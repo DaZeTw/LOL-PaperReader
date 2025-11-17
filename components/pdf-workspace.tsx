@@ -1,11 +1,14 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useSession } from "next-auth/react"
 import { FileText, Plus, X } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
 import { Homepage } from "@/components/homepage"
 import { SinglePDFReader } from "@/components/pdf-reader"
+import { LoginButton } from "@/components/login-button"
+import { UserMenu } from "@/components/user-menu"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -16,6 +19,7 @@ interface PDFTab {
 }
 
 export function PDFWorkspace() {
+  const { data: session } = useSession()
   const [tabs, setTabs] = useState<PDFTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
   const [showUpload, setShowUpload] = useState(false)
@@ -24,11 +28,19 @@ export function PDFWorkspace() {
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
 
   const handleGetStarted = () => {
-    // Show upload screen when clicking from homepage
-    setShowUpload(true)
+    // Only show upload screen if user is authenticated
+    if (session?.user) {
+      setShowUpload(true)
+    }
   }
 
   const handleFileSelect = async (file: File) => {
+    // Check authentication before allowing file upload
+    if (!session?.user) {
+      console.log("[PDF Workspace] Upload blocked - user not authenticated")
+      return
+    }
+
     console.log("[PDF Workspace] Upload detected:", file.name)
     
     const newTab: PDFTab = {
@@ -65,6 +77,10 @@ export function PDFWorkspace() {
   }
 
   const handleNewTab = () => {
+    // Only allow new tab if user is authenticated
+    if (!session?.user) {
+      return
+    }
     // Trigger file picker directly without showing upload screen
     fileInputRef.current?.click()
   }
@@ -104,6 +120,11 @@ export function PDFWorkspace() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          {session?.user ? (
+            <UserMenu user={session.user} />
+          ) : (
+            <LoginButton />
+          )}
         </div>
       </header>
 
@@ -157,12 +178,12 @@ export function PDFWorkspace() {
         {/* Homepage - shown when no tabs and not showing upload */}
         {tabs.length === 0 && !showUpload && (
           <div className="absolute inset-0 z-10">
-            <Homepage onGetStarted={handleGetStarted} />
+            <Homepage onGetStarted={handleGetStarted} isAuthenticated={!!session?.user} />
           </div>
         )}
         
         {/* Upload Screen - for drag & drop */}
-        {showUpload && (
+        {showUpload && session?.user && (
           <div className="absolute inset-0 z-10">
             <PDFUpload onFileSelect={handleFileSelect} />
           </div>

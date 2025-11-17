@@ -2,25 +2,7 @@
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
-from bson import ObjectId
-
-# -----------------------------
-# Custom ObjectId for Pydantic v2
-# -----------------------------
-class PyObjectId(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v, field=None):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid ObjectId")
-        return ObjectId(v)
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, core_schema):
-        return {"type": "string"}
+import uuid
 
 # -----------------------------
 # Chat message model
@@ -35,7 +17,7 @@ class ChatMessage(BaseModel):
 # Chat session model
 # -----------------------------
 class ChatSession(BaseModel):
-    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
+    id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), alias="_id")
     session_id: str = Field(..., description="Unique session identifier")
     user_id: Optional[str] = Field(None, description="User identifier if available")
     title: Optional[str] = Field(None, description="Chat session title")
@@ -46,8 +28,6 @@ class ChatSession(BaseModel):
 
     model_config = {
         "populate_by_name": True,            # tương đương allow_population_by_field_name
-        "arbitrary_types_allowed": True,
-        "json_encoders": {ObjectId: str},
         "protected_namespaces": ()          # loại bỏ warning "model_" conflict
     }
 

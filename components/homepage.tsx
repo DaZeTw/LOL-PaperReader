@@ -1,18 +1,28 @@
 "use client"
 
-import { FileText, Upload, BookOpen, Sparkles, Zap, Search } from "lucide-react"
+import { FileText, Upload, BookOpen, Sparkles, Zap, Search, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { signIn } from "next-auth/react"
 
 interface HomepageProps {
   onGetStarted?: () => void
+  isAuthenticated?: boolean
 }
 
 /**
  * Homepage component shown when no PDFs are loaded
  * Provides an overview of features and call-to-action
  */
-export function Homepage({ onGetStarted }: HomepageProps) {
+export function Homepage({ onGetStarted, isAuthenticated = false }: HomepageProps) {
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      onGetStarted?.()
+    } else {
+      signIn("google", { callbackUrl: "/" })
+    }
+  }
+
   return (
     <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-b from-background to-muted/20 p-8">
       <div className="mx-auto max-w-4xl space-y-8 text-center">
@@ -31,14 +41,28 @@ export function Homepage({ onGetStarted }: HomepageProps) {
         </div>
 
         {/* CTA Button */}
-        <div>
+        <div className="space-y-2">
+          {!isAuthenticated && (
+            <p className="text-sm text-muted-foreground">
+              Please sign in to upload and analyze PDF documents
+            </p>
+          )}
           <Button
             size="lg"
-            onClick={() => onGetStarted?.()}
+            onClick={handleGetStarted}
             className="gap-2 px-8 py-6 text-lg shadow-lg transition-transform hover:scale-105"
           >
-            <Upload className="h-5 w-5" />
-            Upload PDF to Get Started
+            {isAuthenticated ? (
+              <>
+                <Upload className="h-5 w-5" />
+                Upload PDF to Get Started
+              </>
+            ) : (
+              <>
+                <LogIn className="h-5 w-5" />
+                Sign in to Get Started
+              </>
+            )}
           </Button>
         </div>
 
