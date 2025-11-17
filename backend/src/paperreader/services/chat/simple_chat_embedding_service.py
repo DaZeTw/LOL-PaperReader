@@ -5,7 +5,8 @@ import uuid
 from pathlib import Path
 import os
 
-from paperreader.database.mongodb import mongodb
+# MongoDB removed - service disabled
+# from paperreader.database.mongodb import mongodb
 from paperreader.models.chat import ChatSession, ChatMessage
 import numpy as np
 
@@ -19,35 +20,9 @@ class SimpleChatEmbeddingService:
     
     async def get_unembedded_messages(self, limit: int = 100) -> List[Dict[str, Any]]:
         """Get chat messages that haven't been embedded yet"""
-        collection = mongodb.get_collection(self.collection_name)
-        embedding_collection = mongodb.get_collection(self.embedding_collection_name)
-        
-        # Get all embedded message IDs
-        embedded_ids = set()
-        async for doc in embedding_collection.find({}, {"message_id": 1}):
-            embedded_ids.add(doc.get("message_id"))
-        
-        # Get unembedded messages
-        unembedded_messages = []
-        async for session_doc in collection.find():
-            session = ChatSession(**session_doc)
-            for message in session.messages:
-                # Create a unique message ID
-                message_id = f"{session.session_id}_{message.timestamp.isoformat()}_{message.role}"
-                
-                if message_id not in embedded_ids:
-                    unembedded_messages.append({
-                        "message_id": message_id,
-                        "session_id": session.session_id,
-                        "user_id": session.user_id,
-                        "role": message.role,
-                        "content": message.content,
-                        "timestamp": message.timestamp,
-                        "metadata": message.metadata or {},
-                        "has_images": self._has_images_in_message(message)
-                    })
-        
-        return unembedded_messages[:limit]
+        # MongoDB removed - return empty list
+        print("[WARNING] SimpleChatEmbeddingService.get_unembedded_messages() called but MongoDB is disabled")
+        return []
     
     def _has_images_in_message(self, message: ChatMessage) -> bool:
         """Check if a message contains images"""
@@ -67,35 +42,9 @@ class SimpleChatEmbeddingService:
     
     async def store_message_for_embedding(self, message_data: Dict[str, Any]) -> bool:
         """Store message data for later embedding (without actually embedding)"""
-        try:
-            message_id = message_data["message_id"]
-            content = message_data["content"]
-            has_images = message_data["has_images"]
-            
-            # Store basic message info without embedding
-            embedding_collection = mongodb.get_collection(self.embedding_collection_name)
-            await embedding_collection.insert_one({
-                "message_id": message_id,
-                "text": content,
-                "metadata": {
-                    "message_id": message_id,
-                    "session_id": message_data["session_id"],
-                    "user_id": message_data["user_id"],
-                    "role": message_data["role"],
-                    "timestamp": message_data["timestamp"].isoformat(),
-                    "source": "chat_message"
-                },
-                "has_images": has_images,
-                "needs_embedding": True,  # Flag to indicate this needs embedding
-                "created_at": datetime.utcnow()
-            })
-            
-            print(f"[LOG] Stored message {message_id} for embedding")
-            return True
-            
-        except Exception as e:
-            print(f"[ERROR] Failed to store message {message_data.get('message_id', 'unknown')}: {e}")
-            return False
+        # MongoDB removed - service disabled
+        print("[WARNING] SimpleChatEmbeddingService.store_message_for_embedding() called but MongoDB is disabled")
+        return False
     
     async def store_unembedded_messages(self, limit: int = 50) -> Dict[str, Any]:
         """Store all unembedded chat messages for later embedding"""
@@ -138,32 +87,15 @@ class SimpleChatEmbeddingService:
     
     async def get_embedding_stats(self) -> Dict[str, Any]:
         """Get statistics about stored messages"""
-        try:
-            # Get total chat messages
-            collection = mongodb.get_collection(self.collection_name)
-            
-            total_messages = 0
-            async for session_doc in collection.find():
-                total_messages += len(session_doc.get("messages", []))
-            
-            # Get stored messages count
-            embedding_collection = mongodb.get_collection(self.embedding_collection_name)
-            stored_count = await embedding_collection.count_documents({})
-            
-            # Get messages that need embedding
-            needs_embedding_count = await embedding_collection.count_documents({"needs_embedding": True})
-            
-            return {
-                "total_chat_messages": total_messages,
-                "stored_messages": stored_count,
-                "needs_embedding": needs_embedding_count,
-                "unembedded_messages": total_messages - stored_count,
-                "storage_percentage": (stored_count / total_messages * 100) if total_messages > 0 else 0
-            }
-        except Exception as e:
-            return {
-                "error": f"Failed to get stats: {str(e)}"
-            }
+        # MongoDB removed - return empty stats
+        return {
+            "total_chat_messages": 0,
+            "stored_messages": 0,
+            "needs_embedding": 0,
+            "unembedded_messages": 0,
+            "storage_percentage": 0,
+            "note": "MongoDB disabled - stats unavailable"
+        }
 
 
 # Global instance

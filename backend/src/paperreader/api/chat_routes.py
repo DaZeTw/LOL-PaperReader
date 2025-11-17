@@ -42,6 +42,7 @@ class ChatSessionCreateRequest(BaseModel):
     user_id: Optional[str] = None
     title: Optional[str] = None
     initial_message: Optional[str] = None
+    force_new: Optional[bool] = False  # If True, always create new session even if one with same title exists
 
 class ChatSessionListResponse(BaseModel):
     sessions: List[ChatSessionResponse]
@@ -52,7 +53,8 @@ async def create_chat_session(request: ChatSessionCreateRequest):
     try:
         # First, check if there's an existing session with the same title and user_id
         # This prevents creating duplicate sessions for the same PDF
-        if request.title:
+        # BUT: If force_new=True, skip this check and always create new session
+        if request.title and not request.force_new:
             existing_session = await chat_service.find_session_by_title(
                 title=request.title,
                 user_id=request.user_id
@@ -69,6 +71,8 @@ async def create_chat_session(request: ChatSessionCreateRequest):
                     updated_at=existing_session.updated_at,
                     message_count=len(existing_session.messages)
                 )
+        elif request.force_new:
+            print(f"[LOG] force_new=True, skipping existing session check and creating new session for title '{request.title}'")
         
         # No existing session found, create new one
         session_id = str(uuid.uuid4())
@@ -80,7 +84,6 @@ async def create_chat_session(request: ChatSessionCreateRequest):
             initial_message=request.initial_message
         )
         
-        # Add timeout for MongoDB operations
         import asyncio
         session = await asyncio.wait_for(
             chat_service.create_session(session_data),
@@ -98,7 +101,7 @@ async def create_chat_session(request: ChatSessionCreateRequest):
             message_count=len(session.messages)
         )
     except asyncio.TimeoutError:
-        raise HTTPException(status_code=504, detail="Connection timeout: MongoDB operation took too long. Please check if MongoDB is running and accessible.")
+        raise HTTPException(status_code=504, detail="Connection timeout: Session creation took too long.")
     except Exception as e:
         error_msg = str(e)
         if "timeout" in error_msg.lower() or "connection" in error_msg.lower():
@@ -158,7 +161,6 @@ async def ask_question(request: ChatAskRequest):
             print(f"[LOG] ✅ Auto-created session with session_id: {request.session_id}")
         else:
             print(f"[LOG] ✅ Found existing session: {request.session_id}")
-            print(f"[LOG] MongoDB _id: {session.id if hasattr(session, 'id') and session.id else 'N/A'}")
             print(f"[LOG] Session has {len(session.messages) if session.messages else 0} existing messages")
         
         # Get recent chat history for context (last 10 messages for better context)
@@ -203,13 +205,16 @@ async def ask_question(request: ChatAskRequest):
             "\n2. Analyze user-uploaded images directly for image questions."
             "\n3. Use provided document context only to support explanations."
             "\n\nRULES:"
+            "\n- For simple greetings or casual conversation (e.g., 'hi', 'hello', 'thanks'), respond briefly and naturally WITHOUT using document context. Keep it short and friendly."
+            "\n- For questions that don't require document knowledge (greetings, casual chat, general questions), answer directly without referencing document contexts."
+            "\n- ONLY use document contexts when the question is about the document content, research topics, or requires specific information from the document."
             "\n- NEVER ignore chat history when asked about previous messages or conversation history. The chat history below contains ALL previous messages."
             "\n- When summarizing previous messages, be specific: mention what was asked and what was answered."
             "\n- CRITICAL: When asked about previous messages or conversation history, summarize ONLY the messages that came BEFORE the current question. Do NOT include the current question in your summary."
             "\n- If you reference citations [cN] from previous answers, use those exact citation numbers as they appeared in the previous answer."
             "\n- Never quote raw document text when answering."
             "\n- Focus on what is visible in images for image-related queries."
-            "\n- Be concise and factual. Add [cN] markers when referencing document context."
+            "\n- Be concise and factual. Add [cN] markers ONLY when referencing document context."
             "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
         )
         history_for_generator.append({
@@ -671,32 +676,7 @@ async def ask_question(request: ChatAskRequest):
             msg_count = len(saved_session.messages) if saved_session.messages else 0
             print(f"[DEBUG] ✅ Message saved successfully! Session now has {msg_count} messages")
             
-            # Detailed verification AFTER pipeline.answer() completes (after chunk processing)
-            # Wait longer to ensure MongoDB write is fully committed
-            import asyncio
-            await asyncio.sleep(0.5)  # Longer delay to ensure write is committed after chunk processing
-            
-            # Verify in database with timeout
-            try:
-                from paperreader.database.mongodb import mongodb
-                collection = mongodb.get_collection("chat_sessions")
-                verify_session = await asyncio.wait_for(
-                    collection.find_one({"session_id": request.session_id}),
-                    timeout=10.0  # 10 second timeout for verification
-                )
-                if verify_session:
-                    verified_msg_count = len(verify_session.get("messages", []))
-                    print(f"[DEBUG] ✅ Verified: Session now has {verified_msg_count} messages in database")
-                    print(f"[DEBUG] 📋 Session Info:")
-                    print(f"[DEBUG]   - session_id (UUID): {verify_session.get('session_id')}")
-                    print(f"[DEBUG]   - MongoDB _id (ObjectId): {verify_session.get('_id')}")
-                    print(f"[DEBUG] 💡 To query in MongoDB Atlas, use: {{'session_id': '{request.session_id}'}}")
-                else:
-                    print(f"[WARNING] ⚠️ Verification: Session not found in database after save")
-            except asyncio.TimeoutError:
-                print(f"[WARNING] ⚠️ Verification timeout - MongoDB may be slow, but message was saved")
-            except Exception as e:
-                print(f"[WARNING] ⚠️ Verification error: {e}")
+            # Message saved successfully (in-memory storage)
         else:
             print(f"[ERROR] ❌ Failed to save assistant message - saved_session is None")
         
@@ -807,11 +787,14 @@ async def ask_with_upload(
             "\n2. Analyze user-uploaded images directly for image questions."
             "\n3. Use provided document context only to support explanations."
             "\n\nRULES:"
+            "\n- For simple greetings or casual conversation (e.g., 'hi', 'hello', 'thanks'), respond briefly and naturally WITHOUT using document context. Keep it short and friendly."
+            "\n- For questions that don't require document knowledge (greetings, casual chat, general questions), answer directly without referencing document contexts."
+            "\n- ONLY use document contexts when the question is about the document content, research topics, or requires specific information from the document."
             "\n- NEVER ignore chat history when asked about previous questions. The chat history below contains ALL previous messages."
             "\n- When summarizing previous questions, be specific: mention what was asked and what was answered."
             "\n- Never quote raw document text when answering."
             "\n- Focus on what is visible in images for image-related queries."
-            "\n- Be concise and factual. Add [cN] markers when referencing document context."
+            "\n- Be concise and factual. Add [cN] markers ONLY when referencing document context."
             "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
         )
         history_for_generator.append({
@@ -902,6 +885,28 @@ async def ask_with_upload(
         
         # No more embedding - just save to chat history
         
+        # Get session to extract PDF name from title
+        session = await chat_service.get_session(session_id)
+        pdf_name = None
+        if session and session.title:
+            # Extract PDF name from title format "Chat: {pdfFile.name}" or "Chat: {pdfFile.name} - {timestamp} - {randomId}"
+            if session.title.startswith("Chat: "):
+                # Remove "Chat: " prefix
+                title_without_prefix = session.title.replace("Chat: ", "").strip()
+                # Extract PDF name (everything before first " - " separator, if present)
+                # Format can be: "filename.pdf" or "filename.pdf - timestamp - randomId"
+                if " - " in title_without_prefix:
+                    pdf_name = title_without_prefix.split(" - ")[0].strip()
+                else:
+                    pdf_name = title_without_prefix.strip()
+                # Remove file extension if present (but keep the name for matching)
+                if pdf_name.endswith(".pdf"):
+                    pdf_name = pdf_name[:-4]
+                # Normalize: remove any whitespace and ensure consistent format
+                pdf_name = pdf_name.strip()
+                print(f"[DEBUG] Extracted PDF name from session title: '{pdf_name}' (original: '{session.title}')")
+                print(f"[DEBUG] PDF name will be used to filter chunks by doc_id matching '{pdf_name}' or '{pdf_name}-embedded'")
+        
         # Configure and get cached QA pipeline (reuses chunks and embeddings)
         config = PipelineConfig(
             retriever_name=retriever,
@@ -915,7 +920,9 @@ async def ask_with_upload(
         all_base64_images = user_images_base64 + history_base64_images
         
         # Use cached pipeline - only rebuilds when PDFs change
-        pipeline = await get_pipeline(config)
+        # Pass pdf_name to get PDF-specific pipeline
+        print(f"[DEBUG] Getting pipeline for question: {question[:50]}... (PDF: {pdf_name or 'default'})")
+        pipeline = await get_pipeline(config, pdf_name=pdf_name)
         result = await pipeline.answer(
             question=question,
             user_images=all_base64_images if all_base64_images else None,

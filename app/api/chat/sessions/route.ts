@@ -5,7 +5,7 @@ const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_U
 
 export async function POST(request: NextRequest) {
   try {
-    const { user_id, title, initial_message } = await request.json()
+    const { user_id, title, initial_message, force_new } = await request.json()
 
     // Reduced timeout to 30 seconds - backend should respond faster
     // If it takes longer, there's likely a connection issue
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
             user_id: user_id || null,
             title: title || "Chat Session",
             initial_message: initial_message || null,
+            force_new: force_new || false,
           }),
           signal: controller.signal,
         })
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(
               { 
                 error: "Backend service error",
-                details: errorText || "MongoDB connection may be unavailable. Please check backend logs."
+                details: errorText || "Backend service may be unavailable. Please check backend logs."
               },
               { status: 503 } // Service Unavailable
             )
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             { 
               error: "Request timeout",
-              details: "Backend took too long to respond after multiple attempts. This may indicate MongoDB connection issues or backend overload."
+              details: "Backend took too long to respond after multiple attempts. This may indicate backend overload or connectivity issues."
             },
             { status: 504 } // Gateway Timeout
           )
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: error.message || "Failed to create chat session",
-        details: "Please ensure the backend is running and MongoDB is accessible"
+        details: "Please ensure the backend is running and accessible"
       },
       { status: 500 }
     )
@@ -170,7 +171,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(
           { 
             error: "Request timeout",
-            details: "Backend took too long to respond. MongoDB connection may be slow."
+            details: "Backend took too long to respond. Please try again."
           },
           { status: 504 }
         )

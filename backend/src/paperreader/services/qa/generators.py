@@ -138,14 +138,41 @@ class OpenAIGenerator(Generator):
         print(f"[DEBUG] Processing {len(contexts)} contexts for plain text generation")
         
         if plain_text_only and not has_query_images:
-            prompt = (
-                f"Answer the question using the {len(contexts)} contexts below. "
-                "IMPORTANT: You MUST append [cN] markers where you use contextual info (e.g., [c1], [c2], etc.). "
-                f"Each [cN] should correspond to the context number you're referencing (1 to {len(contexts)}). "
-                "At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]\n\n"
-                + "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)])
-                + f"\n\nQuestion: {question}\nAnswer:"
-            )
+            # Detect if question is simple greeting/casual chat that doesn't need document context
+            question_lower = question.lower().strip()
+            simple_greetings = ['hi', 'hello', 'hey', 'thanks', 'thank you', 'bye', 'goodbye', 'ok', 'okay', 'yes', 'no']
+            is_simple_greeting = question_lower in simple_greetings or (len(question_lower.split()) <= 2 and question_lower in ['how are you', 'what\'s up', 'whats up'])
+            
+            if is_simple_greeting:
+                # For simple greetings, answer briefly without using document contexts
+                if len(contexts) > 0:
+                    prompt = (
+                        f"Question: {question}\n\n"
+                        "Answer briefly and naturally. This is a simple greeting or casual conversation, so respond in a friendly, concise way without referencing any document contexts. "
+                        "Keep your response short (1-2 sentences). Do NOT use the document contexts provided below."
+                    )
+                else:
+                    prompt = (
+                        f"Question: {question}\n\n"
+                        "Answer briefly and naturally. This is a simple greeting or casual conversation, so respond in a friendly, concise way. "
+                        "Keep your response short (1-2 sentences)."
+                    )
+            elif len(contexts) == 0:
+                # No contexts available, answer directly
+                prompt = (
+                    f"Question: {question}\n\n"
+                    "Answer the question directly. No document contexts are available, so provide a helpful response based on general knowledge or chat history."
+                )
+            else:
+                # For substantive questions, use document contexts
+                prompt = (
+                    f"Answer the question using the {len(contexts)} contexts below. "
+                    "IMPORTANT: You MUST append [cN] markers where you use contextual info (e.g., [c1], [c2], etc.). "
+                    f"Each [cN] should correspond to the context number you're referencing (1 to {len(contexts)}). "
+                    "At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]\n\n"
+                    + "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)])
+                    + f"\n\nQuestion: {question}\nAnswer:"
+                )
             messages.append({"role": "user", "content": prompt})
 
             resp = self.client.chat.completions.create(

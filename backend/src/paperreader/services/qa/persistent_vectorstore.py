@@ -1,6 +1,6 @@
 """
-Persistent Vector Store implementation using MongoDB
-This replaces the in-memory vector store with a persistent solution
+Persistent Vector Store implementation
+MongoDB removed - using in-memory storage only
 """
 import asyncio
 import json
@@ -10,14 +10,15 @@ from datetime import datetime
 import pickle
 import base64
 
-from paperreader.database.mongodb import mongodb
+# MongoDB removed
+# from paperreader.database.mongodb import mongodb
 from paperreader.services.qa.vectorstore import InMemoryVectorStore
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
 class PersistentVectorStore:
-    """Persistent vector store using MongoDB for storage"""
+    """Vector store using in-memory storage (MongoDB removed)"""
     
     def __init__(self, collection_name: str = "vector_embeddings"):
         self.collection_name = collection_name
@@ -47,13 +48,9 @@ class PersistentVectorStore:
             self._initialized = True
     
     async def _load_embeddings_to_memory(self):
-        """Load embeddings from MongoDB into memory cache"""
-        collection = mongodb.get_collection(self.collection_name)
-        
-        # Get all embeddings
+        """Load embeddings into memory cache (MongoDB removed - start empty)"""
+        # MongoDB removed - initialize empty store
         embeddings_data = []
-        async for doc in collection.find():
-            embeddings_data.append(doc)
         
         if not embeddings_data:
             # No embeddings found, create empty store
@@ -135,37 +132,20 @@ class PersistentVectorStore:
             return None
     
     async def add_embeddings(self, texts: List[str], embeddings: List[List[float]], metadatas: List[Dict[str, Any]]):
-        """Add new embeddings to the persistent store"""
+        """Add new embeddings to the store (MongoDB removed - memory only)"""
         if not texts or not embeddings or not metadatas:
             return
         
         if len(texts) != len(embeddings) or len(texts) != len(metadatas):
             raise ValueError("Texts, embeddings, and metadatas must have the same length")
         
-        collection = mongodb.get_collection(self.collection_name)
-        
-        # Prepare documents for MongoDB
-        documents = []
-        for i, (text, embedding, metadata) in enumerate(zip(texts, embeddings, metadatas)):
-            doc = {
-                "text": text,
-                "embedding_vector": self._encode_vector(embedding),
-                "metadata": metadata,
-                "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow()
-            }
-            documents.append(doc)
-        
-        # Insert into MongoDB
+        # MongoDB removed - only update memory cache
         try:
-            result = await collection.insert_many(documents)
-            print(f"✅ Added {len(documents)} embeddings to persistent store")
-            
             # Update memory cache
             await self._update_memory_cache(texts, embeddings, metadatas)
-            
+            print(f"✅ Added {len(texts)} embeddings to in-memory store")
         except Exception as e:
-            print(f"❌ Failed to add embeddings to persistent store: {e}")
+            print(f"❌ Failed to add embeddings: {e}")
             raise
     
     async def _update_memory_cache(self, texts: List[str], embeddings: List[List[float]], metadatas: List[Dict[str, Any]]):
@@ -227,14 +207,15 @@ class PersistentVectorStore:
     
     async def get_embedding_count(self) -> int:
         """Get total number of stored embeddings"""
-        collection = mongodb.get_collection(self.collection_name)
-        return await collection.count_documents({})
+        # MongoDB removed - return count from memory store
+        if self.memory_store and self.memory_store.metadatas:
+            return len(self.memory_store.metadatas)
+        return 0
     
     async def clear_all_embeddings(self):
         """Clear all embeddings from the store"""
-        collection = mongodb.get_collection(self.collection_name)
-        result = await collection.delete_many({})
-        print(f"✅ Cleared {result.deleted_count} embeddings from persistent store")
+        # MongoDB removed - only clear memory cache
+        count = await self.get_embedding_count()
         
         # Reset memory cache
         self.memory_store = InMemoryVectorStore(
@@ -243,6 +224,7 @@ class PersistentVectorStore:
             tfidf_matrix=None,
             tfidf_vectorizer=None
         )
+        print(f"✅ Cleared {count} embeddings from in-memory store")
     
     def get_memory_store(self) -> InMemoryVectorStore:
         """Get the memory store for compatibility"""

@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useEffect } from 'react'
+import { useState, useLayoutEffect, useEffect, useCallback } from 'react'
 
 interface QAMessage {
   id: string
@@ -20,7 +20,7 @@ export function useQAMessages({ pdfFile, tabId, messagesStorageKey }: UseQAMessa
   const [messages, setMessages] = useState<QAMessage[]>([])
   const [showHistory, setShowHistory] = useState(false)
 
-  const loadMessages = () => {
+  const loadMessages = useCallback(() => {
     if (!pdfFile?.name || typeof window === 'undefined') return
 
     try {
@@ -50,7 +50,7 @@ export function useQAMessages({ pdfFile, tabId, messagesStorageKey }: UseQAMessa
     setMessages([])
     setShowHistory(false)
     return []
-  }
+  }, [pdfFile?.name, tabId, messagesStorageKey])
 
   const saveMessages = (messagesToSave: QAMessage[]) => {
     if (typeof window === 'undefined') return
@@ -86,6 +86,23 @@ export function useQAMessages({ pdfFile, tabId, messagesStorageKey }: UseQAMessa
   useLayoutEffect(() => {
     loadMessages()
   }, [pdfFile?.name, tabId, messagesStorageKey])
+
+  // Listen for custom event when messages are loaded from backend
+  useEffect(() => {
+    const handleMessagesLoaded = (event: CustomEvent) => {
+      if (event.detail?.messagesStorageKey === messagesStorageKey) {
+        console.log('[Chat] Reloading messages after backend load')
+        loadMessages()
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('chatMessagesLoaded', handleMessagesLoaded as EventListener)
+      return () => {
+        window.removeEventListener('chatMessagesLoaded', handleMessagesLoaded as EventListener)
+      }
+    }
+  }, [messagesStorageKey, loadMessages])
 
   // Auto-show history when messages exist
   useEffect(() => {

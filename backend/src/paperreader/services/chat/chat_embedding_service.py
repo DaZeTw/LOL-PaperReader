@@ -5,7 +5,8 @@ import uuid
 from pathlib import Path
 import os
 
-from paperreader.database.mongodb import mongodb
+# MongoDB removed - service disabled
+# from paperreader.database.mongodb import mongodb
 from paperreader.models.chat import ChatSession, ChatMessage
 from paperreader.services.qa.embeddings import get_embedder
 from paperreader.services.qa.vectorstore import InMemoryVectorStore
@@ -57,35 +58,9 @@ class ChatEmbeddingService:
     
     async def get_unembedded_messages(self, limit: int = 100) -> List[Dict[str, Any]]:
         """Get chat messages that haven't been embedded yet"""
-        collection = mongodb.get_collection(self.collection_name)
-        embedding_collection = mongodb.get_collection(self.embedding_collection_name)
-        
-        # Get all embedded message IDs
-        embedded_ids = set()
-        async for doc in embedding_collection.find({}, {"message_id": 1}):
-            embedded_ids.add(doc.get("message_id"))
-        
-        # Get unembedded messages
-        unembedded_messages = []
-        async for session_doc in collection.find():
-            session = ChatSession(**session_doc)
-            for message in session.messages:
-                # Create a unique message ID
-                message_id = f"{session.session_id}_{message.timestamp.isoformat()}_{message.role}"
-                
-                if message_id not in embedded_ids:
-                    unembedded_messages.append({
-                        "message_id": message_id,
-                        "session_id": session.session_id,
-                        "user_id": session.user_id,
-                        "role": message.role,
-                        "content": message.content,
-                        "timestamp": message.timestamp,
-                        "metadata": message.metadata or {},
-                        "has_images": self._has_images_in_message(message)
-                    })
-        
-        return unembedded_messages[:limit]
+        # MongoDB removed - return empty list
+        print("[WARNING] ChatEmbeddingService.get_unembedded_messages() called but MongoDB is disabled")
+        return []
     
     def _has_images_in_message(self, message: ChatMessage) -> bool:
         """Check if a message contains images"""
@@ -304,38 +279,7 @@ class ChatEmbeddingService:
             except Exception as e:
                 print(f"[ERROR] Failed to store in persistent store: {e}")
             
-            # Also store in MongoDB for backup
-            try:
-                embedding_collection = mongodb.get_collection(self.embedding_collection_name)
-                await embedding_collection.insert_one({
-                    "message_id": message_id,
-                    "text": content,
-                    "embedding": embedding,
-                    "metadata": chunk["metadata"],
-                    "has_images": has_images,
-                    "images": images,
-                    "created_at": datetime.utcnow()
-                })
-                print(f"[DEBUG] Successfully stored embedding in MongoDB for message {message_id}")
-            except Exception as e:
-                print(f"[ERROR] Failed to store in MongoDB: {e}")
-                # Try to create collection if it doesn't exist
-                try:
-                    await mongodb.database.create_collection(self.embedding_collection_name)
-                    print(f"[DEBUG] Created collection {self.embedding_collection_name}")
-                    # Retry the insert
-                    await embedding_collection.insert_one({
-                        "message_id": message_id,
-                        "text": content,
-                        "embedding": embedding,
-                        "metadata": chunk["metadata"],
-                        "has_images": has_images,
-                        "images": images,
-                        "created_at": datetime.utcnow()
-                    })
-                    print(f"[DEBUG] Successfully stored embedding in MongoDB after creating collection")
-                except Exception as e2:
-                    print(f"[ERROR] Failed to create collection and store: {e2}")
+            # MongoDB removed - embeddings are only stored in memory/vector store
             
             print(f"[LOG] Successfully embedded message {message_id}")
             return True

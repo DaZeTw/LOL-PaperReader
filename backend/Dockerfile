@@ -21,8 +21,6 @@ RUN pip install --no-cache-dir \
     python-multipart==0.0.6 \
     python-dotenv==1.0.0 \
     "pydantic>=2.0.0,<3.0.0" \
-    motor==3.3.2 \
-    pymongo==4.6.0 \
     "requests>=2.31.0" \
     pathlib2==2.3.7
 

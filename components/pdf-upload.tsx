@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef, useImperativeHandle, forwardRef } from "react"
 import { Upload, FileText, Loader2, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
@@ -12,10 +12,22 @@ interface PDFUploadProps {
   onParseComplete?: (fileName: string, parsedData: any, fileSize?: number, fileLastModified?: number) => void
 }
 
-export function PDFUpload({ onFileSelect, onParseComplete }: PDFUploadProps) {
-  const [isDragging, setIsDragging] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
-  const { toast } = useToast()
+export interface PDFUploadRef {
+  triggerFilePicker: () => void
+}
+
+export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
+  ({ onFileSelect, onParseComplete }, ref) => {
+    const [isDragging, setIsDragging] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const { toast } = useToast()
+
+    useImperativeHandle(ref, () => ({
+      triggerFilePicker: () => {
+        fileInputRef.current?.click()
+      },
+    }))
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -223,6 +235,7 @@ export function PDFUpload({ onFileSelect, onParseComplete }: PDFUploadProps) {
           }`}
         >
           <input
+            ref={fileInputRef}
             type="file"
             accept="application/pdf"
             onChange={handleFileInput}
@@ -284,4 +297,6 @@ export function PDFUpload({ onFileSelect, onParseComplete }: PDFUploadProps) {
       </div>
     </div>
   )
-}
+})
+
+PDFUpload.displayName = "PDFUpload"

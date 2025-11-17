@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { FileText, Plus, X } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
+import { Homepage } from "@/components/homepage"
 import { SinglePDFReader } from "@/components/pdf-reader"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -17,9 +18,15 @@ interface PDFTab {
 export function PDFWorkspace() {
   const [tabs, setTabs] = useState<PDFTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
-  const [showUpload, setShowUpload] = useState(true)
+  const [showUpload, setShowUpload] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
+
+  const handleGetStarted = () => {
+    // Show upload screen when clicking from homepage
+    setShowUpload(true)
+  }
 
   const handleFileSelect = async (file: File) => {
     console.log("[PDF Workspace] Upload detected:", file.name)
@@ -49,7 +56,7 @@ export function PDFWorkspace() {
           setActiveTabId(newTabs[newTabs.length - 1].id)
         } else {
           setActiveTabId(null)
-          setShowUpload(true)
+          setShowUpload(false)
         }
       }
       
@@ -58,14 +65,34 @@ export function PDFWorkspace() {
   }
 
   const handleNewTab = () => {
-    setActiveTabId(null)
-    setShowUpload(true)
+    // Trigger file picker directly without showing upload screen
+    fileInputRef.current?.click()
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      handleFileSelect(file)
+      // Reset input so same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }
   }
 
   console.log("[PDF Workspace] Render - tabs:", tabs.length, "activeTab:", activeTab?.title)
 
   return (
     <div className="flex h-screen flex-col bg-background">
+      {/* Hidden file input for direct file picker */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/pdf"
+        onChange={handleFileInputChange}
+        className="hidden"
+      />
+
       {/* Header */}
       <header className="flex items-center justify-between border-b border-border px-6 py-3 shadow-sm">
         <div className="flex items-center gap-3">
@@ -127,8 +154,15 @@ export function PDFWorkspace() {
 
       {/* Content Area */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Upload Screen */}
-        {(showUpload || tabs.length === 0) && (
+        {/* Homepage - shown when no tabs and not showing upload */}
+        {tabs.length === 0 && !showUpload && (
+          <div className="absolute inset-0 z-10">
+            <Homepage onGetStarted={handleGetStarted} />
+          </div>
+        )}
+        
+        {/* Upload Screen - for drag & drop */}
+        {showUpload && (
           <div className="absolute inset-0 z-10">
             <PDFUpload onFileSelect={handleFileSelect} />
           </div>

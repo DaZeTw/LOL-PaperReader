@@ -51,7 +51,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json(
         {
           error: "Request timeout",
-          details: "Backend took too long to respond. MongoDB connection may be slow.",
+          details: "Backend took too long to respond. Please try again.",
         },
         { status: 504 },
       )
@@ -114,7 +114,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json(
         {
           error: "Request timeout",
-          details: "Backend took too long to respond. MongoDB connection may be slow.",
+          details: "Backend took too long to respond. Please try again.",
         },
         { status: 504 },
       )

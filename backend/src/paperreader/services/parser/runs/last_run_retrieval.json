@@ -1,58 +1,58 @@
 {
-  "question": "dual anchors là gì",
+  "question": "What is the main finding?",
   "hits": [
     {
-      "index": 5,
-      "score": 0.4804331988896884,
-      "text": "Functional Dual Anchor",
+      "index": 8,
+      "score": 0.23781759653694684,
+      "text": "Finally, we are developing and releasing open science resources\nthat drive both the research and the product. These resources to-\ngether open-source software, 3,4 AI models [ 11 , 20 , 42 , 86 ], and open\ndatasets [50, 61] to support continued work in this area.\nIn this paper, we focus on summarizing our efforts under the\nresearch pillar of the Semantic Reader Project. We structure our\ndiscussion around five broad challenges faced by readers of research\npapers:\n• Discovery: Following paper citations is one of the main\nstrategies that scholars employ to discover additional rel-\nevant papers, but keeping track of the large numbers of\ncitations can be overwhelming. In §2, we explore ways to\nvisually augment research papers to help readers prioritize\ntheir paper exploration during literature reviews.\n1 Semantic Reader: https://www.semanticscholar.org/product/semantic-reader\n2 Available for over 369K papers as of February 2023.\n3 For UI development: https://github.com/allenai/pdf-component-library\n4 For processing PDFs: https://github.com/allenai/papermage\n5 Hypothes.is: https://web.hypothes.ishttps://web.hypothes.is",
       "metadata": {
-        "doc_id": "2510.21223v1-embedded",
-        "title": "^",
-        "page": 5,
+        "doc_id": "2303.14334v2-embedded",
+        "title": "Page 2",
+        "page": 2,
         "images": []
       }
     },
     {
-      "index": 17,
-      "score": 0.33607587324086974,
-      "text": "We aim to construct a set of inputs whose induced gradients on the pretrained model align with\nthe task vector. These gradients can be refined by comparing representation discrepancies between\nthe downstream checkpoints { φ ( θ i ) } m\ni =1 and the pretrained model φ ( θ 0 ) on the constructed inputs.\nFormally, assuming the model φ operates in a d -dimensional input space, we consider a set of n\ninput points { x ij } n\nj =1 ⊂ R d for the downstream checkpoint φ ( θ i ) . We refer to these points as\nanchors, as they link φ ( θ 0 ) and φ ( θ i ) . When these anchors ideally satisfy the following objective,\nthey constitute a set of Functional Dual Anchors (FDAs) for φ ( θ 0 ) and φ ( θ i ) ( i.e. , τ i ):\nmin\nx i 1 ,..., x in cos dist\n\u0012\n∇ θ\nn\nX\nj =1\nDist\n\u0000\nφ ( θ , x ij ) , φ ( θ i , x ij )\n\u0001\nθ = θ 0\n, τ i\n\u0013\n,\n(1)\nwhere cos dist( A , B ) = 1 − vec( A )vec( B )",
+      "index": 82,
+      "score": 0.23394287149033818,
+      "text": "ms (2021).\n[94] Richard Van Noorden et al . 2015. Interdisciplinary research by the numbers.\nNature 525, 7569 (2015), 306–307.\n[95] David Wadden, Shanchuan Lin, Kyle Lo, Lucy Lu Wang, Madeleine van Zuylen,\nArman Cohan, and Hannaneh Hajishirzi. 2020. Fact or Fiction: Verifying Sci-\nentific Claims. In Proceedings of the 2020 Conference on Empirical Methods in\nNatural Language Processing (EMNLP) . Association for Computational Linguis-\ntics, Online, 7534–7550. https://doi.org/10.18653/v1/2020.emnlp-main.609\n[96] Chong Wang and David M. Blei. 2011. Collaborative topic modeling for recom-\nmending scientific articles. In KDD .\n[97] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea\nHaupt, Matt Latzke, Bailey Kuehl, Madeleine N van Zuylen, Linda Wagner,\nand Daniel Weld. 2021. SciA11y: Converting Scientific Papers to Accessible\nHTML. In Proceedings of the 23rd International ACM SIGACCESS Conference\non Computers and Accessibility (Virtual Event, USA) (ASSETS ’21) . Association\nfor Computing Machinery, New York, NY, USA, Article 85, 4 pages.\nhttps:\n//doi.org/10.1145/3441852.3476545\n[98] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea Hess\nHaupt,",
       "metadata": {
-        "doc_id": "2510.21223v1-embedded",
-        "title": "Page 3",
+        "doc_id": "2303.14334v2-embedded",
+        "title": "Page 11",
+        "page": 11,
+        "images": []
+      }
+    },
+    {
+      "index": 51,
+      "score": 0.22134469334503695,
+      "text": "en the content is important. For instance, our systems\ncould design pathways that, while they may be more efficient, do\nnot obfuscate the full context (e.g., Scim §3.1), and that encourage\ngood practices such as verification and provenance tracing. A final\nconsideration is around what is ethical reuse of a paper’s contents\nto support reader experiences outside of that paper and its licensing\nimplications. For instance, CiteRead (§2.2) extracts paper citances\nand places them in the cited paper, and Relatedly (§5.2) extracts\nrelated work sections from different papers for users to explore.\nRecent trends in open science and datasets [ 29 , 61 , 67 , 68 ] point to\na promising future where we could continue to explore different\nways to remix and reuse scholarly content across context so that\nfuture scientists can take fuller advantage of prior research.\n8\nCONCLUSION",
+      "metadata": {
+        "doc_id": "2303.14334v2-embedded",
+        "title": "Page 8",
         "page": 8,
         "images": []
       }
     },
     {
-      "index": 9,
-      "score": 0.3153605427708534,
-      "text": "In contrast to existing approaches, we focus on modeling the input-representation space to mitigate\ntask-specific knowledge conflicts. Rather than directly manipulating parameter offsets, we propose\ngenerating synthetic inputs, termed functional dual anchors (FDAs), that can effectively simulate the\nrole of task vectors. An illustration of this idea is provided in Figure 1 . Conceptually, this is akin\nto projecting task-specific knowledge into the input-representation space by constructing inputs that\nreproduce the downstream model’s functional shift relative to the pretrained model. Specifically,\nfor each downstream checkpoint, we construct a set of inputs whose induced gradients on the pre-\ntrained parameters align with the corresponding task vector. In this way, FDAs effectively act as\nthe dual of task vectors. While task vectors encode task-specific knowledge in the parameter space,\nFDAs capture the analogous knowledge in the input space through their induced gradients. This\n1",
+      "index": 83,
+      "score": 0.2183274416856906,
+      "text": "tion\nfor Computing Machinery, New York, NY, USA, Article 85, 4 pages.\nhttps:\n//doi.org/10.1145/3441852.3476545\n[98] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea Hess\nHaupt, Matt Latzke, Bailey Kuehl, Madeleine van Zuylen, Linda Wagner, and\nDaniel S. Weld. 2021. Improving the Accessibility of Scientific Documents:\nCurrent State, User Needs, and a System Solution to Enhance Scientific PDF\nAccessibility for Blind and Low Vision Users. arXiv: 2105.00076 [cs.DL] (2021).\narXiv:2105.00076 [cs.DL]\n[99] Wenhui Wang, Hangbo Bao, Shaohan Huang, Li Dong, and Furu Wei. 2021.\nMiniLMv2: Multi-Head Self-Attention Relation Distillation for Compressing\nPretrained Transformers. In Findings of the Association for Computational Lin-\nguistics: ACL-IJCNLP 2021 . Association for Computational Linguistics, Online,\n2140–2151. https://doi.org/10.18653/v1/2021.findings-acl.188\n[100] Wenhui Wang, Furu Wei, Li Dong, Hangbo Bao, Nan Yang, and Ming Zhou. 2020.\nMiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of\nPre-Trained Transformers. In Advances in Neural Information Processing Systems ,\nH. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin (Eds.), Vol",
       "metadata": {
-        "doc_id": "2510.21223v1-embedded",
-        "title": "θ B = FT( X B , θ 0 )",
-        "page": 6,
+        "doc_id": "2303.14334v2-embedded",
+        "title": "Page 11",
+        "page": 11,
         "images": []
       }
     },
     {
-      "index": 2,
-      "score": 0.3091235435023579,
-      "text": "A BSTRACT\nModel merging is an efficient post-training strategy for integrating knowledge\nfrom multiple finetuned checkpoints of a shared foundation model. Existing meth-\nods operate in the parameter space, combining task vectors to mitigate conflicts,\nbut remain constrained by parameter inconsistencies. We propose Functional Dual\nAnchors (FDAs), a framework that instead models the input-representation space.\nFDAs are synthetic inputs whose induced gradients align with task vectors, captur-\ning task-specific functional shifts relative to the pretrained model. This perspec-\ntive bridges joint multi-task training and post-hoc merging, offering both robust-\nness and flexibility. We further introduce a principled initialization scheme and\nshow that FDAs are complementary to parameter-space model merging. Compre-\nhensive experiments demonstrate the effectiveness of FDAs in model merging.\n1\nI NTRODUCTION",
+      "index": 3,
+      "score": 0.21741308565768408,
+      "text": "we’ve de-\nveloped ten research prototype interfaces and conducted usability\nstudies with 300+ participants and real-world users showing im-\nproved reading experiences for scholars. We’ve also released a pro-\nduction research paper reader that will incorporate novel features\nas they mature. We structure this paper around challenges scholars\nand the public face when reading research papers—discovery, effi-\nciency, comprehension, synthesis, and accessibility—and present\nan overview of our progress and remaining open challenges.\n1\nINTRODUCTION\nThe exponential growth of scientific publication [ 7 , 8 ] and increas-\ning interdisciplinary nature of scientific progress [ 71 , 94 ] makes\n∗ [ .......\nClick...to.......\nopen....\nin.....\nthe ............\nSemantic..........\nReader ]\n[ .............\nDownload.....\nthe ..........\nversion.......\nwith .........\nalt-text ]",
       "metadata": {
-        "doc_id": "2510.21223v1-embedded",
-        "title": "SphereLab.ai/fda",
-        "page": 3,
-        "images": []
-      }
-    },
-    {
-      "index": 26,
-      "score": 0.29548691434253405,
-      "text": "Technical Report\nAlgorithm 1: Model Merging with Functional Dual Anchors\nInput: Model architecture φ , pretrained parameters θ 0 , downstream parameters { θ i } m\ni =1\nOutput: Merged parameter ˆ θ , FDAs { x ( l )\nij } n\nj =1 , 1 ≤ i ≤ m, 1 ≤ l ≤ L\nfor l = 1 to L do\n/* --- Stage I: FDA Construction ---\n* /\nfor i = 1 to m do\nInitialization & Optimization: Initialize { x ( l )\nij } n\nj =1 using linear weight sampling or scalable\nGaussian sampling as starting points and then solve the following objective with gradient\ndescent:\n{ x ( l )\nij } n\nj =1 = arg min\nx ( l )\ni 1 ,..., x ( l )\nin\ncos dist\n\u0012\n∇ θ ( l )\nn\nX\nj =1\nDist\n\u0000 φ ( l ) ( θ ( l ) , x ( l )\nij ) , φ ( θ ( l )\ni , x ( l )\nij )\n\u0001 θ ( l ) = θ ( l )\n0\n, τ ( l )\ni\n\u0013\n.\nStore the optimized anchors { x ( l )\nij } n\nj =1 .\nend\n/* --- Stage II: Parameter Optimization using FDAs ---\n* /\nAggregate anchors across tasks { x ( l )\nij } .\nAcquire the merged parameter by solving:\nˆ θ ( l ) = arg min\nθ ( l )\nm\nX\ni =1\nn\nX\nj =1\nDist\n\u0010\nφ ( l ) ( θ ( l ) , x ( l )\nij ) , φ ( l ) ( θ ( l )\ni , x ( l )\nij )\n\u0011\n,\nfrom θ ( l )\n0 .\nend\nreturn ˆ θ , { x ( l )\nij } n\nj =1 for 1 ≤ i ≤ m, 1 ≤ l ≤ L .",
-      "metadata": {
-        "doc_id": "2510.21223v1-embedded",
-        "title": "Page 5",
-        "page": 10,
+        "doc_id": "2303.14334v2-embedded",
+        "title": "through AI-Powered Interactive Reading Interfaces ∗",
+        "page": 1,
         "images": []
       }
     }

@@ -34,9 +34,7 @@ services:
     volumes:
       - ./backend/src:/app/src
     environment:
-      OPENAI_API_KEY: your_api_key_here
-      MONGODB_URL: mongodb+srv://vanlethai12042002_db_user:zK7RXEY5ZBUWdD45@cluster0.4xnkms3.mongodb.net/paperreader_chat?retryWrites=true&w=majority
-    restart: unless-stopped
+      OPENAI_API_KEY: youtr_openai_api_key_here
     networks:
       - app-network
 

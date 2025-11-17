@@ -1,8 +1,7 @@
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from bson import ObjectId
+import uuid
 
-from paperreader.database.mongodb import mongodb
 from paperreader.models.chat import (
     ChatSession, 
     ChatMessage, 
@@ -12,29 +11,21 @@ from paperreader.models.chat import (
     ChatMessageResponse
 )
 
+# In-memory storage (temporary until database is redesigned)
+_sessions_store: Dict[str, ChatSession] = {}
+
 class ChatService:
     def __init__(self):
-        self.collection_name = "chat_sessions"
+        self.collection_name = "chat_sessions"  # Kept for compatibility, not used
     
     async def create_session(self, session_data: ChatSessionCreate) -> ChatSession:
         """Create a new chat session"""
-        # Check if MongoDB is connected (proper way to check motor database objects)
-        # Motor database objects cannot be compared with None directly, so we check by accessing name
-        try:
-            db_name = mongodb.database.name
-        except (AttributeError, TypeError):
-            print("[ERROR] MongoDB database not connected! Call mongodb.connect() first.")
-            raise RuntimeError("MongoDB not connected")
+        print(f"[DEBUG] Creating session in-memory: {session_data.session_id}")
         
-        print(f"[DEBUG] Creating session in database: {db_name}, collection: {self.collection_name}")
-        
-        collection = mongodb.get_collection(self.collection_name)
-        
-        # Create initial messages - DO NOT save system messages to database
-        # System prompt will be added dynamically when preparing chat history for generator
+        # Create initial messages - DO NOT save system messages
         messages = []
         
-        # Only add user messages if provided (never save system messages to DB)
+        # Only add user messages if provided (never save system messages)
         if session_data.initial_message:
             messages.append(ChatMessage(
                 role="user",
@@ -51,62 +42,36 @@ class ChatService:
             updated_at=datetime.utcnow()
         )
         
-        # Convert to dict for MongoDB insertion
-        session_dict = chat_session.dict(by_alias=True, exclude={"id"})
-        print(f"[DEBUG] ===== CREATING NEW CHAT SESSION =====")
-        print(f"[DEBUG] session_id (UUID): {session_data.session_id}")
-        print(f"[DEBUG] Database: {db_name}, Collection: {self.collection_name}")
+        # Store in memory
+        _sessions_store[session_data.session_id] = chat_session
         
-        try:
-            result = await collection.insert_one(session_dict)
-            print(f"[DEBUG] ✅ Session created successfully!")
-            print(f"[DEBUG] 📋 Session Info:")
-            print(f"[DEBUG]   - session_id (UUID): {session_data.session_id}")
-            print(f"[DEBUG]   - MongoDB _id (ObjectId): {result.inserted_id}")
-            print(f"[DEBUG]   - Database: {db_name}, Collection: {self.collection_name}")
-            print(f"[DEBUG] 💡 To query in MongoDB Atlas, use: {{'session_id': '{session_data.session_id}'}}")
-            
-            # Verify the session was saved
-            verify_session = await collection.find_one({"_id": result.inserted_id})
-            if verify_session:
-                print(f"[DEBUG] ✅ Verified: Session exists in database")
-                print(f"[DEBUG]   - Verified session_id: {verify_session.get('session_id')}")
-                print(f"[DEBUG] =======================================")
-            else:
-                print(f"[WARNING] ❌ Session verification failed - not found after insert!")
-                print(f"[DEBUG] =======================================")
-        except Exception as e:
-            print(f"[ERROR] Failed to create session in MongoDB: {e}")
-            print(f"[ERROR] Database: {db_name}, Collection: {self.collection_name}")
-            raise
-        
-        # Update the session with the MongoDB ID
-        chat_session.id = result.inserted_id
+        print(f"[DEBUG] ✅ Session created in-memory: {session_data.session_id}")
         return chat_session
     
     async def get_session(self, session_id: str) -> Optional[ChatSession]:
         """Get a chat session by session_id"""
-        collection = mongodb.get_collection(self.collection_name)
-        session_data = await collection.find_one({"session_id": session_id})
-        
-        if not session_data:
-            return None
-        
-        return ChatSession(**session_data)
+        return _sessions_store.get(session_id)
     
     async def add_message(self, session_id: str, message: ChatMessageCreate) -> Optional[ChatSession]:
         """Add a message to an existing chat session"""
-        # Check if MongoDB is connected (proper way to check motor database objects)
-        # Motor database objects cannot be compared with None directly, so we check by accessing name
-        try:
-            db_name = mongodb.database.name
-        except (AttributeError, TypeError):
-            print("[ERROR] MongoDB database not connected! Call mongodb.connect() first.")
-            raise RuntimeError("MongoDB not connected")
+        print(f"[DEBUG] Adding message to session: {session_id}, role: {message.role}")
         
-        print(f"[DEBUG] Using database: {db_name}, collection: {self.collection_name}")
+        # Filter: Do NOT save system messages
+        if message.role == "system":
+            print(f"[DEBUG] Skipping system message - system messages are not saved")
+            return await self.get_session(session_id)
         
-        collection = mongodb.get_collection(self.collection_name)
+        # Get or create session
+        session = _sessions_store.get(session_id)
+        if not session:
+            print(f"[DEBUG] Session not found, creating new session: {session_id}")
+            session_data = ChatSessionCreate(
+                session_id=session_id,
+                user_id=None,
+                title=f"Chat Session {session_id[:8]}",
+                initial_message=None
+            )
+            session = await self.create_session(session_data)
         
         # Create the message object
         chat_message = ChatMessage(
@@ -116,78 +81,17 @@ class ChatService:
             timestamp=datetime.utcnow()
         )
         
-        # Filter: Do NOT save system messages to database
-        # Only save user and assistant messages
-        if message.role == "system":
-            print(f"[DEBUG] Skipping system message - system messages are not saved to database")
-            print(f"[DEBUG] System messages are added dynamically when preparing chat history for generator")
-            # Still return the session even though we didn't save
-            return await self.get_session(session_id)
+        # Add message to session
+        if not session.messages:
+            session.messages = []
+        session.messages.append(chat_message)
+        session.updated_at = datetime.utcnow()
         
-        # Log message being saved
-        print(f"[DEBUG] Saving message to database - Session: {session_id}, Role: {message.role}")
-        print(f"[DEBUG] Message metadata keys: {list(message.metadata.keys()) if message.metadata else 'None'}")
-        print(f"[DEBUG] Database: {db_name}, Collection: {self.collection_name}")
+        # Update store
+        _sessions_store[session_id] = session
         
-        # Update the session with the new message
-        try:
-            result = await collection.update_one(
-                {"session_id": session_id},
-                {
-                    "$push": {"messages": chat_message.dict()},
-                    "$set": {"updated_at": datetime.utcnow()}
-                }
-            )
-            
-            print(f"[DEBUG] Update result - Matched: {result.matched_count}, Modified: {result.modified_count}")
-            
-            if result.matched_count == 0:
-                print(f"[WARNING] Session {session_id} not found in database when trying to add message")
-                print(f"[DEBUG] Checking if session exists...")
-                existing = await collection.find_one({"session_id": session_id})
-                if existing:
-                    print(f"[DEBUG] Session exists but update failed. Session _id: {existing.get('_id')}")
-                    print(f"[DEBUG] Existing session has {len(existing.get('messages', []))} messages")
-                    # Try again with upsert=False to see what happens
-                    print(f"[DEBUG] Retrying update...")
-                else:
-                    print(f"[DEBUG] Session does not exist in database")
-                    print(f"[DEBUG] Creating session first...")
-                    # Auto-create session if it doesn't exist
-                    from paperreader.models.chat import ChatSessionCreate
-                    session_data = ChatSessionCreate(
-                        session_id=session_id,
-                        user_id=None,
-                        title=f"Chat Session {session_id[:8]}",
-                        initial_message=None
-                    )
-                    await self.create_session(session_data)
-                    # Retry the update
-                    result = await collection.update_one(
-                        {"session_id": session_id},
-                        {
-                            "$push": {"messages": chat_message.dict()},
-                            "$set": {"updated_at": datetime.utcnow()}
-                        }
-                    )
-                    print(f"[DEBUG] Retry update result - Matched: {result.matched_count}, Modified: {result.modified_count}")
-                    if result.matched_count == 0:
-                        return None
-            
-            print(f"[DEBUG] Message saved successfully. Modified count: {result.modified_count}")
-            
-            # Note: Detailed verification moved to after pipeline.answer() completes
-            # This ensures we wait for all operations (chunk processing) to finish
-            
-        except Exception as e:
-            import traceback
-            print(f"[ERROR] Failed to save message to MongoDB: {e}")
-            print(f"[ERROR] Traceback: {traceback.format_exc()}")
-            print(f"[ERROR] Database: {db_name}, Collection: {self.collection_name}")
-            raise
-        
-        # Return the updated session
-        return await self.get_session(session_id)
+        print(f"[DEBUG] ✅ Message saved. Session now has {len(session.messages)} messages")
+        return session
     
     async def get_session_messages(self, session_id: str, limit: Optional[int] = None) -> List[ChatMessage]:
         """Get messages from a chat session (excludes system messages)"""
@@ -207,13 +111,6 @@ class ChatService:
             messages = messages[-limit:]  # Get last N messages
             print(f"[DEBUG] After applying limit={limit}: {len(messages)} messages")
         
-        # Debug: Show message preview
-        if messages:
-            print(f"[DEBUG] Messages preview (last {min(3, len(messages))}):")
-            for i, msg in enumerate(messages[-3:], 1):
-                content_preview = msg.content[:60] + "..." if len(msg.content) > 60 else msg.content
-                print(f"[DEBUG]   [{i}] {msg.role}: {content_preview}")
-        
         return messages
     
     async def get_recent_messages(self, session_id: str, limit: int = 10) -> List[ChatMessage]:
@@ -222,45 +119,39 @@ class ChatService:
     
     async def update_session_title(self, session_id: str, title: str) -> bool:
         """Update the title of a chat session"""
-        collection = mongodb.get_collection(self.collection_name)
-        result = await collection.update_one(
-            {"session_id": session_id},
-            {
-                "$set": {
-                    "title": title,
-                    "updated_at": datetime.utcnow()
-                }
-            }
-        )
-        return result.matched_count > 0
+        session = _sessions_store.get(session_id)
+        if not session:
+            return False
+        
+        session.title = title
+        session.updated_at = datetime.utcnow()
+        _sessions_store[session_id] = session
+        return True
     
     async def delete_session(self, session_id: str) -> bool:
         """Delete a chat session"""
-        collection = mongodb.get_collection(self.collection_name)
-        result = await collection.delete_one({"session_id": session_id})
-        return result.deleted_count > 0
+        if session_id in _sessions_store:
+            del _sessions_store[session_id]
+            return True
+        return False
     
     async def list_user_sessions(self, user_id: str, limit: int = 20) -> List[ChatSessionResponse]:
         """List chat sessions for a user"""
-        collection = mongodb.get_collection(self.collection_name)
-        
-        cursor = collection.find(
-            {"user_id": user_id}
-        ).sort("updated_at", -1).limit(limit)
-        
         sessions = []
-        async for session_data in cursor:
-            session = ChatSession(**session_data)
-            sessions.append(ChatSessionResponse(
-                session_id=session.session_id,
-                title=session.title,
-                messages=session.messages,
-                created_at=session.created_at,
-                updated_at=session.updated_at,
-                message_count=len(session.messages)
-            ))
+        for session in _sessions_store.values():
+            if session.user_id == user_id:
+                sessions.append(ChatSessionResponse(
+                    session_id=session.session_id,
+                    title=session.title,
+                    messages=session.messages,
+                    created_at=session.created_at,
+                    updated_at=session.updated_at,
+                    message_count=len(session.messages)
+                ))
         
-        return sessions
+        # Sort by updated_at descending and limit
+        sessions.sort(key=lambda s: s.updated_at, reverse=True)
+        return sessions[:limit]
     
     async def get_session_response(self, session_id: str) -> Optional[ChatSessionResponse]:
         """Get a session as a response object"""
@@ -279,26 +170,23 @@ class ChatService:
     
     async def find_session_by_title(self, title: str, user_id: Optional[str] = None) -> Optional[ChatSession]:
         """Find the most recent session with matching title (and user_id if provided)"""
-        collection = mongodb.get_collection(self.collection_name)
+        matching_sessions = []
         
-        # Build query
-        query = {"title": title}
-        if user_id is not None:
-            query["user_id"] = user_id
-        else:
-            # For anonymous sessions, match where user_id is null
-            query["user_id"] = None
+        for session in _sessions_store.values():
+            if session.title == title:
+                if user_id is not None:
+                    if session.user_id == user_id:
+                        matching_sessions.append(session)
+                else:
+                    if session.user_id is None:
+                        matching_sessions.append(session)
         
-        # Find most recent session matching the title
-        session_data = await collection.find_one(
-            query,
-            sort=[("updated_at", -1)]  # Most recently updated first
-        )
-        
-        if not session_data:
+        if not matching_sessions:
             return None
         
-        return ChatSession(**session_data)
+        # Return most recently updated
+        matching_sessions.sort(key=lambda s: s.updated_at, reverse=True)
+        return matching_sessions[0]
 
 # Global chat service instance
 chat_service = ChatService()

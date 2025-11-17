@@ -227,7 +227,7 @@ def build_store(corpus: Corpus, embedder: Optional[Embedder], cached_embeddings:
 
 
 async def build_persistent_store(corpus: Corpus, embedder: Optional[Embedder]) -> PersistentVectorStore:
-    """Build persistent vector store and save to MongoDB"""
+    """Build persistent vector store (in-memory storage)"""
     persistent_store = PersistentVectorStore()
     await persistent_store.initialize()
     

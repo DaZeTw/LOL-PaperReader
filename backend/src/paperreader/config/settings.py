@@ -2,7 +2,8 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    mongodb_url: str
+    # MongoDB removed - no database settings needed for now
+    pass
 
     class Config:
         env_file = ".env"
