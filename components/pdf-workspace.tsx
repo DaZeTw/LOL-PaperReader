@@ -1,11 +1,10 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { FileText, Plus, X } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
-import { Homepage } from "@/components/homepage"
 import { SinglePDFReader } from "@/components/pdf-reader"
 import { LoginButton } from "@/components/login-button"
 import { UserMenu } from "@/components/user-menu"
@@ -18,21 +17,22 @@ interface PDFTab {
   title: string
 }
 
+// Generate stable IDs using a counter
+let tabCounter = 0
+
 export function PDFWorkspace() {
   const { data: session } = useSession()
   const [tabs, setTabs] = useState<PDFTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
-  const [showUpload, setShowUpload] = useState(false)
+  const [showUpload, setShowUpload] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
 
-  const handleGetStarted = () => {
-    // Only show upload screen if user is authenticated
-    if (session?.user) {
-      setShowUpload(true)
-    }
-  }
+  const generateTabId = useCallback(() => {
+    tabCounter += 1
+    return `tab-${tabCounter}`
+  }, [])
 
   const handleFileSelect = async (file: File) => {
     // Check authentication before allowing file upload
@@ -44,7 +44,7 @@ export function PDFWorkspace() {
     console.log("[PDF Workspace] Upload detected:", file.name)
     
     const newTab: PDFTab = {
-      id: Date.now().toString(),
+      id: generateTabId(),
       file,
       title: file.name
     }
@@ -68,7 +68,7 @@ export function PDFWorkspace() {
           setActiveTabId(newTabs[newTabs.length - 1].id)
         } else {
           setActiveTabId(null)
-          setShowUpload(false)
+          setShowUpload(true)
         }
       }
       
@@ -81,8 +81,8 @@ export function PDFWorkspace() {
     if (!session?.user) {
       return
     }
-    // Trigger file picker directly without showing upload screen
-    fileInputRef.current?.click()
+    setShowUpload(true)
+    setActiveTabId(null)
   }
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,8 +95,6 @@ export function PDFWorkspace() {
       }
     }
   }
-
-  console.log("[PDF Workspace] Render - tabs:", tabs.length, "activeTab:", activeTab?.title)
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -175,15 +173,8 @@ export function PDFWorkspace() {
 
       {/* Content Area */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Homepage - shown when no tabs and not showing upload */}
-        {tabs.length === 0 && !showUpload && (
-          <div className="absolute inset-0 z-10">
-            <Homepage onGetStarted={handleGetStarted} isAuthenticated={!!session?.user} />
-          </div>
-        )}
-        
-        {/* Upload Screen - for drag & drop */}
-        {showUpload && session?.user && (
+        {/* Upload Screen - shown when no active tab or when user clicks new */}
+        {(showUpload || tabs.length === 0) && session?.user && (
           <div className="absolute inset-0 z-10">
             <PDFUpload onFileSelect={handleFileSelect} />
           </div>

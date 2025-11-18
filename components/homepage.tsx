@@ -1,9 +1,10 @@
 "use client"
 
-import { FileText, Upload, BookOpen, Sparkles, Zap, Search, LogIn } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
 import { signIn } from "next-auth/react"
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
+import { FileText, LogIn, BookOpen, Search, Sparkles } from "lucide-react"
 
 interface HomepageProps {
   onGetStarted?: () => void
@@ -15,12 +16,65 @@ interface HomepageProps {
  * Provides an overview of features and call-to-action
  */
 export function Homepage({ onGetStarted, isAuthenticated = false }: HomepageProps) {
-  const handleGetStarted = () => {
-    if (isAuthenticated) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Automatically redirect to workspace when authenticated
+  useEffect(() => {
+    if (mounted && isAuthenticated) {
       onGetStarted?.()
-    } else {
-      signIn("google", { callbackUrl: "/" })
     }
+  }, [mounted, isAuthenticated, onGetStarted])
+
+  const handleGetStarted = () => {
+    signIn("google", { callbackUrl: "/" })
+  }
+
+  // Prevent hydration mismatch by not rendering dynamic content until mounted
+  if (!mounted) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-b from-background to-muted/20 p-8">
+        <div className="mx-auto max-w-4xl space-y-8 text-center">
+          <div className="space-y-4">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg">
+              <FileText className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+              Welcome to Scholar Reader
+            </h1>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              Your intelligent PDF reading companion. Analyze research papers, extract citations, and chat with your
+              documents using AI.
+            </p>
+          </div>
+          <div className="text-muted-foreground">Loading...</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show loading if authenticated (will auto-redirect)
+  if (isAuthenticated) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-b from-background to-muted/20 p-8">
+        <div className="mx-auto max-w-4xl space-y-8 text-center">
+          <div className="space-y-4">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg animate-pulse">
+              <FileText className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+              Welcome to Scholar Reader
+            </h1>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              Redirecting to workspace...
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -42,27 +96,16 @@ export function Homepage({ onGetStarted, isAuthenticated = false }: HomepageProp
 
         {/* CTA Button */}
         <div className="space-y-2">
-          {!isAuthenticated && (
-            <p className="text-sm text-muted-foreground">
-              Please sign in to upload and analyze PDF documents
-            </p>
-          )}
+          <p className="text-sm text-muted-foreground">
+            Please sign in to upload and analyze PDF documents
+          </p>
           <Button
             size="lg"
             onClick={handleGetStarted}
             className="gap-2 px-8 py-6 text-lg shadow-lg transition-transform hover:scale-105"
           >
-            {isAuthenticated ? (
-              <>
-                <Upload className="h-5 w-5" />
-                Upload PDF to Get Started
-              </>
-            ) : (
-              <>
-                <LogIn className="h-5 w-5" />
-                Sign in to Get Started
-              </>
-            )}
+            <LogIn className="h-5 w-5" />
+            Sign in to Get Started
           </Button>
         </div>
 
@@ -105,49 +148,7 @@ export function Homepage({ onGetStarted, isAuthenticated = false }: HomepageProp
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Ask questions about your documents and get instant AI-powered answers based on the content.
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 transition-colors hover:border-primary/50">
-            <CardHeader>
-              <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <Zap className="h-5 w-5 text-primary" />
-              </div>
-              <CardTitle className="text-lg">Smart Annotations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Highlight important sections and add notes. All your annotations are saved and easily accessible.
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 transition-colors hover:border-primary/50">
-            <CardHeader>
-              <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <BookOpen className="h-5 w-5 text-primary" />
-              </div>
-              <CardTitle className="text-lg">Bookmarks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Navigate through sections with automatic outline detection. Create custom bookmarks for quick access.
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 transition-colors hover:border-primary/50">
-            <CardHeader>
-              <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <FileText className="h-5 w-5 text-primary" />
-              </div>
-              <CardTitle className="text-lg">Export & Share</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Export your annotations, notes, and Q&A sessions. Share your research insights with colleagues.
+                Ask questions about your documents and get intelligent answers powered by advanced AI.
               </CardDescription>
             </CardContent>
           </Card>
