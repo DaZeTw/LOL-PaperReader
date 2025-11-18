@@ -3,6 +3,17 @@ set -e
 
 cd /app || exit 1
 
+# Populate node_modules from cached copy if volume is empty
+if [ ! -d "node_modules" ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
+  if [ -d "/opt/node_modules_cached" ]; then
+    echo "[dev-wrapper] Populating node_modules from cached copy..."
+    mkdir -p node_modules
+    cp -R /opt/node_modules_cached/. node_modules/
+  else
+    echo "[dev-wrapper] Warning: cached node_modules not found"
+  fi
+fi
+
 # Remove yarn completely to prevent Next.js from detecting it
 echo "[dev-wrapper] Removing yarn files..."
 rm -f yarn.lock .yarnrc.yml .yarnrc 2>/dev/null || true

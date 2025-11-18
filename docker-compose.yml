@@ -19,6 +19,10 @@ services:
       # Google OAuth Credentials
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      # PostgreSQL Configuration
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/paperreader}
+      # npm: ignore peer dep conflicts (React 19 vs vaul)
+      NPM_CONFIG_LEGACY_PEER_DEPS: "true"
     volumes:
       - .:/app
       - /app/node_modules       #Giữ lại node_modules trong container
@@ -28,6 +32,7 @@ services:
       - "3000:3000"
     depends_on:
       - python-backend
+      - postgres
     restart: unless-stopped
     networks:
       - app-network
@@ -48,6 +53,47 @@ services:
     networks:
       - app-network
 
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: paperreader-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-paperreader}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin - Web interface for PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: paperreader-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@paperreader.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - app-network
+
   # MongoDB database (Local - only needed for local development)
   # Comment out if using MongoDB Atlas (cloud)
   # mongodb:
@@ -64,5 +110,8 @@ networks:
   app-network:
     driver: bridge
 
-# volumes:
-#   mongodb_data:  # Only needed if using local MongoDB
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local

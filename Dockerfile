@@ -19,7 +19,8 @@ COPY package.json ./
 
 # Install all dependencies (dev + prod) to build Next
 # This will create package-lock.json if it doesn't exist
-RUN npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps \
+  && cp -R node_modules /opt/node_modules_cached
 
 # Copy package-lock.json if it exists on host (optional, npm install already created it)
 COPY package-lock.json* ./
