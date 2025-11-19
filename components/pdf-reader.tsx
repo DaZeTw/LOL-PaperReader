@@ -95,7 +95,7 @@ export function SinglePDFReader({ file, tabId, isActive, onOpenDocument }: Singl
       setHistoryLoading(true)
       setHistoryError(null)
 
-      const response = await fetch("/api/documents/list", { cache: "no-store" })
+      const response = await fetch("/api/documents", { cache: "no-store" })
       if (!response.ok) {
         throw new Error("Failed to fetch documents")
       }

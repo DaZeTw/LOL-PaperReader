@@ -84,7 +84,11 @@ export function PDFWorkspace() {
       }
 
       try {
-        const response = await fetch(document.downloadUrl, { cache: "no-store" })
+        const url = document.fileUrl ?? document.downloadUrl
+        if (!url) {
+          throw new Error("Document URL unavailable.")
+        }
+        const response = await fetch(url, { cache: "no-store" })
         if (!response.ok) {
           throw new Error("Unable to download the selected document.")
         }

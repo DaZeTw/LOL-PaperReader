@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import {
   getDocumentResponseForUser,
@@ -9,20 +9,21 @@ import {
 
 export const runtime = "nodejs"
 
-export async function GET(request: NextRequest) {
+interface RouteContext {
+  params: {
+    documentId: string
+  }
+}
+
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const session = await auth()
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const documentId = request.nextUrl.searchParams.get("id")
-
-    if (!documentId) {
-      return NextResponse.json({ error: "Missing document id" }, { status: 400 })
-    }
-
-    const response = await getDocumentResponseForUser(documentId, session.user.id)
+    const response = await getDocumentResponseForUser(context.params.documentId, session.user.id)
     return response
   } catch (error) {
     if (error instanceof InvalidDocumentIdError) {
@@ -37,8 +38,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 502 })
     }
 
-    console.error("[DocumentsDownload] Error:", error)
+    console.error("[Documents] Failed to stream document:", error)
     return NextResponse.json({ error: "Failed to download document" }, { status: 500 })
   }
 }
+
 

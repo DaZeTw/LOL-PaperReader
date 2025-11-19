@@ -24,7 +24,9 @@ export interface UploadedDocument {
   status: string
   num_pages?: number
   file_size?: number
-  downloadUrl: string
+  downloadUrl?: string
+  fileUrl?: string
+  metadataUrl?: string
 }
 
 export interface PDFUploadRef {
@@ -46,7 +48,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
     const loadPreviousDocuments = useCallback(async () => {
       try {
         setLoadingDocuments(true)
-        const response = await fetch("/api/documents/list", { cache: "no-store" })
+        const response = await fetch("/api/documents", { cache: "no-store" })
         if (!response.ok) {
           throw new Error("Failed to fetch documents")
         }
@@ -168,7 +170,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
       formData.append("file", file)
 
       try {
-        const response = await fetch("/api/pdf/upload", {
+        const response = await fetch("/api/documents", {
           method: "POST",
           body: formData,
         })
@@ -212,7 +214,11 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
     async (document: UploadedDocument) => {
       try {
         setIsUploading(true)
-        const response = await fetch(document.downloadUrl)
+        const url = document.fileUrl ?? document.downloadUrl
+        if (!url) {
+          throw new Error("Document URL unavailable")
+        }
+        const response = await fetch(url, { cache: "no-store" })
         if (!response.ok) {
           throw new Error("Failed to download document")
         }
@@ -464,7 +470,10 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
                             className="h-8 w-8 text-muted-foreground hover:text-primary"
                             onClick={(event) => {
                               event.stopPropagation()
-                              handleDownloadDocument(doc.downloadUrl)
+                              const url = doc.downloadUrl ?? doc.fileUrl
+                              if (url) {
+                                handleDownloadDocument(url)
+                              }
                             }}
                             aria-label={`Download ${doc.original_filename}`}
                           >
