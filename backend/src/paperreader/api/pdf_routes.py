@@ -211,6 +211,36 @@ async def qa_status():
         return {"building": False, "ready": False, "error": str(e)}
 
 
+@router.get("/chunks")
+async def get_chunks():
+    """Return all chunks from the pipeline for skimming mode."""
+    try:
+        pipeline = await get_pipeline()
+        if not pipeline or not pipeline.artifacts or not pipeline.artifacts.chunks:
+            return {"status": "empty", "chunks": []}
+
+        chunks = pipeline.artifacts.chunks
+        print(f"[CHUNKS] Returning {len(chunks)} chunks for skimming mode")
+
+        # Return chunks with title, page, text (excluding heavy data like images/embeddings)
+        simplified_chunks = []
+        for chunk in chunks:
+            simplified_chunks.append({
+                "doc_id": chunk.get("doc_id"),
+                "title": chunk.get("title"),
+                "page": chunk.get("page"),
+                "text": chunk.get("text"),
+                # Don't send images (too heavy) or other metadata
+            })
+
+        return {"status": "ok", "chunks": simplified_chunks, "count": len(simplified_chunks)}
+    except Exception as e:
+        print(f"[CHUNKS] Error getting chunks: {e}")
+        import traceback
+        print(f"[CHUNKS] Traceback: {traceback.format_exc()}")
+        return {"status": "error", "error": str(e), "chunks": []}
+
+
 @router.post("/save-and-parse/")
 async def save_and_parse_pdfs(files: list[UploadFile] = File(...)):
     """Accept multiple PDFs, persist them, parse, and save outputs into data_dir."""
