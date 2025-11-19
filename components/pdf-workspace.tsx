@@ -10,6 +10,8 @@ import { LoginButton } from "@/components/login-button"
 import { UserMenu } from "@/components/user-menu"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
+import type { UploadedDocument } from "@/components/pdf-upload"
 
 interface PDFTab {
   id: string
@@ -22,6 +24,7 @@ let tabCounter = 0
 
 export function PDFWorkspace() {
   const { data: session } = useSession()
+  const { toast } = useToast()
   const [tabs, setTabs] = useState<PDFTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
   const [showUpload, setShowUpload] = useState(true)
@@ -34,27 +37,73 @@ export function PDFWorkspace() {
     return `tab-${tabCounter}`
   }, [])
 
-  const handleFileSelect = async (file: File) => {
-    // Check authentication before allowing file upload
-    if (!session?.user) {
-      console.log("[PDF Workspace] Upload blocked - user not authenticated")
-      return
-    }
+  const handleFileSelect = useCallback(
+    async (file: File) => {
+      if (!session?.user) {
+        console.log("[PDF Workspace] Upload blocked - user not authenticated")
+        toast({
+          title: "Sign in required",
+          description: "Please sign in to open PDFs in the workspace.",
+          variant: "destructive",
+        })
+        return
+      }
 
-    console.log("[PDF Workspace] Upload detected:", file.name)
-    
-    const newTab: PDFTab = {
-      id: generateTabId(),
-      file,
-      title: file.name
-    }
-    
-    setTabs((prev) => [...prev, newTab])
-    setActiveTabId(newTab.id)
-    setShowUpload(false)
-    
-    console.log("[PDF Workspace] Created new tab:", newTab.id)
-  }
+      console.log("[PDF Workspace] Upload detected:", file.name)
+
+      const newTab: PDFTab = {
+        id: generateTabId(),
+        file,
+        title: file.name,
+      }
+
+      setTabs((prev) => {
+        if (!activeTabId) {
+          return [...prev, newTab]
+        }
+        const activeIndex = prev.findIndex((tab) => tab.id === activeTabId)
+        if (activeIndex === -1) {
+          return [...prev, newTab]
+        }
+        const nextTabs = [...prev]
+        nextTabs.splice(activeIndex + 1, 0, newTab)
+        return nextTabs
+      })
+      setActiveTabId(newTab.id)
+      setShowUpload(false)
+
+      console.log("[PDF Workspace] Created new tab:", newTab.id)
+    },
+    [activeTabId, generateTabId, session?.user, toast],
+  )
+
+  const handleOpenExistingDocument = useCallback(
+    async (document: UploadedDocument) => {
+      if (!session?.user) {
+        throw new Error("Please sign in to open PDFs from your history.")
+      }
+
+      try {
+        const response = await fetch(document.downloadUrl, { cache: "no-store" })
+        if (!response.ok) {
+          throw new Error("Unable to download the selected document.")
+        }
+        const blob = await response.blob()
+        const file = new File([blob], document.original_filename, { type: "application/pdf" })
+
+        await handleFileSelect(file)
+
+        toast({
+          title: "PDF opened",
+          description: `${document.original_filename} opened in a new tab.`,
+        })
+      } catch (error) {
+        console.error("[PDF Workspace] Failed to open historical document:", error)
+        throw error instanceof Error ? error : new Error("Failed to open document.")
+      }
+    },
+    [handleFileSelect, session?.user, toast],
+  )
 
   const handleCloseTab = (tabId: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -195,6 +244,7 @@ export function PDFWorkspace() {
               file={tab.file}
               tabId={tab.id}
               isActive={activeTabId === tab.id && !showUpload}
+              onOpenDocument={handleOpenExistingDocument}
             />
           </div>
         ))}

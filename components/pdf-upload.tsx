@@ -2,14 +2,29 @@
 
 import type React from "react"
 
-import { useState, useCallback, useRef, useImperativeHandle, forwardRef } from "react"
-import { Upload, FileText, Loader2, BookOpen } from "lucide-react"
+import { useState, useCallback, useRef, useImperativeHandle, forwardRef, useEffect } from "react"
+import { Upload, FileText, Loader2, BookOpen, Trash2, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
+import { Card } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { cn } from "@/lib/utils"
 
 interface PDFUploadProps {
   onFileSelect: (file: File, parsedData?: any) => void
   onParseComplete?: (fileName: string, parsedData: any, fileSize?: number, fileLastModified?: number) => void
+}
+
+export interface UploadedDocument {
+  _id: string
+  workspace_id?: string
+  title?: string
+  original_filename: string
+  stored_path: string
+  status: string
+  num_pages?: number
+  file_size?: number
+  downloadUrl: string
 }
 
 export interface PDFUploadRef {
@@ -20,14 +35,122 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
   ({ onFileSelect, onParseComplete }, ref) => {
     const [isDragging, setIsDragging] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
+    const [previousDocuments, setPreviousDocuments] = useState<UploadedDocument[]>([])
+    const [recentDocumentId, setRecentDocumentId] = useState<string | null>(null)
+    const [loadingDocuments, setLoadingDocuments] = useState(true)
+    const [selectedDocuments, setSelectedDocuments] = useState<string[]>([])
     const fileInputRef = useRef<HTMLInputElement>(null)
     const { toast } = useToast()
+
+    const loadPreviousDocuments = useCallback(async () => {
+      try {
+        setLoadingDocuments(true)
+        const response = await fetch("/api/documents/list", { cache: "no-store" })
+        if (!response.ok) {
+          throw new Error("Failed to fetch documents")
+        }
+        const data = (await response.json()) as { documents?: UploadedDocument[] }
+        const docs = data.documents || []
+        setPreviousDocuments(docs)
+        setRecentDocumentId((current) =>
+          current && !docs.some((doc) => doc._id === current) ? null : current,
+        )
+        setSelectedDocuments([])
+      } catch (error) {
+        console.error("[PDFUpload] Failed to load previous documents:", error)
+      } finally {
+        setLoadingDocuments(false)
+      }
+    }, [])
+
+    useEffect(() => {
+      loadPreviousDocuments()
+    }, [loadPreviousDocuments])
 
     useImperativeHandle(ref, () => ({
       triggerFilePicker: () => {
         fileInputRef.current?.click()
       },
     }))
+
+  const toggleDocumentSelection = useCallback((documentId: string) => {
+    setSelectedDocuments((prev) => {
+      if (prev.includes(documentId)) {
+        return prev.filter((id) => id !== documentId)
+      }
+      return [...prev, documentId]
+    })
+  }, [])
+
+  const handleDeleteDocuments = useCallback(
+    async (options: { ids?: string[]; deleteAll?: boolean; toastMessage?: string }) => {
+      if (isDeleting) return
+      try {
+        setIsDeleting(true)
+        const response = await fetch("/api/documents/delete", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            documentIds: options.ids,
+            deleteAll: options.deleteAll,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error("Delete failed")
+        }
+
+        const result = await response.json()
+        await loadPreviousDocuments()
+        setSelectedDocuments([])
+
+        toast({
+          title: "Documents deleted",
+          description:
+            options.toastMessage ||
+            (result.deletedCount
+              ? `Removed ${result.deletedCount} document${result.deletedCount > 1 ? "s" : ""}`
+              : "Documents removed"),
+        })
+      } catch (error) {
+        console.error("[PDFUpload] Failed to delete documents:", error)
+        toast({
+          title: "Delete failed",
+          description: "Could not delete documents. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsDeleting(false)
+      }
+    },
+    [isDeleting, loadPreviousDocuments, toast],
+  )
+
+  const handleDeleteSingleDocument = useCallback(
+    async (documentId: string) => {
+      const confirmed = window.confirm("Delete this document?")
+      if (!confirmed) return
+      await handleDeleteDocuments({ ids: [documentId], toastMessage: "Document removed" })
+    },
+    [handleDeleteDocuments],
+  )
+
+  const handleDeleteSelected = useCallback(async () => {
+    if (selectedDocuments.length === 0) return
+    const confirmed = window.confirm(`Delete ${selectedDocuments.length} selected document(s)?`)
+    if (!confirmed) return
+    await handleDeleteDocuments({ ids: selectedDocuments })
+  }, [handleDeleteDocuments, selectedDocuments])
+
+  const handleDeleteAll = useCallback(async () => {
+    if (previousDocuments.length === 0) return
+    const confirmed = window.confirm("Delete all uploaded documents?")
+    if (!confirmed) return
+    await handleDeleteDocuments({ deleteAll: true, toastMessage: "All documents removed" })
+  }, [handleDeleteDocuments, previousDocuments.length])
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -40,48 +163,83 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
         return
       }
 
-      // Navigate immediately without waiting for API response
-      console.log("[v0] Navigating to PDF viewer immediately for:", file.name)
-      onFileSelect(file)
-
-      // Start upload/parse API call in background (fire-and-forget)
+      setIsUploading(true)
       const formData = new FormData()
       formData.append("file", file)
 
-      fetch("/api/pdf/upload", {
-        method: "POST",
-        body: formData,
-      })
-        .then(async (response) => {
-          if (!response.ok) {
-            throw new Error("Upload failed")
-          }
-
-          const data = await response.json()
-          console.log("[v0] Parsed data received in background:", data)
-
-          // Update the tab with parsed data if callback is provided
-          // Pass file size and lastModified for precise tab matching
-          if (onParseComplete) {
-            onParseComplete(file.name, data, file.size, file.lastModified)
-          }
-
-          toast({
-            title: "PDF processed successfully",
-            description: `${file.name} parsing completed`,
-          })
+      try {
+        const response = await fetch("/api/pdf/upload", {
+          method: "POST",
+          body: formData,
         })
-        .catch((error) => {
-          console.error("[v0] Upload error:", error)
-          toast({
-            title: "Processing failed",
-            description: "PDF upload completed but parsing encountered an error",
-            variant: "destructive",
-          })
+
+        if (!response.ok) {
+          throw new Error("Upload failed")
+        }
+
+        const result = (await response.json()) as { documentId?: string | null }
+        const newDocumentId = typeof result.documentId === "string" ? result.documentId : null
+
+        toast({
+          title: "PDF uploaded",
+          description: `${file.name} was added to your library`,
         })
+
+        await loadPreviousDocuments()
+        if (newDocumentId) {
+          setRecentDocumentId(newDocumentId)
+        }
+        
+        // Dispatch event to notify all PDF readers to refresh their document lists
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("pdf-uploaded", { detail: { documentId: newDocumentId } }))
+        }
+      } catch (error) {
+        console.error("[v0] Upload error:", error)
+        toast({
+          title: "Upload failed",
+          description: "Could not upload the PDF. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsUploading(false)
+      }
     },
-    [onFileSelect, onParseComplete, toast],
+    [toast, loadPreviousDocuments],
   )
+
+  const handleSelectPreviousDocument = useCallback(
+    async (document: UploadedDocument) => {
+      try {
+        setIsUploading(true)
+        const response = await fetch(document.downloadUrl)
+        if (!response.ok) {
+          throw new Error("Failed to download document")
+        }
+        const blob = await response.blob()
+        const file = new File([blob], document.original_filename, { type: "application/pdf" })
+        onFileSelect(file)
+        toast({
+          title: "Document loaded",
+          description: `Loaded ${document.original_filename}`,
+        })
+      } catch (error) {
+        console.error("[PDFUpload] Failed to load document:", error)
+        toast({
+          title: "Failed to load document",
+          description: "There was an error loading the document",
+          variant: "destructive",
+        })
+      } finally {
+        setIsUploading(false)
+      }
+    },
+    [onFileSelect, toast],
+  )
+
+  const handleDownloadDocument = useCallback((url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer")
+  }, [])
 
   const handleLoadSample = useCallback(async () => {
     setIsUploading(true)
@@ -216,12 +374,129 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
 
   return (
     <div className="flex flex-1 items-center justify-center p-8">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-4xl">
         <div className="mb-8 text-center">
           <h2 className="mb-2 font-mono text-2xl font-medium text-foreground">Upload PDF Document</h2>
           <p className="text-sm text-muted-foreground">
             Upload a PDF to view pages, explore parsed sections, and ask questions
           </p>
+        </div>
+
+        <div className="mb-6">
+          <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={loadPreviousDocuments}
+                disabled={loadingDocuments || isDeleting || isUploading}
+              >
+                Refresh
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeleteSelected}
+                disabled={selectedDocuments.length === 0 || isDeleting || loadingDocuments}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Selected
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeleteAll}
+                disabled={previousDocuments.length === 0 || isDeleting || loadingDocuments}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete All
+              </Button>
+            </div>
+          </div>
+          {loadingDocuments ? (
+            <div className="flex items-center gap-2 rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              Loading documents...
+            </div>
+          ) : previousDocuments.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+              No uploaded documents yet. Upload a PDF to see it here.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {previousDocuments.map((doc) => (
+                <Card
+                  key={doc._id}
+                  className={cn(
+                    "cursor-pointer border border-border/60 p-3 transition-colors hover:border-primary/70 hover:bg-muted/30",
+                    recentDocumentId === doc._id &&
+                      "border-amber-400 bg-amber-100/80 shadow-md hover:border-amber-500 hover:bg-amber-100/80 dark:border-amber-400/80 dark:bg-amber-950/40",
+                  )}
+                  onClick={() => handleSelectPreviousDocument(doc)}
+                  aria-label={`Open ${doc.original_filename}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      onClick={(event) => {
+                        event.stopPropagation()
+                      }}
+                    >
+                      <Checkbox
+                        checked={selectedDocuments.includes(doc._id)}
+                        onCheckedChange={() => toggleDocumentSelection(doc._id)}
+                        disabled={isDeleting}
+                        aria-label={`Select ${doc.original_filename}`}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 items-start gap-2">
+                          <FileText className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">{doc.title || doc.original_filename}</p>
+                            <p className="truncate text-xs text-muted-foreground">{doc.original_filename}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              handleDownloadDocument(doc.downloadUrl)
+                            }}
+                            aria-label={`Download ${doc.original_filename}`}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              void handleDeleteSingleDocument(doc._id)
+                            }}
+                            disabled={isDeleting}
+                            aria-label={`Delete ${doc.original_filename}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      {(doc.num_pages ?? 0) > 0 || doc.file_size ? (
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          {doc.num_pages && doc.num_pages > 0 && <span>{doc.num_pages} pages</span>}
+                          {doc.file_size && <span>{`${(doc.file_size / (1024 * 1024)).toFixed(2)} MB`}</span>}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
 
         <div

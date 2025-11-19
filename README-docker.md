@@ -12,6 +12,9 @@ docker compose build nextjs-app   # build image, cache sẵn node_modules
 - Frontend (Next.js): http://localhost:3000
 - Backend FastAPI: http://localhost:8000
 - pgAdmin (Postgres UI): http://localhost:5050
+- Mongo Express (MongoDB UI): http://localhost:8081
+- MinIO Console: http://localhost:9001
+
 
 ## Xem bảng `users` trong pgAdmin
 
@@ -20,8 +23,8 @@ docker compose build nextjs-app   # build image, cache sẵn node_modules
    - **Connection → Host name/address:** `postgres`
    - **Port:** `5432`
    - **Maintenance database:** `paperreader`
-   - **Username:** `postgres`
-   - **Password:** `postgres` (hoặc thông tin bạn cấu hình)
+   - **Username:** 
+   - **Password:** (thông tin bạn cấu hình)
 
 2. Sau khi kết nối thành công, mở cây: `PaperReader → Databases → paperreader → Schemas → public → Tables`. Bảng `users` được tạo từ script `backend/init-db.sql` sẽ nằm ở đây.
 

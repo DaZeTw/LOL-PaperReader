@@ -87,8 +87,12 @@ export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onTogg
         <button
           onClick={onToggle}
           className="absolute right-0 top-1/2 z-10 flex h-16 w-8 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-border bg-background shadow-md transition-colors hover:bg-muted"
+          title="Open Q&A"
         >
-          <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+          <div className="flex flex-col items-center gap-1">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <ChevronLeft className="h-3 w-3 text-muted-foreground" />
+          </div>
         </button>
       )}
       <aside className={cn(

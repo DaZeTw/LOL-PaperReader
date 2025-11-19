@@ -23,6 +23,8 @@
   border-radius: 6px !important;
   background: transparent !important;
   transition: background-color 0.2s ease !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
 }
 
 .outline-container .rpv-bookmark__item:hover {
@@ -40,6 +42,9 @@
   line-height: 1.25rem !important;
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
 /* Thumbnails container styling */
