@@ -54,13 +54,14 @@ export function PDFViewer({
   const pageLabelRef = useRef<HTMLSpanElement>(null)
   const zoomRef = useRef(1)
   const zoomLabelRef = useRef<HTMLSpanElement>(null)
+  const pendingPageNavigation = useRef<number | null>(null)
 
   // 🔑 CREATE PLUGIN INSTANCES USING useRef - This prevents recreation
   const pageNavigationPluginInstance = useRef(pageNavigationPlugin()).current
   const zoomPluginInstance = useRef(zoomPlugin()).current
   const thumbnailPluginInstance = useRef(thumbnailPlugin()).current
   const bookmarkPluginInstance = useRef(bookmarkPlugin()).current
-  
+
   // 🔑 CITATION PLUGIN - Call hook at top level
   const citationPluginInstance = useCitationPlugin({
     pdfUrl: pdfUrl,
@@ -78,7 +79,7 @@ export function PDFViewer({
   // Add citation plugin dynamically when it changes
   const plugins = [...pluginsRef.current, citationPluginInstance]
 
-  const { jumpToNextPage, jumpToPreviousPage } = pageNavigationPluginInstance
+  const { jumpToNextPage, jumpToPreviousPage, jumpToPage } = pageNavigationPluginInstance
   const { zoomTo } = zoomPluginInstance
 
   // Convert file to blob URL and extract citations
@@ -107,13 +108,29 @@ export function PDFViewer({
     }
   }, [navigationTarget])
 
+  // Execute pending navigation when switching to reading mode
+  useEffect(() => {
+    if (viewMode === "reading" && pendingPageNavigation.current !== null) {
+      const targetPage = pendingPageNavigation.current
+      console.log("[PDFViewer] Executing pending navigation to page:", targetPage)
+
+      // Small delay to ensure PDF viewer is fully rendered
+      setTimeout(() => {
+        currentPageRef.current = targetPage
+        if (pageLabelRef.current) {
+          pageLabelRef.current.textContent = String(targetPage)
+        }
+        jumpToPage(targetPage - 1)
+        onPageChange?.(targetPage)
+        pendingPageNavigation.current = null
+      }, 100)
+    }
+  }, [viewMode, jumpToPage, onPageChange])
+
   // Handle page navigation from skimming mode
   const handleNavigateToPage = (page: number) => {
-    currentPageRef.current = page
-    if (pageLabelRef.current) {
-      pageLabelRef.current.textContent = String(page)
-    }
-    onPageChange?.(page)
+    console.log("[PDFViewer] Requested jump to page:", page)
+    pendingPageNavigation.current = page
   }
 
   // Toggle view mode

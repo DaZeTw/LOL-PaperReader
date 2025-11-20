@@ -270,19 +270,22 @@ export function SkimmingView({
                 )}
               >
                 {/* Section Header */}
-                <button
-                  onClick={() => toggleSection(index)}
-                  className="flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-muted/50"
-                >
-                  <div className="mt-0.5 flex-shrink-0">
+                <div className="flex w-full items-start gap-3 p-4 transition-colors hover:bg-muted/50">
+                  <button
+                    onClick={() => toggleSection(index)}
+                    className="mt-0.5 flex-shrink-0 hover:opacity-70 transition-opacity"
+                  >
                     {isExpanded ? (
                       <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     ) : (
                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     )}
-                  </div>
+                  </button>
 
-                  <div className="flex-1 min-w-0">
+                  <div
+                    onClick={() => toggleSection(index)}
+                    className="flex-1 min-w-0 cursor-pointer"
+                  >
                     <h3 className="font-mono text-sm font-medium text-foreground line-clamp-2">
                       {section.title}
                     </h3>
@@ -312,7 +315,7 @@ export function SkimmingView({
                   >
                     Jump
                   </Button>
-                </button>
+                </div>
 
                 {/* Section Content (Expanded) */}
                 {isExpanded && (
