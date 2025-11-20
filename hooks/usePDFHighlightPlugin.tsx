@@ -47,17 +47,14 @@ export function usePDFHighlightPlugin({
     const pageWidth = rect.width
     const pageHeight = rect.height
 
-    // Clean up old root if exists
-    const existingRoot = roots.get(overlayContainer)
-    if (existingRoot) {
-      existingRoot.unmount()
-      roots.delete(overlayContainer)
+    // Reuse existing root or create new one
+    let root = roots.get(overlayContainer)
+    if (!root) {
+      root = createRoot(overlayContainer)
+      roots.set(overlayContainer, root)
     }
 
-    // Create new React root and render overlay
-    const root = createRoot(overlayContainer)
-    roots.set(overlayContainer, root)
-
+    // Render or update overlay
     root.render(
       <PDFHighlightOverlay
         pageNumber={pageNumber}

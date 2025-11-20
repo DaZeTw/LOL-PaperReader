@@ -29,15 +29,15 @@ interface PDFHighlightOverlayProps {
 }
 
 const CATEGORY_COLORS = {
-  novelty: "rgba(254, 240, 138, 0.4)", // yellow
-  method: "rgba(147, 197, 253, 0.4)",  // blue
-  result: "rgba(134, 239, 172, 0.4)",  // green
+  novelty: "rgba(253, 224, 71, 0.7)", // yellow - darker and more opaque
+  method: "rgba(96, 165, 250, 0.7)",  // blue - darker and more opaque
+  result: "rgba(74, 222, 128, 0.7)",  // green - darker and more opaque
 } as const
 
 const CATEGORY_BORDERS = {
-  novelty: "rgba(234, 179, 8, 0.6)",
-  method: "rgba(59, 130, 246, 0.6)",
-  result: "rgba(34, 197, 94, 0.6)",
+  novelty: "rgba(202, 138, 4, 0.9)",  // darker yellow border
+  method: "rgba(37, 99, 235, 0.9)",   // darker blue border
+  result: "rgba(22, 163, 74, 0.9)",   // darker green border
 } as const
 
 export function PDFHighlightOverlay({
@@ -91,7 +91,7 @@ export function PDFHighlightOverlay({
                 height: `${height}px`,
                 backgroundColor,
                 borderLeft: `3px solid ${borderColor}`,
-                opacity: isHovered ? 1 : 0.7,
+                opacity: isHovered ? 1 : 0.95,
                 transform: isHovered ? "scale(1.02)" : "scale(1)",
               }}
               onMouseEnter={() => setHoveredId(highlight.id)}

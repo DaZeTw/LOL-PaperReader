@@ -8,11 +8,14 @@ import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail"
 import { bookmarkPlugin } from "@react-pdf-viewer/bookmark"
 import { useCitationPlugin } from "@/hooks/useCitatioPlugin"
 import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractCitations"
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Eye, FileText } from "lucide-react"
+import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
+import { usePDFHighlightPlugin } from "@/hooks/usePDFHighlightPlugin"
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Eye, EyeOff, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { PDFSidebar } from "./pdf-sidebar"
 import { SkimmingView } from "./skimming-view"
+import { SkimmingControls } from "./skimming-controls"
 
 import "@react-pdf-viewer/core/lib/styles/index.css"
 import "@react-pdf-viewer/page-navigation/lib/styles/index.css"
@@ -43,12 +46,19 @@ export function PDFViewer({
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [viewMode, setViewMode] = useState<"reading" | "skimming">("reading")
   const [bookmarks, setBookmarks] = useState<any[]>([])
+  const [highlightsEnabled, setHighlightsEnabled] = useState(false)
+  const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
+    new Set(["novelty", "method", "result"])
+  )
 
   // Citation state - now managed in viewer
   const [extractedCitations, setExtractedCitations] = useState<ExtractedCitation[]>([])
 
   // Citation extraction hook
   const { extractCitations, getCitationById, loading: extracting, progress } = useExtractCitations()
+
+  // Skimming highlights hook
+  const { highlights, loading: highlightsLoading, error: highlightsError, highlightCounts } = useSkimmingHighlights()
 
   const currentPageRef = useRef(1)
   const pageLabelRef = useRef<HTMLSpanElement>(null)
@@ -68,6 +78,13 @@ export function PDFViewer({
     extractedCitations: extractedCitations,
   });
 
+  // 🔑 HIGHLIGHT PLUGIN - Call hook at top level
+  const highlightPluginInstance = usePDFHighlightPlugin({
+    highlights: highlightsEnabled ? highlights : [],
+    visibleCategories,
+    onHighlightClick: (h) => console.log("Clicked highlight:", h.text),
+  });
+
   // 🔑 CREATE PLUGINS ARRAY - Use useRef to keep it stable
   const pluginsRef = useRef([
     pageNavigationPluginInstance,
@@ -76,8 +93,8 @@ export function PDFViewer({
     bookmarkPluginInstance,
   ])
 
-  // Add citation plugin dynamically when it changes
-  const plugins = [...pluginsRef.current, citationPluginInstance]
+  // Add citation and highlight plugins dynamically when they change
+  const plugins = [...pluginsRef.current, citationPluginInstance, highlightPluginInstance]
 
   const { jumpToNextPage, jumpToPreviousPage, jumpToPage } = pageNavigationPluginInstance
   const { zoomTo } = zoomPluginInstance
@@ -199,6 +216,26 @@ export function PDFViewer({
 
       {/* Main viewer area */}
       <div className="flex flex-1 flex-col min-w-0 min-h-0">
+        {/* Skimming Controls - Only show when highlights are enabled and loaded */}
+        {viewMode === "reading" && highlightsEnabled && !highlightsLoading && highlights.length > 0 && (
+          <SkimmingControls
+            visibleCategories={visibleCategories}
+            onToggleCategory={(category) => {
+              setVisibleCategories((prev) => {
+                const next = new Set(prev)
+                next.has(category) ? next.delete(category) : next.add(category)
+                return next
+              })
+            }}
+            onToggleAll={() => {
+              setVisibleCategories((prev) =>
+                prev.size === 3 ? new Set() : new Set(["novelty", "method", "result"])
+              )
+            }}
+            highlightCounts={highlightCounts}
+          />
+        )}
+
         {/* Toolbar */}
         <div className="flex items-center justify-between border-b border-border bg-background px-4 py-2">
           {/* Page + Section Controls */}
@@ -278,6 +315,34 @@ export function PDFViewer({
                 </>
               )}
             </Button>
+
+            {/* Highlights Toggle - Only in reading mode */}
+            {viewMode === "reading" && (
+              <Button
+                variant={highlightsEnabled ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setHighlightsEnabled(!highlightsEnabled)}
+                className="gap-2 h-7"
+                disabled={highlightsLoading}
+              >
+                {highlightsEnabled ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    <span className="text-xs">Highlights On</span>
+                    {highlights.length > 0 && (
+                      <span className="ml-1 px-1.5 py-0.5 bg-background/50 rounded-full text-xs font-bold">
+                        {highlights.length}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5" />
+                    <span className="text-xs">Highlights Off</span>
+                  </>
+                )}
+              </Button>
+            )}
           </div>
 
           {/* Zoom Controls - Only in reading mode */}
