@@ -1,0 +1,96 @@
+{
+  "3eb31c6e-381f-42b4-bdae-804957a63dc8": {
+    "session_id": "3eb31c6e-381f-42b4-bdae-804957a63dc8",
+    "user_id": null,
+    "title": "Chat: 1706.03762v7.pdf",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the main finding?",
+        "metadata": {
+          "user_images": []
+        },
+        "timestamp": "2025-11-19T15:52:46.305160"
+      },
+      {
+        "role": "assistant",
+        "content": "The main finding of the research is the introduction of the Transformer model, which is the first sequence transduction model that relies entirely on self-attention mechanisms, eliminating the need for recurrent or convolutional layers. This model demonstrates superior performance in machine translation tasks, achieving state-of-the-art BLEU scores on both the WMT 2014 English-to-German and English-to-French translation tasks, while also being significantly faster to train compared to traditional architectures. Additionally, the Transformer generalizes well to other tasks, such as English constituency parsing, indicating its versatility and effectiveness across different applications [c1][c2][c3][c4][c5].",
+        "metadata": {
+          "cited_sections": [
+            {
+              "citation_number": 1,
+              "citation_label": "c1",
+              "summary": "The dominant sequence transduction models are based on complex recurrent or\nconvolutional neural networks that include an encoder and a decoder. The best\nperforming models also connect the encoder and decoder through an attention\nmechanism. We propose a new simple network architecture, the Transformer,\nbased solely on attention mechanisms, dispensing with recurrence and convolutions\nentirely. Experiments on two machine translation tasks show these models to\nbe superior in quality while being more parallelizable and requiring significantly\nless time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-\nto-German translation task, improving over the existing best results, including\nensembles, by over 2 BLEU. On the WMT 2014 English-to-French translation task,\nour model establishes ...the Transformer generalizes well to\nother tasks by applying it successfully to English constituency parsing both with\nlarge and limited training data.",
+              "doc_id": "1706.03762v7-embedded",
+              "title": "Attention Is All You Need",
+              "page": 2,
+              "excerpt": "The dominant sequence transduction models are based on complex recurrent or\nconvolutional neural networks that include an encoder and a decoder. The best\nperforming models also connect the encoder and decoder through an attention\nmechanism. We propose a new simple network architecture, the Transformer,\nbased solely on attention mechanisms, dispensing with recurrence and convolutions\nentirely. Experiments on two machine translation tasks show these models to\nbe superior in quality while being more parallelizable and requiring significantly\nless time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-\nto-German translation task, improving over the existing best results, including\nensembles, by over 2 BLEU. On the WMT 2014 English-to-French translation task,\nour model establishes a new single-model state-of-the-art BLEU score of 41.8 after\ntraining for 3.5 days on eight GPUs, a small fraction of the training costs of the\nbest models from the literature. We show that the Transformer generalizes well to\nother tasks by applying it successfully to English constituency parsing both with\nlarge and limited training data."
+            },
+            {
+              "citation_number": 2,
+              "citation_label": "c2",
+              "summary": "For the base models, we used a single model obtained by averaging the last 5 checkpoints, which\nwere written at 10-minute intervals. For the big models, we averaged the last 20 checkpoints. We\nused beam search with a beam size of 4 and length penalty α = 0 . 6 [ 38 ]. These hyperparameters\nwere chosen after experimentation on the development set. We set the maximum output length during\ninference to input length + 50 , but terminate early when possible [38].\nTable 2 summarizes our results and compares our translation quality and training costs to other model\narchitectures from the literature. We estimate the number of floating point operations used to train a\nmodel by multiplying the training time, the number of GPUs used, and an estimate of the sustained\nsingle-precision floating-point ...r base model\nin different ways, measuring the change in performance on English-to-German translation on the\n5 We used values of 2.8, 3.7, 6.0 and 9.5 TFLOPS for K80, K40, M40 and P100, respectively.\n8",
+              "doc_id": "1706.03762v7-embedded",
+              "title": "Page 8",
+              "page": 9,
+              "excerpt": "For the base models, we used a single model obtained by averaging the last 5 checkpoints, which\nwere written at 10-minute intervals. For the big models, we averaged the last 20 checkpoints. We\nused beam search with a beam size of 4 and length penalty α = 0 . 6 [ 38 ]. These hyperparameters\nwere chosen after experimentation on the development set. We set the maximum output length during\ninference to input length + 50 , but terminate early when possible [38].\nTable 2 summarizes our results and compares our translation quality and training costs to other model\narchitectures from the literature. We estimate the number of floating point operations used to train a\nmodel by multiplying the training time, the number of GPUs used, and an estimate of the sustained\nsingle-precision floating-point capacity of each GPU 5 .\n6.2\nModel Variations\nTo evaluate the importance of different components of the Transformer, we varied our base model\nin different ways, measuring the change in performance on English-to-German translation on the\n5 We used values of 2.8, 3.7, 6.0 and 9.5 TFLOPS for K80, K40, M40 and P100, respectively.\n8"
+            },
+            {
+              "citation_number": 3,
+              "citation_label": "c3",
+              "summary": "Self-attention, sometimes called intra-attention is an attention mechanism relating different positions\nof a single sequence in order to compute a representation of the sequence. Self-attention has been\nused successfully in a variety of tasks including reading comprehension, abstractive summarization,\ntextual entailment and learning task-independent sentence representations [4, 27, 28, 22].\nEnd-to-end memory networks are based on a recurrent attention mechanism instead of sequence-\naligned recurrence and have been shown to perform well on simple-language question answering and\nlanguage modeling tasks [34].\nTo the best of our knowledge, however, the Transformer is the first transduction model relying\nentirely on self-attention to compute representations of its input and output without using...sing sequence-\naligned RNNs or convolution. In the following sections, we will describe the Transformer, motivate\nself-attention and discuss its advantages over models such as [17, 18] and [9].\n3\nModel Architecture",
+              "doc_id": "1706.03762v7-embedded",
+              "title": "Page 2",
+              "page": 3,
+              "excerpt": "Self-attention, sometimes called intra-attention is an attention mechanism relating different positions\nof a single sequence in order to compute a representation of the sequence. Self-attention has been\nused successfully in a variety of tasks including reading comprehension, abstractive summarization,\ntextual entailment and learning task-independent sentence representations [4, 27, 28, 22].\nEnd-to-end memory networks are based on a recurrent attention mechanism instead of sequence-\naligned recurrence and have been shown to perform well on simple-language question answering and\nlanguage modeling tasks [34].\nTo the best of our knowledge, however, the Transformer is the first transduction model relying\nentirely on self-attention to compute representations of its input and output without using sequence-\naligned RNNs or convolution. In the following sections, we will describe the Transformer, motivate\nself-attention and discuss its advantages over models such as [17, 18] and [9].\n3\nModel Architecture"
+            },
+            {
+              "citation_number": 4,
+              "citation_label": "c4",
+              "summary": "In contrast to RNN sequence-to-sequence models [ 37 ], the Transformer outperforms the Berkeley-\nParser [29] even when training only on the WSJ training set of 40K sentences.\n7\nConclusion\nIn this work, we presented the Transformer, the first sequence transduction model based entirely on\nattention, replacing the recurrent layers most commonly used in encoder-decoder architectures with\nmulti-headed self-attention.\nFor translation tasks, the Transformer can be trained significantly faster than architectures based\non recurrent or convolutional layers. On both WMT 2014 English-to-German and WMT 2014\nEnglish-to-French translation tasks, we achieve a new state of the art. In the former task our best\nmodel outperforms even all previously reported ensembles.\nWe are excited about the future of ...\nto investigate local, restricted attention mechanisms to efficiently handle large inputs and outputs\nsuch as images, audio and video. Making generation less sequential is another research goals of ours.",
+              "doc_id": "1706.03762v7-embedded",
+              "title": "Page 10",
+              "page": 11,
+              "excerpt": "In contrast to RNN sequence-to-sequence models [ 37 ], the Transformer outperforms the Berkeley-\nParser [29] even when training only on the WSJ training set of 40K sentences.\n7\nConclusion\nIn this work, we presented the Transformer, the first sequence transduction model based entirely on\nattention, replacing the recurrent layers most commonly used in encoder-decoder architectures with\nmulti-headed self-attention.\nFor translation tasks, the Transformer can be trained significantly faster than architectures based\non recurrent or convolutional layers. On both WMT 2014 English-to-German and WMT 2014\nEnglish-to-French translation tasks, we achieve a new state of the art. In the former task our best\nmodel outperforms even all previously reported ensembles.\nWe are excited about the future of attention-based models and plan to apply them to other tasks. We\nplan to extend the Transformer to problems involving input and output modalities other than text and\nto investigate local, restricted attention mechanisms to efficiently handle large inputs and outputs\nsuch as images, audio and video. Making generation less sequential is another research goals of ours."
+            },
+            {
+              "citation_number": 5,
+              "citation_label": "c5",
+              "summary": "Table 4: The Transformer generalizes well to English constituency parsing (Results are on Section 23\nof WSJ)\nParser\nTraining\nWSJ 23 F1\nVinyals & Kaiser el al. (2014) [37]\nWSJ only, discriminative\n88.3\nPetrov et al. (2006) [29]\nWSJ only, discriminative\n90.4\nZhu et al. (2013) [40]\nWSJ only, discriminative\n90.4\nDyer et al. (2016) [8]\nWSJ only, discriminative\n91.7\nTransformer (4 layers)\nWSJ only, discriminative\n91.3\nZhu et al. (2013) [40]\nsemi-supervised\n91.3\nHuang & Harper (2009) [14]\nsemi-supervised\n91.3\nMcClosky et al. (2006) [26]\nsemi-supervised\n92.1\nVinyals & Kaiser el al. (2014) [37]\nsemi-supervised\n92.1\nTransformer (4 layers)\nsemi-supervised\n92.7\nLuong et al. (2015) [23]\nmulti-task\n93.0\nDyer et al. (2016) [8]\ngenerative\n93.3\nincreased the maximum output length to input length + 300 . We...ite the lack of task-specific tuning our model performs sur-\nprisingly well, yielding better results than all previously reported models with the exception of the\nRecurrent Neural Network Grammar [8].",
+              "doc_id": "1706.03762v7-embedded",
+              "title": "Page 10",
+              "page": 11,
+              "excerpt": "Table 4: The Transformer generalizes well to English constituency parsing (Results are on Section 23\nof WSJ)\nParser\nTraining\nWSJ 23 F1\nVinyals & Kaiser el al. (2014) [37]\nWSJ only, discriminative\n88.3\nPetrov et al. (2006) [29]\nWSJ only, discriminative\n90.4\nZhu et al. (2013) [40]\nWSJ only, discriminative\n90.4\nDyer et al. (2016) [8]\nWSJ only, discriminative\n91.7\nTransformer (4 layers)\nWSJ only, discriminative\n91.3\nZhu et al. (2013) [40]\nsemi-supervised\n91.3\nHuang & Harper (2009) [14]\nsemi-supervised\n91.3\nMcClosky et al. (2006) [26]\nsemi-supervised\n92.1\nVinyals & Kaiser el al. (2014) [37]\nsemi-supervised\n92.1\nTransformer (4 layers)\nsemi-supervised\n92.7\nLuong et al. (2015) [23]\nmulti-task\n93.0\nDyer et al. (2016) [8]\ngenerative\n93.3\nincreased the maximum output length to input length + 300 . We used a beam size of 21 and α = 0 . 3\nfor both WSJ only and the semi-supervised setting.\nOur results in Table 4 show that despite the lack of task-specific tuning our model performs sur-\nprisingly well, yielding better results than all previously reported models with the exception of the\nRecurrent Neural Network Grammar [8]."
+            }
+          ],
+          "confidence": 0.9,
+          "retriever_scores": [
+            {
+              "index": 2,
+              "score": 0.2182047623075017
+            },
+            {
+              "index": 28,
+              "score": 0.21750107405313862
+            },
+            {
+              "index": 8,
+              "score": 0.20953304464348946
+            },
+            {
+              "index": 33,
+              "score": 0.20718100272438633
+            },
+            {
+              "index": 32,
+              "score": 0.2055784450271223
+            }
+          ]
+        },
+        "timestamp": "2025-11-19T15:52:55.037787"
+      }
+    ],
+    "created_at": "2025-11-19T15:30:54.343651",
+    "updated_at": "2025-11-19T15:52:55.037787"
+  }
+}

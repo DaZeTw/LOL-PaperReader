@@ -1,0 +1,877 @@
+[
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Is All You Need",
+    "page": 1,
+    "text": "Ashish Vaswani ∗\nGoogle Brain\navaswani@google.com",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Is All You Need",
+    "page": 1,
+    "text": "Noam Shazeer ∗\nGoogle Brain\nnoam@google.com",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Is All You Need",
+    "page": 1,
+    "text": "Niki Parmar ∗\nGoogle Research\nnikip@google.com",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Is All You Need",
+    "page": 1,
+    "text": "Jakob Uszkoreit ∗\nGoogle Research\nusz@google.com",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Is All You Need",
+    "page": 1,
+    "text": "Llion Jones ∗\nGoogle Research\nllion@google.com",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Is All You Need",
+    "page": 1,
+    "text": "Aidan N. Gomez ∗†\nUniversity of Toronto\naidan@cs.toronto.edu",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Is All You Need",
+    "page": 1,
+    "text": "Łukasz Kaiser ∗\nGoogle Brain\nlukaszkaiser@google.com",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Is All You Need",
+    "page": 1,
+    "text": "Illia Polosukhin ∗‡\nillia.polosukhin@gmail.com",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Abstract",
+    "page": 2,
+    "text": "The dominant sequence transduction models are based on complex recurrent or\nconvolutional neural networks that include an encoder and a decoder. The best\nperforming models also connect the encoder and decoder through an attention\nmechanism. We propose a new simple network architecture, the Transformer,\nbased solely on attention mechanisms, dispensing with recurrence and convolutions\nentirely. Experiments on two machine translation tasks show these models to\nbe superior in quality while being more parallelizable and requiring significantly\nless time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-\nto-German translation task, improving over the existing best results, including\nensembles, by over 2 BLEU. On the WMT 2014 English-to-French translation task,\nour model establishes a new single-model state-of-the-art BLEU score of 41.8 after\ntraining for 3.5 days on eight GPUs, a small fraction of the training costs of the\nbest models from the literature. We show that the Transformer generalizes well to\nother tasks by applying it successfully to English constituency parsing both with\nlarge and limited training data.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Abstract",
+    "page": 2,
+    "text": "∗ Equal contribution. Listing order is random. Jakob proposed replacing RNNs with self-attention and started\nthe effort to evaluate this idea. Ashish, with Illia, designed and implemented the first Transformer models and\nhas been crucially involved in every aspect of this work. Noam proposed scaled dot-product attention, multi-head\nattention and the parameter-free position representation and became the other person involved in nearly every\ndetail. Niki designed, implemented, tuned and evaluated countless model variants in our original codebase and\ntensor2tensor. Llion also experimented with novel model variants, was responsible for our initial codebase, and\nefficient inference and visualizations. Lukasz and Aidan spent countless long days designing various parts of and\nimplementing tensor2tensor, replacing our earlier codebase, greatly improving results and massively accelerating\nour research.\n† Work performed while at Google Brain.\n‡ Work performed while at Google Research.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Abstract",
+    "page": 2,
+    "text": "31st Conference on Neural Information Processing Systems (NIPS 2017), Long Beach, CA, USA.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Introduction",
+    "page": 3,
+    "text": "Recurrent neural networks, long short-term memory [ 13 ] and gated recurrent [ 7 ] neural networks\nin particular, have been firmly established as state of the art approaches in sequence modeling and\ntransduction problems such as language modeling and machine translation [ 35 , 2 , 5 ]. Numerous\nefforts have since continued to push the boundaries of recurrent language models and encoder-decoder\narchitectures [38, 24, 15].",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Introduction",
+    "page": 3,
+    "text": "Recurrent models typically factor computation along the symbol positions of the input and output\nsequences. Aligning the positions to steps in computation time, they generate a sequence of hidden\nstates h t , as a function of the previous hidden state h t − 1 and the input for position t . This inherently\nsequential nature precludes parallelization within training examples, which becomes critical at longer\nsequence lengths, as memory constraints limit batching across examples. Recent work has achieved\nsignificant improvements in computational efficiency through factorization tricks [ 21 ] and conditional\ncomputation [ 32 ], while also improving model performance in case of the latter. The fundamental\nconstraint of sequential computation, however, remains.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Introduction",
+    "page": 3,
+    "text": "Attention mechanisms have become an integral part of compelling sequence modeling and transduc-\ntion models in various tasks, allowing modeling of dependencies without regard to their distance in\nthe input or output sequences [ 2 , 19 ]. In all but a few cases [ 27 ], however, such attention mechanisms\nare used in conjunction with a recurrent network.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Introduction",
+    "page": 3,
+    "text": "In this work we propose the Transformer, a model architecture eschewing recurrence and instead\nrelying entirely on an attention mechanism to draw global dependencies between input and output.\nThe Transformer allows for significantly more parallelization and can reach a new state of the art in\ntranslation quality after being trained for as little as twelve hours on eight P100 GPUs.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Background",
+    "page": 4,
+    "text": "The goal of reducing sequential computation also forms the foundation of the Extended Neural GPU\n[ 16 ], ByteNet [ 18 ] and ConvS2S [ 9 ], all of which use convolutional neural networks as basic building\nblock, computing hidden representations in parallel for all input and output positions. In these models,\nthe number of operations required to relate signals from two arbitrary input or output positions grows\nin the distance between positions, linearly for ConvS2S and logarithmically for ByteNet. This makes\nit more difficult to learn dependencies between distant positions [ 12 ]. In the Transformer this is\nreduced to a constant number of operations, albeit at the cost of reduced effective resolution due\nto averaging attention-weighted positions, an effect we counteract with Multi-Head Attention as\ndescribed in section 3.2.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Background",
+    "page": 4,
+    "text": "Self-attention, sometimes called intra-attention is an attention mechanism relating different positions\nof a single sequence in order to compute a representation of the sequence. Self-attention has been\nused successfully in a variety of tasks including reading comprehension, abstractive summarization,\ntextual entailment and learning task-independent sentence representations [4, 27, 28, 22].",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Background",
+    "page": 4,
+    "text": "End-to-end memory networks are based on a recurrent attention mechanism instead of sequence-\naligned recurrence and have been shown to perform well on simple-language question answering and\nlanguage modeling tasks [34].",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Background",
+    "page": 4,
+    "text": "To the best of our knowledge, however, the Transformer is the first transduction model relying\nentirely on self-attention to compute representations of its input and output without using sequence-\naligned RNNs or convolution. In the following sections, we will describe the Transformer, motivate\nself-attention and discuss its advantages over models such as [17, 18] and [9].",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Model Architecture",
+    "page": 5,
+    "text": "Most competitive neural sequence transduction models have an encoder-decoder structure [ 5 , 2 , 35 ].\nHere, the encoder maps an input sequence of symbol representations ( x 1 , ..., x n ) to a sequence\nof continuous representations z = ( z 1 , ..., z n ) . Given z , the decoder then generates an output\nsequence ( y 1 , ..., y m ) of symbols one element at a time. At each step the model is auto-regressive\n[10], consuming the previously generated symbols as additional input when generating the next.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Model Architecture",
+    "page": 5,
+    "text": "2",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Why Self-Attention",
+    "page": 6,
+    "text": "In this section we compare various aspects of self-attention layers to the recurrent and convolu-\ntional layers commonly used for mapping one variable-length sequence of symbol representations\n( x 1 , ..., x n ) to another sequence of equal length ( z 1 , ..., z n ) , with x i , z i ∈ R d , such as a hidden\nlayer in a typical sequence transduction encoder or decoder. Motivating our use of self-attention we\nconsider three desiderata.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Why Self-Attention",
+    "page": 6,
+    "text": "One is the total computational complexity per layer. Another is the amount of computation that can\nbe parallelized, as measured by the minimum number of sequential operations required.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Why Self-Attention",
+    "page": 6,
+    "text": "The third is the path length between long-range dependencies in the network. Learning long-range\ndependencies is a key challenge in many sequence transduction tasks. One key factor affecting the\nability to learn such dependencies is the length of the paths forward and backward signals have to\ntraverse in the network. The shorter these paths between any combination of positions in the input\nand output sequences, the easier it is to learn long-range dependencies [ 12 ]. Hence we also compare\nthe maximum path length between any two input and output positions in networks composed of the\ndifferent layer types.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Why Self-Attention",
+    "page": 6,
+    "text": "As noted in Table 1, a self-attention layer connects all positions with a constant number of sequentially\nexecuted operations, whereas a recurrent layer requires O ( n ) sequential operations. In terms of\ncomputational complexity, self-attention layers are faster than recurrent layers when the sequence",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Why Self-Attention",
+    "page": 6,
+    "text": "6",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "This section describes the training regime for our models.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "5.1\nTraining Data and Batching",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "We trained on the standard WMT 2014 English-German dataset consisting of about 4.5 million\nsentence pairs. Sentences were encoded using byte-pair encoding [ 3 ], which has a shared source-\ntarget vocabulary of about 37000 tokens. For English-French, we used the significantly larger WMT\n2014 English-French dataset consisting of 36M sentences and split tokens into a 32000 word-piece\nvocabulary [ 38 ]. Sentence pairs were batched together by approximate sequence length. Each training\nbatch contained a set of sentence pairs containing approximately 25000 source tokens and 25000\ntarget tokens.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "5.2\nHardware and Schedule",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "We trained our models on one machine with 8 NVIDIA P100 GPUs. For our base models using\nthe hyperparameters described throughout the paper, each training step took about 0.4 seconds. We\ntrained the base models for a total of 100,000 steps or 12 hours. For our big models,(described on the\nbottom line of table 3), step time was 1.0 seconds. The big models were trained for 300,000 steps\n(3.5 days).",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "5.3\nOptimizer",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "We used the Adam optimizer [ 20 ] with β 1 = 0 . 9 , β 2 = 0 . 98 and ϵ = 10 − 9 . We varied the learning\nrate over the course of training, according to the formula:",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "lrate = d − 0 . 5\nmodel · min( step _ num − 0 . 5 , step _ num · warmup _ steps − 1 . 5 )\n(3)",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "This corresponds to increasing the learning rate linearly for the first warmup _ steps training steps,\nand decreasing it thereafter proportionally to the inverse square root of the step number. We used\nwarmup _ steps = 4000 .",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "5.4\nRegularization",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "We employ three types of regularization during training:",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Training",
+    "page": 7,
+    "text": "7",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Results",
+    "page": 8,
+    "text": "6.1\nMachine Translation",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Results",
+    "page": 8,
+    "text": "On the WMT 2014 English-to-German translation task, the big transformer model (Transformer (big)\nin Table 2) outperforms the best previously reported models (including ensembles) by more than 2 . 0\nBLEU, establishing a new state-of-the-art BLEU score of 28 . 4 . The configuration of this model is\nlisted in the bottom line of Table 3. Training took 3 . 5 days on 8 P100 GPUs. Even our base model\nsurpasses all previously published models and ensembles, at a fraction of the training cost of any of\nthe competitive models.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Results",
+    "page": 8,
+    "text": "On the WMT 2014 English-to-French translation task, our big model achieves a BLEU score of 41 . 0 ,\noutperforming all of the previously published single models, at less than 1 / 4 the training cost of the\nprevious state-of-the-art model. The Transformer (big) model trained for English-to-French used\ndropout rate P drop = 0 . 1 , instead of 0 . 3 .",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Results",
+    "page": 8,
+    "text": "For the base models, we used a single model obtained by averaging the last 5 checkpoints, which\nwere written at 10-minute intervals. For the big models, we averaged the last 20 checkpoints. We\nused beam search with a beam size of 4 and length penalty α = 0 . 6 [ 38 ]. These hyperparameters\nwere chosen after experimentation on the development set. We set the maximum output length during\ninference to input length + 50 , but terminate early when possible [38].",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Results",
+    "page": 8,
+    "text": "Table 2 summarizes our results and compares our translation quality and training costs to other model\narchitectures from the literature. We estimate the number of floating point operations used to train a\nmodel by multiplying the training time, the number of GPUs used, and an estimate of the sustained\nsingle-precision floating-point capacity of each GPU 5 .",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Results",
+    "page": 8,
+    "text": "6.2\nModel Variations",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Results",
+    "page": 8,
+    "text": "To evaluate the importance of different components of the Transformer, we varied our base model\nin different ways, measuring the change in performance on English-to-German translation on the",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Results",
+    "page": 8,
+    "text": "5 We used values of 2.8, 3.7, 6.0 and 9.5 TFLOPS for K80, K40, M40 and P100, respectively.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Results",
+    "page": 8,
+    "text": "8",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Conclusion",
+    "page": 9,
+    "text": "In this work, we presented the Transformer, the first sequence transduction model based entirely on\nattention, replacing the recurrent layers most commonly used in encoder-decoder architectures with\nmulti-headed self-attention.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Conclusion",
+    "page": 9,
+    "text": "For translation tasks, the Transformer can be trained significantly faster than architectures based\non recurrent or convolutional layers. On both WMT 2014 English-to-German and WMT 2014\nEnglish-to-French translation tasks, we achieve a new state of the art. In the former task our best\nmodel outperforms even all previously reported ensembles.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Conclusion",
+    "page": 9,
+    "text": "We are excited about the future of attention-based models and plan to apply them to other tasks. We\nplan to extend the Transformer to problems involving input and output modalities other than text and\nto investigate local, restricted attention mechanisms to efficiently handle large inputs and outputs\nsuch as images, audio and video. Making generation less sequential is another research goals of ours.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Conclusion",
+    "page": 9,
+    "text": "The code we used to train and evaluate our models is available at https://github.com/\ntensorflow/tensor2tensor .",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Conclusion",
+    "page": 9,
+    "text": "Acknowledgements\nWe are grateful to Nal Kalchbrenner and Stephan Gouws for their fruitful\ncomments, corrections and inspiration.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "References",
+    "page": 10,
+    "text": "[1] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv preprint\narXiv:1607.06450 , 2016.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "References",
+    "page": 10,
+    "text": "[2] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. Neural machine translation by jointly\nlearning to align and translate. CoRR , abs/1409.0473, 2014.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "References",
+    "page": 10,
+    "text": "[3] Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V. Le. Massive exploration of neural\nmachine translation architectures. CoRR , abs/1703.03906, 2017.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "References",
+    "page": 10,
+    "text": "[4] Jianpeng Cheng, Li Dong, and Mirella Lapata. Long short-term memory-networks for machine\nreading. arXiv preprint arXiv:1601.06733 , 2016.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "References",
+    "page": 10,
+    "text": "10",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "It",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "is",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "in",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "this",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "spirit",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "that",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "a",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "majority",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "of",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "American",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "governments",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "have",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "passed",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "new",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "laws",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "since",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "2009",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "making",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "the",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "registration",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "or",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "voting",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "process",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "more",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "difficult",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": ".",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<EOS>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "It",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "is",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "in",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "this",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "spirit",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "that",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "a",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "majority",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "of",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "American",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "governments",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "have",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "passed",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "new",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "laws",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "since",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "2009",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "making",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "the",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "registration",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "or",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "voting",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "process",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "more",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "difficult",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": ".",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<EOS>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "<pad>",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "Figure 3: An example of the attention mechanism following long-distance dependencies in the\nencoder self-attention in layer 5 of 6. Many of the attention heads attend to a distant dependency of\nthe verb ‘making’, completing the phrase ‘making...more difficult’. Attentions here shown only for\nthe word ‘making’. Different colors represent different heads. Best viewed in color.",
+    "images": null
+  },
+  {
+    "doc_id": "1706.03762v7",
+    "title": "Attention Visualizations",
+    "page": 11,
+    "text": "13",
+    "images": null
+  }
+]

@@ -315,25 +315,50 @@ def split_markdown_into_chunks(
     current_title = "Document"
     current_page = 1
     
+    # Common noise patterns to filter out (case-insensitive)
+    noise_patterns = {
+        'keywords', 'key words', 'copyright', 'published by', 'doi:',
+        'arxiv:', 'preprint', 'submitted to', 'accepted by', 'table of contents',
+        'list of figures', 'list of tables', 'permission', 'license'
+    }
+
     for part in parts:
         part = part.strip()
         if not part:
             continue
-        
+
         # Tách title và body
         lines = part.split("\n", 1)
         heading_line = lines[0].strip()
         body = lines[1].strip() if len(lines) > 1 else ""
-        
+
         # Nếu có heading, cập nhật title
         if heading_line.startswith('#'):
             current_title = re.sub(r'^#{1,3}\s*', '', heading_line).strip()
             if not current_title:
                 current_title = "Document"
-        
+
+            # Skip "Page X" sections - these are just page markers
+            if re.match(r'^Page\s+\d+$', current_title, re.IGNORECASE):
+                continue
+
+            # Filter out noise sections (common metadata sections that aren't useful)
+            title_lower = current_title.lower()
+            if any(noise in title_lower for noise in noise_patterns):
+                continue
+
         # Bỏ các phần đầu không có heading (metadata, author list, etc.)
         if not heading_line.startswith('#') and len(body.split()) < 20:
             continue
+
+        # Skip sections with very little meaningful content (< 30 words after heading)
+        word_count = len(body.split())
+        if word_count < 30 and heading_line.startswith('#'):
+            # Allow only if it's a known important section (even if short)
+            title_lower = current_title.lower()
+            important_short_sections = {'abstract', 'summary', 'conclusion', 'conclusions'}
+            if not any(section in title_lower for section in important_short_sections):
+                continue
         
         # OPTIMIZED: Lấy images liên quan đến section này (chỉ check nếu có figure_id)
         # Chỉ tìm images có figure_id và figure_id xuất hiện trong body
