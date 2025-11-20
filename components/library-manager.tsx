@@ -4,18 +4,28 @@ import { useState } from "react"
 import { Folder, Clock, Star, Tag, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AddReferences } from "@/components/add-references"
+import { useReferences } from "@/hooks/useReferences"
 import { cn } from "@/lib/utils"
 
 interface LibraryManagerProps {
   selectedCollection: string | null
   onCollectionChange: (collection: string | null) => void
+  onReferencesAdded?: () => void
 }
 
-export function LibraryManager({ selectedCollection, onCollectionChange }: LibraryManagerProps) {
+export function LibraryManager({ 
+  selectedCollection, 
+  onCollectionChange,
+  onReferencesAdded 
+}: LibraryManagerProps) {
   const [showAddReferences, setShowAddReferences] = useState(false)
   
+  // Get total count from API
+  const { total: totalReferences } = useReferences({ enabled: true })
+  
+  // Mock collection counts - in real app, you'd fetch these from API
   const collections = [
-    { id: null, name: "All References", icon: Folder, count: 1234 },
+    { id: null, name: "All References", icon: Folder, count: totalReferences },
     { id: "recent", name: "Recent", icon: Clock, count: 25 },
     { id: "favorites", name: "Favorites", icon: Star, count: 67 },
     { id: "machine-learning", name: "Machine Learning", icon: Tag, count: 156 },
@@ -25,8 +35,8 @@ export function LibraryManager({ selectedCollection, onCollectionChange }: Libra
 
   const handleReferencesAdded = () => {
     setShowAddReferences(false)
-    // TODO: Refresh reference list
-    // You might want to pass this callback up to parent if needed
+    // Trigger parent refresh if callback provided
+    onReferencesAdded?.()
   }
 
   return (
@@ -65,7 +75,9 @@ export function LibraryManager({ selectedCollection, onCollectionChange }: Libra
                   <Icon className="h-4 w-4" />
                   <span className="text-sm">{collection.name}</span>
                 </div>
-                <span className="text-xs text-muted-foreground">{collection.count}</span>
+                <span className="text-xs text-muted-foreground">
+                  {collection.count || 0}
+                </span>
               </Button>
             )
           })}

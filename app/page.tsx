@@ -60,12 +60,14 @@ export default function Home() {
       <ActivitySidebar 
         activeView={currentView}
         onViewChange={handleViewChange}
-        syncStatus="idle"
       />
       
       {/* Main Workspace Area */}
       <div className="flex-1 overflow-hidden">
-        <WorkspaceManager />
+        <WorkspaceManager 
+          currentView={currentView}
+          onViewChange={setCurrentView}
+        />
       </div>
     </div>
   )

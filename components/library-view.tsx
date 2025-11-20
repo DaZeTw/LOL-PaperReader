@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Search, Filter, Grid, List } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { LibraryManager } from "@/components/library-manager"
 import { ReferenceTable } from "@/components/reference-table"
+import { useReferences } from "@/hooks/useReferences"
 import { cn } from "@/lib/utils"
 
 interface LibraryViewProps {
@@ -17,6 +18,30 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null)
 
+  // Get reference count for display
+  const { total, refetch } = useReferences({
+    collection: selectedCollection,
+    search: searchQuery
+  })
+
+  // Handle references added - refresh the data
+  const handleReferencesAdded = useCallback(() => {
+    refetch()
+  }, [refetch])
+
+  // Get collection display name
+  const getCollectionDisplayName = (collectionId: string | null) => {
+    const collectionNames: Record<string, string> = {
+      "recent": "Recent",
+      "favorites": "Favorites", 
+      "machine-learning": "Machine Learning",
+      "computer-vision": "Computer Vision",
+      "nlp": "Natural Language Processing"
+    }
+    
+    return collectionNames[collectionId || ''] || "All References"
+  }
+
   return (
     <div className="flex h-full bg-background">
       {/* Library Manager - Left Sidebar */}
@@ -24,6 +49,7 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
         <LibraryManager
           selectedCollection={selectedCollection}
           onCollectionChange={setSelectedCollection}
+          onReferencesAdded={handleReferencesAdded}
         />
       </div>
 
@@ -33,11 +59,11 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
         <div className="flex items-center justify-between border-b border-border p-4">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">
-              {selectedCollection || "All References"}
+              {getCollectionDisplayName(selectedCollection)}
             </h2>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <span>•</span>
-              <span>1,234 items</span>
+              <span>{total} items</span>
             </div>
           </div>
 
