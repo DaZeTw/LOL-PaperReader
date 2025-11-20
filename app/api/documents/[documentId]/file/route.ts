@@ -15,7 +15,10 @@ interface RouteContext {
   }
 }
 
-export async function GET(_request: NextRequest, context: RouteContext) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ documentId: string }> }
+) {
   try {
     const session = await auth()
 
@@ -23,24 +26,19 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const response = await getDocumentResponseForUser(context.params.documentId, session.user.id)
+    // Await the params before using them
+    const params = await context.params
+    const response = await getDocumentResponseForUser(params.documentId, session.user.id)
     return response
   } catch (error) {
     if (error instanceof InvalidDocumentIdError) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      return NextResponse.json({ error: "Invalid document ID" }, { status: 400 })
     }
-
     if (error instanceof DocumentNotFoundError) {
-      return NextResponse.json({ error: error.message }, { status: 404 })
+      return NextResponse.json({ error: "Document not found" }, { status: 404 })
     }
-
-    if (error instanceof DocumentStreamError) {
-      return NextResponse.json({ error: error.message }, { status: 502 })
-    }
-
-    console.error("[Documents] Failed to stream document:", error)
-    return NextResponse.json({ error: "Failed to download document" }, { status: 500 })
+    console.error('[Document File] Error:', error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
-
 

@@ -1,17 +1,15 @@
 "use client"
 
 import { Homepage } from "@/components/homepage"
+import { ActivitySidebar } from "@/components/activity-sidebar"
+import { WorkspaceManager } from "@/components/workspace-manager"
 import { useState, useEffect } from "react"
-import dynamic from "next/dynamic"
 import { useSession } from "next-auth/react"
-
-const PDFWorkspace = dynamic(() => import("@/components/pdf-workspace").then(mod => ({ default: mod.PDFWorkspace })), {
-  ssr: false,
-})
 
 export default function Home() {
   const [showWorkspace, setShowWorkspace] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [currentView, setCurrentView] = useState<'library' | 'pdf'>('library')
   const { data: session, status } = useSession()
 
   // Handle hydration
@@ -21,6 +19,10 @@ export default function Home() {
 
   const handleGetStarted = () => {
     setShowWorkspace(true)
+  }
+
+  const handleViewChange = (view: 'library') => {
+    setCurrentView(view)
   }
 
   // Don't render anything until hydrated to prevent mismatch
@@ -41,14 +43,32 @@ export default function Home() {
     )
   }
 
-  if (showWorkspace) {
-    return <PDFWorkspace />
+  // Show homepage for unauthenticated users or before workspace is triggered
+  if (!showWorkspace) {
+    return (
+      <Homepage 
+        onGetStarted={handleGetStarted} 
+        isAuthenticated={!!session} 
+      />
+    )
   }
 
+  // Main application layout with ActivitySidebar + WorkspaceManager
   return (
-    <Homepage 
-      onGetStarted={handleGetStarted} 
-      isAuthenticated={!!session} 
-    />
+    <div className="flex h-screen bg-background">
+      {/* Global Activity Sidebar - Always visible */}
+      <ActivitySidebar 
+        activeView={currentView}
+        onViewChange={handleViewChange}
+      />
+      
+      {/* Main Workspace Area */}
+      <div className="flex-1 overflow-hidden">
+        <WorkspaceManager 
+          currentView={currentView}
+          onViewChange={setCurrentView}
+        />
+      </div>
+    </div>
   )
 }

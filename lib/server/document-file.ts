@@ -24,8 +24,8 @@ export async function getDocumentResponseForUser(documentId: string, userId: str
   }
 
   const bucketName = process.env.MINIO_BUCKET || "pdf-documents"
-  const presignedUrl = await getPresignedUrl(bucketName, document.stored_path, undefined, { external: false })
-
+  const presignedUrl = await getPresignedUrl(bucketName, document.stored_path, undefined, { external: true })
+  console.log("🔥 presignedUrl:", presignedUrl);
   const fileResponse = await fetch(presignedUrl, { cache: "no-store" })
 
   if (!fileResponse.ok || !fileResponse.body) {
