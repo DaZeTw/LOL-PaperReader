@@ -3,11 +3,11 @@ import { Client } from "minio"
 let minioClient: Client | null = null
 
 function buildClient(): Client {
-  const endPoint = process.env.MINIO_ENDPOINT || "localhost"
+  const endPoint = process.env.MINIO_ENDPOINT || "minio" // Docker service name
   const port = Number(process.env.MINIO_PORT || 9000)
   const useSSL = (process.env.MINIO_USE_SSL || "false").toLowerCase() === "true"
   const accessKey = process.env.MINIO_ACCESS_KEY || "minioadmin"
-  const secretKey = process.env.MINIO_SECRET_KEY || "minioadmin123"
+  const secretKey = process.env.MINIO_SECRET_KEY || "minioadmin"
 
   return new Client({
     endPoint,

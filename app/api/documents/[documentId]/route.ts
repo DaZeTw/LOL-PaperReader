@@ -43,5 +43,3 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Failed to fetch document" }, { status: 500 })
   }
 }
-
-

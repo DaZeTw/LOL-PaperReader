@@ -1,4 +1,4 @@
-import { MongoClient, Db, ObjectId } from "mongodb"
+import { MongoClient, Db, ObjectId, type ModifyResult } from "mongodb"
 
 declare global {
   // eslint-disable-next-line no-var
@@ -66,6 +66,16 @@ export interface Workspace {
   created_at: Date
 }
 
+export interface Collection {
+  _id?: ObjectId
+  user_id: string
+  name: string
+  description?: string
+  document_ids: ObjectId[]
+  created_at: Date
+  updated_at: Date
+}
+
 export interface Document {
   _id?: ObjectId
   user_id: string
@@ -81,6 +91,19 @@ export interface Document {
   updated_at: Date
   file_size: number
   file_type: string
+}
+
+function extractModifiedDocument<T>(result: ModifyResult<T> | T | null | undefined): T | null {
+  if (!result) {
+    return null
+  }
+
+  const modifyResult = result as ModifyResult<T>
+  if ("value" in modifyResult) {
+    return modifyResult.value ?? null
+  }
+
+  return result as T
 }
 
 export async function createWorkspace(userId: string, name = "Default Workspace"): Promise<Workspace> {
@@ -108,6 +131,138 @@ export async function getOrCreateWorkspace(userId: string): Promise<Workspace> {
     return existing
   }
   return createWorkspace(userId)
+}
+
+export async function createCollection(data: {
+  user_id: string
+  name: string
+  description?: string
+}): Promise<Collection> {
+  const db = await getMongoDb()
+  const collection: Collection = {
+    user_id: data.user_id,
+    name: data.name,
+    description: data.description,
+    document_ids: [],
+    created_at: new Date(),
+    updated_at: new Date(),
+  }
+
+  const result = await db.collection<Collection>("collections").insertOne(collection)
+  collection._id = result.insertedId
+  return collection
+}
+
+export async function getCollectionsByUserId(userId: string): Promise<Collection[]> {
+  const db = await getMongoDb()
+  return db
+    .collection<Collection>("collections")
+    .find({ user_id: userId })
+    .sort({ created_at: -1 })
+    .toArray()
+}
+
+export async function getCollectionById(collectionId: ObjectId, userId: string): Promise<Collection | null> {
+  const db = await getMongoDb()
+  return db.collection<Collection>("collections").findOne({
+    _id: collectionId,
+    user_id: userId,
+  })
+}
+
+export async function updateCollection(
+  collectionId: ObjectId,
+  userId: string,
+  updates: { name?: string; description?: string; },
+): Promise<Collection | null> {
+  const db = await getMongoDb()
+  const result = await db.collection<Collection>("collections").findOneAndUpdate(
+    { _id: collectionId, user_id: userId },
+    {
+      $set: {
+        ...updates,
+        updated_at: new Date(),
+      },
+    },
+    { returnDocument: "after" },
+  )
+
+  return extractModifiedDocument<Collection>(result)
+}
+
+export async function deleteCollection(collectionId: ObjectId, userId: string): Promise<boolean> {
+  const db = await getMongoDb()
+  const result = await db.collection<Collection>("collections").deleteOne({
+    _id: collectionId,
+    user_id: userId,
+  })
+  return result.deletedCount === 1
+}
+
+export async function addDocumentToCollection(
+  collectionId: ObjectId,
+  userId: string,
+  documentId: ObjectId,
+): Promise<Collection | null> {
+  const db = await getMongoDb()
+  const collection = await getCollectionById(collectionId, userId)
+  if (!collection) {
+    return null
+  }
+
+  const document = await getDocumentById(documentId)
+  if (!document || document.user_id !== userId) {
+    return null
+  }
+
+  if (collection.document_ids.some((id) => id.equals(documentId))) {
+    return collection
+  }
+
+  const result = await db.collection<Collection>("collections").findOneAndUpdate(
+    { _id: collectionId, user_id: userId },
+    {
+      $addToSet: { document_ids: documentId },
+      $set: { updated_at: new Date() },
+    },
+    { returnDocument: "after" },
+  )
+
+  const updatedCollection = extractModifiedDocument<Collection>(result)
+  if (updatedCollection) {
+    return updatedCollection
+  }
+
+  const refreshed = await getCollectionById(collectionId, userId)
+  if (refreshed && refreshed.document_ids.some((id) => id.equals(documentId))) {
+    return refreshed
+  }
+
+  return null
+}
+
+export async function removeDocumentFromCollection(
+  collectionId: ObjectId,
+  userId: string,
+  documentId: ObjectId,
+): Promise<Collection | null> {
+  const db = await getMongoDb()
+  const result = await db.collection<Collection>("collections").findOneAndUpdate(
+    { _id: collectionId, user_id: userId },
+    {
+      $pull: { document_ids: documentId },
+      $set: { updated_at: new Date() },
+    },
+    { returnDocument: "after" },
+  )
+
+  return extractModifiedDocument<Collection>(result)
+}
+
+export async function deleteAllCollectionsForUser(userId: string): Promise<number> {
+  const db = await getMongoDb()
+  const result = await db.collection<Collection>("collections").deleteMany({ user_id: userId })
+  return result.deletedCount ?? 0
 }
 
 export async function addDocumentToWorkspace(workspaceId: ObjectId, documentId: ObjectId): Promise<void> {

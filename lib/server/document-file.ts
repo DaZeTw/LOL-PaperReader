@@ -24,11 +24,47 @@ export async function getDocumentResponseForUser(documentId: string, userId: str
   }
 
   const bucketName = process.env.MINIO_BUCKET || "pdf-documents"
-  const presignedUrl = await getPresignedUrl(bucketName, document.stored_path, undefined, { external: true })
-  console.log("🔥 presignedUrl:", presignedUrl);
-  const fileResponse = await fetch(presignedUrl, { cache: "no-store" })
 
-  if (!fileResponse.ok || !fileResponse.body) {
+  type FetchAttemptResult = { response: Response | null; error: unknown }
+
+  const loadFromMinio = async (external: boolean): Promise<FetchAttemptResult> => {
+    const url = await getPresignedUrl(bucketName, document.stored_path, undefined, { external })
+    try {
+      const response = await fetch(url, { cache: "no-store" })
+
+      if (!response.ok || !response.body) {
+        return { response: null, error: new Error(`Unexpected response ${response.status}`) }
+      }
+
+      return { response, error: null }
+    } catch (error) {
+      return { response: null, error }
+    }
+  }
+
+  let fileResponse: Response | null = null
+  let fetchError: unknown = null
+
+  const internalResult = await loadFromMinio(false)
+
+  if (internalResult.response) {
+    fileResponse = internalResult.response
+  } else {
+    fetchError = internalResult.error
+
+    if (process.env.MINIO_PUBLIC_URL) {
+      const externalResult = await loadFromMinio(true)
+
+      if (externalResult.response) {
+        fileResponse = externalResult.response
+      } else {
+        fetchError = externalResult.error ?? fetchError
+      }
+    }
+  }
+
+  if (!fileResponse) {
+    console.error("[DocumentFile] Failed to fetch document from MinIO", fetchError)
     throw new DocumentStreamError("Failed to fetch document")
   }
 
