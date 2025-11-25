@@ -92,5 +92,13 @@
     ],
     "created_at": "2025-11-19T15:30:54.343651",
     "updated_at": "2025-11-19T15:52:55.037787"
+  },
+  "a9731ec3-1789-444d-8c26-6dd1ac716902": {
+    "session_id": "a9731ec3-1789-444d-8c26-6dd1ac716902",
+    "user_id": null,
+    "title": "Chat: CiteRead.pdf",
+    "messages": [],
+    "created_at": "2025-11-24T19:07:29.659155",
+    "updated_at": "2025-11-24T19:07:29.659155"
   }
 }

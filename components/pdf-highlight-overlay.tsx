@@ -29,15 +29,15 @@ interface PDFHighlightOverlayProps {
 }
 
 const CATEGORY_COLORS = {
-  novelty: "rgba(253, 224, 71, 0.7)", // yellow - darker and more opaque
-  method: "rgba(96, 165, 250, 0.7)",  // blue - darker and more opaque
-  result: "rgba(74, 222, 128, 0.7)",  // green - darker and more opaque
+  novelty: "rgba(234, 179, 8, 0.65)", // yellow-600 with higher opacity (much darker yellow)
+  method: "rgba(37, 99, 235, 0.65)",  // blue-600 with higher opacity (much darker blue)
+  result: "rgba(22, 163, 74, 0.65)",  // green-600 with higher opacity (much darker green)
 } as const
 
 const CATEGORY_BORDERS = {
-  novelty: "rgba(202, 138, 4, 0.9)",  // darker yellow border
-  method: "rgba(37, 99, 235, 0.9)",   // darker blue border
-  result: "rgba(22, 163, 74, 0.9)",   // darker green border
+  novelty: "rgba(234, 179, 8, 1)",  // yellow-600 solid
+  method: "rgba(37, 99, 235, 1)",   // blue-600 solid
+  result: "rgba(22, 163, 74, 1)",   // green-600 solid
 } as const
 
 export function PDFHighlightOverlay({
@@ -55,6 +55,8 @@ export function PDFHighlightOverlay({
     if (!visibleCategories.has(h.label)) return false
     return h.boxes.some((box) => box.page === pageNumber - 1) // Convert to 0-indexed
   })
+
+  console.log(`[PDFHighlightOverlay] Page ${pageNumber}: Rendering ${pageHighlights.length} highlights (${pageWidth}x${pageHeight}px)`)
 
   return (
     <div
@@ -81,8 +83,8 @@ export function PDFHighlightOverlay({
             <div
               key={`${highlight.id}-${boxIdx}`}
               className={cn(
-                "absolute transition-all duration-200 pointer-events-auto cursor-pointer",
-                isHovered && "z-10"
+                "absolute transition-all duration-150 pointer-events-auto cursor-pointer rounded-sm",
+                isHovered && "z-20"
               )}
               style={{
                 left: `${left}px`,
@@ -91,8 +93,8 @@ export function PDFHighlightOverlay({
                 height: `${height}px`,
                 backgroundColor,
                 borderLeft: `3px solid ${borderColor}`,
-                opacity: isHovered ? 1 : 0.95,
-                transform: isHovered ? "scale(1.02)" : "scale(1)",
+                boxShadow: isHovered ? `0 0 0 3px ${borderColor}` : 'none',
+                opacity: 1,
               }}
               onMouseEnter={() => setHoveredId(highlight.id)}
               onMouseLeave={() => setHoveredId(null)}
