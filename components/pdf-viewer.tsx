@@ -10,7 +10,8 @@ import { useCitationPlugin } from "@/hooks/useCitatioPlugin"
 import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractCitations"
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
 import { usePDFHighlightPlugin } from "@/hooks/usePDFHighlightPlugin"
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Eye, EyeOff, FileText } from "lucide-react"
+import { useAnnotation } from "@/hooks/useAnnotation" // ✅ ADD: Import annotation hook
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Eye, EyeOff, FileText, Highlighter, Trash2 } from "lucide-react" // ✅ ADD: Highlighter, Trash2 icons
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { PDFSidebar } from "./pdf-sidebar"
@@ -22,6 +23,7 @@ import "@react-pdf-viewer/page-navigation/lib/styles/index.css"
 import "@react-pdf-viewer/zoom/lib/styles/index.css"
 import "@react-pdf-viewer/thumbnail/lib/styles/index.css"
 import "@react-pdf-viewer/bookmark/lib/styles/index.css"
+import "@react-pdf-viewer/highlight/lib/styles/index.css" // ✅ ADD: Highlight styles
 import "@/styles/pdf-components.css"
 
 interface PDFViewerProps {
@@ -62,6 +64,14 @@ export function PDFViewer({
   // Skimming highlights hook
   const { highlights, loading: highlightsLoading, error: highlightsError, highlightCounts } = useSkimmingHighlights()
 
+  // ✅ ADD: Annotation hook for user text highlighting
+  const { 
+    annotations, 
+    annotationCount, 
+    annotationPluginInstance, 
+    clearAllAnnotations 
+  } = useAnnotation()
+
   const currentPageRef = useRef(1)
   const pageLabelRef = useRef<HTMLSpanElement>(null)
   const zoomRef = useRef(1)
@@ -95,8 +105,13 @@ export function PDFViewer({
     bookmarkPluginInstance,
   ])
 
-  // Add citation and highlight plugins dynamically when they change
-  const plugins = [...pluginsRef.current, citationPluginInstance, highlightPluginInstance]
+  // ✅ MODIFY: Add citation, highlight, and annotation plugins dynamically
+  const plugins = [
+    ...pluginsRef.current, 
+    citationPluginInstance, 
+    highlightPluginInstance,
+    annotationPluginInstance // ✅ ADD: Always include annotation plugin
+  ]
 
   const { jumpToNextPage, jumpToPreviousPage, jumpToPage } = pageNavigationPluginInstance
   const { zoomTo } = zoomPluginInstance
@@ -363,11 +378,40 @@ export function PDFViewer({
                 )}
               </Button>
             )}
+
+            {/* ✅ ADD: User Annotations Info - Show when there are annotations */}
+            {annotationCount > 0 && (
+              <>
+                <div className="w-px h-4 bg-border mx-1" />
+                <div className="flex items-center gap-2">
+                  <div className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-md flex items-center gap-1">
+                    <Highlighter className="h-3 w-3" />
+                    <span>{annotationCount} annotation{annotationCount !== 1 ? 's' : ''}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllAnnotations}
+                    className="h-7 px-2 text-xs text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Clear
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Zoom Controls - Only in reading mode */}
           {viewMode === "reading" && (
             <div className="flex items-center gap-2">
+              {/* ✅ ADD: Helper text for annotations */}
+              {annotationCount === 0 && (
+                <div className="text-xs text-muted-foreground mr-2">
+                  Select text to highlight
+                </div>
+              )}
+              
               <Button
                 variant="ghost"
                 size="icon"
