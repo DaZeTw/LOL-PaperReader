@@ -30,6 +30,7 @@ interface PDFViewerProps {
   navigationTarget?: { page: number; yPosition: number } | undefined
   onPageChange?: (page: number) => void
   onSectionSelect?: (bookmark: any) => void
+  onNavigationComplete?: () => void
   isActive?: boolean
 }
 
@@ -39,6 +40,7 @@ export function PDFViewer({
   navigationTarget,
   onPageChange,
   onSectionSelect,
+  onNavigationComplete,
   isActive,
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
@@ -119,11 +121,29 @@ export function PDFViewer({
 
   // Handle navigation target changes
   useEffect(() => {
-    if (navigationTarget && navigationTarget.page !== currentPageRef.current) {
-      // TODO: Implement navigation to specific page
-      console.log("[PDFViewer] Navigation target:", navigationTarget)
+    if (navigationTarget) {
+      console.log("[PDFViewer] Navigating to page:", navigationTarget.page)
+
+      // Update current page ref
+      currentPageRef.current = navigationTarget.page
+
+      // Update page label in UI
+      if (pageLabelRef.current) {
+        pageLabelRef.current.textContent = String(navigationTarget.page)
+      }
+
+      // Jump to the page (0-indexed)
+      jumpToPage(navigationTarget.page - 1)
+
+      // Notify parent of page change
+      onPageChange?.(navigationTarget.page)
+
+      // Clear navigation target after a short delay to allow jump to complete
+      setTimeout(() => {
+        onNavigationComplete?.()
+      }, 100)
     }
-  }, [navigationTarget])
+  }, [navigationTarget, jumpToPage, onPageChange, onNavigationComplete])
 
   // Execute pending navigation when switching to reading mode
   useEffect(() => {
