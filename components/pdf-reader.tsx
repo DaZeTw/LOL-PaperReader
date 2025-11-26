@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 interface NavigationTarget {
   page: number
   yPosition: number
+  highlightText?: string
 }
 
 interface SinglePDFReaderProps {
@@ -26,6 +27,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
   const [currentPage, setCurrentPage] = useState(1)
+  const [numPages, setNumPages] = useState<number>(0)
 
   // Annotation State
   const [highlightColor, setHighlightColor] = useState("#fef08a")
@@ -75,6 +77,27 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
     setCurrentPage(page)
   }
 
+  // Handle citation click - navigate to citation page
+  const handleCitationClick = (page: number, text?: string) => {
+    console.log(`[SinglePDFReader:${tabId}] Navigating to citation page:`, page, text?.substring(0, 50))
+
+    // Validate page number
+    if (numPages > 0 && (page < 1 || page > numPages)) {
+      console.warn(`[SinglePDFReader:${tabId}] Invalid page number ${page}, PDF only has ${numPages} pages`)
+      return
+    }
+
+    // Set navigation target with page and text to highlight
+    setNavigationTarget({
+      page,
+      yPosition: 0,
+      highlightText: text,
+    })
+
+    // Update current page
+    setCurrentPage(page)
+  }
+
   // Clear navigation target after navigation completes
   const handleNavigationComplete = () => {
     console.log(`[SinglePDFReader:${tabId}] Navigation completed, clearing target`)
@@ -99,6 +122,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
           navigationTarget={navigationTarget}
           onPageChange={handlePageChange}
           onNavigationComplete={handleNavigationComplete}
+          onDocumentLoad={(pageCount) => setNumPages(pageCount)}
           isActive={isActive}
         />
 
@@ -180,6 +204,8 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
               tabId={tabId}
               pdfFile={file}
               onHighlight={() => {}}
+              onCitationClick={handleCitationClick}
+              totalPages={numPages}
               isOpen={rightSidebarOpen}
               onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
             />

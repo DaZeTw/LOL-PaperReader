@@ -15,11 +15,13 @@ interface QAInterfaceProps {
   pdfFile: File
   tabId?: string
   onHighlight?: (text: string | null) => void
+  onCitationClick?: (page: number, text?: string) => void
+  totalPages?: number
   isOpen?: boolean
   onToggle?: () => void
 }
 
-export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onToggle }: QAInterfaceProps) {
+export function QAInterface({ pdfFile, tabId, onHighlight, onCitationClick, totalPages, isOpen = true, onToggle }: QAInterfaceProps) {
   const [question, setQuestion] = useState("")
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
@@ -196,8 +198,28 @@ export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onTogg
                         <div className="mt-3 space-y-2">
                           <p className="font-mono text-xs font-medium text-muted-foreground">References:</p>
                           <div className="space-y-2">
-                            {message.cited_sections.map((section, idx) => (
-                              <div key={idx} className="rounded-md border border-accent/30 bg-accent/5 p-2.5 text-xs">
+                            {message.cited_sections.map((section, idx) => {
+                              const isValidPage = section.page !== undefined &&
+                                                  (!totalPages || (section.page >= 1 && section.page <= totalPages))
+                              const isClickable = isValidPage && onCitationClick
+
+                              return (
+                              <div
+                                key={idx}
+                                onClick={() => {
+                                  if (isClickable) {
+                                    // Extract meaningful text snippet for highlighting
+                                    const textToHighlight = section.excerpt || section.summary || section.text || ""
+                                    onCitationClick(section.page!, textToHighlight)
+                                  }
+                                }}
+                                className={cn(
+                                  "rounded-md border p-2.5 text-xs transition-all",
+                                  isClickable
+                                    ? "border-accent/30 bg-accent/5 cursor-pointer hover:border-primary hover:bg-primary/10 hover:shadow-md"
+                                    : "border-red-300 bg-red-50 opacity-60 cursor-not-allowed"
+                                )}
+                              >
                                 <div className="mb-1 flex items-start gap-2">
                                   <span className="font-mono font-medium text-primary">
                                     {section.citation_label || `c${idx + 1}`}:
@@ -208,16 +230,28 @@ export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onTogg
                                     </span>
                                     {section.title && (
                                       <div className="mt-1 flex items-center gap-2">
-                                        <span className="font-mono text-xs text-muted-foreground">
+                                        <span className={cn(
+                                          "font-mono text-xs",
+                                          isClickable
+                                            ? "text-primary font-medium"
+                                            : isValidPage
+                                            ? "text-muted-foreground"
+                                            : "text-red-600"
+                                        )}>
                                           {section.title}
                                           {section.page !== undefined && ` (p. ${section.page})`}
+                                          {!isValidPage && totalPages && section.page && section.page > totalPages && (
+                                            <span className="ml-1 text-red-500 text-[10px]">
+                                              (invalid: max p. {totalPages})
+                                            </span>
+                                          )}
                                         </span>
                                       </div>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                            ))}
+                            )})}
                           </div>
                         </div>
                       )}

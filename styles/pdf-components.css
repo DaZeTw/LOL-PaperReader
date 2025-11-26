@@ -264,3 +264,34 @@ a[data-citation="true"]:hover {
     border-bottom-color: #7c3aed !important;
   }
 }
+
+/* Citation Search Highlight Styles */
+.rpv-search__highlight {
+  background-color: rgba(251, 191, 36, 0.6) !important;
+  border-radius: 2px !important;
+  animation: citationHighlightPulse 2s ease-in-out 3 !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.rpv-search__highlight--current {
+  background-color: rgba(251, 191, 36, 0.9) !important;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4) !important;
+  animation: citationHighlightPulse 1.5s ease-in-out infinite !important;
+}
+
+@keyframes citationHighlightPulse {
+  0%, 100% {
+    background-color: rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    background-color: rgba(251, 191, 36, 0.9);
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2);
+  }
+}
+
+/* Make citation highlights more visible */
+.rpv-core__text-layer .rpv-search__highlight {
+  z-index: 10 !important;
+  position: relative !important;
+}

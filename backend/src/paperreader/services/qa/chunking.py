@@ -338,8 +338,10 @@ def split_markdown_into_chunks(
             if not current_title:
                 current_title = "Document"
 
-            # Skip "Page X" sections - these are just page markers
-            if re.match(r'^Page\s+\d+$', current_title, re.IGNORECASE):
+            # Extract page number from "Page X" markers and update current_page
+            page_match = re.match(r'^Page\s+(\d+)$', current_title, re.IGNORECASE)
+            if page_match:
+                current_page = int(page_match.group(1))
                 continue
 
             # Filter out noise sections (common metadata sections that aren't useful)
@@ -472,8 +474,6 @@ def split_markdown_into_chunks(
                 flush_current()
             current.append(para)
             flush_current()
-        
-        current_page += 1
     
     total_time = time.time() - start_time
     if total_time > 2.0:

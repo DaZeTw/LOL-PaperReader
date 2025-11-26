@@ -6,6 +6,7 @@ import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
 import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail"
 import { bookmarkPlugin } from "@react-pdf-viewer/bookmark"
+import { searchPlugin } from "@react-pdf-viewer/search"
 import { useCitationPlugin } from "@/hooks/useCitatioPlugin"
 import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractCitations"
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
@@ -24,15 +25,17 @@ import "@react-pdf-viewer/zoom/lib/styles/index.css"
 import "@react-pdf-viewer/thumbnail/lib/styles/index.css"
 import "@react-pdf-viewer/bookmark/lib/styles/index.css"
 import "@react-pdf-viewer/highlight/lib/styles/index.css" // ✅ ADD: Highlight styles
+import "@react-pdf-viewer/search/lib/styles/index.css" // ✅ ADD: Search styles
 import "@/styles/pdf-components.css"
 
 interface PDFViewerProps {
   file: File
   selectedSection?: string | null
-  navigationTarget?: { page: number; yPosition: number } | undefined
+  navigationTarget?: { page: number; yPosition: number; highlightText?: string } | undefined
   onPageChange?: (page: number) => void
   onSectionSelect?: (bookmark: any) => void
   onNavigationComplete?: () => void
+  onDocumentLoad?: (pageCount: number) => void
   isActive?: boolean
 }
 
@@ -43,6 +46,7 @@ export function PDFViewer({
   onPageChange,
   onSectionSelect,
   onNavigationComplete,
+  onDocumentLoad,
   isActive,
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
@@ -83,6 +87,9 @@ export function PDFViewer({
   const zoomPluginInstance = useRef(zoomPlugin()).current
   const thumbnailPluginInstance = useRef(thumbnailPlugin()).current
   const bookmarkPluginInstance = useRef(bookmarkPlugin()).current
+  const searchPluginInstance = useRef(searchPlugin({
+    keyword: '',
+  })).current
 
   // 🔑 CITATION PLUGIN - Call hook at top level
   const citationPluginInstance = useCitationPlugin({
@@ -103,18 +110,20 @@ export function PDFViewer({
     zoomPluginInstance,
     thumbnailPluginInstance,
     bookmarkPluginInstance,
+    searchPluginInstance,
   ])
 
   // ✅ MODIFY: Add citation, highlight, and annotation plugins dynamically
   const plugins = [
-    ...pluginsRef.current, 
-    citationPluginInstance, 
+    ...pluginsRef.current,
+    citationPluginInstance,
     highlightPluginInstance,
     annotationPluginInstance // ✅ ADD: Always include annotation plugin
   ]
 
   const { jumpToNextPage, jumpToPreviousPage, jumpToPage } = pageNavigationPluginInstance
   const { zoomTo } = zoomPluginInstance
+  const { highlight, clearHighlights } = searchPluginInstance
 
   // Convert file to blob URL and extract citations
   useEffect(() => {
@@ -137,7 +146,7 @@ export function PDFViewer({
   // Handle navigation target changes
   useEffect(() => {
     if (navigationTarget) {
-      console.log("[PDFViewer] Navigating to page:", navigationTarget.page)
+      console.log("[PDFViewer] Navigating to page:", navigationTarget.page, "text:", navigationTarget.highlightText?.substring(0, 30))
 
       // Update current page ref
       currentPageRef.current = navigationTarget.page
@@ -153,12 +162,31 @@ export function PDFViewer({
       // Notify parent of page change
       onPageChange?.(navigationTarget.page)
 
+      // If there's text to highlight, search and highlight it
+      if (navigationTarget.highlightText) {
+        // Clear previous highlights first
+        clearHighlights()
+
+        // Wait for page to load, then highlight
+        setTimeout(() => {
+          // Extract first 50 meaningful words for better matching
+          const words = navigationTarget.highlightText!.split(/\s+/).filter(w => w.length > 3)
+          const searchText = words.slice(0, 50).join(' ')
+
+          console.log("[PDFViewer] Highlighting text:", searchText.substring(0, 100))
+          highlight(searchText)
+        }, 300)
+      } else {
+        // Clear highlights if no text specified
+        clearHighlights()
+      }
+
       // Clear navigation target after a short delay to allow jump to complete
       setTimeout(() => {
         onNavigationComplete?.()
       }, 100)
     }
-  }, [navigationTarget, jumpToPage, onPageChange, onNavigationComplete])
+  }, [navigationTarget, jumpToPage, onPageChange, onNavigationComplete, highlight, clearHighlights])
 
   // Execute pending navigation when switching to reading mode
   useEffect(() => {
@@ -463,6 +491,9 @@ export function PDFViewer({
                           zoomRef.current = 1
                           if (pageLabelRef.current) pageLabelRef.current.textContent = "1"
                           if (zoomLabelRef.current) zoomLabelRef.current.textContent = "100%"
+
+                          // Notify parent of page count
+                          onDocumentLoad?.(e.doc.numPages)
 
                           // Extract bookmarks for skimming mode
                           e.doc.getOutline().then((outline) => {

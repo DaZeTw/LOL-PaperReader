@@ -1,58 +1,58 @@
 {
-  "question": "What is the main finding?",
+  "question": "What are the key conclusions?",
   "hits": [
     {
-      "index": 2,
-      "score": 0.2182047623075017,
-      "text": "The dominant sequence transduction models are based on complex recurrent or\nconvolutional neural networks that include an encoder and a decoder. The best\nperforming models also connect the encoder and decoder through an attention\nmechanism. We propose a new simple network architecture, the Transformer,\nbased solely on attention mechanisms, dispensing with recurrence and convolutions\nentirely. Experiments on two machine translation tasks show these models to\nbe superior in quality while being more parallelizable and requiring significantly\nless time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-\nto-German translation task, improving over the existing best results, including\nensembles, by over 2 BLEU. On the WMT 2014 English-to-French translation task,\nour model establishes a new single-model state-of-the-art BLEU score of 41.8 after\ntraining for 3.5 days on eight GPUs, a small fraction of the training costs of the\nbest models from the literature. We show that the Transformer generalizes well to\nother tasks by applying it successfully to English constituency parsing both with\nlarge and limited training data.",
+      "index": 43,
+      "score": 0.24480823890499973,
+      "text": "and Practice of Digital Libraries .\n[21] Ariel S. Schwartz and Marti A. Hearst. 2006. Summarizing Key Concepts using\nCitation Sentences. In Proceedings of the Workshop on Linking Natural Language\nProcessing and Biology: Towards Deeper Biological Literature Analysis .\n[22] Zejiang Shen, Kyle Lo, Lucy Lu Wang, Bailey Kuehl, Daniel S. Weld, and Doug\nDowney. 2022. VILA: Improving Structured Content Extraction from Scientific\nPDFs Using Visual Layout Groups. arXiv:2106.00676 [cs.CL]\n[23] Marco Valenzuela, Vu A. Ha, and Oren Etzioni. 2015. Identifying Meaningful\nCitations. In AAAI Workshop: Scholarly Big Data .\n[24] Hongyi Wen, Julian Ramos Rojas, and Anind K. Dey. 2016. Serendipity: Finger\nGesture Recognition using an Off-the-Shelf Smartwatch. Proceedings of the 2016\nCHI Conference on Human Factors in Computing Systems .\n[25] Anbang Xu, Zhe Liu, Yufan Guo, Vibha Sinha, and Rama Akkiraju. 2017. A\nNew Chatbot for Customer Service on Social Media. Proceedings of the 2017 CHI\nConference on Human Factors in Computing Systems .\n[26] Sacha Zyto, David Karger, Mark Ackerman, and Sanjoy Mahajan. 2012. Successful\nclassroom deployment of a social document annotation system. In Proceedings of\nthe 2",
       "metadata": {
-        "doc_id": "1706.03762v7-embedded",
-        "title": "Attention Is All You Need",
-        "page": 2,
+        "doc_id": "CiteRead-embedded",
+        "title": "REFERENCES",
+        "page": 12,
         "images": []
       }
     },
     {
-      "index": 28,
-      "score": 0.21750107405313862,
-      "text": "For the base models, we used a single model obtained by averaging the last 5 checkpoints, which\nwere written at 10-minute intervals. For the big models, we averaged the last 20 checkpoints. We\nused beam search with a beam size of 4 and length penalty α = 0 . 6 [ 38 ]. These hyperparameters\nwere chosen after experimentation on the development set. We set the maximum output length during\ninference to input length + 50 , but terminate early when possible [38].\nTable 2 summarizes our results and compares our translation quality and training costs to other model\narchitectures from the literature. We estimate the number of floating point operations used to train a\nmodel by multiplying the training time, the number of GPUs used, and an estimate of the sustained\nsingle-precision floating-point capacity of each GPU 5 .\n6.2\nModel Variations\nTo evaluate the importance of different components of the Transformer, we varied our base model\nin different ways, measuring the change in performance on English-to-German translation on the\n5 We used values of 2.8, 3.7, 6.0 and 9.5 TFLOPS for K80, K40, M40 and P100, respectively.\n8",
+      "index": 42,
+      "score": 0.23614980366968097,
+      "text": "Knoth, Phil Gooch, and Kris Jack. 2017. What Others Say About This Work?\nScalable Extraction of Citation Contexts from Research Papers. In International\nConference on Theory and Practice of Digital Libraries .\n[17] Damien Masson, Sylvain Malacria, Edward Lank, and Géry Casiez. 2020.\nChameleon: Bringing Interactivity to Static Digital Documents. In Proceedings of\nthe 2020 CHI Conference on Human Factors in Computing Systems . 1–13.\n[18] Rada Mihalcea and Paul Tarau. 2004. TextRank: Bringing Order into Text. In In\nProceedings of the Conference on Empirical Methods in Natural Language Process-\ning .\n[19] Preslav Nakov, Ariel S. Schwartz, and Marti A. Hearst. 2004. Citances: Citation\nSentences for Semantic Analysis of Bioscience Text. In SIGIR’04 workshop on\nSearch and Discovery in Bioinformatics .\n[20] David Pride and Petr Knoth. 2017. Incidental or Influential? - Challenges in\nAutomatically Detecting Citation Importance Using Publication Full Texts. In\nInternational Conference on Theory and Practice of Digital Libraries .\n[21] Ariel S. Schwartz and Marti A. Hearst. 2006. Summarizing Key Concepts using\nCitation Sentences. In Proceedings of the Workshop on Linking Natural Language\nProc",
       "metadata": {
-        "doc_id": "1706.03762v7-embedded",
-        "title": "Page 8",
-        "page": 9,
+        "doc_id": "CiteRead-embedded",
+        "title": "REFERENCES",
+        "page": 12,
         "images": []
       }
     },
     {
-      "index": 8,
-      "score": 0.20953304464348946,
-      "text": "Self-attention, sometimes called intra-attention is an attention mechanism relating different positions\nof a single sequence in order to compute a representation of the sequence. Self-attention has been\nused successfully in a variety of tasks including reading comprehension, abstractive summarization,\ntextual entailment and learning task-independent sentence representations [4, 27, 28, 22].\nEnd-to-end memory networks are based on a recurrent attention mechanism instead of sequence-\naligned recurrence and have been shown to perform well on simple-language question answering and\nlanguage modeling tasks [34].\nTo the best of our knowledge, however, the Transformer is the first transduction model relying\nentirely on self-attention to compute representations of its input and output without using sequence-\naligned RNNs or convolution. In the following sections, we will describe the Transformer, motivate\nself-attention and discuss its advantages over models such as [17, 18] and [9].\n3\nModel Architecture",
+      "index": 37,
+      "score": 0.231543214402048,
+      "text": "We thank Marti Hearst, Andrew Head, Dongyeop Kang, Arman\nCohan, Kyle Lo, Matt Latzke, Shannon Shen, Tal August, and Ray-\nmond Fok for helpful early discussions, as well as the anonymous\nreviewers for useful feedback on the manuscript. We also thank the\nresearchers who participated in our user studies and assisted with\npiloting the system.",
       "metadata": {
-        "doc_id": "1706.03762v7-embedded",
-        "title": "Page 2",
-        "page": 3,
+        "doc_id": "CiteRead-embedded",
+        "title": "ACKNOWLEDGMENTS",
+        "page": 12,
         "images": []
       }
     },
     {
-      "index": 33,
-      "score": 0.20718100272438633,
-      "text": "In contrast to RNN sequence-to-sequence models [ 37 ], the Transformer outperforms the Berkeley-\nParser [29] even when training only on the WSJ training set of 40K sentences.\n7\nConclusion\nIn this work, we presented the Transformer, the first sequence transduction model based entirely on\nattention, replacing the recurrent layers most commonly used in encoder-decoder architectures with\nmulti-headed self-attention.\nFor translation tasks, the Transformer can be trained significantly faster than architectures based\non recurrent or convolutional layers. On both WMT 2014 English-to-German and WMT 2014\nEnglish-to-French translation tasks, we achieve a new state of the art. In the former task our best\nmodel outperforms even all previously reported ensembles.\nWe are excited about the future of attention-based models and plan to apply them to other tasks. We\nplan to extend the Transformer to problems involving input and output modalities other than text and\nto investigate local, restricted attention mechanisms to efficiently handle large inputs and outputs\nsuch as images, audio and video. Making generation less sequential is another research goals of ours.",
+      "index": 45,
+      "score": 0.23075102242437065,
+      "text": "Q1: How do alternative approaches compare against the approach\nused in this paper? Select one or more statements that were made,\neither in this paper or in a citing paper.\n• GRU models outperform the current work’s (baseline) LSTM\nmodel with respect to BLEU score\n• Convolutional Neural Network yields similar result to the\ncurrent work’s LSTM model for BLEU score\n• Bidirectional Long Short-term Memory encoder with\nattention-based architecture gets better results compared\nto plain LSTM encoder-decoder used in this paper\n• Human responses still outperform generated responses on\nappropriateness in this paper, but the responses generated\nby a tone-aware chatbot are perceived as appropriate as the\nresponses by human agents\n• There was no statistically significant difference between\nthis paper’s approach and human agents on empathy for\nemotional requests\n• Chatbots based on GRU models have shown better evaluation\nresults than human’s responses on attentiveness.\nQ2: In contrast to the dataset used in this paper to train chatbots,\nwhat have other papers tried to use as datasets instead? Select one\nor more answers.",
       "metadata": {
-        "doc_id": "1706.03762v7-embedded",
-        "title": "Page 10",
-        "page": 11,
+        "doc_id": "CiteRead-embedded",
+        "title": "Service on Social Media”",
+        "page": 13,
         "images": []
       }
     },
     {
-      "index": 32,
-      "score": 0.2055784450271223,
-      "text": "Table 4: The Transformer generalizes well to English constituency parsing (Results are on Section 23\nof WSJ)\nParser\nTraining\nWSJ 23 F1\nVinyals & Kaiser el al. (2014) [37]\nWSJ only, discriminative\n88.3\nPetrov et al. (2006) [29]\nWSJ only, discriminative\n90.4\nZhu et al. (2013) [40]\nWSJ only, discriminative\n90.4\nDyer et al. (2016) [8]\nWSJ only, discriminative\n91.7\nTransformer (4 layers)\nWSJ only, discriminative\n91.3\nZhu et al. (2013) [40]\nsemi-supervised\n91.3\nHuang & Harper (2009) [14]\nsemi-supervised\n91.3\nMcClosky et al. (2006) [26]\nsemi-supervised\n92.1\nVinyals & Kaiser el al. (2014) [37]\nsemi-supervised\n92.1\nTransformer (4 layers)\nsemi-supervised\n92.7\nLuong et al. (2015) [23]\nmulti-task\n93.0\nDyer et al. (2016) [8]\ngenerative\n93.3\nincreased the maximum output length to input length + 300 . We used a beam size of 21 and α = 0 . 3\nfor both WSJ only and the semi-supervised setting.\nOur results in Table 4 show that despite the lack of task-specific tuning our model performs sur-\nprisingly well, yielding better results than all previously reported models with the exception of the\nRecurrent Neural Network Grammar [8].",
+      "index": 12,
+      "score": 0.22986693641092815,
+      "text": "• Participants expressed that citances were useful to under-\nstand how other researchers frame the reference paper. They\nfurther used this information to verify that they correctly\nunderstood the main point of the reference paper. Citances\nthat discuss result comparisons were noted to be particularly\nuseful.\n• Citances that discuss the limitations of the reference paper\nwere also highly appreciated. One participant noted: “Au-\nthors [of the reference paper] usually put an emphasis on\nthe novelty but not the other aspects of the work, like lim-\nitations ...” Participants also mentioned that they found it\nuseful when a citing paper claims to have a solution to the\nissue.\n• Generic citations were not judged to be particularly inter-\nesting or useful. If there was a high information overlap\nbetween the citance and the reference paper’s abstract, then\nit was likely to be unhelpful.\nFinally, participants gave insights into what information they\nneeded to better understand a citation, including information from\nthe reference paper and from the citing paper:",
       "metadata": {
-        "doc_id": "1706.03762v7-embedded",
-        "title": "Page 10",
-        "page": 11,
+        "doc_id": "CiteRead-embedded",
+        "title": "Findings",
+        "page": 4,
         "images": []
       }
     }
