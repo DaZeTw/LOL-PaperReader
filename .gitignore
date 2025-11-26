@@ -6,6 +6,12 @@
 # python cache
 __pycache__/
 **/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
 
 # next.js
 /.next/

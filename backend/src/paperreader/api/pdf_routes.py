@@ -414,7 +414,7 @@ set_parse_cancel_flag(_PARSE_CANCEL_FLAG)
 #     )
 
 
-@router.post("/upload-and-parse/")
+@router.post("/upload-and-parse")
 async def upload_and_parse_pdf(file: UploadFile = File(...)):
     temp_dir = Path(tempfile.mkdtemp())
     input_pdf_path = temp_dir / file.filename
@@ -453,7 +453,7 @@ async def qa_status():
         return {"building": False, "ready": False, "error": str(e)}
 
 
-@router.post("/save-and-parse/")
+@router.post("/save-and-parse")
 async def save_and_parse_pdfs(
     files: list[UploadFile] = File(...),
     wait: bool = Query(False, description="Wait for processing to finish"),
@@ -507,7 +507,7 @@ async def get_pdf_job(job_id: str):
     return job
 
 
-@router.post("/parse-uploads-folder/")
+@router.post("/parse-uploads-folder")
 async def parse_uploads_folder():
     """Parse all PDFs currently in the uploads folder and rebuild the pipeline.
 
@@ -698,7 +698,7 @@ async def parse_uploads_folder():
     return {"status": "ok", "count": len(parse_results), "results": parse_results}
 
 
-@router.delete("/clear-output/")
+@router.delete("/clear-output")
 async def clear_parser_output():
     """Clear all files in the parser output directory and reset pipeline cache.
     
