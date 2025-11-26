@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { BACKEND_API_URL } from '@/lib/config'
 import { Reference } from './useReferences'
+import { useAuth } from '@/hooks/useAuth'
 
 export interface CreateReferenceData {
   title?: string
@@ -23,12 +24,13 @@ interface UseCreateReferenceReturn {
 }
 
 export function useCreateReference(): UseCreateReferenceReturn {
-  const { data: session } = useSession()
+  const { user, login } = useAuth()
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
   const createReference = async (file: File, metadata?: CreateReferenceData): Promise<Reference> => {
-    if (!session?.user) {
+    if (!user) {
+      login()
       throw new Error('Authentication required')
     }
 
@@ -57,9 +59,16 @@ export function useCreateReference(): UseCreateReferenceReturn {
         })
       }
 
-      const response = await fetch('/api/documents', {
+      const baseUrl = `${BACKEND_API_URL.replace(/\/$/, '')}/api/documents`
+      const userId = user.dbId ? String(user.dbId) : user.id
+
+      const response = await fetch(baseUrl, {
         method: 'POST',
+        headers: {
+          'X-User-Id': userId,
+        },
         body: formData,
+        credentials: 'include',
       })
 
       if (!response.ok) {

@@ -39,7 +39,7 @@ export function ReferenceTable({
   })
 
   const { deleteReference, isDeleting } = useDeleteReference()
-  const { getFileUrl } = useReferenceFile()
+  const { fetchFileBlob } = useReferenceFile()
   
   // Track ongoing operations to prevent double-clicks
   const openingRef = useRef<Set<string>>(new Set())
@@ -62,6 +62,12 @@ export function ReferenceTable({
 
   const handleOpenReference = async (reference: any) => {
     const refId = reference.id || reference._id
+
+    if (!refId) {
+      console.error('Failed to open reference: missing document id', reference)
+      toast.error('Document is missing an identifier')
+      return
+    }
     
     // Prevent double-click execution
     if (openingRef.current.has(refId)) {
@@ -72,21 +78,41 @@ export function ReferenceTable({
     openingRef.current.add(refId)
     
     try {
-      console.log('Opening reference:', reference.title)
+      console.log('Opening reference:', { title: reference.title, id: refId, status: reference.status })
+
+      // Show loading toast
+      const loadingToast = toast.loading('Opening PDF...')
+
+      const fileName = reference.fileName || reference.original_filename || `${reference.title}.pdf`
+      const { blob, mimeType } = await fetchFileBlob(refId)
       
-      // Create a virtual File object from the API URL
-      const response = await fetch(getFileUrl(refId))
-      if (!response.ok) throw new Error('Failed to fetch PDF')
-      
-      const blob = await response.blob()
-      const file = new File([blob], reference.fileName || `${reference.title}.pdf`, {
-        type: 'application/pdf'
+      if (!blob || blob.size === 0) {
+        throw new Error('Received empty file')
+      }
+
+      const file = new File([blob], fileName, {
+        type: mimeType || 'application/pdf'
       })
+
+      toast.dismiss(loadingToast)
+      toast.success('PDF opened successfully')
       
       onOpenPDF(file, reference.title)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to open PDF:', err)
-      toast.error('Failed to open PDF file')
+      const message = err instanceof Error ? err.message : 'Failed to open PDF file'
+      
+      // Provide more helpful error messages
+      let userMessage = message
+      if (message.includes('404') || message.includes('not found')) {
+        userMessage = 'PDF file not found. It may still be uploading. Please wait a moment and try again.'
+      } else if (message.includes('Failed to fetch') || message.includes('network')) {
+        userMessage = 'Network error. Please check your connection and try again.'
+      } else if (message.includes('502') || message.includes('storage')) {
+        userMessage = 'Unable to access the PDF file. Please try again in a moment.'
+      }
+      
+      toast.error(userMessage)
     } finally {
       // Remove from opening set after a delay to prevent rapid re-clicks
       setTimeout(() => {

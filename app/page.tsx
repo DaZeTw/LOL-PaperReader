@@ -4,13 +4,13 @@ import { Homepage } from "@/components/homepage"
 import { ActivitySidebar } from "@/components/activity-sidebar"
 import { WorkspaceManager } from "@/components/workspace-manager"
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function Home() {
   const [showWorkspace, setShowWorkspace] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
   const [currentView, setCurrentView] = useState<'library' | 'pdf'>('library')
-  const { data: session, status } = useSession()
+  const { user, loading } = useAuth()
 
   // Handle hydration
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function Home() {
   }
 
   // Don't render until session status is determined
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
@@ -48,7 +48,7 @@ export default function Home() {
     return (
       <Homepage 
         onGetStarted={handleGetStarted} 
-        isAuthenticated={!!session} 
+        isAuthenticated={!!user} 
       />
     )
   }

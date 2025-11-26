@@ -79,9 +79,10 @@ def extract_images(text: str) -> (str, List[Dict[str, str]]):
                 break
 
         # Construct file path
+        normalized_data = data.replace("\\", "/")
         images.append({
             'caption': candidate_caption or 'Image',
-            'data': str(Path('paperreader/services/parser/output') / data.replace("\\", "/")),
+            'data': normalized_data,
             'figure_id': figure_id or ''
         })
         last_idx = end
@@ -263,7 +264,8 @@ def split_markdown_into_chunks(
     source_path: str = None,
     max_chars: int = 1200,
     overlap: int = 200,
-    semantic_splitter: Optional[Any] = None
+    semantic_splitter: Optional[Any] = None,
+    assets: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> List[Dict[str, Any]]:
     """
     Chunking trực tiếp từ markdown content (bỏ qua doc format trung gian).
@@ -286,6 +288,9 @@ def split_markdown_into_chunks(
     print(f"[CHUNKING] Starting split_markdown_into_chunks for doc_id={doc_id}, content_length={len(markdown_content)}")
     
     chunks: List[Dict[str, Any]] = []
+    assets = assets or {}
+    image_assets = assets.get("images") or {}
+    table_assets = assets.get("tables") or {}
     # Use semantic splitter if available (preferred over length-based splitting)
     use_splitter = semantic_splitter if semantic_splitter else (_SPLITTER if _HAS_SEMANTIC else None)
     print(f"[CHUNKING] Semantic splitter available: {use_splitter is not None}, _HAS_SEMANTIC={_HAS_SEMANTIC}")
@@ -344,6 +349,41 @@ def split_markdown_into_chunks(
                 figure_id = img.get("figure_id")
                 if figure_id and figure_id in body:
                     section_images.append(img)
+
+        # Detect tables in section and inject preview text
+        section_tables: List[Dict[str, Any]] = []
+        table_pattern = re.compile(r'\[View\s+CSV\]\((tables/[^)]+)\)')
+
+        def _replace_table_link(match: re.Match) -> str:
+            rel_path = match.group(1).replace("\\", "/").lstrip("./")
+            lookup = table_assets.get(rel_path) or table_assets.get(f"tables/{Path(rel_path).name}")
+            entry: Dict[str, Any] = {
+                "data": rel_path,
+                "relative_path": rel_path,
+                "label": Path(rel_path).name,
+            }
+            if lookup:
+                entry.update(
+                    {
+                        "preview": lookup.get("preview"),
+                        "bucket": lookup.get("bucket"),
+                        "local_path": lookup.get("local_path"),
+                        "object_name": lookup.get("object_name"),
+                    }
+                )
+            section_tables.append(entry)
+
+            preview = lookup.get("preview") if lookup else ""
+            if preview:
+                preview_text = preview.strip()
+                max_preview = 2000
+                if len(preview_text) > max_preview:
+                    preview_text = preview_text[:max_preview] + "..."
+                return f"\n\nTable {entry['label']} Preview:\n{preview_text}\n"
+            return f"\n\nTable {entry['label']} (see {rel_path})\n"
+
+        if table_pattern.search(body):
+            body = table_pattern.sub(_replace_table_link, body)
         
         if not body.strip() and not section_images:
             continue
@@ -375,13 +415,16 @@ def split_markdown_into_chunks(
                         img for img in section_images
                         if img.get("figure_id") and img["figure_id"] in chunk_text
                     ]
+
+                    chunk_tables = [dict(tbl) for tbl in section_tables] if section_tables else None
                     
                     chunks.append({
                         "doc_id": doc_id,
                         "title": current_title,
                         "page": current_page,
                         "text": chunk_text,
-                        "images": chunk_images if chunk_images else None
+                        "images": chunk_images if chunk_images else None,
+                        "tables": chunk_tables
                     })
                 continue
             except Exception:
@@ -422,13 +465,16 @@ def split_markdown_into_chunks(
                     img for img in section_images
                     if img.get("figure_id") and img["figure_id"] in chunk_text
                 ]
+
+                chunk_tables = [dict(tbl) for tbl in section_tables] if section_tables else None
                 
                 chunks.append({
                     "doc_id": doc_id,
                     "title": current_title,
                     "page": current_page,
                     "text": chunk_text,
-                    "images": chunk_images if chunk_images else None
+                    "images": chunk_images if chunk_images else None,
+                    "tables": chunk_tables
                 })
                 
                 if end >= len(concatenated):

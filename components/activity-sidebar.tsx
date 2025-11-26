@@ -1,6 +1,5 @@
 "use client"
 
-import { useSession } from "next-auth/react"
 import { 
   Library, 
   Settings, 
@@ -11,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
 import { LoginButton } from "@/components/login-button"
+import { useAuth } from "@/hooks/useAuth"
 
 interface ActivitySidebarProps {
   activeView: 'library' | 'pdf'
@@ -21,7 +21,7 @@ export function ActivitySidebar({
   activeView, 
   onViewChange
 }: ActivitySidebarProps) {
-  const { data: session } = useSession()
+  const { user } = useAuth()
 
   const navigationItems = [
     {
@@ -30,7 +30,7 @@ export function ActivitySidebar({
       icon: Library,
       active: activeView === 'library',
       onClick: () => onViewChange('library'),
-      disabled: !session?.user
+      disabled: !user
     }
   ]
 
@@ -74,7 +74,7 @@ export function ActivitySidebar({
         <Button
           variant="ghost"
           size="sm"
-          disabled={!session?.user}
+          disabled={!user}
           className="w-8 h-8 p-0"
           onClick={() => {}} // TODO: Implement settings
           title="Settings" // Tooltip on hover
@@ -89,8 +89,8 @@ export function ActivitySidebar({
 
         {/* User Section */}
         <div className="flex justify-center">
-          {session?.user ? (
-            <UserMenu user={session.user} />
+          {user ? (
+            <UserMenu user={user} />
           ) : (
             <LoginButton />
           )}

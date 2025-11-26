@@ -20,6 +20,31 @@ Replace `sk-yourkeyhere` with your actual OpenAI API key.
 
 **Location:** `docker-compose.yml`
 
+### 1b. Configure Google OAuth and Auth Secrets
+
+Update your `.env` file (or the environment block in `docker-compose.yml`) with the following values to enable Google OAuth via the FastAPI backend:
+
+```
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+AUTH_JWT_SECRET=super-secure-random-string
+FASTAPI_SESSION_SECRET=another-secure-random-string
+FRONTEND_URL=http://localhost:3000
+```
+
+Optional overrides are available for cookie behaviour:
+
+```
+AUTH_COOKIE_SECURE=false
+AUTH_COOKIE_SAMESITE=lax
+AUTH_COOKIE_DOMAIN=
+AUTH_TOKEN_TTL_MINUTES=10080
+SESSION_COOKIE_SECURE=false
+SESSION_COOKIE_SAMESITE=lax
+```
+
+These defaults work for local development. For production, ensure you use HTTPS and set `*_SECURE=true` with appropriate cookie domains.
+
 ### 2. Setup Visual Embeddings
 
 To use visual embeddings for enhanced document understanding:
@@ -104,6 +129,8 @@ docker compose build nextjs-app   # build image, cache sẵn node_modules
 - pgAdmin (Postgres UI): http://localhost:5050
 - Mongo Express (MongoDB UI): http://localhost:8081
 - MinIO Console: http://localhost:9001
+- Elasticsearch: http://localhost:9200
+- Elasticsearch - UI: http://localhost:5601
 
 
 ## Xem bảng `users` trong pgAdmin

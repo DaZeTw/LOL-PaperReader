@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { useSession } from "next-auth/react"
+import type { MouseEvent } from "react"
 import { FileText, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LibraryView } from "@/components/library-view"
 import { SinglePDFReader } from "@/components/pdf-reader"
+import { useAuth } from "@/hooks/useAuth"
 
 interface PDFTab {
   id: string
@@ -28,7 +29,7 @@ export function WorkspaceManager({
   currentView, 
   onViewChange 
 }: WorkspaceManagerProps) {
-  const { data: session } = useSession()
+  const { user, login } = useAuth()
   const [openTabs, setOpenTabs] = useState<PDFTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
 
@@ -39,7 +40,7 @@ export function WorkspaceManager({
 
   // Enhanced function to find existing tab
   const findExistingTab = useCallback((file: File, title: string) => {
-    return openTabs.find(tab => {
+    return openTabs.find((tab: PDFTab) => {
       // Multiple ways to match:
       // 1. Exact title match
       if (tab.title === title) return true
@@ -56,8 +57,9 @@ export function WorkspaceManager({
 
   const handleOpenPDF = useCallback((file: File, title: string) => {
     // Check authentication before allowing PDF open
-    if (!session?.user) {
+    if (!user) {
       console.log("[Workspace Manager] PDF open blocked - user not authenticated")
+      login()
       return
     }
 
@@ -79,19 +81,19 @@ export function WorkspaceManager({
       fileName: file.name
     }
     
-    setOpenTabs((prev) => [...prev, newTab])
+    setOpenTabs((prev: PDFTab[]) => [...prev, newTab])
     setActiveTabId(newTab.id)
     onViewChange('pdf')
     
     console.log("[Workspace Manager] Created new tab:", newTab.id, "for file:", file.name)
-  }, [session?.user, findExistingTab, generateTabId, onViewChange])
+  }, [user, findExistingTab, generateTabId, onViewChange, login])
 
-  const handleCloseTab = useCallback((tabId: string, e?: React.MouseEvent) => {
+  const handleCloseTab = useCallback((tabId: string, e?: MouseEvent) => {
     e?.stopPropagation()
     
     console.log("[Workspace Manager] Closing tab:", tabId)
     
-    setOpenTabs((prev) => {
+    setOpenTabs((prev: PDFTab[]) => {
       const newTabs = prev.filter((tab) => tab.id !== tabId)
       
       // Handle active tab switching
@@ -120,7 +122,7 @@ export function WorkspaceManager({
     onViewChange('pdf')
   }, [onViewChange])
 
-  const activeTab = openTabs.find((tab) => tab.id === activeTabId)
+  const activeTab = openTabs.find((tab: PDFTab) => tab.id === activeTabId)
   const showTabBar = openTabs.length > 0
 
   // When view changes to library from outside, clear active tab
@@ -133,7 +135,7 @@ export function WorkspaceManager({
     openTabsCount: openTabs.length,
     activeTabId,
     currentView,
-    tabTitles: openTabs.map(tab => tab.title)
+    tabTitles: openTabs.map((tab: PDFTab) => tab.title)
   })
 
   return (
@@ -142,7 +144,7 @@ export function WorkspaceManager({
       {showTabBar && (
         <div className="flex items-center gap-1 border-b border-border bg-muted/30 px-2 py-1">
           <div className="flex flex-1 items-center gap-1 overflow-x-auto">
-            {openTabs.map((tab) => (
+            {openTabs.map((tab: PDFTab) => (
               <div
                 key={tab.id}
                 onClick={() => handleSwitchTab(tab.id)}
@@ -159,7 +161,7 @@ export function WorkspaceManager({
                   {tab.title}
                 </span>
                 <button
-                  onClick={(e) => handleCloseTab(tab.id, e)}
+                  onClick={(e: MouseEvent<HTMLButtonElement>) => handleCloseTab(tab.id, e)}
                   className="rounded p-0.5 opacity-0 transition-opacity hover:bg-muted-foreground/20 group-hover:opacity-100"
                 >
                   <X className="h-3 w-3" />

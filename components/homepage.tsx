@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { FileText, LogIn, BookOpen, Search, Sparkles } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 
 interface HomepageProps {
   onGetStarted?: () => void
@@ -17,6 +17,7 @@ interface HomepageProps {
  */
 export function Homepage({ onGetStarted, isAuthenticated = false }: HomepageProps) {
   const [mounted, setMounted] = useState(false)
+  const { login } = useAuth()
 
   useEffect(() => {
     setMounted(true)
@@ -30,7 +31,7 @@ export function Homepage({ onGetStarted, isAuthenticated = false }: HomepageProp
   }, [mounted, isAuthenticated, onGetStarted])
 
   const handleGetStarted = () => {
-    signIn("google", { callbackUrl: "/" })
+    login()
   }
 
   // Prevent hydration mismatch by not rendering dynamic content until mounted

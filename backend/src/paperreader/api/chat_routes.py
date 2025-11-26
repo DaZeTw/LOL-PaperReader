@@ -1,22 +1,78 @@
 #chat_routes.py
-from typing import List, Optional
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from pydantic import BaseModel
+from __future__ import annotations
+import base64
+import mimetypes
+import os
 import uuid
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, HTTPException, UploadFile, File
+from pydantic import BaseModel
 
 from paperreader.services.chat.chat_service import chat_service
+from paperreader.services.chat import repository as chat_repository
 from paperreader.models.chat import (
-    ChatSessionCreate, 
-    ChatMessageCreate, 
+    ChatSessionCreate,
+    ChatMessageCreate,
     ChatSessionResponse,
-    ChatMessageResponse
+    ChatMessageResponse,
 )
-from paperreader.services.qa.config import PipelineConfig
-from paperreader.services.qa.pipeline import get_pipeline
-# Removed chat_embedding_service import - no longer using embeddings
+from paperreader.services.qa.generators import get_generator
+from paperreader.services.qa.embeddings import get_embedder
+from paperreader.services.qa.elasticsearch_client import knn_search
+from paperreader.services.documents.minio_client import upload_bytes
 
 router = APIRouter()
+MINIO_CHAT_BUCKET = os.getenv("MINIO_CHAT_BUCKET", "chat-images")
+
+
+def _extract_document_key(session: ChatSessionResponse | ChatSessionCreateRequest | Any) -> Optional[str]:
+    metadata = getattr(session, "metadata", None) or {}
+    document_key = metadata.get("document_key")
+    if document_key:
+        return document_key
+
+    document_id = metadata.get("document_id") if metadata else None
+    if document_id:
+        return str(document_id)
+
+    title = getattr(session, "title", None)
+    if isinstance(title, str) and title:
+        normalized = title.replace("Chat:", "").strip()
+        if " - " in normalized:
+            normalized = normalized.split(" - ")[0].strip()
+        return normalized or None
+
+    return None
+
+
+async def _store_user_images(session_id: str, images: Optional[List[str]]) -> List[str]:
+    if not images:
+        return []
+
+    stored: List[str] = []
+    for image in images:
+        if not image:
+            continue
+        if image.startswith("data:image/"):
+            header, data = image.split(",", 1)
+            mime = header.split(";")[0].split(":")[1]
+            extension = mimetypes.guess_extension(mime) or ".png"
+            object_name = f"{session_id}/{uuid.uuid4()}{extension}"
+            try:
+                await upload_bytes(
+                    MINIO_CHAT_BUCKET,
+                    object_name,
+                    base64.b64decode(data),
+                    mime,
+                )
+                stored.append(object_name)
+            except Exception as exc:
+                print(f"[Chat] ⚠️ Failed to store user image: {exc}")
+        else:
+            stored.append(image)
+    return stored
 
 class ChatAskRequest(BaseModel):
     session_id: str
@@ -43,69 +99,40 @@ class ChatSessionCreateRequest(BaseModel):
     title: Optional[str] = None
     initial_message: Optional[str] = None
     force_new: Optional[bool] = False  # If True, always create new session even if one with same title exists
+    document_key: Optional[str] = None
+    document_id: Optional[str] = None
+    tab_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 class ChatSessionListResponse(BaseModel):
     sessions: List[ChatSessionResponse]
 
 @router.post("/sessions", response_model=ChatSessionResponse)
 async def create_chat_session(request: ChatSessionCreateRequest):
-    """Create a new chat session, or return existing one if found"""
+    """Create a new chat session."""
     try:
-        # First, check if there's an existing session with the same title and user_id
-        # This prevents creating duplicate sessions for the same PDF
-        # BUT: If force_new=True, skip this check and always create new session
-        if request.title and not request.force_new:
-            existing_session = await chat_service.find_session_by_title(
-                title=request.title,
-                user_id=request.user_id
-            )
-            
-            if existing_session:
-                # Return existing session instead of creating new one
-                print(f"[LOG] Found existing session for title '{request.title}': {existing_session.session_id}")
-                return ChatSessionResponse(
-                    session_id=existing_session.session_id,
-                    title=existing_session.title,
-                    messages=existing_session.messages,
-                    created_at=existing_session.created_at,
-                    updated_at=existing_session.updated_at,
-                    message_count=len(existing_session.messages)
-                )
-        elif request.force_new:
-            print(f"[LOG] force_new=True, skipping existing session check and creating new session for title '{request.title}'")
-        
-        # No existing session found, create new one
         session_id = str(uuid.uuid4())
-        
+        metadata: Dict[str, Any] = request.metadata.copy() if request.metadata else {}
+        if request.document_key:
+            metadata["document_key"] = request.document_key
+        if request.document_id:
+            metadata["document_id"] = request.document_id
+        if request.tab_id:
+            metadata["tab_id"] = request.tab_id
+
         session_data = ChatSessionCreate(
             session_id=session_id,
             user_id=request.user_id,
             title=request.title,
-            initial_message=request.initial_message
+            initial_message=request.initial_message,
+            metadata=metadata,
         )
-        
-        import asyncio
-        session = await asyncio.wait_for(
-            chat_service.create_session(session_data),
-            timeout=10.0  # 10 second timeout for session creation
-        )
-        
-        print(f"[LOG] Created new session: {session.session_id} for title '{request.title}'")
-        
-        return ChatSessionResponse(
-            session_id=session.session_id,
-            title=session.title,
-            messages=session.messages,
-            created_at=session.created_at,
-            updated_at=session.updated_at,
-            message_count=len(session.messages)
-        )
-    except asyncio.TimeoutError:
-        raise HTTPException(status_code=504, detail="Connection timeout: Session creation took too long.")
+        await chat_service.create_session(session_data)
+        response = await chat_service.get_session_response(session_id)
+        if response is None:
+            raise RuntimeError("Session creation failed")
+        return response
     except Exception as e:
-        error_msg = str(e)
-        if "timeout" in error_msg.lower() or "connection" in error_msg.lower():
-            raise HTTPException(status_code=503, detail=f"Backend connection issue: {error_msg}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sessions/{session_id}", response_model=ChatSessionResponse)

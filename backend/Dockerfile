@@ -22,7 +22,15 @@ RUN pip install --no-cache-dir \
     python-dotenv==1.0.0 \
     "pydantic>=2.0.0,<3.0.0" \
     "requests>=2.31.0" \
-    pathlib2==2.3.7
+    pathlib2==2.3.7 \
+    motor==3.3.2 \
+    pymongo==4.6.0 \
+    "elasticsearch>=8.11.0" \
+    minio==7.2.7 \
+    asyncpg==0.29.0 \
+    Authlib==1.3.2 \
+    PyJWT==2.9.0 \
+    itsdangerous==2.1.2
 
 # ---- 4. Heavy ML libs (separate layer to preserve cache) ----
 # Use precompiled wheels (avoid source builds)

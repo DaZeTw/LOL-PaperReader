@@ -39,6 +39,7 @@ class ChatSessionCreate(BaseModel):
     user_id: Optional[str] = None
     title: Optional[str] = None
     initial_message: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 class ChatMessageCreate(BaseModel):
     role: str
@@ -55,6 +56,7 @@ class ChatSessionResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     message_count: int
+    metadata: Optional[Dict[str, Any]] = None
 
 class ChatMessageResponse(BaseModel):
     role: str

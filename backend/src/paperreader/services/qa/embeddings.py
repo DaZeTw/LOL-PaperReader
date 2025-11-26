@@ -7,6 +7,7 @@ import threading
 import os
 import hashlib
 import pickle
+from paperreader.services.documents.minio_client import get_minio_client
 
 
 # ------------------------------
@@ -299,6 +300,62 @@ class VisualizedBGEEmbedder(Embedder):
         except Exception as e:
             print(f"[WARNING] Failed to save cache: {e}")
     
+    def _augment_text_with_tables(self, text: str, tables: Optional[List[Dict[str, Any]]]) -> str:
+        """Append table contents to base text to enrich embeddings."""
+        if not tables:
+            return text or ""
+
+        max_chars = int(os.getenv("TABLE_EMBED_MAX_CHARS", "4000"))
+        additions: List[str] = []
+
+        for tbl in tables:
+            if not isinstance(tbl, dict):
+                continue
+
+            cached_text = tbl.get("_cached_text")
+            if cached_text:
+                table_text = cached_text
+            else:
+                table_text = ""
+                for candidate in [tbl.get("local_path"), tbl.get("localPath")]:
+                    if candidate and Path(candidate).exists():
+                        try:
+                            table_text = Path(candidate).read_text(encoding="utf-8", errors="ignore")
+                            break
+                        except Exception:
+                            continue
+
+                if not table_text and tbl.get("bucket") and tbl.get("data"):
+                    temp_path = self._download_minio_object(tbl["bucket"], tbl["data"])
+                    if temp_path and Path(temp_path).exists():
+                        tbl["local_path"] = temp_path
+                        try:
+                            table_text = Path(temp_path).read_text(encoding="utf-8", errors="ignore")
+                        except Exception:
+                            table_text = ""
+
+                if not table_text:
+                    table_text = tbl.get("preview") or ""
+
+                table_text = (table_text or "").strip()
+                if table_text:
+                    if len(table_text) > max_chars:
+                        table_text = table_text[:max_chars] + "..."
+                    tbl["_cached_text"] = table_text
+
+            if not table_text:
+                continue
+
+            label = tbl.get("label")
+            if not label:
+                rel = tbl.get("relative_path") or tbl.get("data") or "table"
+                label = Path(rel).name
+            additions.append(f"\n\nTable {label}:\n{table_text}")
+
+        if not additions:
+            return text or ""
+        return (text or "") + "".join(additions)
+    
     # --------------------------
     # Encode chunks (image+text)
     # --------------------------
@@ -420,8 +477,11 @@ class VisualizedBGEEmbedder(Embedder):
                                     error_container["err"] = RuntimeError("Embedding was cancelled")
                                     return
                             
-                            # Extract texts and batch tokenize
-                            texts = [ch.get("text", "") or "" for ch in text_only_chunks]
+                            # Extract texts (augmenting with tables) and batch tokenize
+                            texts = [
+                                self._augment_text_with_tables(ch.get("text", "") or "", ch.get("tables"))
+                                for ch in text_only_chunks
+                            ]
                             # Tokenize all texts at once (batch tokenization) - this is the key optimization
                             tokenized = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
                             tokenized = tokenized.to(self.device)
@@ -451,7 +511,7 @@ class VisualizedBGEEmbedder(Embedder):
                                     error_container["err"] = RuntimeError("Embedding was cancelled")
                                     return
                             
-                            text = (ch.get("text") or "")
+                            text = self._augment_text_with_tables(ch.get("text") or "", ch.get("tables"))
                             images = ch.get("images") or []
 
                             vecs = []
@@ -463,8 +523,26 @@ class VisualizedBGEEmbedder(Embedder):
                                         error_container["err"] = RuntimeError("Embedding was cancelled")
                                         return
                                 
-                                path = resolve_image_path(str(img.get("data") or ""))
-                                if not path:
+                                local_candidate = img.get("local_path") or img.get("localPath")
+                                primary = local_candidate or img.get("data") or ""
+                                path = resolve_image_path(str(primary))
+
+                                if (not path or not Path(path).exists()) and img.get("data"):
+                                    path = resolve_image_path(str(img.get("data")))
+
+                                if (not path or not Path(path).exists()) and img.get("bucket") and img.get("data"):
+                                    bucket_name = img.get("bucket")
+                                    object_name = img.get("data")
+                                    try:
+                                        temp_file = self._download_minio_object(bucket_name, object_name)
+                                        if temp_file and Path(temp_file).exists():
+                                            path = temp_file
+                                            img["local_path"] = temp_file
+                                    except Exception as minio_exc:
+                                        print(f"[WARNING] Failed to download image {object_name} from bucket {bucket_name}: {minio_exc}")
+                                        path = None
+
+                                if not path or not Path(path).exists():
                                     continue
                                 try:
                                     v = self.model.encode(image=path, text=text)
@@ -508,7 +586,10 @@ class VisualizedBGEEmbedder(Embedder):
                 print(f"[WARNING] Batch {batch_num} produced no embeddings, using text-only fallback")
                 # Fallback to text-only embedding for failed batch
                 try:
-                    batch_texts = [ch.get("text") or "" for ch in batch]
+                    batch_texts = [
+                        self._augment_text_with_tables(ch.get("text") or "", ch.get("tables"))
+                        for ch in batch
+                    ]
                     # Use embed() method which handles List[str]
                     text_embs = self.embed(batch_texts)
                     batch_embs = text_embs
@@ -540,6 +621,34 @@ class VisualizedBGEEmbedder(Embedder):
                 print(f"[WARNING] Failed to save embeddings cache: {e}")
         
         return all_embs
+
+    # --------------------------
+    # Download helper for Minio objects
+    # --------------------------
+    def _download_minio_object(self, bucket: str, object_name: str) -> Optional[str]:
+        """Download object from Minio to a temporary location and return path."""
+        client = get_minio_client()
+        try:
+            response = client.get_object(bucket, object_name)
+            data = response.read()
+            response.close()
+            response.release_conn()
+        except Exception as exc:
+            print(f"[WARNING] Failed to fetch object {object_name} from bucket {bucket}: {exc}")
+            return None
+
+        suffix = Path(object_name).suffix or ".bin"
+        temp_dir = Path("tmp/minio_assets")
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        temp_file = temp_dir / f"{hashlib.md5(object_name.encode()).hexdigest()}{suffix}"
+
+        try:
+            with open(temp_file, "wb") as fh:
+                fh.write(data)
+            return str(temp_file)
+        except Exception as exc:
+            print(f"[WARNING] Failed to persist Minio object {object_name}: {exc}")
+            return None
 
 
 # ------------------------------

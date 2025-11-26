@@ -5,13 +5,22 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
 # Import routers
+from paperreader.api.auth_routes import router as auth_router  # Auth routes
+from paperreader.api.chat_routes import router as chat_router  # Chat routes
+from paperreader.api.collections_routes import router as collections_router  # Collection routes
 from paperreader.api import pdf_routes  # main backend routes
 from paperreader.api.routes import router as qa_router  # QA RAG routes
-from paperreader.api.chat_routes import router as chat_router  # Chat routes
+from paperreader.api.documents_routes import router as documents_router  # Document routes
 # from paperreader.api.chat_embedding_routes import router as chat_embedding_router  # Chat embedding routes (removed as unused)
 
+from paperreader.database.mongodb import mongodb
+from paperreader.database.postgres import (
+    close_postgres_pool,
+    init_postgres_pool,
+)
 from paperreader.services.qa.embeddings import get_embedder
 from paperreader.services.qa.pipeline import get_pipeline
 from paperreader.services.qa.config import PipelineConfig
@@ -33,20 +42,44 @@ def create_app() -> FastAPI:
     # ------------------------
     # Middleware: CORS
     # ------------------------
+    frontend_origin = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    additional_origins = [
+        origin.strip()
+        for origin in os.getenv("CORS_ADDITIONAL_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
+    origins = {frontend_origin.rstrip("/")}
+    origins.update(additional_origins)
+    origins.add("http://127.0.0.1:3000")
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Change to frontend URL in production
+        allow_origins=list(origins),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
+    session_secret = os.getenv("FASTAPI_SESSION_SECRET") or os.getenv("AUTH_JWT_SECRET")
+    if not session_secret:
+        raise ValueError("Missing FASTAPI_SESSION_SECRET or AUTH_JWT_SECRET for session middleware")
+
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=session_secret,
+        same_site=os.getenv("SESSION_COOKIE_SAMESITE", "lax"),
+        https_only=os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true",
+    )
+
     # ------------------------
     # Routers
     # ------------------------
+    app.include_router(auth_router)
     app.include_router(pdf_routes.router, prefix="/api/pdf", tags=["PDF"])
     app.include_router(qa_router, prefix="/api/qa", tags=["QA"])
     app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
+    app.include_router(documents_router)
+    app.include_router(collections_router)
     # Chat Embedding API disabled as unused
     # app.include_router(chat_embedding_router, prefix="/api/chat-embedding", tags=["Chat Embedding"])
 
@@ -63,6 +96,8 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         """Initialize database and schedule warmup in background"""
+        await mongodb.connect()
+        await init_postgres_pool()
         # Clear parser output directory on startup to start fresh
         try:
             from pathlib import Path
@@ -144,6 +179,8 @@ def create_app() -> FastAPI:
     async def shutdown_event():
         """Cleanup on shutdown"""
         print("✅ Shutting down application")
+        await mongodb.disconnect()
+        await close_postgres_pool()
 
     # ------------------------
     # Health and Root routes

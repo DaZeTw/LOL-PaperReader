@@ -6,9 +6,15 @@ python-dotenv==1.0.0
 # Note: FastAPI yêu cầu pydantic, không còn dependency với docling-core
 pydantic>=2.0.0,<3.0.0
 
-# Database - MongoDB removed
-# motor==3.3.2
-# pymongo==4.6.0
+# Database - MongoDB via Motor
+motor==3.3.2
+pymongo==4.6.0
+
+# PostgreSQL access
+asyncpg==0.29.0
+
+# Elasticsearch - Vector Database for Embeddings
+elasticsearch>=8.11.0  # Includes both sync and async clients
 
 # AI/ML APIs
 openai==1.109.0
@@ -45,9 +51,16 @@ requests>=2.31.0
 # Utilities
 pathlib2==2.3.7
 
-# Optional: llama_index (for semantic splitting, but code has fallback)
-# Uncomment if needed:
-# llama-index-core>=0.9.0
-# llama-index-embeddings-huggingface>=0.1.0
+# Authentication
+Authlib==1.3.2
+PyJWT==2.9.0
+itsdangerous==2.1.2
+
+# Object storage (MinIO/S3 compatible)
+minio==7.2.7
+
+# llama_index (for semantic splitting)
+llama-index-core>=0.9.0
+llama-index-embeddings-huggingface>=0.1.0
 pydantic-settings
 ftfy

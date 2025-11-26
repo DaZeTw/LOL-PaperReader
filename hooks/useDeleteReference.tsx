@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { BACKEND_API_URL } from '@/lib/config'
+import { useAuth } from '@/hooks/useAuth'
 
 interface UseDeleteReferenceReturn {
   deleteReference: (id: string) => Promise<void>
@@ -12,12 +13,13 @@ interface UseDeleteReferenceReturn {
 }
 
 export function useDeleteReference(): UseDeleteReferenceReturn {
-  const { data: session } = useSession()
+  const { user, login } = useAuth()
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
   const deleteReferences = async (ids: string[]): Promise<void> => {
-    if (!session?.user) {
+    if (!user) {
+      login()
       throw new Error('Authentication required')
     }
 
@@ -31,12 +33,17 @@ export function useDeleteReference(): UseDeleteReferenceReturn {
     try {
       console.log('Deleting references with IDs:', ids)
       
-      const response = await fetch('/api/documents/delete', {
+      const baseUrl = `${BACKEND_API_URL.replace(/\/$/, '')}/api/documents/delete`
+      const userId = user.dbId ? String(user.dbId) : user.id
+
+      const response = await fetch(baseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-User-Id': userId,
         },
         body: JSON.stringify({ documentIds: ids }), // Changed to documentIds array
+        credentials: 'include',
       })
 
       if (!response.ok) {

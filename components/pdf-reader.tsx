@@ -1,12 +1,15 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
+
 import { PDFViewer } from "@/components/pdf-viewer"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { QAInterface } from "@/components/qa-interface"
 import { DocumentHistorySidebar } from "@/components/document-history-sidebar"
 import { useToast } from "@/hooks/use-toast"
 import type { UploadedDocument } from "@/components/pdf-upload"
+import { BACKEND_API_URL } from "@/lib/config"
+import { useAuth } from "@/hooks/useAuth"
 
 interface NavigationTarget {
   page: number
@@ -21,6 +24,12 @@ interface SinglePDFReaderProps {
 }
 
 export function SinglePDFReader({ file, tabId, isActive, onOpenDocument }: SinglePDFReaderProps) {
+  const { user } = useAuth()
+  const stableUserId = user
+    ? user.dbId
+      ? String(user.dbId)
+      : user.id
+    : undefined
   // PDF Navigation State
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
@@ -92,10 +101,24 @@ export function SinglePDFReader({ file, tabId, isActive, onOpenDocument }: Singl
     historyLoadingRef.current = true
     
     try {
+      if (!stableUserId) {
+        setHistoryError("Please sign in to load documents.")
+        setHistoryLoading(false)
+        return
+      }
+
       setHistoryLoading(true)
       setHistoryError(null)
 
-      const response = await fetch("/api/documents", { cache: "no-store" })
+      const baseUrl = `${BACKEND_API_URL.replace(/\/$/, "")}/api/documents`
+
+      const response = await fetch(baseUrl, {
+        headers: {
+          "X-User-Id": stableUserId,
+        },
+        cache: "no-store",
+        credentials: "include",
+      })
       if (!response.ok) {
         throw new Error("Failed to fetch documents")
       }
@@ -115,7 +138,7 @@ export function SinglePDFReader({ file, tabId, isActive, onOpenDocument }: Singl
       setHistoryLoaded(true)
       hasLoadedOnceRef.current = true
     }
-  }, [tabId, toast])
+  }, [stableUserId, tabId, toast])
 
   // Load documents once when component mounts (like pdf-upload.tsx)
   useEffect(() => {

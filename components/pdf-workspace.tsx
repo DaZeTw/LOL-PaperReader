@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { useSession } from "next-auth/react"
+import type { ChangeEvent, MouseEvent } from "react"
+
 import { FileText, Plus, X } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PDFUpload } from "@/components/pdf-upload"
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import type { UploadedDocument } from "@/components/pdf-upload"
+import { useAuth } from "@/hooks/useAuth"
 
 interface PDFTab {
   id: string
@@ -23,14 +25,14 @@ interface PDFTab {
 let tabCounter = 0
 
 export function PDFWorkspace() {
-  const { data: session } = useSession()
+  const { user, login } = useAuth()
   const { toast } = useToast()
   const [tabs, setTabs] = useState<PDFTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
   const [showUpload, setShowUpload] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const activeTab = tabs.find((tab) => tab.id === activeTabId)
+  const activeTab = tabs.find((tab: PDFTab) => tab.id === activeTabId)
 
   const generateTabId = useCallback(() => {
     tabCounter += 1
@@ -39,13 +41,14 @@ export function PDFWorkspace() {
 
   const handleFileSelect = useCallback(
     async (file: File) => {
-      if (!session?.user) {
+      if (!user) {
         console.log("[PDF Workspace] Upload blocked - user not authenticated")
         toast({
           title: "Sign in required",
           description: "Please sign in to open PDFs in the workspace.",
           variant: "destructive",
         })
+        login()
         return
       }
 
@@ -57,7 +60,7 @@ export function PDFWorkspace() {
         title: file.name,
       }
 
-      setTabs((prev) => {
+      setTabs((prev: PDFTab[]) => {
         if (!activeTabId) {
           return [...prev, newTab]
         }
@@ -74,12 +77,13 @@ export function PDFWorkspace() {
 
       console.log("[PDF Workspace] Created new tab:", newTab.id)
     },
-    [activeTabId, generateTabId, session?.user, toast],
+    [activeTabId, generateTabId, user, toast, login],
   )
 
   const handleOpenExistingDocument = useCallback(
     async (document: UploadedDocument) => {
-      if (!session?.user) {
+      if (!user) {
+        login()
         throw new Error("Please sign in to open PDFs from your history.")
       }
 
@@ -88,7 +92,7 @@ export function PDFWorkspace() {
         if (!url) {
           throw new Error("Document URL unavailable.")
         }
-        const response = await fetch(url, { cache: "no-store" })
+        const response = await fetch(url, { cache: "no-store", credentials: "include" })
         if (!response.ok) {
           throw new Error("Unable to download the selected document.")
         }
@@ -106,13 +110,13 @@ export function PDFWorkspace() {
         throw error instanceof Error ? error : new Error("Failed to open document.")
       }
     },
-    [handleFileSelect, session?.user, toast],
+    [handleFileSelect, user, toast, login],
   )
 
-  const handleCloseTab = (tabId: string, e: React.MouseEvent) => {
+  const handleCloseTab = (tabId: string, e: MouseEvent) => {
     e.stopPropagation()
     
-    setTabs((prev) => {
+    setTabs((prev: PDFTab[]) => {
       const newTabs = prev.filter((tab) => tab.id !== tabId)
       
       // Handle active tab switching
@@ -131,14 +135,14 @@ export function PDFWorkspace() {
 
   const handleNewTab = () => {
     // Only allow new tab if user is authenticated
-    if (!session?.user) {
+    if (!user) {
       return
     }
     setShowUpload(true)
     setActiveTabId(null)
   }
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       handleFileSelect(file)
@@ -171,8 +175,8 @@ export function PDFWorkspace() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          {session?.user ? (
-            <UserMenu user={session.user} />
+          {user ? (
+            <UserMenu user={user} />
           ) : (
             <LoginButton />
           )}
@@ -183,7 +187,7 @@ export function PDFWorkspace() {
       {tabs.length > 0 && (
         <div className="flex items-center gap-1 border-b border-border bg-muted/30 px-2 py-1">
           <div className="flex flex-1 items-center gap-1 overflow-x-auto">
-            {tabs.map((tab) => (
+            {tabs.map((tab: PDFTab) => (
               <div
                 key={tab.id}
                 onClick={() => {
@@ -200,7 +204,7 @@ export function PDFWorkspace() {
                 <FileText className="h-3.5 w-3.5 shrink-0" />
                 <span className="max-w-[150px] truncate font-mono text-xs">{tab.title}</span>
                 <button
-                  onClick={(e) => handleCloseTab(tab.id, e)}
+                  onClick={(e: MouseEvent<HTMLButtonElement>) => handleCloseTab(tab.id, e)}
                   className="rounded p-0.5 opacity-0 transition-opacity hover:bg-muted-foreground/20 group-hover:opacity-100"
                 >
                   <X className="h-3 w-3" />
@@ -227,14 +231,14 @@ export function PDFWorkspace() {
       {/* Content Area */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Upload Screen - shown when no active tab or when user clicks new */}
-        {(showUpload || tabs.length === 0) && session?.user && (
+        {(showUpload || tabs.length === 0) && user && (
           <div className="absolute inset-0 z-10">
             <PDFUpload onFileSelect={handleFileSelect} />
           </div>
         )}
         
         {/* PDF Readers - All rendered but only active one visible */}
-        {tabs.map((tab) => (
+        {tabs.map((tab: PDFTab) => (
           <div
             key={tab.id}
             className={cn(

@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useSession } from 'next-auth/react'
+import { BACKEND_API_URL } from '@/lib/config'
+import { useAuth } from '@/hooks/useAuth'
 
 export interface Reference {
   id: string
@@ -35,7 +36,7 @@ interface UseReferencesReturn {
 
 export function useReferences(options: UseReferencesOptions = {}): UseReferencesReturn {
   const { collection, search, enabled = true } = options
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [references, setReferences] = useState<Reference[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -46,10 +47,10 @@ export function useReferences(options: UseReferencesOptions = {}): UseReferences
   const hasFetchedInitially = useRef(false)
 
   const fetchReferences = useCallback(async () => {
-    if (!session?.user || !enabled) return
+    if (!user || !enabled) return
 
     // Create a cache key for current params
-    const cacheKey = `${collection || ''}-${search || ''}-${session.user.id}`
+    const cacheKey = `${collection || ''}-${search || ''}-${user.id}`
     
     // Skip if we already fetched with these exact params
     if (lastFetchParams.current === cacheKey && hasFetchedInitially.current) {
@@ -57,7 +58,7 @@ export function useReferences(options: UseReferencesOptions = {}): UseReferences
       return
     }
 
-    console.log('Fetching references for:', { collection, search, userId: session.user.id })
+    console.log('Fetching references for:', { collection, search, userId: user.id })
     
     setIsLoading(true)
     setError(null)
@@ -67,10 +68,16 @@ export function useReferences(options: UseReferencesOptions = {}): UseReferences
       if (collection) params.append('collection', collection)
       if (search) params.append('search', search)
 
-      const response = await fetch(`/api/documents?${params.toString()}`, {
+      const baseUrl = `${BACKEND_API_URL.replace(/\/$/, '')}/api/documents`
+      const userId = user.dbId ? String(user.dbId) : user.id
+
+      const response = await fetch(`${baseUrl}?${params.toString()}`, {
         headers: {
           'Content-Type': 'application/json',
+          'X-User-Id': userId,
         },
+        cache: 'no-store',
+        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -92,14 +99,14 @@ export function useReferences(options: UseReferencesOptions = {}): UseReferences
     } finally {
       setIsLoading(false)
     }
-  }, [session?.user?.id, collection, search, enabled])
+  }, [user?.id, collection, search, enabled])
 
   // Only fetch when collection or search changes, not when fetchReferences changes
   useEffect(() => {
-    if (session?.user && enabled) {
+    if (user && enabled) {
       fetchReferences()
     }
-  }, [collection, search, session?.user?.id, enabled]) // Don't include fetchReferences here
+  }, [collection, search, user?.id, enabled]) // Don't include fetchReferences here
 
   return {
     references,

@@ -1,14 +1,15 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useCallback, useRef, useImperativeHandle, forwardRef, useEffect } from "react"
+import type { ChangeEvent, DragEvent, ForwardedRef, MouseEvent } from "react"
 import { Upload, FileText, Loader2, BookOpen, Trash2, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
+import { BACKEND_API_URL } from "@/lib/config"
+import { useAuth } from "@/hooks/useAuth"
 
 interface PDFUploadProps {
   onFileSelect: (file: File, parsedData?: any) => void
@@ -21,8 +22,13 @@ export interface UploadedDocument {
   title?: string
   original_filename: string
   stored_path: string
+  pdf_hash?: string
   status: string
   num_pages?: number
+  total_pages?: number
+  author?: string
+  subject?: string
+  keywords?: string[]
   file_size?: number
   downloadUrl?: string
   fileUrl?: string
@@ -33,8 +39,12 @@ export interface PDFUploadRef {
   triggerFilePicker: () => void
 }
 
+const DOCUMENTS_API_BASE = `${BACKEND_API_URL.replace(/\/$/, "")}/api/documents`
+
 export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
-  ({ onFileSelect, onParseComplete }, ref) => {
+  ({ onFileSelect, onParseComplete }: PDFUploadProps, ref: ForwardedRef<PDFUploadRef>) => {
+    const { user, login } = useAuth()
+    const userId = user ? (user.dbId ? String(user.dbId) : user.id) : undefined
     const [isDragging, setIsDragging] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
@@ -46,16 +56,27 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
     const { toast } = useToast()
 
     const loadPreviousDocuments = useCallback(async () => {
+      if (!userId) {
+        console.warn("[PDFUpload] Skipping document load - missing user session")
+        setLoadingDocuments(false)
+        return
+      }
       try {
         setLoadingDocuments(true)
-        const response = await fetch("/api/documents", { cache: "no-store" })
+        const response = await fetch(DOCUMENTS_API_BASE, {
+          headers: {
+            "X-User-Id": userId,
+          },
+          cache: "no-store",
+          credentials: "include",
+        })
         if (!response.ok) {
           throw new Error("Failed to fetch documents")
         }
         const data = (await response.json()) as { documents?: UploadedDocument[] }
         const docs = data.documents || []
         setPreviousDocuments(docs)
-        setRecentDocumentId((current) =>
+        setRecentDocumentId((current: string | null) =>
           current && !docs.some((doc) => doc._id === current) ? null : current,
         )
         setSelectedDocuments([])
@@ -64,7 +85,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
       } finally {
         setLoadingDocuments(false)
       }
-    }, [])
+    }, [userId])
 
     useEffect(() => {
       loadPreviousDocuments()
@@ -77,7 +98,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
     }))
 
   const toggleDocumentSelection = useCallback((documentId: string) => {
-    setSelectedDocuments((prev) => {
+    setSelectedDocuments((prev: string[]) => {
       if (prev.includes(documentId)) {
         return prev.filter((id) => id !== documentId)
       }
@@ -89,16 +110,27 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
     async (options: { ids?: string[]; deleteAll?: boolean; toastMessage?: string }) => {
       if (isDeleting) return
       try {
+        if (!userId) {
+          toast({
+            title: "Not signed in",
+            description: "Please sign in to manage documents.",
+            variant: "destructive",
+          })
+          login()
+          return
+        }
         setIsDeleting(true)
-        const response = await fetch("/api/documents/delete", {
+        const response = await fetch(`${DOCUMENTS_API_BASE}/delete`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-User-Id": userId,
           },
           body: JSON.stringify({
             documentIds: options.ids,
             deleteAll: options.deleteAll,
           }),
+          credentials: "include",
         })
 
         if (!response.ok) {
@@ -128,7 +160,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
         setIsDeleting(false)
       }
     },
-    [isDeleting, loadPreviousDocuments, toast],
+    [isDeleting, loadPreviousDocuments, login, toast, userId],
   )
 
   const handleDeleteSingleDocument = useCallback(
@@ -165,14 +197,28 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
         return
       }
 
+      if (!userId) {
+        toast({
+          title: "Not signed in",
+          description: "Please sign in to upload PDFs.",
+          variant: "destructive",
+        })
+        login()
+        return
+      }
+
       setIsUploading(true)
       const formData = new FormData()
       formData.append("file", file)
 
       try {
-        const response = await fetch("/api/documents", {
+        const response = await fetch(DOCUMENTS_API_BASE, {
           method: "POST",
+          headers: {
+            "X-User-Id": userId,
+          },
           body: formData,
+          credentials: "include",
         })
 
         if (!response.ok) {
@@ -207,7 +253,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
         setIsUploading(false)
       }
     },
-    [toast, loadPreviousDocuments],
+    [loadPreviousDocuments, login, toast, userId],
   )
 
   const handleSelectPreviousDocument = useCallback(
@@ -218,7 +264,12 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
         if (!url) {
           throw new Error("Document URL unavailable")
         }
-        const response = await fetch(url, { cache: "no-store" })
+        const headers = userId
+          ? {
+              "X-User-Id": userId,
+            }
+          : undefined
+        const response = await fetch(url, { cache: "no-store", headers, credentials: "include" })
         if (!response.ok) {
           throw new Error("Failed to download document")
         }
@@ -346,7 +397,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
   }, [onFileSelect, toast])
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    (e: DragEvent) => {
       e.preventDefault()
       setIsDragging(false)
 
@@ -358,18 +409,18 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
     [handleFile],
   )
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: DragEvent) => {
     e.preventDefault()
     setIsDragging(true)
   }, [])
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  const handleDragLeave = useCallback((e: DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
   }, [])
 
   const handleFileInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
       if (file) {
         handleFile(file)
@@ -430,7 +481,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {previousDocuments.map((doc) => (
+              {previousDocuments.map((doc: UploadedDocument) => (
                 <Card
                   key={doc._id}
                   className={cn(
@@ -443,7 +494,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      onClick={(event) => {
+                      onClick={(event: MouseEvent<HTMLDivElement>) => {
                         event.stopPropagation()
                       }}
                     >
@@ -468,7 +519,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-muted-foreground hover:text-primary"
-                            onClick={(event) => {
+                            onClick={(event: MouseEvent<HTMLButtonElement>) => {
                               event.stopPropagation()
                               const url = doc.downloadUrl ?? doc.fileUrl
                               if (url) {
@@ -483,7 +534,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            onClick={(event) => {
+                            onClick={(event: MouseEvent<HTMLButtonElement>) => {
                               event.stopPropagation()
                               void handleDeleteSingleDocument(doc._id)
                             }}

@@ -11,25 +11,10 @@ services:
     environment:
       NODE_ENV: development
       BACKEND_URL: http://python-backend:8000
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
-      # NextAuth.js Configuration
-      AUTH_SECRET: ${AUTH_SECRET:-change-this-secret-key-in-production}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
-      # Google OAuth Credentials
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      # PostgreSQL Configuration
-      DATABASE_URL: ${DATABASE_URL}
-      # MongoDB Configuration
-      MONGODB_URI: ${MONGODB_URI}
-      # MinIO Configuration
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
-      MINIO_PORT: ${MINIO_PORT}
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
-      MINIO_BUCKET: ${MINIO_BUCKET}
-      MINIO_USE_SSL: ${MINIO_USE_SSL}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       # npm: ignore peer dep conflicts (React 19 vs vaul)
       NPM_CONFIG_LEGACY_PEER_DEPS: "true"
     volumes:
@@ -55,10 +40,26 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/src:/app/src
+      - hf_cache:/data/hf_cache
+      - st_cache:/data/st_cache
+      - torch_cache:/data/torch_cache
     env_file:
       - .env
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+      FASTAPI_SESSION_SECRET: ${FASTAPI_SESSION_SECRET:-change-me-fastapi-session}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-}
+      AUTH_COOKIE_SAMESITE: ${AUTH_COOKIE_SAMESITE:-lax}
+      AUTH_TOKEN_TTL_MINUTES: ${AUTH_TOKEN_TTL_MINUTES:-10080}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+      SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-lax}
+      CORS_ADDITIONAL_ORIGINS: ${CORS_ADDITIONAL_ORIGINS:-}
       # MongoDB Configuration
       MONGODB_URI: ${MONGODB_URI}
       # MinIO Configuration
@@ -68,6 +69,12 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_BUCKET: ${MINIO_BUCKET}
       MINIO_USE_SSL: ${MINIO_USE_SSL}
+      # Shared model caches (persisted via Docker volumes)
+      HF_HOME: /data/hf_cache
+      TRANSFORMERS_CACHE: /data/hf_cache/transformers
+      HUGGINGFACE_HUB_CACHE: /data/hf_cache/hub
+      SENTENCE_TRANSFORMERS_HOME: /data/st_cache
+      TORCH_HOME: /data/torch_cache
     networks:
       - app-network
 
@@ -195,6 +202,62 @@ services:
     networks:
       - app-network
 
+  # Elasticsearch - Vector Database for Embeddings
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: paperreader-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Kibana - Web UI for Elasticsearch
+  kibana:
+    image: kibana:8.11.0
+    container_name: paperreader-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_USERNAME:-}
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD:-}
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
 networks:
   app-network:
     driver: bridge
@@ -209,4 +272,12 @@ volumes:
   mongodb_config:
     driver: local
   minio_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  hf_cache:
+    driver: local
+  st_cache:
+    driver: local
+  torch_cache:
     driver: local

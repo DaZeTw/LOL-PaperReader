@@ -83,10 +83,15 @@ export interface Document {
   title: string
   original_filename: string
   stored_path: string
+  pdf_hash?: string
   num_pages: number
+  total_pages?: number
   status: string
   source: string
   preview_image?: string
+  author?: string
+  subject?: string
+  keywords?: string[]
   created_at: Date
   updated_at: Date
   file_size: number

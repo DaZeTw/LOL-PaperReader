@@ -1,3 +1,4 @@
+import asyncio
 import os
 import json
 import hashlib
@@ -229,8 +230,14 @@ class QAPipeline:
                 print(f"[LOG] Number of documents loaded: {len(docs)}")
                 _check_cancel("After loading documents")
 
-                # No external embedding for splitting; use heuristic chunking only
-                semantic_splitter = None
+                # Use semantic splitter if available (from chunking module)
+                # It will automatically fallback to heuristic chunking if not available
+                from paperreader.services.qa.chunking import _SPLITTER, _HAS_SEMANTIC
+                semantic_splitter = _SPLITTER if _HAS_SEMANTIC else None
+                if semantic_splitter:
+                    print("[LOG] ✅ Using semantic splitter for chunking")
+                else:
+                    print("[LOG] ⚠️ Semantic splitter not available, using heuristic chunking")
 
                 print("[LOG] Starting chunking process...")
                 _set_progress(10, "chunking", "Starting chunking", data_dir_key)
@@ -519,10 +526,11 @@ class QAPipeline:
             for h in hits:
                 meta = h.get("metadata", {})
                 images = meta.get("images", []) or []
+                tables = meta.get("tables", []) or []
                 text = h.get("text", "").strip()
                 # Only add context if it has text content
                 if text:
-                    ctx = {"text": text, "images": images}
+                    ctx = {"text": text, "images": images, "tables": tables}
                     contexts.append(ctx)
         else:
             contexts = [h.get("text", "").strip() for h in hits if h.get("text", "").strip()]
@@ -845,7 +853,12 @@ async def get_pipeline(config: Optional[PipelineConfig] = None, lazy_store: bool
                     _check_cancel("Before creating QAPipeline instance")
                 
                 try:
-                    _PIPELINE_CACHE[data_dir_key] = QAPipeline(cfg, lazy_store=lazy_store)
+                    loop = asyncio.get_running_loop()
+                    pipeline_obj = await loop.run_in_executor(
+                        None,
+                        lambda: QAPipeline(cfg, lazy_store=lazy_store),
+                    )
+                    _PIPELINE_CACHE[data_dir_key] = pipeline_obj
                     # After build, check if cache was reset (cancelled during build)
                     if _PIPELINE_CACHE.get(data_dir_key) is None:
                         print(f"[LOG] ⚠️ Pipeline build was cancelled (cache reset during build)")
@@ -972,7 +985,12 @@ async def rebuild_pipeline(config: Optional[PipelineConfig] = None, lazy_store: 
         _check_cancel("Before creating QAPipeline instance")
         
         print(f"[LOG] Creating new QAPipeline instance (lazy_store={lazy_store})...")
-        _PIPELINE_CACHE[data_dir_key] = QAPipeline(cfg, lazy_store=lazy_store, docs=docs, chunks=chunks)
+        loop = asyncio.get_running_loop()
+        pipeline_obj = await loop.run_in_executor(
+            None,
+            lambda: QAPipeline(cfg, lazy_store=lazy_store, docs=docs, chunks=chunks),
+        )
+        _PIPELINE_CACHE[data_dir_key] = pipeline_obj
         # Only calculate hash if loading from files (for cache invalidation)
         if docs is None:
             _PIPELINE_DATA_HASH[data_dir_key] = _calculate_data_hash(cfg)

@@ -175,6 +175,31 @@ def build_corpus(chunks: List[Dict[str, Any]]) -> Corpus:
                     item["caption"] = img.get("caption")
                 if "figure_id" in img:
                     item["figure_id"] = img.get("figure_id")
+                if "bucket" in img:
+                    item["bucket"] = img.get("bucket")
+                if "local_path" in img:
+                    item["local_path"] = img.get("local_path")
+                if "preview" in img:
+                    item["preview"] = img.get("preview")
+                norm.append(item)
+        return norm
+
+    def _normalize_tables(tables: Any) -> List[Dict[str, Any]]:
+        norm: List[Dict[str, Any]] = []
+        if not tables:
+            return norm
+        for tbl in tables:
+            if isinstance(tbl, dict):
+                data = tbl.get("data") or tbl.get("relative_path") or ""
+                item: Dict[str, Any] = {"data": data}
+                if "bucket" in tbl:
+                    item["bucket"] = tbl.get("bucket")
+                if "local_path" in tbl:
+                    item["local_path"] = tbl.get("local_path")
+                if "label" in tbl:
+                    item["label"] = tbl.get("label")
+                if "preview" in tbl:
+                    item["preview"] = tbl.get("preview")
                 norm.append(item)
         return norm
 
@@ -182,6 +207,7 @@ def build_corpus(chunks: List[Dict[str, Any]]) -> Corpus:
     for c in chunks:
         m = dict(c)
         m["images"] = _normalize_images(m.get("images"))
+        m["tables"] = _normalize_tables(m.get("tables"))
         metadatas.append(m)
     return Corpus(texts=texts, metadatas=metadatas)
 

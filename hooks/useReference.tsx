@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { BACKEND_API_URL } from '@/lib/config'
 import { Reference } from './useReferences'
+import { useAuth } from '@/hooks/useAuth'
 
 interface UseReferenceReturn {
   reference: Reference | null
@@ -12,22 +13,28 @@ interface UseReferenceReturn {
 }
 
 export function useReference(id: string | undefined): UseReferenceReturn {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [reference, setReference] = useState<Reference | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
   const fetchReference = async () => {
-    if (!session?.user || !id) return
+    if (!user || !id) return
 
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await fetch(`/api/documents/${id}`, {
+      const baseUrl = `${BACKEND_API_URL.replace(/\/$/, '')}/api/documents/${id}`
+      const userId = user.dbId ? String(user.dbId) : user.id
+
+      const response = await fetch(baseUrl, {
         headers: {
           'Content-Type': 'application/json',
+          'X-User-Id': userId,
         },
+        cache: 'no-store',
+        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -49,7 +56,7 @@ export function useReference(id: string | undefined): UseReferenceReturn {
 
   useEffect(() => {
     fetchReference()
-  }, [session?.user, id])
+  }, [user, id])
 
   return {
     reference,

@@ -1,19 +1,22 @@
 "use client"
 
-import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Mail } from "lucide-react"
 
+import { useAuth } from "@/hooks/useAuth"
+
 export function LoginButton() {
+  const { login } = useAuth()
+
   return (
     <Button
-      onClick={() => signIn("google", { callbackUrl: "/" })}
+      onClick={() => login()}
       variant="outline"
       className="gap-2"
+      type="button"
     >
       <Mail className="h-4 w-4" />
       Sign in with Google
     </Button>
   )
 }
-
