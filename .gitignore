@@ -40,3 +40,7 @@ next-env.d.ts
 /backend/src/*.safetensors
 
 /backend/src/*.pth
+
+# Python cache
+__pycache__/
+*.py[cod]
