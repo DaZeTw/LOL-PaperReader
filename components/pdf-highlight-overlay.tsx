@@ -40,6 +40,7 @@ const CATEGORY_BORDERS = {
   result: "rgba(22, 163, 74, 1)",   // green-600 solid
 } as const
 
+
 export function PDFHighlightOverlay({
   pageNumber,
   pageWidth,

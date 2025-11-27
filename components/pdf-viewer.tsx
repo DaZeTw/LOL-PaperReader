@@ -38,6 +38,7 @@ interface PDFViewerProps {
   onDocumentLoad?: (pageCount: number) => void
   isActive?: boolean
   hiddenHighlightIds?: Set<number>
+  activeHighlightIds?: Set<number>
 }
 
 export function PDFViewer({
@@ -50,6 +51,7 @@ export function PDFViewer({
   onDocumentLoad,
   isActive,
   hiddenHighlightIds = new Set(),
+  activeHighlightIds = new Set(),
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
   const [numPages, setNumPages] = useState(0)
@@ -99,8 +101,28 @@ export function PDFViewer({
   });
 
   // 🔑 HIGHLIGHT PLUGIN - Call hook at top level
-  // Filter out hidden highlights (highlights are always enabled, controlled by individual toggles)
-  const visibleHighlights = highlights.filter(h => !hiddenHighlightIds.has(h.id))
+  // Only show highlights that are both active (clicked in sidebar) and not hidden
+  const visibleHighlights = highlights.filter(
+    h => activeHighlightIds.has(h.id) && !hiddenHighlightIds.has(h.id)
+  )
+
+  // Debug logging
+  useEffect(() => {
+    console.log(`[PDFViewer] Highlights state:`, {
+      total: highlights.length,
+      active: activeHighlightIds.size,
+      hidden: hiddenHighlightIds.size,
+      visible: visibleHighlights.length,
+      visibleCategories: Array.from(visibleCategories),
+    })
+    if (visibleHighlights.length > 0) {
+      console.log(`[PDFViewer] Visible highlights:`, visibleHighlights.map(h => ({
+        id: h.id,
+        label: h.label,
+        page: h.boxes[0]?.page + 1,
+      })))
+    }
+  }, [highlights.length, activeHighlightIds.size, hiddenHighlightIds.size, visibleHighlights.length, visibleCategories])
 
   const highlightPluginInstance = usePDFHighlightPlugin({
     highlights: visibleHighlights,

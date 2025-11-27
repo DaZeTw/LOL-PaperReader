@@ -1,5 +1,6 @@
 import { Plugin, PluginOnTextLayerRender } from "@react-pdf-viewer/core"
 import { createRoot, Root } from "react-dom/client"
+import { useEffect, useRef } from "react"
 import { PDFHighlightOverlay, SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 
 interface UsePDFHighlightPluginProps {
@@ -13,7 +14,42 @@ export function usePDFHighlightPlugin({
   visibleCategories,
   onHighlightClick,
 }: UsePDFHighlightPluginProps): Plugin {
-  const roots = new Map<HTMLElement, Root>()
+  const roots = useRef(new Map<HTMLElement, Root>())
+  const highlightsRef = useRef(highlights)
+  const categoriesRef = useRef(visibleCategories)
+  
+  // Store page numbers for each container
+  const pageNumbers = useRef(new Map<HTMLElement, number>())
+  
+  // Update refs when props change
+  useEffect(() => {
+    highlightsRef.current = highlights
+    categoriesRef.current = visibleCategories
+    
+    // Force re-render of all existing overlays when highlights change
+    roots.current.forEach((root, container) => {
+      const pageElement = container.closest(".rpv-core__page-layer") as HTMLElement
+      if (!pageElement) return
+      
+      const canvasLayer = pageElement.querySelector(".rpv-core__canvas-layer canvas") as HTMLCanvasElement
+      if (!canvasLayer) return
+      
+      const pageNumber = pageNumbers.current.get(container) || 1
+      const pageWidth = canvasLayer.offsetWidth
+      const pageHeight = canvasLayer.offsetHeight
+      
+      root.render(
+        <PDFHighlightOverlay
+          pageNumber={pageNumber}
+          pageWidth={pageWidth}
+          pageHeight={pageHeight}
+          highlights={highlights}
+          visibleCategories={visibleCategories}
+          onHighlightClick={onHighlightClick}
+        />
+      )
+    })
+  }, [highlights, visibleCategories, onHighlightClick])
 
   const onTextLayerRender: PluginOnTextLayerRender = (e: any) => {
     const textLayerDiv = e.ele as HTMLElement
@@ -57,23 +93,26 @@ export function usePDFHighlightPlugin({
     const pageWidth = canvasLayer.offsetWidth
     const pageHeight = canvasLayer.offsetHeight
 
-    console.log(`[usePDFHighlightPlugin] Page ${pageNumber}: ${pageWidth}x${pageHeight}px, ${highlights.length} total highlights`)
+    console.log(`[usePDFHighlightPlugin] Page ${pageNumber}: ${pageWidth}x${pageHeight}px, ${highlightsRef.current.length} total highlights`)
 
+    // Store page number for this container
+    pageNumbers.current.set(overlayContainer, pageNumber)
+    
     // Reuse existing root or create new one
-    let root = roots.get(overlayContainer)
+    let root = roots.current.get(overlayContainer)
     if (!root) {
       root = createRoot(overlayContainer)
-      roots.set(overlayContainer, root)
+      roots.current.set(overlayContainer, root)
     }
 
-    // Render or update overlay
+    // Render or update overlay with current highlights
     root.render(
       <PDFHighlightOverlay
         pageNumber={pageNumber}
         pageWidth={pageWidth}
         pageHeight={pageHeight}
-        highlights={highlights}
-        visibleCategories={visibleCategories}
+        highlights={highlightsRef.current}
+        visibleCategories={categoriesRef.current}
         onHighlightClick={onHighlightClick}
       />
     )
@@ -83,8 +122,9 @@ export function usePDFHighlightPlugin({
     onTextLayerRender,
     // Cleanup on unmount
     uninstall: () => {
-      roots.forEach((root) => root.unmount())
-      roots.clear()
+      roots.current.forEach((root) => root.unmount())
+      roots.current.clear()
+      pageNumbers.current.clear()
     },
   }
 }

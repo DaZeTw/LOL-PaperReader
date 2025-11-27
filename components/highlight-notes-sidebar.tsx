@@ -14,6 +14,7 @@ interface HighlightNotesSidebarProps {
   onToggle?: () => void
   hiddenHighlightIds?: Set<number>
   onHighlightToggle?: (highlightId: number) => void
+  activeHighlightIds?: Set<number>
 }
 
 const CATEGORY_INFO = {
@@ -42,6 +43,7 @@ export function HighlightNotesSidebar({
   onToggle,
   hiddenHighlightIds = new Set(),
   onHighlightToggle,
+  activeHighlightIds = new Set(),
 }: HighlightNotesSidebarProps) {
   // Group highlights by category
   const highlightsByCategory = highlights.reduce((acc, highlight) => {
@@ -138,13 +140,15 @@ export function HighlightNotesSidebar({
                     <div className="space-y-2">
                       {categoryHighlights.map((highlight) => {
                         const isHidden = hiddenHighlightIds.has(highlight.id)
+                        const isActive = activeHighlightIds.has(highlight.id)
                         return (
                           <div
                             key={highlight.id}
                             className={cn(
                               "relative w-full text-left rounded-lg border p-3 transition-all group",
                               categoryInfo.color,
-                              isHidden && "opacity-50"
+                              isHidden && "opacity-50",
+                              isActive && "ring-2 ring-primary ring-offset-2"
                             )}
                           >
                             {/* Toggle Button */}
@@ -172,9 +176,16 @@ export function HighlightNotesSidebar({
                             >
                               {/* Metadata */}
                               <div className="flex items-center justify-between mb-2 pr-8">
-                                <span className="font-mono text-xs font-semibold">
-                                  Page {highlight.boxes[0].page + 1}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-xs font-semibold">
+                                    Page {highlight.boxes[0].page + 1}
+                                  </span>
+                                  {isActive && (
+                                    <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+                                      Visible
+                                    </span>
+                                  )}
+                                </div>
                                 <span className="font-mono text-xs opacity-75">
                                   Score: {highlight.score.toFixed(1)}
                                 </span>

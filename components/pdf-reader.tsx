@@ -44,6 +44,8 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
     new Set(["novelty", "method", "result"])
   )
   const [hiddenHighlightIds, setHiddenHighlightIds] = useState<Set<number>>(new Set())
+  // Track which highlights should be visible (starts empty - no highlights shown initially)
+  const [activeHighlightIds, setActiveHighlightIds] = useState<Set<number>>(new Set())
 
   // Only reset states when file actually changes (not when tab becomes active/inactive)
   useEffect(() => {
@@ -54,6 +56,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
     setAnnotationMode(null)
     setRightSidebarOpen(false)
     setRightSidebarMode("qa")
+    setActiveHighlightIds(new Set()) // Reset active highlights when file changes
   }, [file.name, file.size, file.lastModified, tabId])
 
   // Handle page changes from PDF viewer
@@ -61,9 +64,24 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
     setCurrentPage(page)
   }
 
-  // Handle highlight click - navigate to highlight location
+  // Handle highlight click - navigate to highlight location and toggle visibility
   const handleHighlightClick = (highlight: SkimmingHighlight) => {
-    console.log(`[SinglePDFReader:${tabId}] Navigating to highlight:`, highlight.text.substring(0, 50))
+    console.log(`[SinglePDFReader:${tabId}] Clicking highlight:`, highlight.text.substring(0, 50))
+
+    // Toggle highlight in active set (show/hide it in PDF)
+    setActiveHighlightIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(highlight.id)) {
+        // If already active, remove it (hide)
+        next.delete(highlight.id)
+        console.log(`[SinglePDFReader:${tabId}] Hiding highlight ${highlight.id}`)
+      } else {
+        // If not active, add it (show)
+        next.add(highlight.id)
+        console.log(`[SinglePDFReader:${tabId}] Showing highlight ${highlight.id}`)
+      }
+      return next
+    })
 
     // Get the first box to determine page and position
     const firstBox = highlight.boxes[0]
@@ -141,6 +159,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
           onDocumentLoad={(pageCount) => setNumPages(pageCount)}
           isActive={isActive}
           hiddenHighlightIds={hiddenHighlightIds}
+          activeHighlightIds={activeHighlightIds}
         />
 
         {/* Annotation Toolbar */}
@@ -238,6 +257,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
               onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
               hiddenHighlightIds={hiddenHighlightIds}
               onHighlightToggle={handleHighlightToggle}
+              activeHighlightIds={activeHighlightIds}
             />
           )}
         </>
