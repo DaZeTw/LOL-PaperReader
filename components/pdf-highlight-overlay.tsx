@@ -29,9 +29,9 @@ interface PDFHighlightOverlayProps {
 }
 
 const CATEGORY_COLORS = {
-  novelty: "rgba(234, 179, 8, 0.65)", // yellow-600 with higher opacity (much darker yellow)
-  method: "rgba(37, 99, 235, 0.65)",  // blue-600 with higher opacity (much darker blue)
-  result: "rgba(22, 163, 74, 0.65)",  // green-600 with higher opacity (much darker green)
+  novelty: "rgba(234, 179, 8, 0.85)", // yellow-600 with very high opacity (darker yellow)
+  method: "rgba(37, 99, 235, 0.85)",  // blue-600 with very high opacity (darker blue)
+  result: "rgba(22, 163, 74, 0.85)",  // green-600 with very high opacity (darker green)
 } as const
 
 const CATEGORY_BORDERS = {
@@ -82,6 +82,8 @@ export function PDFHighlightOverlay({
           return (
             <div
               key={`${highlight.id}-${boxIdx}`}
+              id={`highlight-${highlight.id}-${boxIdx}`}
+              data-highlight-id={highlight.id}
               className={cn(
                 "absolute transition-all duration-150 pointer-events-auto cursor-pointer rounded-sm",
                 isHovered && "z-20"
@@ -92,8 +94,8 @@ export function PDFHighlightOverlay({
                 width: `${width}px`,
                 height: `${height}px`,
                 backgroundColor,
-                borderLeft: `3px solid ${borderColor}`,
-                boxShadow: isHovered ? `0 0 0 3px ${borderColor}` : 'none',
+                borderLeft: `4px solid ${borderColor}`,
+                boxShadow: isHovered ? `0 0 0 4px ${borderColor}` : 'none',
                 opacity: 1,
               }}
               onMouseEnter={() => setHoveredId(highlight.id)}

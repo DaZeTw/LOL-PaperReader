@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { SkimmingHighlight } from "./pdf-highlight-overlay"
@@ -12,6 +12,8 @@ interface HighlightNotesSidebarProps {
   onHighlightClick: (highlight: SkimmingHighlight) => void
   isOpen?: boolean
   onToggle?: () => void
+  hiddenHighlightIds?: Set<number>
+  onHighlightToggle?: (highlightId: number) => void
 }
 
 const CATEGORY_INFO = {
@@ -38,6 +40,8 @@ export function HighlightNotesSidebar({
   onHighlightClick,
   isOpen = true,
   onToggle,
+  hiddenHighlightIds = new Set(),
+  onHighlightToggle,
 }: HighlightNotesSidebarProps) {
   // Group highlights by category
   const highlightsByCategory = highlights.reduce((acc, highlight) => {
@@ -132,38 +136,65 @@ export function HighlightNotesSidebar({
 
                     {/* Highlight Cards */}
                     <div className="space-y-2">
-                      {categoryHighlights.map((highlight) => (
-                        <button
-                          key={highlight.id}
-                          onClick={() => onHighlightClick(highlight)}
-                          className={cn(
-                            "w-full text-left rounded-lg border p-3 transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer",
-                            categoryInfo.color
-                          )}
-                        >
-                          {/* Metadata */}
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-mono text-xs font-semibold">
-                              Page {highlight.boxes[0].page + 1}
-                            </span>
-                            <span className="font-mono text-xs opacity-75">
-                              Score: {highlight.score.toFixed(1)}
-                            </span>
+                      {categoryHighlights.map((highlight) => {
+                        const isHidden = hiddenHighlightIds.has(highlight.id)
+                        return (
+                          <div
+                            key={highlight.id}
+                            className={cn(
+                              "relative w-full text-left rounded-lg border p-3 transition-all group",
+                              categoryInfo.color,
+                              isHidden && "opacity-50"
+                            )}
+                          >
+                            {/* Toggle Button */}
+                            {onHighlightToggle && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onHighlightToggle(highlight.id)
+                                }}
+                                className="absolute top-2 right-2 p-1.5 rounded-md bg-background/80 hover:bg-background transition-colors opacity-0 group-hover:opacity-100"
+                                title={isHidden ? "Show highlight" : "Hide highlight"}
+                              >
+                                {isHidden ? (
+                                  <EyeOff className="h-3.5 w-3.5" />
+                                ) : (
+                                  <Eye className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                            )}
+
+                            {/* Clickable content area */}
+                            <button
+                              onClick={() => onHighlightClick(highlight)}
+                              className="w-full text-left"
+                            >
+                              {/* Metadata */}
+                              <div className="flex items-center justify-between mb-2 pr-8">
+                                <span className="font-mono text-xs font-semibold">
+                                  Page {highlight.boxes[0].page + 1}
+                                </span>
+                                <span className="font-mono text-xs opacity-75">
+                                  Score: {highlight.score.toFixed(1)}
+                                </span>
+                              </div>
+
+                              {/* Section Title */}
+                              {highlight.section && (
+                                <p className="font-mono text-xs font-medium mb-2 opacity-90">
+                                  {highlight.section}
+                                </p>
+                              )}
+
+                              {/* Highlight Text */}
+                              <p className="font-mono text-xs leading-relaxed line-clamp-4">
+                                {highlight.text}
+                              </p>
+                            </button>
                           </div>
-
-                          {/* Section Title */}
-                          {highlight.section && (
-                            <p className="font-mono text-xs font-medium mb-2 opacity-90">
-                              {highlight.section}
-                            </p>
-                          )}
-
-                          {/* Highlight Text */}
-                          <p className="font-mono text-xs leading-relaxed line-clamp-4">
-                            {highlight.text}
-                          </p>
-                        </button>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 )

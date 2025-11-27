@@ -12,7 +12,7 @@ import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractC
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
 import { usePDFHighlightPlugin } from "@/hooks/usePDFHighlightPlugin"
 import { useAnnotation } from "@/hooks/useAnnotation" // ✅ ADD: Import annotation hook
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Eye, EyeOff, FileText, Highlighter, Trash2 } from "lucide-react" // ✅ ADD: Highlighter, Trash2 icons
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Eye, FileText, Highlighter, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { PDFSidebar } from "./pdf-sidebar"
@@ -31,12 +31,13 @@ import "@/styles/pdf-components.css"
 interface PDFViewerProps {
   file: File
   selectedSection?: string | null
-  navigationTarget?: { page: number; yPosition: number; highlightText?: string } | undefined
+  navigationTarget?: { page: number; yPosition: number; highlightText?: string; highlightId?: number } | undefined
   onPageChange?: (page: number) => void
   onSectionSelect?: (bookmark: any) => void
   onNavigationComplete?: () => void
   onDocumentLoad?: (pageCount: number) => void
   isActive?: boolean
+  hiddenHighlightIds?: Set<number>
 }
 
 export function PDFViewer({
@@ -48,13 +49,13 @@ export function PDFViewer({
   onNavigationComplete,
   onDocumentLoad,
   isActive,
+  hiddenHighlightIds = new Set(),
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
   const [numPages, setNumPages] = useState(0)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [viewMode, setViewMode] = useState<"reading" | "skimming">("reading")
   const [bookmarks, setBookmarks] = useState<any[]>([])
-  const [highlightsEnabled, setHighlightsEnabled] = useState(false)
   const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
     new Set(["novelty", "method", "result"])
   )
@@ -98,8 +99,11 @@ export function PDFViewer({
   });
 
   // 🔑 HIGHLIGHT PLUGIN - Call hook at top level
+  // Filter out hidden highlights (highlights are always enabled, controlled by individual toggles)
+  const visibleHighlights = highlights.filter(h => !hiddenHighlightIds.has(h.id))
+
   const highlightPluginInstance = usePDFHighlightPlugin({
-    highlights: highlightsEnabled ? highlights : [],
+    highlights: visibleHighlights,
     visibleCategories,
     onHighlightClick: (h) => console.log("Clicked highlight:", h.text),
   });
@@ -146,7 +150,7 @@ export function PDFViewer({
   // Handle navigation target changes
   useEffect(() => {
     if (navigationTarget) {
-      console.log("[PDFViewer] Navigating to page:", navigationTarget.page, "text:", navigationTarget.highlightText?.substring(0, 30))
+      console.log("[PDFViewer] Navigating to page:", navigationTarget.page, "yPosition:", navigationTarget.yPosition, "text:", navigationTarget.highlightText?.substring(0, 30))
 
       // Update current page ref
       currentPageRef.current = navigationTarget.page
@@ -156,28 +160,110 @@ export function PDFViewer({
         pageLabelRef.current.textContent = String(navigationTarget.page)
       }
 
-      // Jump to the page (0-indexed)
-      jumpToPage(navigationTarget.page - 1)
-
       // Notify parent of page change
       onPageChange?.(navigationTarget.page)
 
-      // If there's text to highlight, search and highlight it
-      if (navigationTarget.highlightText) {
-        // Clear previous highlights first
+      // Handle different navigation types
+      if (navigationTarget.highlightId !== undefined) {
+        // For highlight navigation: Jump to page first, then scroll to element
+        jumpToPage(navigationTarget.page - 1)
+
+        // Wait for page to load, then scroll to the highlight element
+        setTimeout(() => {
+          const highlightElement = document.querySelector(`[data-highlight-id="${navigationTarget.highlightId}"]`) as HTMLElement
+
+          if (highlightElement) {
+            console.log("[PDFViewer] Found highlight element, scrolling into view")
+            highlightElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
+            })
+
+            // Add a pulse animation to make it obvious which highlight was clicked
+            setTimeout(() => {
+              highlightElement.style.animation = 'highlight-pulse 1s ease-in-out'
+              setTimeout(() => {
+                highlightElement.style.animation = ''
+              }, 1000)
+            }, 500) // Increased delay to wait for scroll to complete
+          } else {
+            console.warn("[PDFViewer] Highlight element not found")
+          }
+        }, 600) // Longer wait for page render and highlights
+      } else if (navigationTarget.highlightText) {
+        // For citation navigation: Jump to page and search for text
+        jumpToPage(navigationTarget.page - 1)
         clearHighlights()
 
-        // Wait for page to load, then highlight
+        // Wait for page to load, then highlight with multiple strategies
         setTimeout(() => {
-          // Extract first 50 meaningful words for better matching
-          const words = navigationTarget.highlightText!.split(/\s+/).filter(w => w.length > 3)
-          const searchText = words.slice(0, 50).join(' ')
+          // Clean up text: normalize whitespace, remove extra formatting
+          const fullText = navigationTarget.highlightText!
+            .trim()
+            .replace(/\s+/g, ' ') // Normalize whitespace
+            .replace(/[""]/g, '"') // Normalize quotes
+            .replace(/['']/g, "'") // Normalize apostrophes
 
-          console.log("[PDFViewer] Highlighting text:", searchText.substring(0, 100))
-          highlight(searchText)
-        }, 300)
+          console.log("[PDFViewer] Attempting to highlight text:", fullText.substring(0, 100))
+
+          // Strategy 1: Try highlighting first meaningful sentence (up to 150 chars)
+          const firstSentence = fullText.split(/[.!?]/)[0].trim()
+          const shortText = firstSentence.length > 150 ? firstSentence.substring(0, 150) : firstSentence
+
+          if (shortText.length > 10) {
+            console.log("[PDFViewer] Highlighting with first sentence:", shortText)
+            highlight(shortText)
+          }
+
+          // Strategy 2: If first strategy might fail, also try with first 10-15 words as backup
+          setTimeout(() => {
+            const words = fullText.split(/\s+/).filter(w => w.length > 0)
+            const keyPhrase = words.slice(0, Math.min(15, words.length)).join(' ')
+
+            if (keyPhrase.length > 20 && keyPhrase !== shortText) {
+              console.log("[PDFViewer] Also trying key phrase:", keyPhrase.substring(0, 80))
+              highlight(keyPhrase)
+            }
+          }, 100)
+
+          // Strategy 3: Try even shorter phrase (first 8 words) for difficult cases
+          setTimeout(() => {
+            const words = fullText.split(/\s+/).filter(w => w.length > 0)
+            const veryShortPhrase = words.slice(0, Math.min(8, words.length)).join(' ')
+
+            if (veryShortPhrase.length > 15) {
+              console.log("[PDFViewer] Also trying very short phrase:", veryShortPhrase)
+              highlight(veryShortPhrase)
+            }
+          }, 200)
+        }, 500)
+      } else if (navigationTarget.yPosition > 0) {
+        // For position-based navigation: Jump to page and scroll to position
+        jumpToPage(navigationTarget.page - 1)
+
+        setTimeout(() => {
+          const pageElements = document.querySelectorAll('.rpv-core__page-layer')
+          const targetPageElement = pageElements[navigationTarget.page - 1] as HTMLElement
+
+          if (targetPageElement) {
+            const pageRect = targetPageElement.getBoundingClientRect()
+            const pageHeight = pageRect.height
+            const scrollTop = targetPageElement.offsetTop + (navigationTarget.yPosition * pageHeight)
+
+            const viewerContainer = document.querySelector('.rpv-core__inner-pages')
+            if (viewerContainer) {
+              viewerContainer.scrollTo({
+                top: scrollTop - 100,
+                behavior: 'smooth'
+              })
+              console.log("[PDFViewer] Scrolled to position:", scrollTop, "on page", navigationTarget.page)
+            }
+          }
+        }, 400)
       } else {
-        // Clear highlights if no text specified
+        // Just jump to page
+        jumpToPage(navigationTarget.page - 1)
         clearHighlights()
       }
 
@@ -279,8 +365,8 @@ export function PDFViewer({
 
       {/* Main viewer area */}
       <div className="flex flex-1 flex-col min-w-0 min-h-0">
-        {/* Skimming Controls - Only show when highlights are enabled and loaded */}
-        {viewMode === "reading" && highlightsEnabled && !highlightsLoading && highlights.length > 0 && (
+        {/* Skimming Controls - Show when highlights are loaded */}
+        {viewMode === "reading" && !highlightsLoading && highlights.length > 0 && (
           <SkimmingControls
             visibleCategories={visibleCategories}
             onToggleCategory={(category) => {
@@ -378,34 +464,6 @@ export function PDFViewer({
                 </>
               )}
             </Button>
-
-            {/* Highlights Toggle - Only in reading mode */}
-            {viewMode === "reading" && (
-              <Button
-                variant={highlightsEnabled ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setHighlightsEnabled(!highlightsEnabled)}
-                className="gap-2 h-7"
-                disabled={highlightsLoading}
-              >
-                {highlightsEnabled ? (
-                  <>
-                    <Eye className="h-3.5 w-3.5" />
-                    <span className="text-xs">Highlights On</span>
-                    {highlights.length > 0 && (
-                      <span className="ml-1 px-1.5 py-0.5 bg-background/50 rounded-full text-xs font-bold">
-                        {highlights.length}
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <EyeOff className="h-3.5 w-3.5" />
-                    <span className="text-xs">Highlights Off</span>
-                  </>
-                )}
-              </Button>
-            )}
 
             {/* ✅ ADD: User Annotations Info - Show when there are annotations */}
             {annotationCount > 0 && (

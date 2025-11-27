@@ -14,6 +14,7 @@ interface NavigationTarget {
   page: number
   yPosition: number
   highlightText?: string
+  highlightId?: number
 }
 
 interface SinglePDFReaderProps {
@@ -42,6 +43,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
   const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
     new Set(["novelty", "method", "result"])
   )
+  const [hiddenHighlightIds, setHiddenHighlightIds] = useState<Set<number>>(new Set())
 
   // Only reset states when file actually changes (not when tab becomes active/inactive)
   useEffect(() => {
@@ -67,14 +69,28 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
     const firstBox = highlight.boxes[0]
     const page = firstBox.page + 1 // Convert from 0-indexed to 1-indexed
 
-    // Set navigation target
+    // Set navigation target with highlight ID for direct element scrolling
     setNavigationTarget({
       page,
       yPosition: firstBox.top,
+      highlightId: highlight.id,
     })
 
     // Update current page
     setCurrentPage(page)
+  }
+
+  // Handle highlight toggle - show/hide individual highlight
+  const handleHighlightToggle = (highlightId: number) => {
+    setHiddenHighlightIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(highlightId)) {
+        next.delete(highlightId)
+      } else {
+        next.add(highlightId)
+      }
+      return next
+    })
   }
 
   // Handle citation click - navigate to citation page
@@ -124,6 +140,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
           onNavigationComplete={handleNavigationComplete}
           onDocumentLoad={(pageCount) => setNumPages(pageCount)}
           isActive={isActive}
+          hiddenHighlightIds={hiddenHighlightIds}
         />
 
         {/* Annotation Toolbar */}
@@ -219,6 +236,8 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
               onHighlightClick={handleHighlightClick}
               isOpen={rightSidebarOpen}
               onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
+              hiddenHighlightIds={hiddenHighlightIds}
+              onHighlightToggle={handleHighlightToggle}
             />
           )}
         </>

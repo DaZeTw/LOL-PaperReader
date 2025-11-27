@@ -1,58 +1,58 @@
 {
-  "question": "What are the key conclusions?",
+  "question": "What methodology was used?",
   "hits": [
     {
-      "index": 43,
-      "score": 0.24480823890499973,
-      "text": "and Practice of Digital Libraries .\n[21] Ariel S. Schwartz and Marti A. Hearst. 2006. Summarizing Key Concepts using\nCitation Sentences. In Proceedings of the Workshop on Linking Natural Language\nProcessing and Biology: Towards Deeper Biological Literature Analysis .\n[22] Zejiang Shen, Kyle Lo, Lucy Lu Wang, Bailey Kuehl, Daniel S. Weld, and Doug\nDowney. 2022. VILA: Improving Structured Content Extraction from Scientific\nPDFs Using Visual Layout Groups. arXiv:2106.00676 [cs.CL]\n[23] Marco Valenzuela, Vu A. Ha, and Oren Etzioni. 2015. Identifying Meaningful\nCitations. In AAAI Workshop: Scholarly Big Data .\n[24] Hongyi Wen, Julian Ramos Rojas, and Anind K. Dey. 2016. Serendipity: Finger\nGesture Recognition using an Off-the-Shelf Smartwatch. Proceedings of the 2016\nCHI Conference on Human Factors in Computing Systems .\n[25] Anbang Xu, Zhe Liu, Yufan Guo, Vibha Sinha, and Rama Akkiraju. 2017. A\nNew Chatbot for Customer Service on Social Media. Proceedings of the 2017 CHI\nConference on Human Factors in Computing Systems .\n[26] Sacha Zyto, David Karger, Mark Ackerman, and Sanjoy Mahajan. 2012. Successful\nclassroom deployment of a social document annotation system. In Proceedings of\nthe 2",
+      "index": 21,
+      "score": 0.28904789276195725,
+      "text": "Inspired by features proposed by prior work for identifying impor-\ntant citations in scientific papers [ 16 , 20 , 23 ], we selected a similar\nfeature set to use in our selection method. Unlike prior work, we\ncalculated a score of each citance using a linear combination of\nfeatures and hand-tuned parameters instead of training a binary\nclassifier. While a learned classifier might achieve higher precision,\nthe need for a large training dataset was a barrier. Unfortunately,\nexisting datasets used by prior work were not applicable for us due\nto differences in objectives. For example, the dataset used by Valen-\nzuela et al. [ 23 ] did not consider result comparison as an important\ncitation, but our formative study had shown that researchers found\nthose highly useful. When it came to choice of features, however,\nwe relied heavily on previous machine learning models (e.g., SciB-\nert [2], SPECTER [6], and Cohan’s citation intent classifier [5]).\nIn the end, our selection approach used the following features\n(we annotate whether the feature is a positive or negative signal):",
       "metadata": {
-        "doc_id": "CiteRead-embedded",
-        "title": "REFERENCES",
-        "page": 12,
+        "doc_id": "CiteRead",
+        "title": "Selection Method",
+        "page": 4,
         "images": []
       }
     },
     {
-      "index": 42,
-      "score": 0.23614980366968097,
-      "text": "Knoth, Phil Gooch, and Kris Jack. 2017. What Others Say About This Work?\nScalable Extraction of Citation Contexts from Research Papers. In International\nConference on Theory and Practice of Digital Libraries .\n[17] Damien Masson, Sylvain Malacria, Edward Lank, and Géry Casiez. 2020.\nChameleon: Bringing Interactivity to Static Digital Documents. In Proceedings of\nthe 2020 CHI Conference on Human Factors in Computing Systems . 1–13.\n[18] Rada Mihalcea and Paul Tarau. 2004. TextRank: Bringing Order into Text. In In\nProceedings of the Conference on Empirical Methods in Natural Language Process-\ning .\n[19] Preslav Nakov, Ariel S. Schwartz, and Marti A. Hearst. 2004. Citances: Citation\nSentences for Semantic Analysis of Bioscience Text. In SIGIR’04 workshop on\nSearch and Discovery in Bioinformatics .\n[20] David Pride and Petr Knoth. 2017. Incidental or Influential? - Challenges in\nAutomatically Detecting Citation Importance Using Publication Full Texts. In\nInternational Conference on Theory and Practice of Digital Libraries .\n[21] Ariel S. Schwartz and Marti A. Hearst. 2006. Summarizing Key Concepts using\nCitation Sentences. In Proceedings of the Workshop on Linking Natural Language\nProc",
+      "index": 66,
+      "score": 0.28522476039724315,
+      "text": "Q1: How do alternative approaches compare against the approach\nused in this paper? Select one or more statements that were made,\neither in this paper or in a citing paper.",
       "metadata": {
-        "doc_id": "CiteRead-embedded",
-        "title": "REFERENCES",
-        "page": 12,
-        "images": []
-      }
-    },
-    {
-      "index": 37,
-      "score": 0.231543214402048,
-      "text": "We thank Marti Hearst, Andrew Head, Dongyeop Kang, Arman\nCohan, Kyle Lo, Matt Latzke, Shannon Shen, Tal August, and Ray-\nmond Fok for helpful early discussions, as well as the anonymous\nreviewers for useful feedback on the manuscript. We also thank the\nresearchers who participated in our user studies and assisted with\npiloting the system.",
-      "metadata": {
-        "doc_id": "CiteRead-embedded",
-        "title": "ACKNOWLEDGMENTS",
-        "page": 12,
-        "images": []
-      }
-    },
-    {
-      "index": 45,
-      "score": 0.23075102242437065,
-      "text": "Q1: How do alternative approaches compare against the approach\nused in this paper? Select one or more statements that were made,\neither in this paper or in a citing paper.\n• GRU models outperform the current work’s (baseline) LSTM\nmodel with respect to BLEU score\n• Convolutional Neural Network yields similar result to the\ncurrent work’s LSTM model for BLEU score\n• Bidirectional Long Short-term Memory encoder with\nattention-based architecture gets better results compared\nto plain LSTM encoder-decoder used in this paper\n• Human responses still outperform generated responses on\nappropriateness in this paper, but the responses generated\nby a tone-aware chatbot are perceived as appropriate as the\nresponses by human agents\n• There was no statistically significant difference between\nthis paper’s approach and human agents on empathy for\nemotional requests\n• Chatbots based on GRU models have shown better evaluation\nresults than human’s responses on attentiveness.\nQ2: In contrast to the dataset used in this paper to train chatbots,\nwhat have other papers tried to use as datasets instead? Select one\nor more answers.",
-      "metadata": {
-        "doc_id": "CiteRead-embedded",
+        "doc_id": "CiteRead",
         "title": "Service on Social Media”",
         "page": 13,
         "images": []
       }
     },
     {
-      "index": 12,
-      "score": 0.22986693641092815,
-      "text": "• Participants expressed that citances were useful to under-\nstand how other researchers frame the reference paper. They\nfurther used this information to verify that they correctly\nunderstood the main point of the reference paper. Citances\nthat discuss result comparisons were noted to be particularly\nuseful.\n• Citances that discuss the limitations of the reference paper\nwere also highly appreciated. One participant noted: “Au-\nthors [of the reference paper] usually put an emphasis on\nthe novelty but not the other aspects of the work, like lim-\nitations ...” Participants also mentioned that they found it\nuseful when a citing paper claims to have a solution to the\nissue.\n• Generic citations were not judged to be particularly inter-\nesting or useful. If there was a high information overlap\nbetween the citance and the reference paper’s abstract, then\nit was likely to be unhelpful.\nFinally, participants gave insights into what information they\nneeded to better understand a citation, including information from\nthe reference paper and from the citing paper:",
+      "index": 43,
+      "score": 0.27296730935077557,
+      "text": "Unfortunately, typical methods for answering these questions\ntoday are extremely cumbersome, involving manually scanning\nthrough a long list of potentially hundreds of papers, finding the\ncitation contexts, and then interpreting them in light of the parts\nof the reference paper they discuss. Even our baseline condition\nin the user study is a step up from typical methods as we used\nour selection method to reduce the list to a more relevant and\nmanageable set. For instance, when asked how long it would take\nto answer the questions posed in our user study using existing tools,\none participant said:",
       "metadata": {
-        "doc_id": "CiteRead-embedded",
-        "title": "Findings",
-        "page": 4,
+        "doc_id": "CiteRead",
+        "title": "DISCUSSION",
+        "page": 10,
+        "images": []
+      }
+    },
+    {
+      "index": 67,
+      "score": 0.27092959081353946,
+      "text": "• GRU models outperform the current work’s (baseline) LSTM\nmodel with respect to BLEU score\n• Convolutional Neural Network yields similar result to the\ncurrent work’s LSTM model for BLEU score\n• Bidirectional Long Short-term Memory encoder with\nattention-based architecture gets better results compared\nto plain LSTM encoder-decoder used in this paper\n• Human responses still outperform generated responses on\nappropriateness in this paper, but the responses generated\nby a tone-aware chatbot are perceived as appropriate as the\nresponses by human agents\n• There was no statistically significant difference between\nthis paper’s approach and human agents on empathy for\nemotional requests\n• Chatbots based on GRU models have shown better evaluation\nresults than human’s responses on attentiveness.\nQ2: In contrast to the dataset used in this paper to train chatbots,\nwhat have other papers tried to use as datasets instead? Select one\nor more answers.",
+      "metadata": {
+        "doc_id": "CiteRead",
+        "title": "Service on Social Media”",
+        "page": 13,
+        "images": []
+      }
+    },
+    {
+      "index": 50,
+      "score": 0.2677431800248606,
+      "text": "Our evaluation was limited in several ways. First, our controlled\nlab experiment evaluated the benefits of CiteRead for a specific\nslice of scientists (HCI researchers) on a small set of papers. While\nour results are positive, more studies are needed to determine the\ngenerality of our findings. More extensive evaluation on a large\nrange of papers is also required to determine the general effective-\nness of our automated selection and localization techniques. Our\nend-to-end system evaluation provided support for its effectiveness\nin terms of strong quantitative and qualitative results corroborating\nthe value of these features, but evaluations of each individual tech-\nnique on many papers would provide additional evidence. We also\nnote the need for longitudinal studies to better understand how\ntools like CiteRead are used outside of laboratory settings. In this\nwork, we used existing extracted data from Semantic Scholar for\nselection and localization, which were pre-processed before study\nsessions. However, in the real world, it is impossible to exhaustively\npre-process all publications, and readers are likely to encounter\ndocuments that have not been processed. Moreover, this proces",
+      "metadata": {
+        "doc_id": "CiteRead",
+        "title": "LIMITATIONS AND SOCIETAL IMPACTS",
+        "page": 11,
         "images": []
       }
     }
