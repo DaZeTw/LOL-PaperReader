@@ -9,6 +9,7 @@ import { HighlightNotesSidebar } from "@/components/highlight-notes-sidebar"
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/hooks/useAuth"
 
 interface NavigationTarget {
   page: number
