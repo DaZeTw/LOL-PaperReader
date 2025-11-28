@@ -34,13 +34,16 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
   const { createReference, isCreating, error, reset } = useCreateReference()
 
   const handleFileUpload = async (files: FileList | File[]) => {
+    console.log('Starting file upload for', files.length, 'files')
     const fileArray = Array.from(files)
     let successCount = 0
     let totalFiles = fileArray.length
 
     for (const file of fileArray) {
       try {
+        console.log('Uploading file:', file.name)
         await createReference(file)
+        console.log('Successfully uploaded:', file.name)
         successCount++
       } catch (err) {
         console.error(`Failed to upload ${file.name}:`, err)
@@ -48,12 +51,17 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
       }
     }
 
+    console.log('Upload complete. Success count:', successCount, 'Total:', totalFiles)
+
     if (successCount > 0) {
       toast.success(`Successfully uploaded ${successCount} of ${totalFiles} files`)
+      console.log('Calling onReferencesAdded...')
       onReferencesAdded()
+      console.log('onReferencesAdded called')
     }
 
     if (successCount === totalFiles) {
+      console.log('All files uploaded successfully, closing dialog')
       onClose()
     }
   }
@@ -295,7 +303,7 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
             Cancel
           </Button>
           <Button 
-            onClick={onReferencesAdded}
+            onClick={handleManualSubmit}
             disabled={isCreating}
             className="min-w-[100px]"
           >

@@ -1,18 +1,17 @@
 "use client"
-
+import { useAuth } from "@/hooks/useAuth"
 import { useState, useCallback } from "react"
 import type { MouseEvent } from "react"
 import { FileText, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LibraryView } from "@/components/library-view"
 import { SinglePDFReader } from "@/components/pdf-reader"
-import { useAuth } from "@/hooks/useAuth"
 
 interface PDFTab {
   id: string
   file: File
   title: string
-  fileName: string // Add fileName for better comparison
+  fileName: string
 }
 
 // Generate stable IDs using a counter
@@ -154,7 +153,7 @@ export function WorkspaceManager({
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
-                title={`${tab.title} (${tab.fileName})`} // Show both title and filename in tooltip
+                title={`${tab.title} (${tab.fileName})`}
               >
                 <FileText className="h-3.5 w-3.5 shrink-0" />
                 <span className="max-w-[150px] truncate font-mono text-xs">
@@ -173,18 +172,33 @@ export function WorkspaceManager({
       )}
 
       {/* Content Area */}
-      <div className="flex-1 overflow-hidden">
-        {currentView === 'library' && (
+      <div className="flex-1 overflow-hidden relative">
+        {/* Library View - Always mounted, shown/hidden with CSS */}
+        <div 
+          className={cn(
+            "absolute inset-0 z-10",
+            currentView === 'library' ? "block" : "hidden"
+          )}
+        >
           <LibraryView onOpenPDF={handleOpenPDF} />
-        )}
+        </div>
         
-        {currentView === 'pdf' && activeTab && (
-          <SinglePDFReader 
-            file={activeTab.file}
-            tabId={activeTab.id}
-            isActive={true}
-          />
-        )}
+        {/* PDF Readers - All tabs always mounted, shown/hidden with CSS */}
+        {openTabs.map((tab: PDFTab) => (
+          <div
+            key={tab.id}
+            className={cn(
+              "absolute inset-0 z-10",
+              currentView === 'pdf' && activeTabId === tab.id ? "block" : "hidden"
+            )}
+          >
+            <SinglePDFReader 
+              file={tab.file}
+              tabId={tab.id}
+              isActive={activeTabId === tab.id}
+            />
+          </div>
+        ))}
       </div>
     </div>
   )

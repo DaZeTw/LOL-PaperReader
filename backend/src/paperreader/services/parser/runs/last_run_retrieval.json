@@ -1,58 +1,58 @@
 {
-  "question": "What is the main finding?",
+  "question": "What methodology was used?",
   "hits": [
     {
-      "index": 8,
-      "score": 0.23781759653694684,
-      "text": "Finally, we are developing and releasing open science resources\nthat drive both the research and the product. These resources to-\ngether open-source software, 3,4 AI models [ 11 , 20 , 42 , 86 ], and open\ndatasets [50, 61] to support continued work in this area.\nIn this paper, we focus on summarizing our efforts under the\nresearch pillar of the Semantic Reader Project. We structure our\ndiscussion around five broad challenges faced by readers of research\npapers:\n• Discovery: Following paper citations is one of the main\nstrategies that scholars employ to discover additional rel-\nevant papers, but keeping track of the large numbers of\ncitations can be overwhelming. In §2, we explore ways to\nvisually augment research papers to help readers prioritize\ntheir paper exploration during literature reviews.\n1 Semantic Reader: https://www.semanticscholar.org/product/semantic-reader\n2 Available for over 369K papers as of February 2023.\n3 For UI development: https://github.com/allenai/pdf-component-library\n4 For processing PDFs: https://github.com/allenai/papermage\n5 Hypothes.is: https://web.hypothes.ishttps://web.hypothes.is",
+      "index": 21,
+      "score": 0.28904789276195725,
+      "text": "Inspired by features proposed by prior work for identifying impor-\ntant citations in scientific papers [ 16 , 20 , 23 ], we selected a similar\nfeature set to use in our selection method. Unlike prior work, we\ncalculated a score of each citance using a linear combination of\nfeatures and hand-tuned parameters instead of training a binary\nclassifier. While a learned classifier might achieve higher precision,\nthe need for a large training dataset was a barrier. Unfortunately,\nexisting datasets used by prior work were not applicable for us due\nto differences in objectives. For example, the dataset used by Valen-\nzuela et al. [ 23 ] did not consider result comparison as an important\ncitation, but our formative study had shown that researchers found\nthose highly useful. When it came to choice of features, however,\nwe relied heavily on previous machine learning models (e.g., SciB-\nert [2], SPECTER [6], and Cohan’s citation intent classifier [5]).\nIn the end, our selection approach used the following features\n(we annotate whether the feature is a positive or negative signal):",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 2",
-        "page": 2,
+        "doc_id": "CiteRead",
+        "title": "Selection Method",
+        "page": 4,
         "images": []
       }
     },
     {
-      "index": 82,
-      "score": 0.23394287149033818,
-      "text": "ms (2021).\n[94] Richard Van Noorden et al . 2015. Interdisciplinary research by the numbers.\nNature 525, 7569 (2015), 306–307.\n[95] David Wadden, Shanchuan Lin, Kyle Lo, Lucy Lu Wang, Madeleine van Zuylen,\nArman Cohan, and Hannaneh Hajishirzi. 2020. Fact or Fiction: Verifying Sci-\nentific Claims. In Proceedings of the 2020 Conference on Empirical Methods in\nNatural Language Processing (EMNLP) . Association for Computational Linguis-\ntics, Online, 7534–7550. https://doi.org/10.18653/v1/2020.emnlp-main.609\n[96] Chong Wang and David M. Blei. 2011. Collaborative topic modeling for recom-\nmending scientific articles. In KDD .\n[97] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea\nHaupt, Matt Latzke, Bailey Kuehl, Madeleine N van Zuylen, Linda Wagner,\nand Daniel Weld. 2021. SciA11y: Converting Scientific Papers to Accessible\nHTML. In Proceedings of the 23rd International ACM SIGACCESS Conference\non Computers and Accessibility (Virtual Event, USA) (ASSETS ’21) . Association\nfor Computing Machinery, New York, NY, USA, Article 85, 4 pages.\nhttps:\n//doi.org/10.1145/3441852.3476545\n[98] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea Hess\nHaupt,",
+      "index": 66,
+      "score": 0.28522476039724315,
+      "text": "Q1: How do alternative approaches compare against the approach\nused in this paper? Select one or more statements that were made,\neither in this paper or in a citing paper.",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 11",
+        "doc_id": "CiteRead",
+        "title": "Service on Social Media”",
+        "page": 13,
+        "images": []
+      }
+    },
+    {
+      "index": 43,
+      "score": 0.27296730935077557,
+      "text": "Unfortunately, typical methods for answering these questions\ntoday are extremely cumbersome, involving manually scanning\nthrough a long list of potentially hundreds of papers, finding the\ncitation contexts, and then interpreting them in light of the parts\nof the reference paper they discuss. Even our baseline condition\nin the user study is a step up from typical methods as we used\nour selection method to reduce the list to a more relevant and\nmanageable set. For instance, when asked how long it would take\nto answer the questions posed in our user study using existing tools,\none participant said:",
+      "metadata": {
+        "doc_id": "CiteRead",
+        "title": "DISCUSSION",
+        "page": 10,
+        "images": []
+      }
+    },
+    {
+      "index": 67,
+      "score": 0.27092959081353946,
+      "text": "• GRU models outperform the current work’s (baseline) LSTM\nmodel with respect to BLEU score\n• Convolutional Neural Network yields similar result to the\ncurrent work’s LSTM model for BLEU score\n• Bidirectional Long Short-term Memory encoder with\nattention-based architecture gets better results compared\nto plain LSTM encoder-decoder used in this paper\n• Human responses still outperform generated responses on\nappropriateness in this paper, but the responses generated\nby a tone-aware chatbot are perceived as appropriate as the\nresponses by human agents\n• There was no statistically significant difference between\nthis paper’s approach and human agents on empathy for\nemotional requests\n• Chatbots based on GRU models have shown better evaluation\nresults than human’s responses on attentiveness.\nQ2: In contrast to the dataset used in this paper to train chatbots,\nwhat have other papers tried to use as datasets instead? Select one\nor more answers.",
+      "metadata": {
+        "doc_id": "CiteRead",
+        "title": "Service on Social Media”",
+        "page": 13,
+        "images": []
+      }
+    },
+    {
+      "index": 50,
+      "score": 0.2677431800248606,
+      "text": "Our evaluation was limited in several ways. First, our controlled\nlab experiment evaluated the benefits of CiteRead for a specific\nslice of scientists (HCI researchers) on a small set of papers. While\nour results are positive, more studies are needed to determine the\ngenerality of our findings. More extensive evaluation on a large\nrange of papers is also required to determine the general effective-\nness of our automated selection and localization techniques. Our\nend-to-end system evaluation provided support for its effectiveness\nin terms of strong quantitative and qualitative results corroborating\nthe value of these features, but evaluations of each individual tech-\nnique on many papers would provide additional evidence. We also\nnote the need for longitudinal studies to better understand how\ntools like CiteRead are used outside of laboratory settings. In this\nwork, we used existing extracted data from Semantic Scholar for\nselection and localization, which were pre-processed before study\nsessions. However, in the real world, it is impossible to exhaustively\npre-process all publications, and readers are likely to encounter\ndocuments that have not been processed. Moreover, this proces",
+      "metadata": {
+        "doc_id": "CiteRead",
+        "title": "LIMITATIONS AND SOCIETAL IMPACTS",
         "page": 11,
-        "images": []
-      }
-    },
-    {
-      "index": 51,
-      "score": 0.22134469334503695,
-      "text": "en the content is important. For instance, our systems\ncould design pathways that, while they may be more efficient, do\nnot obfuscate the full context (e.g., Scim §3.1), and that encourage\ngood practices such as verification and provenance tracing. A final\nconsideration is around what is ethical reuse of a paper’s contents\nto support reader experiences outside of that paper and its licensing\nimplications. For instance, CiteRead (§2.2) extracts paper citances\nand places them in the cited paper, and Relatedly (§5.2) extracts\nrelated work sections from different papers for users to explore.\nRecent trends in open science and datasets [ 29 , 61 , 67 , 68 ] point to\na promising future where we could continue to explore different\nways to remix and reuse scholarly content across context so that\nfuture scientists can take fuller advantage of prior research.\n8\nCONCLUSION",
-      "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 8",
-        "page": 8,
-        "images": []
-      }
-    },
-    {
-      "index": 83,
-      "score": 0.2183274416856906,
-      "text": "tion\nfor Computing Machinery, New York, NY, USA, Article 85, 4 pages.\nhttps:\n//doi.org/10.1145/3441852.3476545\n[98] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea Hess\nHaupt, Matt Latzke, Bailey Kuehl, Madeleine van Zuylen, Linda Wagner, and\nDaniel S. Weld. 2021. Improving the Accessibility of Scientific Documents:\nCurrent State, User Needs, and a System Solution to Enhance Scientific PDF\nAccessibility for Blind and Low Vision Users. arXiv: 2105.00076 [cs.DL] (2021).\narXiv:2105.00076 [cs.DL]\n[99] Wenhui Wang, Hangbo Bao, Shaohan Huang, Li Dong, and Furu Wei. 2021.\nMiniLMv2: Multi-Head Self-Attention Relation Distillation for Compressing\nPretrained Transformers. In Findings of the Association for Computational Lin-\nguistics: ACL-IJCNLP 2021 . Association for Computational Linguistics, Online,\n2140–2151. https://doi.org/10.18653/v1/2021.findings-acl.188\n[100] Wenhui Wang, Furu Wei, Li Dong, Hangbo Bao, Nan Yang, and Ming Zhou. 2020.\nMiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of\nPre-Trained Transformers. In Advances in Neural Information Processing Systems ,\nH. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin (Eds.), Vol",
-      "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 11",
-        "page": 11,
-        "images": []
-      }
-    },
-    {
-      "index": 3,
-      "score": 0.21741308565768408,
-      "text": "we’ve de-\nveloped ten research prototype interfaces and conducted usability\nstudies with 300+ participants and real-world users showing im-\nproved reading experiences for scholars. We’ve also released a pro-\nduction research paper reader that will incorporate novel features\nas they mature. We structure this paper around challenges scholars\nand the public face when reading research papers—discovery, effi-\nciency, comprehension, synthesis, and accessibility—and present\nan overview of our progress and remaining open challenges.\n1\nINTRODUCTION\nThe exponential growth of scientific publication [ 7 , 8 ] and increas-\ning interdisciplinary nature of scientific progress [ 71 , 94 ] makes\n∗ [ .......\nClick...to.......\nopen....\nin.....\nthe ............\nSemantic..........\nReader ]\n[ .............\nDownload.....\nthe ..........\nversion.......\nwith .........\nalt-text ]",
-      "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "through AI-Powered Interactive Reading Interfaces ∗",
-        "page": 1,
         "images": []
       }
     }

@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, ExternalLink, MoreHorizontal, Trash2 } from "lucide-react"
+import { FileText, ExternalLink, MoreHorizontal, Trash2, FolderPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -8,37 +8,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useReferences } from "@/hooks/useReferences"
-import { useDeleteReference } from "@/hooks/useDeleteReference"
 import { useReferenceFile } from "@/hooks/useReferenceFile"
 import { toast } from "sonner"
 import { useRef } from "react"
+import { CollectionManager } from "@/components/collection-manager"
 
 interface ReferenceTableProps {
-  searchQuery: string
-  selectedCollection: string | null
+  references: any[]
+  isLoading: boolean
+  error: Error | null
   viewMode: 'table' | 'grid'
   onOpenPDF: (file: File, title: string) => void
+  onDeleteReference: (reference: any) => void
+  isDeleting: boolean
+  onCollectionChange?: () => void
+  getCurrentCollectionReferences?: (referenceId: string) => string[]
 }
 
 export function ReferenceTable({ 
-  searchQuery, 
-  selectedCollection, 
+  references,
+  isLoading,
+  error,
   viewMode, 
-  onOpenPDF 
+  onOpenPDF,
+  onDeleteReference,
+  isDeleting,
+  onCollectionChange,
+  getCurrentCollectionReferences
 }: ReferenceTableProps) {
-  const { 
-    references, 
-    isLoading, 
-    error, 
-    refetch,
-    total 
-  } = useReferences({
-    collection: selectedCollection,
-    search: searchQuery
-  })
-
-  const { deleteReference, isDeleting } = useDeleteReference()
   const { fetchFileBlob } = useReferenceFile()
   
   // Track ongoing operations to prevent double-clicks
@@ -121,34 +118,6 @@ export function ReferenceTable({
     }
   }
 
-  const handleDeleteReference = async (reference: any) => {
-    // Use the same ID handling as handleOpenReference
-    const refId = reference.id || reference._id
-    const title = reference.title || "this document"
-    
-    console.log('Delete reference data:', { refId, title, reference })
-    
-    if (!refId) {
-      console.error('No valid ID found for reference:', reference)
-      toast.error('Cannot delete reference: Invalid ID')
-      return
-    }
-
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) {
-      return
-    }
-
-    try {
-      console.log('Deleting reference:', refId)
-      await deleteReference(refId)
-      toast.success('Reference deleted successfully')
-      refetch()
-    } catch (err) {
-      console.error('Failed to delete reference:', err)
-      toast.error('Failed to delete reference')
-    }
-  }
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -171,10 +140,7 @@ export function ReferenceTable({
         <div className="text-center space-y-2">
           <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
           <p className="text-muted-foreground">
-            {searchQuery || selectedCollection 
-              ? "No references found matching your criteria"
-              : "No references yet. Add some papers to get started!"
-            }
+            No references found. Add some papers to get started!
           </p>
         </div>
       </div>
@@ -186,6 +152,11 @@ export function ReferenceTable({
       <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto">
         {references.map((ref) => {
           const refId = ref.id || ref._id
+          const currentCollections = refId && getCurrentCollectionReferences
+            ? getCurrentCollectionReferences(refId)
+            : []
+          const canManageCollections = Boolean(refId && getCurrentCollectionReferences)
+
           return (
             <div key={refId} className="border border-border rounded-lg p-4 hover:bg-muted/50 group">
               <div className="flex items-start gap-3">
@@ -212,6 +183,23 @@ export function ReferenceTable({
                       >
                         <ExternalLink className="h-3 w-3" />
                       </Button>
+                      {canManageCollections && refId && (
+                        <CollectionManager
+                          referenceId={refId}
+                          referenceTitle={ref.title || "Untitled"}
+                          currentCollections={currentCollections}
+                          onCollectionChange={onCollectionChange}
+                          trigger={
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100"
+                            >
+                              <FolderPlus className="h-3 w-3" />
+                            </Button>
+                          }
+                        />
+                      )}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -224,7 +212,7 @@ export function ReferenceTable({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => handleDeleteReference(ref)}
+                            onClick={() => onDeleteReference(ref)}
                             className="text-destructive"
                             disabled={isDeleting}
                           >
@@ -260,6 +248,11 @@ export function ReferenceTable({
         <tbody>
           {references.map((ref) => {
             const refId = ref.id || ref._id
+            const currentCollections = refId && getCurrentCollectionReferences
+              ? getCurrentCollectionReferences(refId)
+              : []
+            const canManageCollections = Boolean(refId && getCurrentCollectionReferences)
+
             return (
               <tr 
                 key={refId} 
@@ -298,34 +291,53 @@ export function ReferenceTable({
                   {formatFileSize(ref.fileSize)}
                 </td>
                 <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100"
-                      >
-                        <MoreHorizontal className="h-3 w-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleOpenReference(ref)}
-                        disabled={openingRef.current.has(refId)}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Open
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteReference(ref)}
-                        className="text-destructive"
-                        disabled={isDeleting}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center justify-end gap-1">
+                    {canManageCollections && refId && (
+                      <CollectionManager
+                        referenceId={refId}
+                        referenceTitle={ref.title || "Untitled Document"}
+                        currentCollections={currentCollections}
+                        onCollectionChange={onCollectionChange}
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100"
+                          >
+                            <FolderPlus className="h-3 w-3" />
+                          </Button>
+                        }
+                      />
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100"
+                        >
+                          <MoreHorizontal className="h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleOpenReference(ref)}
+                          disabled={openingRef.current.has(refId)}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Open
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onDeleteReference(ref)}
+                          className="text-destructive"
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </td>
               </tr>
             )

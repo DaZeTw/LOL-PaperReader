@@ -17,6 +17,14 @@ export default function Home() {
     setIsHydrated(true)
   }, [])
 
+  // If the user logs out, send them back to the homepage/sign-in screen
+  useEffect(() => {
+    if (!user) {
+      setShowWorkspace(false)
+      setCurrentView('library')
+    }
+  }, [user])
+
   const handleGetStarted = () => {
     setShowWorkspace(true)
   }

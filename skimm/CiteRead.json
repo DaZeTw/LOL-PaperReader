@@ -1,0 +1,3862 @@
+[
+  {
+    "id": 6,
+    "text": "In this work, we introduce a novel paper reading experience that integrates relevant information about follow-on work directly into a paper, allowing readers to learn about newer papers and see how a paper is discussed by its citing papers in the context of the reference paper.",
+    "section": "ABSTRACT",
+    "label": "novelty",
+    "score": 4,
+    "boxes": [
+      {
+        "left": 0.44097217275817013,
+        "top": 0.40069036767676763,
+        "width": 0.03949699200000001,
+        "height": 0.01132121212121212,
+        "page": 0
+      },
+      {
+        "left": 0.08736437908496732,
+        "top": 0.41452748888888885,
+        "width": 0.3931066083137257,
+        "height": 0.01132121212121212,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.42836461010101007,
+        "width": 0.39417788800000014,
+        "height": 0.01132121212121212,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4422017313131313,
+        "width": 0.3928416013803923,
+        "height": 0.01132121212121212,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4560388525252525,
+        "width": 0.3925639360000003,
+        "height": 0.01132121212121212,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.46987471111111107,
+        "width": 0.037105951999999984,
+        "height": 0.01132121212121212,
+        "page": 0
+      }
+    ],
+    "block_id": "f1d0f2b4-b714-47bf-a50e-05ceb0ef1c07"
+  },
+  {
+    "id": 7,
+    "text": "We built a tool, called CiteRead, that implements the following three contributions: 1) automated techniques for selecting important citing papers, building on results from a formative study we conducted, 2) an automated process for localizing commentary provided by citing papers to a place in the reference paper, and 3) an interactive experience that allows readers to seamlessly alternate between the reference paper and information from citing papers (e.g., citation sentences), placed in the margins.",
+    "section": "ABSTRACT",
+    "label": "novelty",
+    "score": 4.9,
+    "boxes": [
+      {
+        "left": 0.12894145275816993,
+        "top": 0.46987471111111107,
+        "width": 0.3540064458039216,
+        "height": 0.01132121212121212,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4837118323232323,
+        "width": 0.3925604490666668,
+        "height": 0.01132121212121212,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4975489535353535,
+        "width": 0.39293431278431395,
+        "height": 0.01132121212121212,
+        "page": 0
+      },
+      {
+        "left": 0.08736437908496732,
+        "top": 0.5113860747474747,
+        "width": 0.39348735799215695,
+        "height": 0.011321212121212176,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5252231959595959,
+        "width": 0.3925639360000002,
+        "height": 0.011321212121212176,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5390603171717171,
+        "width": 0.3950296960000003,
+        "height": 0.011321212121212176,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5528974383838383,
+        "width": 0.3925574309647059,
+        "height": 0.011321212121212176,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5667345595959595,
+        "width": 0.33322131200000005,
+        "height": 0.011321212121212176,
+        "page": 0
+      }
+    ],
+    "block_id": "f1d0f2b4-b714-47bf-a50e-05ceb0ef1c07"
+  },
+  {
+    "id": 8,
+    "text": "Based on a user study with 12 scientists, we found that in comparison to having just a list of citing papers and their citation sentences, the use of CiteRead while reading allows for better comprehension and retention of information about follow-on work.",
+    "section": "ABSTRACT",
+    "label": "result",
+    "score": 3.8,
+    "boxes": [
+      {
+        "left": 0.42508670075817,
+        "top": 0.5667345595959595,
+        "width": 0.05538246400000002,
+        "height": 0.011321212121212176,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5805716808080807,
+        "width": 0.3925639360000001,
+        "height": 0.011321212121212176,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.594408802020202,
+        "width": 0.39256211927843154,
+        "height": 0.011321212121212176,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6082459232323232,
+        "width": 0.39255927142483676,
+        "height": 0.011321212121212176,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6220817818181817,
+        "width": 0.308769411764706,
+        "height": 0.011321212121212176,
+        "page": 0
+      }
+    ],
+    "block_id": "f1d0f2b4-b714-47bf-a50e-05ceb0ef1c07"
+  },
+  {
+    "id": 32,
+    "text": "Thus, someone reading a passage 1 https://scite.ai 707 IUI '22, March 2225, 2022, Helsinki, Finland Napol Rachatasumrit, Jonathan Bragg, Amy X. Zhang, and Daniel S. Weld fitfffffffffffffffffffffffffffffffffffffffffffffffffffffff-fitffffffffffffffffffffffffffffffffffffffffffffffffffffitfffffffffffffffffffffffffffffff iitffffffffffffffffffffffffffffffffffffffffffffffffffffffiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii Reference Paper fitfffffffffff ffffffffffffffffffffffffffffffffffffffffffffff iitfffffffffffffffffffffffffffffffffffffffffffffffffffiiiiiiiiiiiiiiiiiii fitffffffffffffffffffffffffffffffffffffffiiiiiiiiii Citing Paper Citation Context Citing Paper Title cites A major limitation of [3] is...; in contrast, our work...",
+    "section": "KEYWORDS",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.7092116930196078,
+        "top": 0.8559605696969697,
+        "width": 0.20288985317647068,
+        "height": 0.011321212121212176,
+        "page": 0
+      },
+      {
+        "left": 0.519328431372549,
+        "top": 0.8844750296717171,
+        "width": 0.00416334558823539,
+        "height": 0.006918560606060664,
+        "page": 0
+      },
+      {
+        "left": 0.5243055555555556,
+        "top": 0.8863612315656566,
+        "width": 0.06553320882352942,
+        "height": 0.008805303030303024,
+        "page": 0
+      },
+      {
+        "left": 0.4820261437908497,
+        "top": 0.9521792929292929,
+        "width": 0.022058823529411742,
+        "height": 0.011363636363636354,
+        "page": 0
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.0783156446969697,
+        "width": 0.8241846509803925,
+        "height": 0.00880530303030301,
+        "page": 1
+      },
+      {
+        "left": 0.10031862745098039,
+        "top": 0.1488045896464647,
+        "width": 0.3506249673202615,
+        "height": 0.049848484848484864,
+        "page": 1
+      },
+      {
+        "left": 0.10031862745098039,
+        "top": 0.20607731691919198,
+        "width": 0.3506249673202615,
+        "height": 0.03075757575757579,
+        "page": 1
+      },
+      {
+        "left": 0.11948049836601306,
+        "top": 0.24631101010101006,
+        "width": 0.3347517810457515,
+        "height": 0.010990795454545427,
+        "page": 1
+      },
+      {
+        "left": 0.3901797058823529,
+        "top": 0.14384594696969705,
+        "width": 0.05004084967320266,
+        "height": 0.004419191919191906,
+        "page": 1
+      },
+      {
+        "left": 0.249381454248366,
+        "top": 0.1756641287878788,
+        "width": 0.20156214052287585,
+        "height": 0.025631313131313227,
+        "page": 1
+      },
+      {
+        "left": 0.24910305555555554,
+        "top": 0.16648754419191927,
+        "width": 0.08113194444444446,
+        "height": 0.007512626262626165,
+        "page": 1
+      },
+      {
+        "left": 0.28029034313725487,
+        "top": 0.10635851641414143,
+        "width": 0.022266176470588206,
+        "height": 0.009280303030303055,
+        "page": 1
+      },
+      {
+        "left": 0.25369448937908495,
+        "top": 0.19075498121212134,
+        "width": 0.07113057537581696,
+        "height": 0.0066249873737373455,
+        "page": 1
+      },
+      {
+        "left": 0.25369448937908495,
+        "top": 0.19870496606060614,
+        "width": 0.07322671044934642,
+        "height": 0.0066249873737373455,
+        "page": 1
+      }
+    ],
+    "block_id": "635e9e62-5c26-4b7f-8b26-fb4e33c24674"
+  },
+  {
+    "id": 36,
+    "text": "In this work, we present a novel paper reading experience, called CiteRead, that integrates important information from citing papers directly alongside relevant text in the reference paper (Fig. 1).",
+    "section": "KEYWORDS",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.10418464052287582,
+        "top": 0.4969959232323232,
+        "width": 0.3762790782745099,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5108330444444444,
+        "width": 0.3950305460915033,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5246701656565657,
+        "width": 0.39481511774117667,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "2b55c1a0-63ba-479f-83b6-d53c8e0e319e"
+  },
+  {
+    "id": 37,
+    "text": "We take inspiration from social annotation systems [26], such as Google Docs and Hypothes.is, that enable readers of a document to leave commentary in the margins of the document by anchoring their comment to a specific location.",
+    "section": "KEYWORDS",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.08720261437908497,
+        "top": 0.5385072868686869,
+        "width": 0.3932669434771242,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5523444080808081,
+        "width": 0.3925548523921571,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5661815292929293,
+        "width": 0.3950424716549019,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5800186505050505,
+        "width": 0.2510293120000001,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "2b55c1a0-63ba-479f-83b6-d53c8e0e319e"
+  },
+  {
+    "id": 42,
+    "text": "To determine how to address these issues, we first conducted a formative study with seven scientists to find out what kinds of citations would benefit from localization in a reference paper and what information from citing papers would be useful to readers.",
+    "section": "KEYWORDS",
+    "label": "result",
+    "score": 2,
+    "boxes": [
+      {
+        "left": 0.10418464052287582,
+        "top": 0.7460615797979798,
+        "width": 0.37627497600000015,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.7598987010101009,
+        "width": 0.392563936,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.7737358222222221,
+        "width": 0.3925628371764708,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08736437908496732,
+        "top": 0.7875729434343434,
+        "width": 0.37113892831372564,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "404af459-edfe-45c4-a4d0-72487a577a24"
+  },
+  {
+    "id": 43,
+    "text": "We found that participants were interested in localizing citances that discuss topics like results comparison and limitations of the reference paper but were not interested in more generic citances.",
+    "section": "KEYWORDS",
+    "label": "result",
+    "score": 1.9,
+    "boxes": [
+      {
+        "left": 0.46156155304575186,
+        "top": 0.7875729434343434,
+        "width": 0.018909434352941124,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8014100646464647,
+        "width": 0.3925582953725491,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8152471858585858,
+        "width": 0.39503650870588236,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.829084307070707,
+        "width": 0.3577656745725492,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "404af459-edfe-45c4-a4d0-72487a577a24"
+  },
+  {
+    "id": 44,
+    "text": "From these findings, we built CiteRead, which includes an automated pipeline that first selects good candidate citing papers for localization from the full list of citing papers.",
+    "section": "KEYWORDS",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.4493587602091505,
+        "top": 0.829084307070707,
+        "width": 0.031099958400000016,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8429214282828282,
+        "width": 0.3925661662326797,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8567585494949496,
+        "width": 0.3950417830588236,
+        "height": 0.011321212121211954,
+        "page": 1
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8705956707070707,
+        "width": 0.22894208000000005,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "404af459-edfe-45c4-a4d0-72487a577a24"
+  },
+  {
+    "id": 46,
+    "text": "As some kinds of citation contexts can be localized to a particular number or sentence, while others only discuss the reference paper at the level of an entire section, our localization approach also accounts for how fine-grained to make each placement.",
+    "section": "KEYWORDS",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.6830963937254901,
+        "top": 0.10956031717171716,
+        "width": 0.22900148972549028,
+        "height": 0.011321212121212149,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.1233974383838383,
+        "width": 0.3929471177411764,
+        "height": 0.011321212121212135,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.1372345595959596,
+        "width": 0.39283292800000014,
+        "height": 0.011321212121212149,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.15107168080808073,
+        "width": 0.39255467658039234,
+        "height": 0.011321212121212149,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.16490753939393943,
+        "width": 0.09448616508235286,
+        "height": 0.011321212121212149,
+        "page": 1
+      }
+    ],
+    "block_id": "f7d130f4-18fa-40cb-9175-217083214a55"
+  },
+  {
+    "id": 49,
+    "text": "Through a user study with 12 scientists, we evaluated CiteRead's usability and its ability to help readers with comprehension of a paper and its follow-on work.",
+    "section": "KEYWORDS",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.5358137254901961,
+        "top": 0.275604509090909,
+        "width": 0.37627497600000026,
+        "height": 0.01132121212121212,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.2894416303030303,
+        "width": 0.39503094326797406,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.30327748888888884,
+        "width": 0.2218161361568627,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "aa10da3f-6bb2-471f-9fc6-53bf7a440947"
+  },
+  {
+    "id": 50,
+    "text": "We found that in comparison to reading a paper with a companion list of citances from citing papers, the use of CiteRead for reading allowed for better comprehension and retention of information about follow-on work.",
+    "section": "KEYWORDS",
+    "label": "result",
+    "score": 1.9,
+    "boxes": [
+      {
+        "left": 0.7441215363137255,
+        "top": 0.30327748888888884,
+        "width": 0.16797378321568623,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.3171146101010101,
+        "width": 0.39256393600000006,
+        "height": 0.01132121212121212,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.33095173131313127,
+        "width": 0.3950374946928107,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.34478885252525254,
+        "width": 0.3576982361098041,
+        "height": 0.01132121212121212,
+        "page": 1
+      }
+    ],
+    "block_id": "aa10da3f-6bb2-471f-9fc6-53bf7a440947"
+  },
+  {
+    "id": 51,
+    "text": "From qualitative feedback, we found that participants benefited from both the localization, which they used for finding and re-finding relevant citations, as well as the interactive interface, which reduced the need for context switching.",
+    "section": "KEYWORDS",
+    "label": "result",
+    "score": 1.8,
+    "boxes": [
+      {
+        "left": 0.8808878815372551,
+        "top": 0.34478885252525254,
+        "width": 0.031208668674509776,
+        "height": 0.01132121212121212,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.3586259737373737,
+        "width": 0.39256100580392184,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.3724630949494949,
+        "width": 0.3925610058039216,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.38630021616161614,
+        "width": 0.39256393600000017,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.40013733737373736,
+        "width": 0.16337308235294112,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "aa10da3f-6bb2-471f-9fc6-53bf7a440947"
+  },
+  {
+    "id": 52,
+    "text": "In summary, we make the following contributions:  We conducted a formative study, which revealed what types of information from citing papers would be helpful while reading a reference paper, and where to display that information.",
+    "section": "KEYWORDS",
+    "label": "result",
+    "score": 2,
+    "boxes": [
+      {
+        "left": 0.5358137254901961,
+        "top": 0.4139744585858586,
+        "width": 0.30280646274509804,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.545624183006536,
+        "top": 0.42689456161616157,
+        "width": 0.36646870839215695,
+        "height": 0.012238230303030395,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.441648701010101,
+        "width": 0.35267840000000006,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.45548455959595957,
+        "width": 0.35515428382745096,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.4693216808080808,
+        "width": 0.04541803921568632,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "1e662073-4257-46c5-8416-521125f55d24"
+  },
+  {
+    "id": 53,
+    "text": "Based on this study and additional pilots, we define the problem of augmenting a PDF reader with localized and contex-tualized citation contexts to help scholars better understand a reference paper in the context of follow-on work.",
+    "section": "KEYWORDS",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.5456241830065359,
+        "top": 0.4822417838383838,
+        "width": 0.3689526356078434,
+        "height": 0.012238230303030395,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.4969959232323232,
+        "width": 0.3551505331764706,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.5108330444444444,
+        "width": 0.3526724224000002,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.5246701656565657,
+        "width": 0.3055461960784316,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "1e662073-4257-46c5-8416-521125f55d24"
+  },
+  {
+    "id": 54,
+    "text": "We developed a method to select citation contexts to display in the PDF reader, which fall into the categories of interest identified in the formative study.",
+    "section": "KEYWORDS",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.5456241830065359,
+        "top": 0.5375902686868687,
+        "width": 0.36685637333333343,
+        "height": 0.012238230303030395,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.5523444080808081,
+        "width": 0.3526741951686275,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.5661815292929293,
+        "width": 0.197893194917647,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "1e662073-4257-46c5-8416-521125f55d24"
+  },
+  {
+    "id": 60,
+    "text": "We conducted a quantitative and qualitative evaluation of CiteRead, which showed that CiteRead helps users better understand follow-on work and validates the benefits of localization and seamless integration of relevant information.",
+    "section": "KEYWORDS",
+    "label": "result",
+    "score": 1.2999999999999998,
+    "boxes": [
+      {
+        "left": 0.5456241830065359,
+        "top": 0.7866559252525253,
+        "width": 0.3664725176470591,
+        "height": 0.012238230303030284,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.8014100646464647,
+        "width": 0.3529485589960786,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.8152471858585858,
+        "width": 0.3551544156862745,
+        "height": 0.011321212121212176,
+        "page": 1
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.829084307070707,
+        "width": 0.35489233894901984,
+        "height": 0.011321212121212176,
+        "page": 1
+      }
+    ],
+    "block_id": "1e662073-4257-46c5-8416-521125f55d24"
+  },
+  {
+    "id": 73,
+    "text": "In this work, we focused on how citations can enhance the reading experience of those who have already opened and are scrolling through the pages of a paper.",
+    "section": "2 RELATED WORK @@ 2.1 Citations for Exploring and Understanding Research",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.3372025018562092,
+        "top": 0.522783802020202,
+        "width": 0.14326373270588239,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5366196606060606,
+        "width": 0.3925564640000002,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5504567818181818,
+        "width": 0.39481520564705885,
+        "height": 0.011321212121212176,
+        "page": 2
+      }
+    ],
+    "block_id": "a93bf0e3-741f-443d-8cd1-a8fc6c5b5d1d"
+  },
+  {
+    "id": 77,
+    "text": "In NLP, the goal of this work has been to summarize the reference paper via the citation contexts from citing papers; different from our work, localization is used in service of summarization.",
+    "section": "Automated Techniques for Selecting and Localizing Citation Contexts",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.34063982696993467,
+        "top": 0.6553153676767676,
+        "width": 0.1398220416,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08736437908496732,
+        "top": 0.6691524888888889,
+        "width": 0.3931019200000003,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6829896101010101,
+        "width": 0.39255829537254927,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6968267313131313,
+        "width": 0.22347257599999998,
+        "height": 0.011321212121212176,
+        "page": 2
+      }
+    ],
+    "block_id": "28cd37d3-ce29-4a9e-a371-a032400acfcb"
+  },
+  {
+    "id": 80,
+    "text": "Unlike our work, this line of work views localization as a subtask for automatic summarization; in contrast, our localization approach seeks to optimize usefulness for immediate human consumption in a novel paper reading interface.",
+    "section": "Automated Techniques for Selecting and Localizing Citation Contexts",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.41522366075816997,
+        "top": 0.7660110747474748,
+        "width": 0.06551449599999987,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08736437908496732,
+        "top": 0.779848195959596,
+        "width": 0.3931066083137257,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.7936853171717172,
+        "width": 0.39503453082352963,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8075224383838383,
+        "width": 0.3925639360000001,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8213595595959596,
+        "width": 0.14250150080000007,
+        "height": 0.011321212121212176,
+        "page": 2
+      }
+    ],
+    "block_id": "28cd37d3-ce29-4a9e-a371-a032400acfcb"
+  },
+  {
+    "id": 81,
+    "text": "Thus, for example, our approach seeks to match visually salient attributes, or localize to the section level, as frequently preferred by formative study participants; in contrast, 2 http://www.nist.gov/tac/2014/BiomedSumm/ the NLP approaches match text in the reference paper only up to a finer granularity of five sentences [4].",
+    "section": "Automated Techniques for Selecting and Localizing Citation Contexts",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.23407680014640525,
+        "top": 0.8213595595959596,
+        "width": 0.24639385901176497,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8351966808080808,
+        "width": 0.3925601120941178,
+        "height": 0.011321212121211954,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8490325393939394,
+        "width": 0.3941656397803922,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8844750296717171,
+        "width": 0.004163345588235293,
+        "height": 0.006918560606060664,
+        "page": 2
+      },
+      {
+        "left": 0.09288235294117647,
+        "top": 0.8863612315656566,
+        "width": 0.20850750392156864,
+        "height": 0.008805303030303024,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.10956031717171716,
+        "width": 0.39255792909803944,
+        "height": 0.011321212121212149,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.1233974383838383,
+        "width": 0.22597672156862747,
+        "height": 0.011321212121212135,
+        "page": 2
+      }
+    ],
+    "block_id": "28cd37d3-ce29-4a9e-a371-a032400acfcb"
+  },
+  {
+    "id": 86,
+    "text": "Different from user-generated annotations or automated definitions and navigation aides, our work seeks to repurpose author-written paper text as a new form of paper annotations.",
+    "section": "Automated Techniques for Selecting and Localizing Citation Contexts",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.8911263675607844,
+        "top": 0.3122939030303031,
+        "width": 0.023449773176470567,
+        "height": 0.01132121212121212,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.32613102424242424,
+        "width": 0.3925579290980391,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.3399681454545454,
+        "width": 0.39256386274509814,
+        "height": 0.01132121212121212,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.3538052666666667,
+        "width": 0.28728345599999994,
+        "height": 0.011321212121212176,
+        "page": 2
+      }
+    ],
+    "block_id": "07b950bf-9af6-4753-85c2-182186a0db46"
+  },
+  {
+    "id": 89,
+    "text": "To understand how citations and citances might be beneficial to researchers, we conducted a small formative study.",
+    "section": "3 FORMATIVE STUDY",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.51909477124183,
+        "top": 0.45716385252525255,
+        "width": 0.3954767853176474,
+        "height": 0.01132121212121212,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.47100097373737376,
+        "width": 0.28476143623529415,
+        "height": 0.01132121212121212,
+        "page": 2
+      }
+    ],
+    "block_id": "b2e2f5cc-de69-44f8-bc4f-55f44ccc63b4"
+  },
+  {
+    "id": 92,
+    "text": "Before the session, we assigned one of two papers for participants to read.",
+    "section": "3 FORMATIVE STUDY",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.5358137254901961,
+        "top": 0.5401865797979798,
+        "width": 0.37875568000000026,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5540224383838384,
+        "width": 0.08233112570980394,
+        "height": 0.011321212121212176,
+        "page": 2
+      }
+    ],
+    "block_id": "c5642f58-77c2-425b-9e38-4996704934f1"
+  },
+  {
+    "id": 94,
+    "text": "We chose these two papers as they cover disciplines our participants had expertise in (HCI and NLP, respectively) and are well-cited.",
+    "section": "3 FORMATIVE STUDY",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.729299486745098,
+        "top": 0.5816966808080808,
+        "width": 0.18279500800000015,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.595533802020202,
+        "width": 0.3925672324705882,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.6093709232323232,
+        "width": 0.22136276156862744,
+        "height": 0.011321212121212176,
+        "page": 2
+      }
+    ],
+    "block_id": "c5642f58-77c2-425b-9e38-4996704934f1"
+  },
+  {
+    "id": 98,
+    "text": "We provided the paper that they came to the session having already read, together with some selected citing papers, and participants were asked to select citations or citances that they found useful and sketch how they wanted to present them on the reference paper.",
+    "section": "3 FORMATIVE STUDY",
+    "label": "result",
+    "score": 2,
+    "boxes": [
+      {
+        "left": 0.8928831276339873,
+        "top": 0.7339037515151515,
+        "width": 0.019213442196078456,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7477408727272726,
+        "width": 0.39293753600000014,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.761577993939394,
+        "width": 0.39256393600000017,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5189918300653594,
+        "top": 0.7754151151515151,
+        "width": 0.3931066083137258,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7892522363636364,
+        "width": 0.39482048000000014,
+        "height": 0.011321212121212176,
+        "page": 2
+      }
+    ],
+    "block_id": "b93fb971-e3d6-413b-81ed-2807279d7f66"
+  },
+  {
+    "id": 100,
+    "text": "We asked participants to think aloud and share their screen during the sessions, and we recorded the audio, video, and screen share.",
+    "section": "3 FORMATIVE STUDY",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.8121976097254903,
+        "top": 0.8169264787878788,
+        "width": 0.10236639999999997,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8307635999999999,
+        "width": 0.3941778880000001,
+        "height": 0.011321212121212176,
+        "page": 2
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8445994585858585,
+        "width": 0.30809546666666676,
+        "height": 0.011321212121212176,
+        "page": 2
+      }
+    ],
+    "block_id": "b93fb971-e3d6-413b-81ed-2807279d7f66"
+  },
+  {
+    "id": 125,
+    "text": "Guided by insights from our formative study, we developed CiteRead, a scientific paper reading interface that enhances the reading experience by annotating citation contexts from follow-on work directly on the paper, thereby allowing users to seamlessly alternate between the reference paper and citation contexts.",
+    "section": "4 OUR APPROACH",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.5195343137254902,
+        "top": 0.1268557717171717,
+        "width": 0.39256393600000017,
+        "height": 0.011321212121212149,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.14069289292929296,
+        "width": 0.39256478609150336,
+        "height": 0.011321212121212149,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.1545300141414141,
+        "width": 0.39502969600000026,
+        "height": 0.011321212121212149,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.1683671353535354,
+        "width": 0.39502969600000026,
+        "height": 0.011321212121212149,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.18220425656565653,
+        "width": 0.39502969600000004,
+        "height": 0.011321212121212149,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.19604137777777783,
+        "width": 0.03144006625882356,
+        "height": 0.011321212121212149,
+        "page": 3
+      }
+    ],
+    "block_id": "49be996b-0f5a-401a-bc74-446b04bebe93"
+  },
+  {
+    "id": 128,
+    "text": "Inspired by features proposed by prior work for identifying important citations in scientific papers [16, 20, 23], we selected a similar feature set to use in our selection method.",
+    "section": "4 OUR APPROACH @@ 4.1 Selection Method",
+    "label": "method",
+    "score": 1.0855154752731324,
+    "boxes": [
+      {
+        "left": 0.5195343137254902,
+        "top": 0.29140248888888887,
+        "width": 0.3950324210823529,
+        "height": 0.011321212121212176,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.30523961010101003,
+        "width": 0.39283173216209155,
+        "height": 0.01132121212121212,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.3190767313131313,
+        "width": 0.25473120451764697,
+        "height": 0.011321212121212176,
+        "page": 3
+      }
+    ],
+    "block_id": "f7a7f931-5c3e-4f0c-8e24-29a70eabab4e"
+  },
+  {
+    "id": 129,
+    "text": "Unlike prior work, we calculated a score of each citance using a linear combination of features and hand-tuned parameters instead of training a binary classifier.",
+    "section": "4 OUR APPROACH @@ 4.1 Selection Method",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.7779160297725489,
+        "top": 0.3190767313131313,
+        "width": 0.13417492376470597,
+        "height": 0.011321212121212176,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.33291258989898986,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.34674971111111114,
+        "width": 0.3929375359999998,
+        "height": 0.011321212121212065,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.3605868323232323,
+        "width": 0.05368441537254898,
+        "height": 0.011321212121212176,
+        "page": 3
+      }
+    ],
+    "block_id": "f7a7f931-5c3e-4f0c-8e24-29a70eabab4e"
+  },
+  {
+    "id": 131,
+    "text": "Unfortunately, existing datasets used by prior work were not applicable for us due to differences in objectives.",
+    "section": "4 OUR APPROACH @@ 4.1 Selection Method",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.8253957989019608,
+        "top": 0.3744239535353535,
+        "width": 0.0883173551372548,
+        "height": 0.011321212121212176,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.38826107474747473,
+        "width": 0.3925610058039215,
+        "height": 0.011321212121212176,
+        "page": 3
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.40209819595959595,
+        "width": 0.15914363733333325,
+        "height": 0.011321212121212176,
+        "page": 3
+      }
+    ],
+    "block_id": "f7a7f931-5c3e-4f0c-8e24-29a70eabab4e"
+  },
+  {
+    "id": 144,
+    "text": "Note that this set of features is informed by our formative study.",
+    "section": "(positive)",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.10418464052287582,
+        "top": 0.15349213535353531,
+        "width": 0.37853147604705883,
+        "height": 0.011321212121212149,
+        "page": 4
+      }
+    ],
+    "block_id": "43355c46-b875-44cc-90f5-09c16744ef8b"
+  },
+  {
+    "id": 146,
+    "text": "CiteRead computes these features, calculates the weighted sum, and selects the highest 15 citation contexts to present in the interface (we heuristically limited the number of citation contexts to 15 from the observations during pilots).",
+    "section": "(positive)",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.08790522875816993,
+        "top": 0.19500349898989905,
+        "width": 0.39416968838692823,
+        "height": 0.011321212121212149,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.20884062020202018,
+        "width": 0.3950334466509806,
+        "height": 0.011321212121212149,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.22267774141414148,
+        "width": 0.3925596725647059,
+        "height": 0.011321212121212149,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.23651486262626262,
+        "width": 0.21933982745098046,
+        "height": 0.011321212121212149,
+        "page": 4
+      }
+    ],
+    "block_id": "43355c46-b875-44cc-90f5-09c16744ef8b"
+  },
+  {
+    "id": 148,
+    "text": "Similarly to the selection method, we adopted an approach that leverages heuristics and existing pretrained machine learning models instead of training a new model due to mismatch between available datasets and our new task.",
+    "section": "4 OUR APPROACH @@ 4.2 Localization Method",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.08790522875816993,
+        "top": 0.2803633474747474,
+        "width": 0.392563936,
+        "height": 0.01132121212121212,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.29420046868686867,
+        "width": 0.39503057505882355,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.3080375898989898,
+        "width": 0.3925639360000003,
+        "height": 0.01132121212121212,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.3218747111111111,
+        "width": 0.21630160969411766,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "da8d9c95-54e4-45ab-a204-19c4635ccd2f"
+  },
+  {
+    "id": 149,
+    "text": "We ran each selected citance through our localization method to localize them on the reference paper.",
+    "section": "4 OUR APPROACH @@ 4.2 Localization Method",
+    "label": "method",
+    "score": 0.9871768832206727,
+    "boxes": [
+      {
+        "left": 0.30786571569150323,
+        "top": 0.3218747111111111,
+        "width": 0.17260163234509823,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.33571056969696966,
+        "width": 0.3925641118117649,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.34954769090909094,
+        "width": 0.03629100586666667,
+        "height": 0.011321212121212065,
+        "page": 4
+      }
+    ],
+    "block_id": "da8d9c95-54e4-45ab-a204-19c4635ccd2f"
+  },
+  {
+    "id": 151,
+    "text": "First, if the citance contains a number, we tried to search if the target paper also contains the same number, and localized the citance there if it exists.",
+    "section": "4 OUR APPROACH @@ 4.2 Localization Method",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.31562324864836616,
+        "top": 0.34954769090909094,
+        "width": 0.16484480263529416,
+        "height": 0.011321212121212065,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.3633848121212121,
+        "width": 0.392563936,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.3772219333333333,
+        "width": 0.33230987450980404,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "da8d9c95-54e4-45ab-a204-19c4635ccd2f"
+  },
+  {
+    "id": 157,
+    "text": "Based on the insights from our formative study, we designed CiteRead to emphasize: (1) reducing context switching, (2) providing sufficient details about the citation context, and (3) minimizing intrusiveness.",
+    "section": "4 OUR APPROACH @@ 4.3 Interface",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.4250317062483661,
+        "top": 0.5456032464646464,
+        "width": 0.055427295999999904,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5594403676767676,
+        "width": 0.3925596355555556,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5732774888888889,
+        "width": 0.3925601120941176,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5871146101010101,
+        "width": 0.39481520564705874,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "e648f589-1754-4837-9de3-ed5632b3e073"
+  },
+  {
+    "id": 158,
+    "text": "We envision that CiteRead can help researchers in both linear reading experiences and information foraging scenarios.",
+    "section": "4 OUR APPROACH @@ 4.3 Interface",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.08720261437908497,
+        "top": 0.6009517313131313,
+        "width": 0.39573469124183003,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6147888525252525,
+        "width": 0.3170369600000001,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "e648f589-1754-4837-9de3-ed5632b3e073"
+  },
+  {
+    "id": 160,
+    "text": "CiteRead annotates selected citances from our selection and localization method in the margin of the reference paper in the reading interface (see Fig. 3a).",
+    "section": "4 OUR APPROACH @@ 4.3 Interface",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.17681535947712418,
+        "top": 0.6424630949494949,
+        "width": 0.30612655351634,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.656300216161616,
+        "width": 0.3928338070588237,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6701373373737374,
+        "width": 0.21070307450980397,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "a2ba1c77-70d7-4a2d-ac2f-ef7a2fd02eeb"
+  },
+  {
+    "id": 167,
+    "text": "The citation card design was inspired by our formative study and includes the information that participants deemed useful.",
+    "section": "4 OUR APPROACH @@ 4.3 Interface",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.4308594800522875,
+        "top": 0.8152471858585858,
+        "width": 0.052076323764705945,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.829084307070707,
+        "width": 0.3925601120941176,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8429214282828282,
+        "width": 0.2836702312156864,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "6878bdb9-ec7f-4fc4-ab3f-d869f0d04c04"
+  },
+  {
+    "id": 178,
+    "text": "We used VILA [22] to extract text from source PDFs.",
+    "section": "4 OUR APPROACH @@ 4.4 Additional Implementation Details",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.5188316993464052,
+        "top": 0.38158304444444446,
+        "width": 0.3255552778039217,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "df27ea7e-b86d-4e50-9105-2c20ffb61f89"
+  },
+  {
+    "id": 179,
+    "text": "We used a pretrained SPECTER model [6] to compute embeddings through the Hugging Face Sentence Transformer interface.",
+    "section": "4 OUR APPROACH @@ 4.4 Additional Implementation Details",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.8487356811503269,
+        "top": 0.38158304444444446,
+        "width": 0.06336255999999985,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.3954201656565657,
+        "width": 0.39255747869281044,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.4092572868686869,
+        "width": 0.30820505600000003,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "df27ea7e-b86d-4e50-9105-2c20ffb61f89"
+  },
+  {
+    "id": 180,
+    "text": "We used Tex-tRank [18], a graph-based ranking model, to retrieve key phrases.",
+    "section": "4 OUR APPROACH @@ 4.4 Additional Implementation Details",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.8317593057254904,
+        "top": 0.4092572868686869,
+        "width": 0.08280470400000006,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.4230944080808081,
+        "width": 0.39481046975163403,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "df27ea7e-b86d-4e50-9105-2c20ffb61f89"
+  },
+  {
+    "id": 183,
+    "text": "We conducted a lab evaluation of CiteRead to explore the potential utility of integrating localized citation contexts into the reading experience.",
+    "section": "5 USER STUDY",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.5188316993464052,
+        "top": 0.49463733737373733,
+        "width": 0.3932587998954249,
+        "height": 0.01132121212121212,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5084744585858586,
+        "width": 0.39256393599999984,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5223115797979798,
+        "width": 0.06849977976470589,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "4c1343b4-c851-438f-aa36-2ee62ea359f5"
+  },
+  {
+    "id": 184,
+    "text": "More specifically, we considered the use case of a scientist who is reading a paper and is interested in learning about relevant follow-on papers, including how those citing papers relate to and provide commentary about the paper they are reading.",
+    "section": "5 USER STUDY",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.5916814843607843,
+        "top": 0.5223115797979798,
+        "width": 0.3228830528000003,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.536148701010101,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5499858222222223,
+        "width": 0.39502969600000026,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5638229434343435,
+        "width": 0.3948115136000002,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "4c1343b4-c851-438f-aa36-2ee62ea359f5"
+  },
+  {
+    "id": 185,
+    "text": "We conducted a within-subjects experiment where we compared using CiteRead for reading a paper with citation contexts in the margins to a baseline where readers have access to the paper and a companion list of citing papers, representing the standard way readers find out about follow-on work today.",
+    "section": "5 USER STUDY",
+    "label": "result",
+    "score": 1.8,
+    "boxes": [
+      {
+        "left": 0.5188316993464052,
+        "top": 0.5776600646464647,
+        "width": 0.3932569420235298,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5914959232323233,
+        "width": 0.3925554704104577,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.6053330444444445,
+        "width": 0.392553211482353,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.6191701656565657,
+        "width": 0.3929375359999999,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.6330072868686868,
+        "width": 0.27688243200000007,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "4c1343b4-c851-438f-aa36-2ee62ea359f5"
+  },
+  {
+    "id": 188,
+    "text": "We obtained Internal Review Board (IRB) approval prior to conducting our study.",
+    "section": "5 USER STUDY",
+    "label": "result",
+    "score": 1.5864458739757539,
+    "boxes": [
+      {
+        "left": 0.6062265674666666,
+        "top": 0.6883557717171718,
+        "width": 0.30586189540392195,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7021928929292929,
+        "width": 0.17950381176470587,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "4c1343b4-c851-438f-aa36-2ee62ea359f5"
+  },
+  {
+    "id": 191,
+    "text": "In order to reduce potential variation across participants due to differing research topics and expertise, we focused on researchers who are current doctoral graduate students and working in the field of Human-Computer Interaction (HCI).",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.6403071895424837,
+        "top": 0.7460615797979798,
+        "width": 0.27178652800000014,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7598987010101009,
+        "width": 0.39503069226666687,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7737358222222221,
+        "width": 0.3925579290980391,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7875729434343434,
+        "width": 0.3706651156078432,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "542df0d0-7479-411b-b588-1ba2ad8849a3"
+  },
+  {
+    "id": 192,
+    "text": "We recruited a total of 12 graduate students as participants, through university and industry-affiliated mailing lists and Slack channels.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.8932002431372549,
+        "top": 0.7875729434343434,
+        "width": 0.018895076392156818,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8014100646464647,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8152471858585858,
+        "width": 0.39481461960784314,
+        "height": 0.011321212121212176,
+        "page": 4
+      }
+    ],
+    "block_id": "542df0d0-7479-411b-b588-1ba2ad8849a3"
+  },
+  {
+    "id": 193,
+    "text": "All participants had experience with reading and writing research papers in HCI as well as understanding of technical topics and terminology in the research papers used for this study.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.5190212418300654,
+        "top": 0.829084307070707,
+        "width": 0.3930751087058826,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8429214282828282,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 4
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8567585494949496,
+        "width": 0.3190195306666668,
+        "height": 0.011321212121211954,
+        "page": 4
+      }
+    ],
+    "block_id": "542df0d0-7479-411b-b588-1ba2ad8849a3"
+  },
+  {
+    "id": 198,
+    "text": "As our study was within-subjects, each participant completed both of the following two conditions, with order of the conditions counterbalanced:  CiteRead Condition : Participants were presented with the CiteRead reader interface (Fig. 3) loaded with a pre-selected research paper in PDF format.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.27426797385620916,
+        "top": 0.8319842080808081,
+        "width": 0.6378260021960783,
+        "height": 0.012238230303030284,
+        "page": 5
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8467383474747475,
+        "width": 0.8241936163137256,
+        "height": 0.011321212121212176,
+        "page": 5
+      },
+      {
+        "left": 0.08736437908496732,
+        "top": 0.8605754686868686,
+        "width": 0.6483840379607843,
+        "height": 0.011321212121212176,
+        "page": 5
+      }
+    ],
+    "block_id": "daf12c3a-9f8c-4aa2-8670-5161e8a9f06e"
+  },
+  {
+    "id": 199,
+    "text": "We ran all of its citing papers through the selection and localization steps of the CiteRead 712 CiteRead: Integrating Localized Citation Contexts into Scientific Paper Reading IUI '22, March 2225, 2022, Helsinki, Finland pipeline so that the interface contained citation contexts of a subset of all the citing papers in the margins.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.7394096970457517,
+        "top": 0.8605754686868686,
+        "width": 0.1726831943529411,
+        "height": 0.011321212121212176,
+        "page": 5
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.87441258989899,
+        "width": 0.352676102379085,
+        "height": 0.011321212121212176,
+        "page": 5
+      },
+      {
+        "left": 0.4820261437908497,
+        "top": 0.9521792929292929,
+        "width": 0.022058823529411742,
+        "height": 0.011363636363636354,
+        "page": 5
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.0783156446969697,
+        "width": 0.8241846509803922,
+        "height": 0.00880530303030301,
+        "page": 6
+      },
+      {
+        "left": 0.1277892156862745,
+        "top": 0.10956031717171716,
+        "width": 0.3526784000000001,
+        "height": 0.011321212121212149,
+        "page": 6
+      },
+      {
+        "left": 0.1277892156862745,
+        "top": 0.1233974383838383,
+        "width": 0.27937954509803936,
+        "height": 0.011321212121212135,
+        "page": 6
+      }
+    ],
+    "block_id": "6fe07325-f1e6-4cd3-81cf-e156e2ed7906"
+  },
+  {
+    "id": 205,
+    "text": "To have a fairer comparison to CiteRead, as the full list of citing papers can be long, we reduced the list of citing papers to only the ones that passed the selection step in the CiteRead pipeline.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.3399568021960785,
+        "top": 0.33095173131313127,
+        "width": 0.14299093145098063,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.1277892156862745,
+        "top": 0.34478885252525254,
+        "width": 0.3542863445751634,
+        "height": 0.01132121212121212,
+        "page": 6
+      },
+      {
+        "left": 0.12724673202614378,
+        "top": 0.3586259737373737,
+        "width": 0.35321638400000005,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.1277892156862745,
+        "top": 0.3724630949494949,
+        "width": 0.3158474032941177,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "3b9d646d-1e29-4d65-bab2-81a88d18afe5"
+  },
+  {
+    "id": 207,
+    "text": "(1) We began with a quick tutorial of the respective interface.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.10573202614379085,
+        "top": 0.46356031717171714,
+        "width": 0.3769921335424838,
+        "height": 0.01132121212121212,
+        "page": 6
+      }
+    ],
+    "block_id": "3b41c328-d329-4bd8-83ba-c2c0429018ea"
+  },
+  {
+    "id": 211,
+    "text": "We did not provide participants with any multiple-choice answer options at this point.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.1690645436862745,
+        "top": 0.5742560242424242,
+        "width": 0.31388377600000017,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.1277892156862745,
+        "top": 0.5880931454545454,
+        "width": 0.21282014117647063,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "3b41c328-d329-4bd8-83ba-c2c0429018ea"
+  },
+  {
+    "id": 217,
+    "text": "We recorded participants' screen share during the task, and we also automatically logged participant interactions within the tools.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.46074224826143784,
+        "top": 0.7737358222222221,
+        "width": 0.019726080000000035,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.7875729434343434,
+        "width": 0.3925639360000003,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8014100646464647,
+        "width": 0.37086026666666677,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "ac30beae-433d-40e8-b0d4-59010eef2c64"
+  },
+  {
+    "id": 218,
+    "text": "We chose to split up the 15 minutes that participants had to read the materials into 5 minutes without access to questions and 10 minutes with access to questions in order to strike a balance between linear reading behavior and skimming in search of answers.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.10418464052287582,
+        "top": 0.8152471858585858,
+        "width": 0.37627497600000004,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.829084307070707,
+        "width": 0.39255467658039217,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.08756862745098039,
+        "top": 0.8429214282828282,
+        "width": 0.3928927040000001,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8567585494949496,
+        "width": 0.3948152056470589,
+        "height": 0.011321212121211954,
+        "page": 6
+      }
+    ],
+    "block_id": "93cc6ccf-0920-4ed5-8e93-41e42336d154"
+  },
+  {
+    "id": 219,
+    "text": "From our formative study, we expect that both of these reading strategies would be used in real settings, where sometimes readers Table 1: Number of citances that were localized at different levels of granularity for the reading materials.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8705956707070707,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8844315292929292,
+        "width": 0.39256642666666686,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5190506535947712,
+        "top": 0.10664373535353525,
+        "width": 0.39304185098039235,
+        "height": 0.011321212121212149,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.1204808565656564,
+        "width": 0.3070552470588236,
+        "height": 0.011321212121212162,
+        "page": 6
+      }
+    ],
+    "block_id": "93cc6ccf-0920-4ed5-8e93-41e42336d154"
+  },
+  {
+    "id": 223,
+    "text": "As all our participants were HCI researchers, we chose two papers for participants to read that are in the field of HCI.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.679968954248366,
+        "top": 0.27625476161616164,
+        "width": 0.23460585600000017,
+        "height": 0.01132121212121212,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.2900918828282828,
+        "width": 0.39256356972549034,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.30392774141414136,
+        "width": 0.09900399999999987,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "ba5cbd81-2866-4593-8c12-5d407c6092dd"
+  },
+  {
+    "id": 225,
+    "text": "We selected these two papers according to the following criteria: (1) published in ACM CHI, the top conference in HCI, within the last decade, (2) have over 100 citations, and (3) are relatively short papers, due to time constraints for our study.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.5188316993464052,
+        "top": 0.37311334747474745,
+        "width": 0.3949848640000003,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.51909477124183,
+        "top": 0.38695046868686866,
+        "width": 0.3930036412235294,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.4007875898989899,
+        "width": 0.39256411181176465,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.4146247111111111,
+        "width": 0.2681996310274509,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "ba5cbd81-2866-4593-8c12-5d407c6092dd"
+  },
+  {
+    "id": 226,
+    "text": "Each paper also covers a different subfield in HCI (conversational agents and wearable interfaces, respectively), allowing us to examine the applicability of CiteRead on two papers with differing structure, and also reducing the potential learning effect from participants reading one paper followed by the other.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.7914149156705882,
+        "top": 0.4146247111111111,
+        "width": 0.12315184843921578,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.4284618323232323,
+        "width": 0.3925579290980393,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.44229769090909093,
+        "width": 0.3925610058039215,
+        "height": 0.01132121212121212,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.45613481212121215,
+        "width": 0.3925658100915035,
+        "height": 0.01132121212121212,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.46997193333333337,
+        "width": 0.39283292800000014,
+        "height": 0.01132121212121212,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.4838090545454545,
+        "width": 0.13303910650980388,
+        "height": 0.01132121212121212,
+        "page": 6
+      }
+    ],
+    "block_id": "ba5cbd81-2866-4593-8c12-5d407c6092dd"
+  },
+  {
+    "id": 229,
+    "text": "We wrote questions according to insights gained from our formative study.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.6562303921568627,
+        "top": 0.5188885999999999,
+        "width": 0.2558711680000002,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5327257212121211,
+        "width": 0.20666057599999998,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "ab99cfb4-d378-42b0-bf14-c2d7cf5239f6"
+  },
+  {
+    "id": 230,
+    "text": "Specifically, we created three questions for each paper that asked about (1) limitations of the approach in the reference paper according to follow-on work, (2) other approaches tried by follow-on work, and (3) comparisons of the results of follow-on work to the results in the reference paper.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "result",
+    "score": 1.9,
+    "boxes": [
+      {
+        "left": 0.7312459617254902,
+        "top": 0.5327257212121211,
+        "width": 0.1808522880000003,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5465628424242424,
+        "width": 0.39256393599999984,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5603999636363636,
+        "width": 0.3934359037490198,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5742370848484848,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.588074206060606,
+        "width": 0.3925639360000003,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.6019113272727272,
+        "width": 0.03618191466666676,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "ab99cfb4-d378-42b0-bf14-c2d7cf5239f6"
+  },
+  {
+    "id": 231,
+    "text": "These three questions were the most-frequently mentioned questions that participants in our formative study said they had when exploring the follow-on work of a paper.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.5593752374901961,
+        "top": 0.6019113272727272,
+        "width": 0.3527226459607843,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.6157484484848484,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5189918300653594,
+        "top": 0.6295855696969697,
+        "width": 0.2794967529411766,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "ab99cfb4-d378-42b0-bf14-c2d7cf5239f6"
+  },
+  {
+    "id": 233,
+    "text": "We wrote the answer options such that each question had three correct answer options, with the remaining three incorrect options serving as distractors.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.6507069439372548,
+        "top": 0.6572585494949494,
+        "width": 0.26139473411764713,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.6710956707070707,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.684932791919192,
+        "width": 0.280767872,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "717b48a5-9b40-4ca3-9ad5-cee66b8fc1fe"
+  },
+  {
+    "id": 237,
+    "text": "We chose to vary where the participants had to look to determine the answer in this way, in order to assess how well our interface allows a user to go from the reference paper to a localized citance to additional context around the citance in search of the answer.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.5358137254901961,
+        "top": 0.8429214282828282,
+        "width": 0.3762790782745099,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8567585494949496,
+        "width": 0.39256393600000017,
+        "height": 0.011321212121211954,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8705956707070707,
+        "width": 0.3925549549490198,
+        "height": 0.011321212121212176,
+        "page": 6
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8844315292929292,
+        "width": 0.39482048000000014,
+        "height": 0.011321212121212176,
+        "page": 6
+      }
+    ],
+    "block_id": "855bffd6-cb11-49fc-a247-2fe72e9a034f"
+  },
+  {
+    "id": 241,
+    "text": "We include the full set of questions and multiple-choice answer options for each paper in Appendix A. 5.2 Quantitative Experiment Results Quantitative results from the lab experiment were strongly positive.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "result",
+    "score": 2.0861497938632967,
+    "boxes": [
+      {
+        "left": 0.08720261437908497,
+        "top": 0.47500981212121207,
+        "width": 0.39353529600000015,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4888469333333333,
+        "width": 0.22924389019607855,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5331387652777777,
+        "width": 0.30590043316993465,
+        "height": 0.013774116161616168,
+        "page": 7
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5523444080808081,
+        "width": 0.3948152056470589,
+        "height": 0.011321212121212176,
+        "page": 7
+      }
+    ],
+    "block_id": "35b97ff9-6011-4c66-954c-daa1bcf7ec7d"
+  },
+  {
+    "id": 248,
+    "text": "We observed a minor disruption in the system where the sidebar did not scroll to the associated card when participants clicked on the same annotation twice in a row, but most participants quickly noticed the issue and continued smoothly with the session.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "result",
+    "score": 2,
+    "boxes": [
+      {
+        "left": 0.34609271675817,
+        "top": 0.8014100646464647,
+        "width": 0.13464544,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8152471858585858,
+        "width": 0.3925639360000001,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.829084307070707,
+        "width": 0.39256099115294124,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8429214282828282,
+        "width": 0.3925665731764707,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8567585494949496,
+        "width": 0.22341280000000002,
+        "height": 0.011321212121211954,
+        "page": 7
+      }
+    ],
+    "block_id": "f78f06dd-710e-4c15-bed0-35160c769b17"
+  },
+  {
+    "id": 262,
+    "text": "We note, however, that participants reported higher cognitive load for Paper 2 for all NASA-TLX criteria, and this difference is significant for the Temporal criterion (5.67 vs 4.33, p = 0 . 047), indicating that participants felt increased time pressure.",
+    "section": "5 USER STUDY @@ 5.1 Study Design",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.6355073479738561,
+        "top": 0.7849567818181817,
+        "width": 0.2765835520000003,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.798793903030303,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8126310242424242,
+        "width": 0.394169097411765,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.5188022875816993,
+        "top": 0.8261737939393939,
+        "width": 0.3953819740862745,
+        "height": 0.011626884848484953,
+        "page": 7
+      },
+      {
+        "left": 0.5307679738562091,
+        "top": 0.823830303030303,
+        "width": 0.00931802352941169,
+        "height": 0.011321212121212176,
+        "page": 7
+      }
+    ],
+    "block_id": "31b62fee-5c42-4d8a-a865-c88ba5c2eb93"
+  },
+  {
+    "id": 264,
+    "text": "From the responses to the semi-structured interview questions asked after the completion of the experiment, we collected quotes",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8705956707070707,
+        "width": 0.3925639360000003,
+        "height": 0.011321212121212176,
+        "page": 7
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8844315292929292,
+        "width": 0.3925609911529413,
+        "height": 0.011321212121212176,
+        "page": 7
+      }
+    ],
+    "block_id": "784c2a39-9fb8-4267-928e-c9e42ad6e28f"
+  },
+  {
+    "id": 275,
+    "text": "We also observed some participants searching for particular keywords in the reference paper and then looking at the annotations surrounding the keyword matches.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 2,
+    "boxes": [
+      {
+        "left": 0.4317218367581699,
+        "top": 0.10956031717171716,
+        "width": 0.048747328000000145,
+        "height": 0.011321212121212149,
+        "page": 9
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.1233974383838383,
+        "width": 0.39256723247058833,
+        "height": 0.011321212121212135,
+        "page": 9
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.1372345595959596,
+        "width": 0.39503795915294115,
+        "height": 0.011321212121212149,
+        "page": 9
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.15107168080808073,
+        "width": 0.15837651200000002,
+        "height": 0.011321212121212149,
+        "page": 9
+      }
+    ],
+    "block_id": "5eb4d318-c0dd-45ff-9b95-64a877ed114b"
+  },
+  {
+    "id": 283,
+    "text": "However, many participants mentioned that the stacked annotations were quite confusing especially when they were in close proximity but not highly related: Stacked UI could be confusing. It is not clear why things are anchored in the same location. P3 6 DISCUSSION Our study results overall provide evidence of the positive benefit of localizing citation contexts of citing papers directly into the reading experience of a reference paper.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 2.089783751964569,
+    "boxes": [
+      {
+        "left": 0.1556460877385621,
+        "top": 0.8567585494949496,
+        "width": 0.3248201468235295,
+        "height": 0.011321212121211954,
+        "page": 9
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8705956707070707,
+        "width": 0.3925639360000002,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.8844315292929292,
+        "width": 0.22984458039215688,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.10956031717171716,
+        "width": 0.31318140800000005,
+        "height": 0.011321212121212149,
+        "page": 9
+      },
+      {
+        "left": 0.5594183006535948,
+        "top": 0.1233974383838383,
+        "width": 0.2766984156862745,
+        "height": 0.011321212121212135,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.149262502651515,
+        "width": 0.13194306895424845,
+        "height": 0.013774116161616251,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.16846688282828282,
+        "width": 0.3925610058039215,
+        "height": 0.011321212121212149,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.18230400404040395,
+        "width": 0.3925610058039216,
+        "height": 0.011321212121212149,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.19614112525252525,
+        "width": 0.19129234221176472,
+        "height": 0.011321212121212149,
+        "page": 9
+      }
+    ],
+    "block_id": "5d805d6f-fcf5-4b65-87e7-031915d64316"
+  },
+  {
+    "id": 285,
+    "text": "From both the user study as well as the formative study, we found that participants expressed a desire to answer the kinds of questions posed in the user study around how follow-on work discusses or builds on a reference paper.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 2,
+    "boxes": [
+      {
+        "left": 0.8808578177254902,
+        "top": 0.23765248888888882,
+        "width": 0.03124006572549043,
+        "height": 0.011321212121212149,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.2514896101010101,
+        "width": 0.3925579290980392,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.2653267313131312,
+        "width": 0.39256393600000006,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.27916385252525255,
+        "width": 0.39283823165490195,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.29300097373737366,
+        "width": 0.1708696959999999,
+        "height": 0.011321212121212176,
+        "page": 9
+      }
+    ],
+    "block_id": "09b5aabd-8a93-4ab0-8d87-e4a29946dac2"
+  },
+  {
+    "id": 287,
+    "text": "Even our baseline condition in the user study is a step up from typical methods as we used our selection method to reduce the list to a more relevant and manageable set.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.7408549537254902,
+        "top": 0.4382219333333333,
+        "width": 0.1712432960000001,
+        "height": 0.01132121212121212,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.45205905454545453,
+        "width": 0.39256393600000006,
+        "height": 0.01132121212121212,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.46589617575757575,
+        "width": 0.3925639360000004,
+        "height": 0.01132121212121212,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.47973329696969697,
+        "width": 0.09508418880000002,
+        "height": 0.01132121212121212,
+        "page": 9
+      }
+    ],
+    "block_id": "cf152cab-8bdd-4b78-b578-4f72fff73140"
+  },
+  {
+    "id": 289,
+    "text": "Through our pipeline of selection, localization, and integration into the reading experience, we can significantly reduce the manual effort required for researchers to tackle these important questions.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.7348669222274511,
+        "top": 0.7286651151515151,
+        "width": 0.17970921850980393,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7425022363636363,
+        "width": 0.39255549703529424,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7563393575757575,
+        "width": 0.3925634964705884,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7701764787878788,
+        "width": 0.21375780392156862,
+        "height": 0.011321212121212176,
+        "page": 9
+      }
+    ],
+    "block_id": "d578a905-3fe2-4e5a-a584-968d605c9bbb"
+  },
+  {
+    "id": 291,
+    "text": "We devised a selection process that significantly whittled down the number of citing papers to provide as annotations within a reference paper through artificially limiting to 15.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.6970735294117647,
+        "top": 0.8152471858585858,
+        "width": 0.21501427200000012,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.829084307070707,
+        "width": 0.3925591451294116,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8429214282828282,
+        "width": 0.3925610058039217,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8567585494949496,
+        "width": 0.03278833738039222,
+        "height": 0.011321212121211954,
+        "page": 9
+      }
+    ],
+    "block_id": "8337eb0e-4f46-4dee-ba68-826b97067625"
+  },
+  {
+    "id": 293,
+    "text": "While our sidebar interface provides the capability for 716 CiteRead: Integrating Localized Citation Contexts into Scientific Paper Reading IUI '22, March 2225, 2022, Helsinki, Finland additional scaling through the stacking of citation context cards, with the ability to then paginate through a stack, a large stack of citation contexts may be difficult to explore effectively.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.5769043297254902,
+        "top": 0.8844315292929292,
+        "width": 0.3354629120000001,
+        "height": 0.011321212121212176,
+        "page": 9
+      },
+      {
+        "left": 0.4820261437908497,
+        "top": 0.9521792929292929,
+        "width": 0.022058823529411742,
+        "height": 0.011363636363636354,
+        "page": 9
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.0783156446969697,
+        "width": 0.8241846509803922,
+        "height": 0.00880530303030301,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.10956031717171716,
+        "width": 0.39417788800000014,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.08736437908496732,
+        "top": 0.1233974383838383,
+        "width": 0.393106696219608,
+        "height": 0.011321212121212135,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.1372345595959596,
+        "width": 0.3327478509176472,
+        "height": 0.011321212121212149,
+        "page": 10
+      }
+    ],
+    "block_id": "8337eb0e-4f46-4dee-ba68-826b97067625"
+  },
+  {
+    "id": 295,
+    "text": "For instance, in testing our selection method, we found that most citances that cite a reference paper simply provide a high level summary of the paper, which our formative study confirmed as unhelpful.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 2,
+    "boxes": [
+      {
+        "left": 0.08790522875816993,
+        "top": 0.206418903030303,
+        "width": 0.39256211927843154,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.2202560242424243,
+        "width": 0.3925639360000001,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.23409314545454543,
+        "width": 0.3925639360000002,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.24793026666666673,
+        "width": 0.06115805628235292,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "60d0017f-f972-47c1-838c-3de4a19704ca"
+  },
+  {
+    "id": 297,
+    "text": "Thus, between being more selective versus incorporating more annotations, we argue that it would be more important to be selective and achieve high precision when elevating a citing paper to an annotation in the margins for a reader.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 1.9,
+    "boxes": [
+      {
+        "left": 0.3948353564444446,
+        "top": 0.275604509090909,
+        "width": 0.08563087811764719,
+        "height": 0.01132121212121212,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.2894416303030303,
+        "width": 0.3925639360000002,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.30327748888888884,
+        "width": 0.39256099115294135,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.3171146101010101,
+        "width": 0.3925639360000001,
+        "height": 0.01132121212121212,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.33095173131313127,
+        "width": 0.14525831717647064,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "60d0017f-f972-47c1-838c-3de4a19704ca"
+  },
+  {
+    "id": 300,
+    "text": "It is possible that these kinds of papers might benefit from a different approach than the one we have outlined.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.40801596444444455,
+        "top": 0.4509024888888889,
+        "width": 0.07245027011764693,
+        "height": 0.01132121212121212,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4647396101010101,
+        "width": 0.3925635697254905,
+        "height": 0.01132121212121212,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.47857673131313133,
+        "width": 0.18642638534901962,
+        "height": 0.01132121212121212,
+        "page": 10
+      }
+    ],
+    "block_id": "dc33f3ea-7b5a-4465-ac44-c98e5aaa683a"
+  },
+  {
+    "id": 303,
+    "text": "Some of the participants in our user study discussed how sometimes it was not immediately clear why an annotation was placed where it was or what it was anchored to.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.20776797385620915,
+        "top": 0.5846449131313131,
+        "width": 0.2751679156705882,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5984820343434343,
+        "width": 0.39503795915294126,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6123191555555555,
+        "width": 0.3435860015686277,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "e4c9e66a-a367-48d7-a5f2-11e98aee4e1e"
+  },
+  {
+    "id": 304,
+    "text": "We also found that at times we disagreed on or were unsure of where a particular citation context should be localized, as the reference paper touched upon the relevant point in multiple places.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 1.9,
+    "boxes": [
+      {
+        "left": 0.43493714091503294,
+        "top": 0.6123191555555555,
+        "width": 0.04552909364705876,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6261562767676767,
+        "width": 0.3950305750588237,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6399933979797979,
+        "width": 0.3928336019450981,
+        "height": 0.011321212121212065,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6538305191919191,
+        "width": 0.29860251043137265,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "e4c9e66a-a367-48d7-a5f2-11e98aee4e1e"
+  },
+  {
+    "id": 305,
+    "text": "In addition, our localization method allows for the granularity of the localization to vary, where sometimes an annotation is linked to a section as a whole as opposed to a particular sentence.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.38998236569934647,
+        "top": 0.6538305191919191,
+        "width": 0.09075667011764699,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6676676404040405,
+        "width": 0.39256723247058833,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6815034989898989,
+        "width": 0.39256393600000017,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6953406202020201,
+        "width": 0.27281766400000007,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "e4c9e66a-a367-48d7-a5f2-11e98aee4e1e"
+  },
+  {
+    "id": 312,
+    "text": "One interesting additional observation that we made was that the presence of annotations in the margins of the reference paper helped to also structure how participants read so that they focused on different parts of the paper itself.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.7607049810196079,
+        "top": 0.1233974383838383,
+        "width": 0.151390338509804,
+        "height": 0.011321212121212135,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.1372345595959596,
+        "width": 0.39256411181176465,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.15107168080808073,
+        "width": 0.3931019200000002,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.16490753939393943,
+        "width": 0.3928338070588234,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.17874466060606056,
+        "width": 0.03314579200000001,
+        "height": 0.011321212121212149,
+        "page": 10
+      }
+    ],
+    "block_id": "7796b7d7-6043-4ae3-8481-cade8ddf6648"
+  },
+  {
+    "id": 313,
+    "text": "We note that users in the CiteRead condition performed better even on finding local answers that were directly in the paper and did not require reading any of the citation contexts.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 1.9893460452556608,
+    "boxes": [
+      {
+        "left": 0.5572380257254902,
+        "top": 0.17874466060606056,
+        "width": 0.35485702399999997,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.19258178181818186,
+        "width": 0.39283380705882365,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.206418903030303,
+        "width": 0.3360708251294118,
+        "height": 0.011321212121212149,
+        "page": 10
+      }
+    ],
+    "block_id": "7796b7d7-6043-4ae3-8481-cade8ddf6648"
+  },
+  {
+    "id": 314,
+    "text": "It turned out that the answers for those local options could be found in close proximity to the annotations, though we did not purposefully intend to collect answers from those places.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 1.8,
+    "boxes": [
+      {
+        "left": 0.8592492625568628,
+        "top": 0.206418903030303,
+        "width": 0.05284717044705867,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.2202560242424243,
+        "width": 0.3925610058039216,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.23409314545454543,
+        "width": 0.39503004762352956,
+        "height": 0.011321212121212149,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.24793026666666673,
+        "width": 0.2535899224470589,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "7796b7d7-6043-4ae3-8481-cade8ddf6648"
+  },
+  {
+    "id": 317,
+    "text": "Our evaluation was limited in several ways.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.5195343137254902,
+        "top": 0.38630021616161614,
+        "width": 0.26737804799999987,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "48d84a6b-8490-4e75-bf76-3d3de717b30f"
+  },
+  {
+    "id": 318,
+    "text": "First, our controlled lab experiment evaluated the benefits of CiteRead for a specific slice of scientists (HCI researchers) on a small set of papers.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.7907380257254902,
+        "top": 0.38630021616161614,
+        "width": 0.12136022400000002,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.40013733737373736,
+        "width": 0.3925573811241829,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.4139744585858586,
+        "width": 0.3531072634980392,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "48d84a6b-8490-4e75-bf76-3d3de717b30f"
+  },
+  {
+    "id": 319,
+    "text": "While our results are positive, more studies are needed to determine the generality of our findings.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 1.8,
+    "boxes": [
+      {
+        "left": 0.8763327452235294,
+        "top": 0.4139744585858586,
+        "width": 0.03576814167843134,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.4278115797979798,
+        "width": 0.39255467658039234,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.441648701010101,
+        "width": 0.16052844799999988,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "48d84a6b-8490-4e75-bf76-3d3de717b30f"
+  },
+  {
+    "id": 321,
+    "text": "Our end-to-end system evaluation provided support for its effectiveness in terms of strong quantitative and qualitative results corroborating the value of these features, but evaluations of each individual technique on many papers would provide additional evidence.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 1.6,
+    "boxes": [
+      {
+        "left": 0.888459478901961,
+        "top": 0.4693216808080808,
+        "width": 0.023914575529411786,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.483158802020202,
+        "width": 0.3925610058039214,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.4969959232323232,
+        "width": 0.39256100580392184,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5108330444444444,
+        "width": 0.39503666986666675,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.5246701656565657,
+        "width": 0.3427421930039216,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "48d84a6b-8490-4e75-bf76-3d3de717b30f"
+  },
+  {
+    "id": 327,
+    "text": "We also note several potential risks associated with our approach.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.5358137254901961,
+        "top": 0.7045514787878788,
+        "width": 0.37853327811764725,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "984f0ce1-9404-4735-bcca-55968b419733"
+  },
+  {
+    "id": 328,
+    "text": "As with any discovery tool that redirects user attention, we must be cognizant of possible harms this may produce.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.5190212418300654,
+        "top": 0.7183886,
+        "width": 0.39307789239215707,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.7322257212121212,
+        "width": 0.27613153995294115,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "984f0ce1-9404-4735-bcca-55968b419733"
+  },
+  {
+    "id": 332,
+    "text": "We believe CiteRead's benefits merit these risks, and note several mitigating factors.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 0.8,
+    "boxes": [
+      {
+        "left": 0.7481307038431373,
+        "top": 0.8014100646464647,
+        "width": 0.1664433637542484,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8152471858585858,
+        "width": 0.3519892618352941,
+        "height": 0.011321212121212176,
+        "page": 10
+      }
+    ],
+    "block_id": "984f0ce1-9404-4735-bcca-55968b419733"
+  },
+  {
+    "id": 333,
+    "text": "While CiteRead does select a subset of follow-on work to supply, we believe that lowering the barrier to finding follow-on work while reading will result overall in increased discovery.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "result",
+    "score": 1.7889202058315277,
+    "boxes": [
+      {
+        "left": 0.8752111247686276,
+        "top": 0.8152471858585858,
+        "width": 0.036890421427450915,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.829084307070707,
+        "width": 0.39255888271895434,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8429214282828282,
+        "width": 0.3925626174117647,
+        "height": 0.011321212121212176,
+        "page": 10
+      },
+      {
+        "left": 0.5195343137254902,
+        "top": 0.8567585494949496,
+        "width": 0.29549417308235293,
+        "height": 0.011321212121211954,
+        "page": 10
+      }
+    ],
+    "block_id": "984f0ce1-9404-4735-bcca-55968b419733"
+  },
+  {
+    "id": 335,
+    "text": "Lastly, we believe the additional discovery benefit to the authors of the citing paper in general outweighs potential misrepresentation risk.",
+    "section": "5 USER STUDY @@ 5.3 Qualitative Findings",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.22639668296993457,
+        "top": 0.1233974383838383,
+        "width": 0.25445425703529434,
+        "height": 0.011321212121212135,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.1372345595959596,
+        "width": 0.39256393600000034,
+        "height": 0.011321212121212149,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.15107168080808073,
+        "width": 0.19463827450980398,
+        "height": 0.011321212121212149,
+        "page": 11
+      }
+    ],
+    "block_id": "5e538490-ff07-461d-bc48-dab942403ab6"
+  },
+  {
+    "id": 337,
+    "text": "In this work, we present a system, CiteRead, that integrates information from follow-on work directly in the scientific paper reading experience.",
+    "section": "8 CONCLUSION AND FUTURE WORK",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.08790522875816993,
+        "top": 0.19676865050505044,
+        "width": 0.3950345219346405,
+        "height": 0.011321212121212149,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.21060577171717174,
+        "width": 0.39256100580392167,
+        "height": 0.011321212121212149,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.22444289292929287,
+        "width": 0.06761984188235294,
+        "height": 0.011321212121212149,
+        "page": 11
+      }
+    ],
+    "block_id": "3ac9d51f-c357-4c32-8d50-90a00c53d6d4"
+  },
+  {
+    "id": 338,
+    "text": "Through a formative study, we discovered what types of information from citing papers scientists are interested in consuming while reading.",
+    "section": "8 CONCLUSION AND FUTURE WORK",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.15919878932287582,
+        "top": 0.22444289292929287,
+        "width": 0.32126743058823537,
+        "height": 0.011321212121212149,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.23828001414141417,
+        "width": 0.3950346919843139,
+        "height": 0.011321212121212149,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.2521171353535353,
+        "width": 0.13005440878431374,
+        "height": 0.011321212121212176,
+        "page": 11
+      }
+    ],
+    "block_id": "3ac9d51f-c357-4c32-8d50-90a00c53d6d4"
+  },
+  {
+    "id": 339,
+    "text": "Based on these findings, we developed novel techniques to select and localize citation contexts in ways that support these discovered information needs.",
+    "section": "8 CONCLUSION AND FUTURE WORK",
+    "label": "novelty",
+    "score": 1.8,
+    "boxes": [
+      {
+        "left": 0.2212763264836601,
+        "top": 0.2521171353535353,
+        "width": 0.25918990807843145,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.2659542565656566,
+        "width": 0.3925639360000001,
+        "height": 0.01132121212121212,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.27979137777777774,
+        "width": 0.2636353378509804,
+        "height": 0.011321212121212176,
+        "page": 11
+      }
+    ],
+    "block_id": "3ac9d51f-c357-4c32-8d50-90a00c53d6d4"
+  },
+  {
+    "id": 341,
+    "text": "Our quantitative and qualitative evaluation of CiteRead demonstrates the benefits of this approach for understanding follow-on work, while reducing cognitive load.",
+    "section": "8 CONCLUSION AND FUTURE WORK",
+    "label": "result",
+    "score": 2.7,
+    "boxes": [
+      {
+        "left": 0.29375531252287584,
+        "top": 0.3074643575757576,
+        "width": 0.1867109220392158,
+        "height": 0.01132121212121212,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.32130147878787874,
+        "width": 0.3925554119738563,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.3351386,
+        "width": 0.39481274428235313,
+        "height": 0.01132121212121212,
+        "page": 11
+      }
+    ],
+    "block_id": "3ac9d51f-c357-4c32-8d50-90a00c53d6d4"
+  },
+  {
+    "id": 343,
+    "text": "We intend ultimately to deploy our system on a broad range of papers.",
+    "section": "8 CONCLUSION AND FUTURE WORK",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.10418464052287582,
+        "top": 0.3904870848484848,
+        "width": 0.3762849972705885,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.40432420606060604,
+        "width": 0.04208318305882351,
+        "height": 0.011321212121212176,
+        "page": 11
+      }
+    ],
+    "block_id": "ff00fcfb-b635-4388-a0b1-7cde16895c2e"
+  },
+  {
+    "id": 344,
+    "text": "Towards this end, we plan to improve the robustness of our citation context selection and localization approaches by collecting a new annotated dataset and tuning our models using supervised learning.",
+    "section": "8 CONCLUSION AND FUTURE WORK",
+    "label": "novelty",
+    "score": 1.9,
+    "boxes": [
+      {
+        "left": 0.13344868036601307,
+        "top": 0.40432420606060604,
+        "width": 0.3472903554509803,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.41816132727272726,
+        "width": 0.39256100580392167,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4319971858585859,
+        "width": 0.3925582953725491,
+        "height": 0.01132121212121212,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4458343070707071,
+        "width": 0.0530162574117647,
+        "height": 0.01132121212121212,
+        "page": 11
+      }
+    ],
+    "block_id": "ff00fcfb-b635-4388-a0b1-7cde16895c2e"
+  },
+  {
+    "id": 345,
+    "text": "We also plan to conduct field studies with a wider range of scientists, and investigate the potential engagement benefits of CiteRead.",
+    "section": "8 CONCLUSION AND FUTURE WORK",
+    "label": "novelty",
+    "score": 1.8,
+    "boxes": [
+      {
+        "left": 0.1445878940130719,
+        "top": 0.4458343070707071,
+        "width": 0.33587228969411775,
+        "height": 0.01132121212121212,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4596714282828283,
+        "width": 0.3925546765803924,
+        "height": 0.01132121212121212,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.4735085494949495,
+        "width": 0.06527624209150328,
+        "height": 0.01132121212121212,
+        "page": 11
+      }
+    ],
+    "block_id": "ff00fcfb-b635-4388-a0b1-7cde16895c2e"
+  },
+  {
+    "id": 347,
+    "text": "While we have tested our approach in the scientific literature domain, we are excited about the possibilities of localized discussion to augment reading experiences across a range of domains.",
+    "section": "8 CONCLUSION AND FUTURE WORK",
+    "label": "novelty",
+    "score": 2,
+    "boxes": [
+      {
+        "left": 0.10418464052287582,
+        "top": 0.5011827919191919,
+        "width": 0.37627497600000015,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5150199131313131,
+        "width": 0.39503004762352933,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.5288570343434343,
+        "width": 0.3948204800000001,
+        "height": 0.011321212121212176,
+        "page": 11
+      }
+    ],
+    "block_id": "d6b5a90d-4513-488c-8732-5aab6fecc7bc"
+  },
+  {
+    "id": 350,
+    "text": "We envision the application of integrated reading experiences like CiteRead to enable seamless switching between articles and automatically-localized commentary for a broad range of domains.",
+    "section": "8 CONCLUSION AND FUTURE WORK",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.3456100264575163,
+        "top": 0.5980413777777778,
+        "width": 0.13733536000000002,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.611878498989899,
+        "width": 0.3925669478901961,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6257156202020202,
+        "width": 0.39256393600000017,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.6395527414141414,
+        "width": 0.25573286274509816,
+        "height": 0.011321212121212176,
+        "page": 11
+      }
+    ],
+    "block_id": "d6b5a90d-4513-488c-8732-5aab6fecc7bc"
+  },
+  {
+    "id": 352,
+    "text": "We thank Marti Hearst, Andrew Head, Dongyeop Kang, Arman Cohan, Kyle Lo, Matt Latzke, Shannon Shen, Tal August, and Raymond Fok for helpful early discussions, as well as the anonymous reviewers for useful feedback on the manuscript.",
+    "section": "ACKNOWLEDGMENTS",
+    "label": "method",
+    "score": 1,
+    "boxes": [
+      {
+        "left": 0.08720261437908497,
+        "top": 0.6852509737373738,
+        "width": 0.3932663040000002,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.699088094949495,
+        "width": 0.3950334466509806,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.7129239535353535,
+        "width": 0.39255495494901976,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.7267610747474748,
+        "width": 0.28445991905882356,
+        "height": 0.011321212121212176,
+        "page": 11
+      }
+    ],
+    "block_id": "ea38777c-b069-4026-b423-33a76f22ea09"
+  },
+  {
+    "id": 353,
+    "text": "We also thank the researchers who participated in our user studies and assisted with piloting the system.",
+    "section": "ACKNOWLEDGMENTS",
+    "label": "method",
+    "score": 0.9,
+    "boxes": [
+      {
+        "left": 0.3757105526797386,
+        "top": 0.7267610747474748,
+        "width": 0.1047556818823529,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.740598195959596,
+        "width": 0.39256223648627453,
+        "height": 0.011321212121212176,
+        "page": 11
+      },
+      {
+        "left": 0.08790522875816993,
+        "top": 0.7544353171717172,
+        "width": 0.1180282980392157,
+        "height": 0.011321212121212176,
+        "page": 11
+      }
+    ],
+    "block_id": "ea38777c-b069-4026-b423-33a76f22ea09"
+  }
+]
