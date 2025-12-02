@@ -5,7 +5,7 @@ const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_U
 
 export async function POST(request: NextRequest) {
   try {
-    const { user_id, title, initial_message, force_new } = await request.json()
+    const { user_id, title, initial_message, force_new, document_key } = await request.json()
 
     // Reduced timeout to 30 seconds - backend should respond faster
     // If it takes longer, there's likely a connection issue
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
             title: title || "Chat Session",
             initial_message: initial_message || null,
             force_new: force_new || false,
+            document_key: document_key || null, // Pass document_key to backend
           }),
           signal: controller.signal,
         })
@@ -178,12 +179,90 @@ export async function GET(request: NextRequest) {
       }
       throw fetchError
     }
-  } catch (error: any) {
+    } catch (error: any) {
     console.error("[ChatSession] Error:", error)
     return NextResponse.json(
       { 
         error: error.message || "Failed to get chat session",
         details: "Please ensure the backend is running and accessible"
+      },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const document_id = searchParams.get("document_id")
+    const document_key = searchParams.get("document_key")
+
+    if (!document_id && !document_key) {
+      return NextResponse.json(
+        { error: "document_id or document_key is required" },
+        { status: 400 }
+      )
+    }
+
+    const url = `${BACKEND_URL}/api/chat/sessions`
+    const params = new URLSearchParams()
+    if (document_id) {
+      params.append("document_id", document_id)
+    }
+    if (document_key) {
+      params.append("document_key", document_key)
+    }
+    const fullUrl = `${url}?${params.toString()}`
+
+    const timeout = 30000
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+    try {
+      const backendResponse = await fetch(fullUrl, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!backendResponse.ok) {
+        const errorText = await backendResponse.text()
+        return NextResponse.json(
+          {
+            error: "Backend error",
+            details: errorText,
+          },
+          { status: backendResponse.status }
+        )
+      }
+
+      const data = await backendResponse.json()
+      return NextResponse.json(data)
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId)
+
+      if (fetchError.name === "AbortError" || fetchError.code === 23) {
+        return NextResponse.json(
+          {
+            error: "Request timeout",
+            details: "Backend took too long to respond. Please try again.",
+          },
+          { status: 504 }
+        )
+      }
+
+      throw fetchError
+    }
+  } catch (error: any) {
+    console.error("[ChatSession] Error deleting sessions:", error)
+    return NextResponse.json(
+      {
+        error: error?.message || "Failed to delete chat sessions",
+        details: "Please ensure the backend is running and accessible",
       },
       { status: 500 }
     )

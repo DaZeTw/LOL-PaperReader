@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/components/auth-provider"
+import { PipelineStatusProvider } from "@/contexts/PipelineStatusContext"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -21,10 +22,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
         <AuthProvider>
-          <Suspense fallback={<div>Loading...</div>}>
-            {children}
-            <Toaster />
-          </Suspense>
+          <PipelineStatusProvider>
+            <Suspense fallback={<div>Loading...</div>}>
+              {children}
+              <Toaster />
+            </Suspense>
+          </PipelineStatusProvider>
         </AuthProvider>
         <Analytics />
       </body>

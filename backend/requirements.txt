@@ -14,7 +14,8 @@ pymongo==4.6.0
 asyncpg==0.29.0
 
 # Elasticsearch - Vector Database for Embeddings
-elasticsearch>=8.11.0  # Includes both sync and async clients
+# Pin to exact 8.11.0 to avoid version 9 compatibility issues with ES 7/8 servers
+elasticsearch==8.11.0  # Includes both sync and async clients
 
 # AI/ML APIs
 openai==1.109.0
@@ -35,7 +36,7 @@ Pillow==10.1.0
 # Giữ torch cho các ML models khác (embeddings, etc.)
 torch>=2.0.0,<3.0.0
 torchvision>=0.15.0
-transformers==4.35.0
+transformers==4.40.1
 sentence-transformers==2.2.2
 
 # Visual BGE dependencies

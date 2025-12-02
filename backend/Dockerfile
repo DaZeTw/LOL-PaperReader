@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir \
     pathlib2==2.3.7 \
     motor==3.3.2 \
     pymongo==4.6.0 \
-    "elasticsearch>=8.11.0" \
+    "elasticsearch==8.11.0" \
     minio==7.2.7 \
     asyncpg==0.29.0 \
     Authlib==1.3.2 \
@@ -39,21 +39,25 @@ RUN pip install --no-cache-dir torch==2.2.2+cpu torchvision==0.17.2+cpu \
 
 # ---- 5. ML/AI packages ----
 RUN pip install --no-cache-dir \
-    transformers==4.35.0 \
-    sentence-transformers==2.2.2 \
+    "sentence-transformers==2.2.2" \
     "pandas>=2.0.0,<3.0.0" \
-    numpy==1.24.3 \
-    scikit-learn==1.3.2 \
+    "numpy==1.24.3" \
+    "scikit-learn==1.3.2" \
     "pymupdf>=1.23.0" \
-    Pillow==10.1.0 \
-    einops>=0.7.0 \
-    regex>=2023.10.3 \
-    timm>=0.9.0 \
-    huggingface_hub>=0.19.0 \
-    tqdm>=4.65.0 \
+    "Pillow==10.1.0" \
+    "einops>=0.7.0" \
+    "regex>=2023.10.3" \
+    "timm>=0.9.0" \
+    "huggingface_hub>=0.19.0" \
+    "tqdm>=4.65.0" \
     "openai==1.109.0" \
     "httpx>=0.27.0" \
-    pydantic-settings
+    "pydantic-settings"
+    
+RUN pip install --no-cache-dir \
+    "transformers==4.40.1" \
+    "llama-index" \
+    "llama-index-embeddings-huggingface"
 
 RUN pip install --no-cache-dir ftfy
 
@@ -64,6 +68,8 @@ COPY src/ ./src/
 # Không hardcode để Docker Compose override được
 ENV PYTHONPATH=/app/src
 ENV PORT=8000
+# Force Elasticsearch client to use API versioning (version 8 compatibility)
+ENV ELASTIC_CLIENT_APIVERSIONING=1
 
 # ---- 8. Expose port ----
 EXPOSE 8000

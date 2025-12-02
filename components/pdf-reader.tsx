@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import type { UploadedDocument } from "@/components/pdf-upload"
 import { BACKEND_API_URL } from "@/lib/config"
 import { useAuth } from "@/hooks/useAuth"
+import { cn } from "@/lib/utils"
 
 interface NavigationTarget {
   page: number
@@ -236,16 +237,23 @@ export function SinglePDFReader({ file, tabId, isActive, onOpenDocument }: Singl
         />
       </div>
 
-      {/* QA Interface Sidebar - Always present when tab is active */}
-      {isActive && (
+      {/* QA Interface Sidebar - Always rendered to preserve state, only hidden when tab is inactive */}
+      <div
+        key={`qa-wrapper-${tabId}-${file.name}`}
+        className={cn(
+          "absolute inset-y-0 right-0 transition-opacity duration-200",
+          isActive ? "opacity-100 z-30 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
+        )}
+      >
         <QAInterface
           tabId={tabId}
           pdfFile={file}
           onHighlight={handleHighlight}
           isOpen={qaOpen}
           onToggle={() => setQaOpen(!qaOpen)}
+          isActive={isActive}
         />
-      )}
+      </div>
     </div>
   )
 }

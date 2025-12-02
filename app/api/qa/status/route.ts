@@ -5,7 +5,21 @@ const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_U
 
 export async function GET(request: NextRequest) {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/pdf/status`, {
+    // Extract query parameters
+    const { searchParams } = new URL(request.url)
+    const pdfName = searchParams.get("pdf_name")
+    const documentKey = searchParams.get("document_key")
+    
+    // Build URL with query parameters
+    const queryParams = new URLSearchParams()
+    if (pdfName) queryParams.append("pdf_name", pdfName)
+    if (documentKey) queryParams.append("document_key", documentKey)
+    
+    const url = queryParams.toString() 
+      ? `${BACKEND_URL}/api/pdf/status?${queryParams.toString()}`
+      : `${BACKEND_URL}/api/pdf/status`
+    
+    const res = await fetch(url, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     })

@@ -134,5 +134,43 @@ class ChatService:
                 return await self.get_session(session["session_id"])
         return None
 
+    async def find_session_by_document(
+        self,
+        document_key: Optional[str] = None,
+        document_id: Optional[str] = None,
+        title: Optional[str] = None,
+        user_id: Optional[str] = None,
+    ) -> Optional[ChatSession]:
+        """Find an existing chat session by document_key, document_id, or title."""
+        session_doc = await chat_repository.find_session_by_document(
+            document_key=document_key,
+            document_id=document_id,
+            title=title,
+            user_id=user_id,
+        )
+        if not session_doc:
+            return None
+
+        messages = [
+            ChatMessage(
+                role=msg.get("role"),
+                content=msg.get("content"),
+                metadata=msg.get("metadata"),
+                timestamp=msg.get("created_at"),
+            )
+            for msg in session_doc.get("messages", [])
+            if msg.get("role") != "system"
+        ]
+
+        return ChatSession(
+            session_id=session_doc["session_id"],
+            user_id=session_doc.get("user_id"),
+            title=session_doc.get("title"),
+            metadata=session_doc.get("metadata") or {},
+            messages=messages,
+            created_at=session_doc.get("created_at"),
+            updated_at=session_doc.get("updated_at"),
+        )
+
 
 chat_service = ChatService()

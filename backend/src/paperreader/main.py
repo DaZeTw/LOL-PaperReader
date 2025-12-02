@@ -22,9 +22,6 @@ from paperreader.database.postgres import (
     init_postgres_pool,
 )
 from paperreader.services.qa.embeddings import get_embedder
-from paperreader.services.qa.pipeline import get_pipeline
-from paperreader.services.qa.config import PipelineConfig
-
 load_dotenv()
 
 
@@ -95,65 +92,18 @@ def create_app() -> FastAPI:
     # ------------------------
     @app.on_event("startup")
     async def startup_event():
-        """Initialize database and schedule warmup in background"""
+        """Initialize database connections and preload embedder model."""
         await mongodb.connect()
         await init_postgres_pool()
-        # Clear parser output directory on startup to start fresh
-        try:
-            from pathlib import Path
-            from paperreader.services.qa.config import PipelineConfig
-            import shutil
-            import threading
-            
-            # Reset cancel flag on startup (access via module attribute)
-            try:
-                from paperreader.api import pdf_routes
-                if hasattr(pdf_routes, '_PARSE_CANCEL_FLAG'):
-                    pdf_routes._PARSE_CANCEL_FLAG.clear()
-                    print("[STARTUP] ✅ Cancel flag reset")
-            except Exception as e:
-                print(f"[STARTUP] ⚠️ Could not reset cancel flag: {e}")
-            
-            cfg = PipelineConfig()
-            data_dir = Path(cfg.data_dir)
-            
-            if data_dir.exists():
-                print(f"[STARTUP] Clearing parser output directory: {data_dir}")
-                deleted_count = 0
-                for item in data_dir.iterdir():
-                    try:
-                        if item.is_file():
-                            item.unlink()
-                            deleted_count += 1
-                        elif item.is_dir():
-                            shutil.rmtree(item)
-                            deleted_count += 1
-                    except Exception as e:
-                        print(f"[STARTUP] Failed to delete {item}: {e}")
-                        continue
-                print(f"[STARTUP] ✅ Cleared {deleted_count} items from output directory")
-            else:
-                print(f"[STARTUP] Output directory does not exist: {data_dir}")
-            
-            # Reset pipeline cache
-            from paperreader.services.qa.pipeline import reset_pipeline_cache
-            reset_pipeline_cache()
-            print("[STARTUP] ✅ Pipeline cache reset")
-        except Exception as e:
-            print(f"[STARTUP] ⚠️ Error clearing output directory: {e}")
-            import traceback
-            print(f"[STARTUP] Traceback: {traceback.format_exc()}")
         
-        # Warmup in background so startup is non-blocking
+        # Preload Visualized_BGE embedder model in background (non-blocking)
         import asyncio
-
+        
         async def do_warmup():
-            # Preload Visualized_BGE embedder (extend timeout via env if needed)
             try:
                 print("[STARTUP] (bg) Preloading Visualized_BGE embedder...")
                 embedder = get_embedder(None)
-                # CRITICAL: Preload model AND tokenizer to avoid download delay during first chat
-                # This triggers both model loading and tokenizer download
+                # CRITICAL: Preload model AND tokenizer to avoid download delay during first chunking
                 print("[STARTUP] (bg) Triggering model load (this will download tokenizer files if needed)...")
                 await asyncio.to_thread(embedder._ensure_model)  # Load model which loads tokenizer
                 print("[STARTUP] (bg) Model loaded, now testing embedding...")
@@ -163,16 +113,7 @@ def create_app() -> FastAPI:
                 print(f"[STARTUP] (bg) Embedder preload failed (will retry on first use): {e}")
                 import traceback
                 print(f"[STARTUP] (bg) Traceback: {traceback.format_exc()}")
-            
-            # Warm QA pipeline with current parsed docs
-            try:
-                print("[STARTUP] (bg) Building QA pipeline cache...")
-                cfg = PipelineConfig()
-                await get_pipeline(cfg)
-                print("[STARTUP] (bg) QA pipeline ready")
-            except Exception as e:
-                print(f"[STARTUP] (bg) QA pipeline warm-up failed (will build on first request): {e}")
-
+        
         asyncio.create_task(do_warmup())
 
     @app.on_event("shutdown")

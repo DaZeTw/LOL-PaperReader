@@ -5,6 +5,7 @@ import hashlib
 import os
 import secrets
 import time
+from collections import deque
 from pathlib import Path
 from typing import List, Optional
 
@@ -17,6 +18,7 @@ from pydantic import BaseModel
 from paperreader.api.dependencies import require_user_id
 from paperreader.services.documents.minio_client import (
     delete_object,
+    delete_objects_by_prefix,
     get_presigned_url,
     upload_bytes,
 )
@@ -35,6 +37,9 @@ from paperreader.services.documents.repository import (
     update_document,
     update_document_status,
 )
+from paperreader.services.documents.chunk_repository import delete_document_chunks
+from paperreader.services.qa.elasticsearch_client import delete_document_chunks as delete_elasticsearch_chunks
+from paperreader.services.chat import repository as chat_repository
 from paperreader.services.documents.utils import format_document_for_response
 
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
@@ -45,6 +50,18 @@ BACKEND_INTERNAL_URL = (
     or "http://127.0.0.1:8000"
 ).rstrip("/")
 MINIO_BUCKET = os.getenv("MINIO_BUCKET", "pdf-documents")
+
+# PDF Processing Queue - processes PDFs sequentially
+_PDF_QUEUE: deque = deque()
+_PDF_QUEUE_PROCESSING = False
+_PDF_QUEUE_LOCK: Optional[asyncio.Lock] = None
+
+def _get_queue_lock() -> asyncio.Lock:
+    """Get or create the queue lock."""
+    global _PDF_QUEUE_LOCK
+    if _PDF_QUEUE_LOCK is None:
+        _PDF_QUEUE_LOCK = asyncio.Lock()
+    return _PDF_QUEUE_LOCK
 
 
 class DeleteDocumentsRequest(BaseModel):
@@ -152,13 +169,11 @@ async def upload_document(
         await update_document_status(document["_id"], "parsing")
         document["status"] = "parsing"
 
-    # Start parsing asynchronously - this runs in background and doesn't block file access
-    asyncio.create_task(
-        _forward_to_parser(
-            document_id=str(document.get("_id")),
-            file_bytes=file_bytes,
-            filename=filename,
-        )
+    # Add PDF to processing queue - this ensures sequential processing
+    await _enqueue_pdf_processing(
+        document_id=str(document.get("_id")),
+        file_bytes=file_bytes,
+        filename=filename,
     )
 
     formatted = format_document_for_response(document)
@@ -195,6 +210,55 @@ async def delete_documents(
                 await delete_object(MINIO_BUCKET, stored_path)
             except Exception as exc:
                 print(f"[Documents] Failed to delete {stored_path} from MinIO: {exc}")
+        
+        # Delete associated images and tables from MinIO
+        # Path pattern: {user_id}/document/{document_id}/...
+        doc_id = doc.get("_id")
+        if doc_id:
+            document_id_str = str(doc_id)
+            asset_prefix = f"{user_id}/document/{document_id_str}/"
+            try:
+                deleted_count = await delete_objects_by_prefix(MINIO_BUCKET, asset_prefix)
+                if deleted_count > 0:
+                    print(f"[Documents] Deleted {deleted_count} associated files (images/tables) for document {document_id_str}")
+            except Exception as exc:
+                print(f"[Documents] Failed to delete associated files for document {document_id_str}: {exc}")
+            
+            # Get document_key from document (usually the PDF filename without extension)
+            document_key = doc.get("filename") or doc.get("title") or document_id_str
+            if document_key and document_key.endswith(".pdf"):
+                document_key = document_key[:-4]  # Remove .pdf extension
+            
+            # Delete chunks from MongoDB
+            try:
+                chunks_deleted = await delete_document_chunks(
+                    document_id=document_id_str,
+                    document_key=document_key
+                )
+                if chunks_deleted > 0:
+                    print(f"[Documents] ✅ Deleted {chunks_deleted} chunks from MongoDB for document {document_id_str}")
+            except Exception as exc:
+                print(f"[Documents] ⚠️ Failed to delete chunks from MongoDB for document {document_id_str}: {exc}")
+            
+            # Delete embeddings from Elasticsearch
+            try:
+                await delete_elasticsearch_chunks(
+                    document_key=document_key,
+                    document_id=document_id_str
+                )
+            except Exception as exc:
+                print(f"[Documents] ⚠️ Failed to delete embeddings from Elasticsearch: {exc}")
+            
+            # Delete chat sessions and messages related to this document
+            try:
+                sessions_deleted = await chat_repository.delete_sessions_by_document(
+                    document_id=document_id_str,
+                    document_key=document_key
+                )
+                if sessions_deleted > 0:
+                    print(f"[Documents] ✅ Deleted {sessions_deleted} chat sessions and messages for document {document_id_str}")
+            except Exception as exc:
+                print(f"[Documents] ⚠️ Failed to delete chat sessions for document {document_id_str}: {exc}")
 
     workspace_groups = {}
     for doc in documents:
@@ -253,6 +317,9 @@ async def _stream_document_response(document_id: str, user_id: str):
     
     print(f"[Documents] Serving file for document {document_id}: {stored_path}")
 
+    document_status = str(document.get("status") or "").lower()
+    embedding_status = str(document.get("embedding_status") or "").lower()
+
     try:
         internal_url = await get_presigned_url(MINIO_BUCKET, stored_path, external=False)
         response = await _try_stream_presigned(internal_url, filename)
@@ -272,6 +339,11 @@ async def _stream_document_response(document_id: str, user_id: str):
         print(f"[Documents] Error with external presigned URL: {exc}")
 
     print(f"[Documents] Failed to fetch document {document_id} from storage (stored_path: {stored_path})")
+    if document_status in {"uploading", "processing", "parsing", "pending"} or embedding_status in {"processing", "pending"}:
+        raise HTTPException(
+            status_code=503,
+            detail="Document is still being processed. Please wait a moment and try again.",
+        )
     raise HTTPException(
         status_code=502, 
         detail="Failed to fetch document from storage. Please try again or contact support if the problem persists."
@@ -292,8 +364,18 @@ async def _try_stream_presigned(url: str, filename: str) -> Optional[StreamingRe
                 if resp.content:
                     print(f"[Documents] Response body: {resp.content[:200]}")
                 return None
+            content_type = (resp.headers.get("content-type") or "application/pdf").lower()
+            if "pdf" not in content_type and "octet-stream" not in content_type:
+                print(f"[Documents] Unexpected content-type when streaming presigned URL: {content_type}")
+                snippet = resp.content[:200]
+                try:
+                    snippet = snippet.decode("utf-8", errors="ignore")
+                except Exception:
+                    snippet = str(snippet)
+                print(f"[Documents] Response preview (truncated): {snippet}")
+                return None
 
-            content_type = resp.headers.get("content-type", "application/pdf")
+            media_type = "application/pdf" if "pdf" in content_type else content_type
             content_length = resp.headers.get("content-length") or str(len(resp.content))
             content_disposition = resp.headers.get(
                 "content-disposition",
@@ -301,7 +383,7 @@ async def _try_stream_presigned(url: str, filename: str) -> Optional[StreamingRe
             )
 
             headers = {
-                "Content-Type": content_type,
+                "Content-Type": media_type,
                 "Content-Disposition": content_disposition,
                 "Content-Length": content_length,
             }
@@ -313,12 +395,51 @@ async def _try_stream_presigned(url: str, filename: str) -> Optional[StreamingRe
                 for i in range(0, len(content), chunk_size):
                     yield content[i:i + chunk_size]
 
-            return StreamingResponse(iterator(), media_type=content_type, headers=headers)
+            return StreamingResponse(iterator(), media_type=media_type, headers=headers)
     except Exception as exc:
         print(f"[Documents] Error streaming presigned URL: {exc}")
         import traceback
         print(f"[Documents] Traceback: {traceback.format_exc()}")
         return None
+
+
+async def _process_pdf_queue():
+    """Process PDFs from the queue sequentially."""
+    global _PDF_QUEUE_PROCESSING
+    
+    while True:
+        async with _get_queue_lock():
+            if not _PDF_QUEUE:
+                _PDF_QUEUE_PROCESSING = False
+                break
+            _PDF_QUEUE_PROCESSING = True
+            job = _PDF_QUEUE.popleft()
+        
+        document_id, file_bytes, filename = job
+        print(f"[Documents] 🚀 Processing PDF from queue: {filename} (document_id: {document_id}, queue remaining: {len(_PDF_QUEUE)})")
+        
+        try:
+            await _forward_to_parser(document_id, file_bytes, filename)
+            print(f"[Documents] ✅ Completed processing PDF from queue: {filename}")
+        except Exception as exc:
+            print(f"[Documents] ⚠️ Error processing PDF {filename} from queue: {exc}")
+            import traceback
+            print(f"[Documents] Traceback: {traceback.format_exc()}")
+            try:
+                await _mark_document_error(document_id, str(exc))
+            except Exception as mark_error:
+                print(f"[Documents] ⚠️ Failed to mark document error: {mark_error}")
+
+
+async def _enqueue_pdf_processing(document_id: str, file_bytes: bytes, filename: str) -> None:
+    """Add a PDF to the processing queue."""
+    async with _get_queue_lock():
+        _PDF_QUEUE.append((document_id, file_bytes, filename))
+        print(f"[Documents] 📋 Added PDF to queue: {filename} (queue size: {len(_PDF_QUEUE)})")
+        
+        # Start queue processor if not already running
+        if not _PDF_QUEUE_PROCESSING:
+            asyncio.create_task(_process_pdf_queue())
 
 
 async def _forward_to_parser(document_id: Optional[str], file_bytes: bytes, filename: str) -> None:
@@ -370,5 +491,4 @@ async def _mark_document_error(document_id: str, message: str) -> None:
         await update_document_status(ObjectId(document_id), "error")
     except Exception as exc:
         print(f"[Documents] Failed to mark document error: {exc}")
-
 

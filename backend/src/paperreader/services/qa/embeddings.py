@@ -53,14 +53,30 @@ class VisualizedBGEEmbedder(Embedder):
                     candidate = alt
                     break
         self.model_weight_path = candidate
+        # Optional local directory containing HuggingFace config/tokenizer files
+        self._hf_local_dir: Optional[str] = None
+        hf_local_env = os.getenv("VISUAL_BGE_HF_LOCAL_DIR")
+        hf_local_candidates = []
+        if hf_local_env:
+            hf_local_candidates.append(Path(hf_local_env))
+        # Default fallback next to repo-level models cache
+        repo_models_dir = Path(__file__).resolve().parents[3] / "models" / "BAAI__bge-m3"
+        hf_local_candidates.append(repo_models_dir)
+        for cand in hf_local_candidates:
+            try:
+                if cand and cand.exists() and any(cand.glob("**/config.json")):
+                    self._hf_local_dir = str(cand)
+                    print(f"[LOG] Using local HuggingFace assets from {cand}")
+                    break
+            except Exception:
+                continue
         self.model = None
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._torch = torch
         self._loading_lock = False
+        # Note: PyTorch models in eval mode can be used concurrently for inference
+        # We only lock during model loading, not during inference
         self._initialized = True
-        # Cache directory for embeddings
-        self._cache_dir = Path(__file__).resolve().parent.parent.parent / "cache" / "embeddings"
-        self._cache_dir.mkdir(parents=True, exist_ok=True)
 
     # --------------------------
     # Lazy model loading
@@ -90,7 +106,7 @@ class VisualizedBGEEmbedder(Embedder):
             self._loading_lock = True
             try:
                 print(f"🔹 Loading Visualized_BGE model from {self.model_weight_path} ...")
-                print(f"[LOG] This will also load tokenizer from HuggingFace (may download if not cached)...")
+                print(f"[LOG] This will also load tokenizer from HuggingFace (may download if needed)...")
                 from visual_bge.modeling import Visualized_BGE
 
                 model_container = {}
@@ -99,10 +115,14 @@ class VisualizedBGEEmbedder(Embedder):
                 def load_model():
                     try:
                         print(f"[LOG] Starting Visualized_BGE initialization (model + tokenizer)...")
-                        model_container["model"] = Visualized_BGE(
-                            model_name_bge=self.model_name,
-                            model_weight=self.model_weight_path
-                        )
+                        visualized_kwargs = {
+                            "model_name_bge": self.model_name,
+                            "model_weight": self.model_weight_path,
+                        }
+                        if self._hf_local_dir:
+                            visualized_kwargs["from_pretrained"] = self._hf_local_dir
+                            print(f"[LOG] Loading Visualized_BGE using local assets at {self._hf_local_dir}")
+                        model_container["model"] = Visualized_BGE(**visualized_kwargs)
                         print(f"[LOG] ✅ Visualized_BGE initialization completed (model + tokenizer loaded)")
                     except Exception as e:
                         error_container["error"] = e
@@ -112,9 +132,18 @@ class VisualizedBGEEmbedder(Embedder):
                 loader_thread = threading.Thread(target=load_model)
                 loader_thread.start()
                 # Extend timeout to allow heavy weight load on CPU
-                timeout_s = int(os.getenv("VISUAL_BGE_LOAD_TIMEOUT", "300"))
-                print(f"[LOG] Waiting for model+tokenizer load (timeout: {timeout_s}s)...")
-                loader_thread.join(timeout=timeout_s)
+                timeout_env = os.getenv("VISUAL_BGE_LOAD_TIMEOUT", "300")
+                try:
+                    timeout_s = int(timeout_env)
+                except ValueError:
+                    timeout_s = 300
+                wait_forever = timeout_s <= 0
+                if wait_forever:
+                    print(f"[LOG] Waiting for model+tokenizer load without timeout (VISUAL_BGE_LOAD_TIMEOUT={timeout_env})...")
+                    loader_thread.join()
+                else:
+                    print(f"[LOG] Waiting for model+tokenizer load (timeout: {timeout_s}s)...")
+                    loader_thread.join(timeout=timeout_s)
 
                 if loader_thread.is_alive():
                     print(f"[LOG] ⚠️ Model loading timeout (>{timeout_s}s) - this may be due to tokenizer download")
@@ -172,133 +201,82 @@ class VisualizedBGEEmbedder(Embedder):
     # Encode query with image+text (safe timeout)
     # --------------------------
     def encode_query(self, *, image: str | None = None, text: str | None = None) -> List[float]:
+        """Encode query - can be called concurrently with embed() operations"""
         self._ensure_model()
 
-        result_container = {}
-        error_container = {}
-
-        def encode_job():
-            try:
-                with self._torch.no_grad():
-                    if image and text:
-                        # Handle base64 data URLs
-                        if image.startswith("data:image/"):
-                            # Convert base64 data URL to temporary file
-                            import tempfile
-                            import base64
-                            from PIL import Image
-                            import io
-                            
-                            # Extract base64 data
-                            header, data = image.split(',', 1)
-                            img_data = base64.b64decode(data)
-                            
-                            # Create temporary file
-                            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
-                                tmp_file.write(img_data)
-                                tmp_path = tmp_file.name
-                            
-                            try:
-                                emb = self.model.encode(image=tmp_path, text=text)
-                            finally:
-                                # Clean up temporary file
-                                import os
-                                try:
-                                    os.unlink(tmp_path)
-                                except:
-                                    pass
-                        else:
-                            emb = self.model.encode(image=image, text=text)
-                    elif image:
-                        # Handle base64 data URLs
-                        if image.startswith("data:image/"):
-                            # Convert base64 data URL to temporary file
-                            import tempfile
-                            import base64
-                            from PIL import Image
-                            import io
-                            
-                            # Extract base64 data
-                            header, data = image.split(',', 1)
-                            img_data = base64.b64decode(data)
-                            
-                            # Create temporary file
-                            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
-                                tmp_file.write(img_data)
-                                tmp_path = tmp_file.name
-                            
-                            try:
-                                emb = self.model.encode(image=tmp_path)
-                            finally:
-                                # Clean up temporary file
-                                import os
-                                try:
-                                    os.unlink(tmp_path)
-                                except:
-                                    pass
-                        else:
-                            emb = self.model.encode(image=image)
-                    else:
-                        emb = self.model.encode(text=text or "")
-                    result_container["emb"] = emb.detach().cpu().numpy().reshape(-1).tolist()
-            except Exception as e:
-                error_container["err"] = e
-
-        t = threading.Thread(target=encode_job)
-        t.start()
-        t.join(timeout=20)
-
-        if t.is_alive():
-            raise RuntimeError("❌ Query encoding timeout (>20s)")
-        if "err" in error_container:
-            raise RuntimeError(f"❌ Query encoding failed: {error_container['err']}")
-
-        return result_container.get("emb", [])
-
-    # --------------------------
-    # Calculate cache key from chunks
-    # --------------------------
-    def _calculate_chunks_hash(self, chunks: List[Dict[str, Any]]) -> str:
-        """Calculate hash of chunks to identify unique PDF content."""
-        hasher = hashlib.md5()
-        # Include text content and metadata for hash
-        for ch in chunks:
-            text = ch.get("text", "")
-            doc_id = ch.get("doc_id", "")
-            page = ch.get("page", "")
-            # Hash text + metadata
-            hasher.update(f"{doc_id}:{page}:{text[:500]}".encode('utf-8'))
-        return hasher.hexdigest()
-    
-    # --------------------------
-    # Load embeddings from cache
-    # --------------------------
-    def _load_embeddings_cache(self, cache_key: str) -> Optional[List[List[float]]]:
-        """Load embeddings from cache if available."""
-        cache_file = self._cache_dir / f"{cache_key}.pkl"
-        if cache_file.exists():
-            try:
-                with open(cache_file, 'rb') as f:
-                    cached_data = pickle.load(f)
-                    if isinstance(cached_data, list) and len(cached_data) > 0:
-                        print(f"[LOG] ✅ Loaded {len(cached_data)} embeddings from cache")
-                        return cached_data
-            except Exception as e:
-                print(f"[WARNING] Failed to load cache: {e}")
-        return None
-    
-    # --------------------------
-    # Save embeddings to cache
-    # --------------------------
-    def _save_embeddings_cache(self, cache_key: str, embeddings: List[List[float]]) -> None:
-        """Save embeddings to cache."""
-        cache_file = self._cache_dir / f"{cache_key}.pkl"
+        # PyTorch models in eval mode can be used concurrently for inference
+        # No lock needed - model.encode() is thread-safe for inference
+        # Call directly instead of using thread to avoid blocking and allow concurrency
         try:
-            with open(cache_file, 'wb') as f:
-                pickle.dump(embeddings, f)
-            print(f"[LOG] ✅ Saved {len(embeddings)} embeddings to cache")
+            with self._torch.no_grad():
+                if image and text:
+                    # Handle base64 data URLs
+                    if image.startswith("data:image/"):
+                        # Convert base64 data URL to temporary file
+                        import tempfile
+                        import base64
+                        from PIL import Image
+                        import io
+                        
+                        # Extract base64 data
+                        header, data = image.split(',', 1)
+                        img_data = base64.b64decode(data)
+                        
+                        # Create temporary file
+                        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
+                            tmp_file.write(img_data)
+                            tmp_path = tmp_file.name
+                        
+                        try:
+                            emb = self.model.encode(image=tmp_path, text=text)
+                        finally:
+                            # Clean up temporary file
+                            import os
+                            try:
+                                os.unlink(tmp_path)
+                            except:
+                                pass
+                    else:
+                        emb = self.model.encode(image=image, text=text)
+                elif image:
+                    # Handle base64 data URLs
+                    if image.startswith("data:image/"):
+                        # Convert base64 data URL to temporary file
+                        import tempfile
+                        import base64
+                        from PIL import Image
+                        import io
+                        
+                        # Extract base64 data
+                        header, data = image.split(',', 1)
+                        img_data = base64.b64decode(data)
+                        
+                        # Create temporary file
+                        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
+                            tmp_file.write(img_data)
+                            tmp_path = tmp_file.name
+                        
+                        try:
+                            emb = self.model.encode(image=tmp_path)
+                        finally:
+                            # Clean up temporary file
+                            import os
+                            try:
+                                os.unlink(tmp_path)
+                            except:
+                                pass
+                    else:
+                        emb = self.model.encode(image=image)
+                else:
+                    emb = self.model.encode(text=text or "")
+                return emb.detach().cpu().numpy().reshape(-1).tolist()
         except Exception as e:
-            print(f"[WARNING] Failed to save cache: {e}")
+            import traceback
+            error_traceback = traceback.format_exc()
+            print(f"[ERROR] Query encoding failed: {e}")
+            print(f"[ERROR] Traceback: {error_traceback}")
+            raise RuntimeError(f"❌ Query encoding failed: {e}")
+
     
     def _augment_text_with_tables(self, text: str, tables: Optional[List[Dict[str, Any]]]) -> str:
         """Append table contents to base text to enrich embeddings."""
@@ -364,17 +342,6 @@ class VisualizedBGEEmbedder(Embedder):
         if not chunks:
             return []
 
-        # Calculate cache key
-        chunks_hash = self._calculate_chunks_hash(chunks)
-        # Use pdf_identifier if provided, otherwise use hash
-        cache_key = pdf_identifier if pdf_identifier else chunks_hash
-        
-        # Try to load from cache
-        cached_embs = self._load_embeddings_cache(cache_key)
-        if cached_embs is not None and len(cached_embs) == len(chunks):
-            print(f"[LOG] ✅ Using cached embeddings for {len(chunks)} chunks")
-            return cached_embs
-
         # Configurable timeout - allow more time for large batches
         # Default: 60s base + 5s per chunk, minimum 120s, maximum 600s (10 minutes)
         base_timeout = int(os.getenv("CHUNK_EMBEDDING_TIMEOUT_BASE", "60"))
@@ -409,9 +376,6 @@ class VisualizedBGEEmbedder(Embedder):
             total_batches = (len(chunks) + batch_size - 1) // batch_size
             print(f"[LOG] Processing batch {batch_num}/{total_batches} ({len(batch)} chunks)")
 
-            result_container = {}
-            error_container = {}
-
             def embed_job():
                 try:
                     parser_base = Path(__file__).resolve().parent / "parser"
@@ -438,8 +402,8 @@ class VisualizedBGEEmbedder(Embedder):
                         _check_cancel("Before processing batch")
                     except RuntimeError as e:
                         if "cancelled" in str(e).lower():
-                            error_container["err"] = RuntimeError("Embedding was cancelled")
-                            return
+                            raise RuntimeError("Embedding was cancelled") from e
+                        raise
 
                     # Initialize embeddings list with None to maintain order
                     embs: List[Optional[List[float]]] = [None] * len(batch)
@@ -474,8 +438,8 @@ class VisualizedBGEEmbedder(Embedder):
                                 _check_cancel("Before batch tokenizing text-only chunks")
                             except RuntimeError as e:
                                 if "cancelled" in str(e).lower():
-                                    error_container["err"] = RuntimeError("Embedding was cancelled")
-                                    return
+                                    raise RuntimeError("Embedding was cancelled") from e
+                                raise
                             
                             # Extract texts (augmenting with tables) and batch tokenize
                             texts = [
@@ -490,8 +454,8 @@ class VisualizedBGEEmbedder(Embedder):
                                 _check_cancel("Before forward pass for text-only chunks")
                             except RuntimeError as e:
                                 if "cancelled" in str(e).lower():
-                                    error_container["err"] = RuntimeError("Embedding was cancelled")
-                                    return
+                                    raise RuntimeError("Embedding was cancelled") from e
+                                raise
                             
                             # Single forward pass for all text-only chunks
                             text_embs = self.model.encode_text(tokenized)
@@ -508,20 +472,23 @@ class VisualizedBGEEmbedder(Embedder):
                                 _check_cancel(f"Before processing image chunk {img_ch_idx + 1}")
                             except RuntimeError as e:
                                 if "cancelled" in str(e).lower():
-                                    error_container["err"] = RuntimeError("Embedding was cancelled")
-                                    return
+                                    raise RuntimeError("Embedding was cancelled") from e
+                                raise
                             
                             text = self._augment_text_with_tables(ch.get("text") or "", ch.get("tables"))
                             images = ch.get("images") or []
 
-                            vecs = []
+                            # Tìm image có size lớn nhất (file size)
+                            largest_image_path = None
+                            largest_size = 0
+                            
                             for img_idx, img in enumerate(images):
                                 try:
-                                    _check_cancel(f"Before embedding image {img_idx + 1}")
+                                    _check_cancel(f"Before processing image {img_idx + 1}")
                                 except RuntimeError as e:
                                     if "cancelled" in str(e).lower():
-                                        error_container["err"] = RuntimeError("Embedding was cancelled")
-                                        return
+                                        raise RuntimeError("Embedding was cancelled") from e
+                                    raise
                                 
                                 local_candidate = img.get("local_path") or img.get("localPath")
                                 primary = local_candidate or img.get("data") or ""
@@ -544,44 +511,62 @@ class VisualizedBGEEmbedder(Embedder):
 
                                 if not path or not Path(path).exists():
                                     continue
+                                
+                                # Tính file size để tìm image lớn nhất
                                 try:
-                                    v = self.model.encode(image=path, text=text)
-                                    vecs.append(v.detach().cpu().numpy().reshape(-1))
-                                except Exception as e:
-                                    continue
+                                    file_size = Path(path).stat().st_size
+                                    if file_size > largest_size:
+                                        largest_size = file_size
+                                        largest_image_path = path
+                                except Exception:
+                                    # Nếu không thể lấy size, vẫn dùng image này nếu chưa có image nào
+                                    if not largest_image_path:
+                                        largest_image_path = path
 
-                            if not vecs:
-                                # Fallback to text-only if image encoding failed
+                            # Chỉ encode một lần với image lớn nhất
+                            if largest_image_path:
+                                try:
+                                    _check_cancel("Before encoding with largest image")
+                                except RuntimeError as e:
+                                    if "cancelled" in str(e).lower():
+                                        raise RuntimeError("Embedding was cancelled") from e
+                                    raise
+                                
+                                try:
+                                    v = self.model.encode(image=largest_image_path, text=text)
+                                    embs[orig_idx] = v.detach().cpu().numpy().reshape(-1).tolist()
+                                except Exception as e:
+                                    print(f"[WARNING] Failed to encode with image {largest_image_path}: {e}")
+                                    # Fallback to text-only if image encoding failed
+                                    tokenized = tokenizer([text], return_tensors="pt", padding=True, truncation=True, max_length=512)
+                                    tokenized = tokenized.to(self.device)
+                                    v = self.model.encode_text(tokenized)
+                                    embs[orig_idx] = v.detach().cpu().numpy()[0].tolist()
+                            else:
+                                # Fallback to text-only if no valid images
                                 tokenized = tokenizer([text], return_tensors="pt", padding=True, truncation=True, max_length=512)
                                 tokenized = tokenized.to(self.device)
                                 v = self.model.encode_text(tokenized)
                                 embs[orig_idx] = v.detach().cpu().numpy()[0].tolist()
-                            else:
-                                avg = np.mean(np.stack(vecs, axis=0), axis=0)
-                                embs[orig_idx] = avg.astype(float).tolist()
                     
                     # Convert to list of lists (remove None values - should not happen, but safety check)
-                    result_container["embs"] = [emb if emb is not None else [0.0] * 1024 for emb in embs]
+                    return [emb if emb is not None else [0.0] * 1024 for emb in embs]
 
                 except Exception as e:
-                    error_container["err"] = e
+                    raise e
 
-            t = threading.Thread(target=embed_job)
-            t.start()
-            # Use calculated timeout for each batch
-            batch_timeout = max(min_timeout, min(max_timeout, int(calculated_timeout / total_batches)))
-            t.join(timeout=batch_timeout)
+            try:
+                batch_embs = embed_job()
+            except RuntimeError as err:
+                if "cancelled" in str(err).lower():
+                    # Propagate cancellations so callers can handle them
+                    raise
+                raise RuntimeError(f"❌ Chunk embedding failed in batch {batch_num}/{total_batches}: {err}") from err
+            except Exception as err:
+                raise RuntimeError(f"❌ Chunk embedding failed in batch {batch_num}/{total_batches}: {err}") from err
 
-            if t.is_alive():
-                raise RuntimeError(f"❌ Chunk embedding timeout (> {batch_timeout}s) for batch {batch_num}/{total_batches}")
-            if "err" in error_container:
-                err = error_container["err"]
-                # Re-raise cancellation errors
-                if isinstance(err, RuntimeError) and "cancelled" in str(err).lower():
-                    raise err
-                raise RuntimeError(f"❌ Chunk embedding failed in batch {batch_num}/{total_batches}: {err}")
-
-            batch_embs = result_container.get("embs", [])
+            if batch_embs is None:
+                batch_embs = []
             if not batch_embs:
                 print(f"[WARNING] Batch {batch_num} produced no embeddings, using text-only fallback")
                 # Fallback to text-only embedding for failed batch
@@ -613,12 +598,7 @@ class VisualizedBGEEmbedder(Embedder):
         _check_cancel("After all chunks embedded")
         print(f"[LOG] All chunks embedded: {len(all_embs)} total embeddings")
         
-        # Save embeddings to cache only after all batches are complete
-        if len(all_embs) == len(chunks):
-            try:
-                self._save_embeddings_cache(cache_key, all_embs)
-            except Exception as e:
-                print(f"[WARNING] Failed to save embeddings cache: {e}")
+        # Embeddings are saved to Elasticsearch
         
         return all_embs
 

@@ -12,47 +12,18 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
   const [messagesLoaded, setMessagesLoaded] = useState(false) // Track if messages were loaded from backend
   const { toast } = useToast()
   const clearedSessionIdsRef = useRef<Set<string>>(new Set())
+  const prevPdfNameRef = useRef<string | null>(null)
 
   // Storage keys
   const uniqueKey = tabId ? `${pdfFile?.name || ''}_${tabId}` : (pdfFile?.name || '')
   const storageKey = `chat_session_${uniqueKey}`
-  const messagesStorageKey = `chat_messages_${uniqueKey}`
   const clearedFlagKey = `chat_cleared_${uniqueKey}` // Flag to track if session was cleared
-
-  const convertBackendMessagesToQAMessages = (backendMessages: any[]): any[] => {
-    // Backend messages are in format: [{role: "user", content: "...", metadata: {...}}, {role: "assistant", content: "...", metadata: {...}}, ...]
-    // Frontend QAMessages are in format: [{id, question, answer, cited_sections, timestamp, ...}, ...]
-    const qaMessages: any[] = []
-    
-    for (let i = 0; i < backendMessages.length; i++) {
-      const message = backendMessages[i]
-      
-      if (message.role === "user") {
-        // Find the next assistant message as the answer
-        const assistantMessage = backendMessages[i + 1]
-        
-        if (assistantMessage && assistantMessage.role === "assistant") {
-          const messageId = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-          const qaMessage = {
-            id: messageId,
-            question: message.content,
-            answer: assistantMessage.content,
-            context: undefined,
-            cited_sections: assistantMessage.metadata?.cited_sections || assistantMessage.metadata?.citations || [],
-            confidence: assistantMessage.metadata?.confidence,
-            timestamp: message.timestamp ? new Date(message.timestamp) : new Date(),
-          }
-          qaMessages.push(qaMessage)
-          i++ // Skip the assistant message as we've already processed it
-        }
-      }
-    }
-    
-    return qaMessages
-  }
 
   const createNewSession = async (forceNew = false, retryCount = 0, maxRetries = 2) => {
     try {
+      // Extract document_key from PDF name (remove .pdf extension)
+      const documentKey = pdfFile?.name ? pdfFile.name.replace(/\.pdf$/i, '').trim() : null
+      
       const response = await fetch("/api/chat/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,6 +32,7 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
           title: `Chat: ${pdfFile.name}`,
           initial_message: null,
           force_new: forceNew, // Pass force_new flag to backend
+          document_key: documentKey, // Send document_key so backend can find existing session
         }),
       })
 
@@ -80,31 +52,21 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
       const sessionData = await response.json()
       const newSessionId = sessionData.session_id
       
-      // If session has existing messages, convert and save them to localStorage
-      if (sessionData.messages && Array.isArray(sessionData.messages) && sessionData.messages.length > 0) {
-        console.log(`[Chat] Found existing session with ${sessionData.messages.length} messages, loading them...`)
-        const qaMessages = convertBackendMessagesToQAMessages(sessionData.messages)
-        
-        if (qaMessages.length > 0 && typeof window !== 'undefined') {
-          // Save messages to localStorage
-          const serializedMessages = qaMessages.map((msg) => ({
-            ...msg,
-            timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
-          }))
-          localStorage.setItem(messagesStorageKey, JSON.stringify(serializedMessages))
-          console.log(`[Chat] Loaded ${qaMessages.length} messages from existing session`)
-          // Trigger a custom event to notify useQAMessages to reload
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('chatMessagesLoaded', { detail: { messagesStorageKey } }))
-          }
-          setMessagesLoaded(true)
-        }
-      }
-      
+      // Always update localStorage with the session ID (even if it's an existing session)
       if (typeof window !== 'undefined') {
         localStorage.setItem(storageKey, newSessionId)
       }
       setSessionId(newSessionId)
+      
+      // Messages will be loaded by useQAMessages from MongoDB when sessionId is set
+      if (sessionData.messages && Array.isArray(sessionData.messages) && sessionData.messages.length > 0) {
+        console.log(`[Chat] Found existing session with ${sessionData.messages.length} messages in MongoDB`)
+        setMessagesLoaded(true)
+      } else {
+        console.log(`[Chat] New session has no messages`)
+        setMessagesLoaded(false)
+      }
+      
       return newSessionId
     } catch (error) {
       console.error("[Chat] Failed to create session:", error)
@@ -122,16 +84,43 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
     
     if (typeof window !== 'undefined') {
       localStorage.removeItem(storageKey)
-      localStorage.removeItem(messagesStorageKey)
       // Set flag to indicate session was cleared - this ensures new session is created when PDF is re-uploaded
       localStorage.setItem(clearedFlagKey, 'true')
+      // Clear thinking flag when session is cleared
+      const thinkingFlagKey = `chat_thinking_${uniqueKey}`
+      localStorage.removeItem(thinkingFlagKey)
+      // Clear messages cache when session is cleared
+      const messagesCacheKey = `chat_messages_${uniqueKey}`
+      localStorage.removeItem(messagesCacheKey)
     }
 
+    // Delete all chat sessions related to this PDF document
+    // Extract document_key from PDF file name (remove .pdf extension)
+    const documentKey = pdfFile?.name ? pdfFile.name.replace(/\.pdf$/i, '').trim() : null
+    
+    if (documentKey) {
+      try {
+        // Delete all sessions for this document
+        const response = await fetch(`/api/chat/sessions?document_key=${encodeURIComponent(documentKey)}`, { 
+          method: "DELETE" 
+        })
+        if (response.ok) {
+          const result = await response.json()
+          console.log(`[Chat] Deleted ${result.deleted || 0} chat sessions for document: ${documentKey}`)
+        } else {
+          console.warn("[Chat] Failed to delete sessions by document_key:", await response.text())
+        }
+      } catch (error) {
+        console.warn("[Chat] Error deleting sessions by document_key:", error)
+      }
+    }
+
+    // Also delete the current session if it exists (fallback)
     if (oldSessionId) {
       try {
         await fetch(`/api/chat/sessions/${oldSessionId}`, { method: "DELETE" })
       } catch (error) {
-        console.warn("[Chat] Error deleting session:", error)
+        console.warn("[Chat] Error deleting current session:", error)
       }
     }
 
@@ -142,7 +131,24 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
   }
 
   useEffect(() => {
-    if (!pdfFile?.name) return
+    if (!pdfFile?.name) {
+      // Reset state when no PDF
+      setSessionId(null)
+      setIsInitializing(false)
+      prevPdfNameRef.current = null
+      return
+    }
+
+    // Only reset sessionId when PDF file changes, not when just switching tabs
+    // This prevents losing chat history when switching between tabs of the same PDF
+    const shouldResetSession = prevPdfNameRef.current !== null && prevPdfNameRef.current !== pdfFile?.name
+    prevPdfNameRef.current = pdfFile?.name
+
+    // Reset initialization state when PDF changes (not when just switching tabs)
+    setIsInitializing(true)
+    if (shouldResetSession) {
+      setSessionId(null)
+    }
 
     const initializeSession = async () => {
       try {
@@ -172,36 +178,32 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
           try {
             const response = await fetch(`/api/chat/sessions?session_id=${savedSessionId}`)
             if (!response.ok && response.status === 404) {
-              await createNewSession()
+              // Session not found, try to find existing session by document or create new
+              console.log("[Chat] Saved session not found, checking for existing session by document...")
+              await createNewSession(false) // This will find existing session if available
             } else if (response.ok) {
               // Session exists, check if it has messages and load them
               const sessionData = await response.json()
-              if (sessionData.messages && Array.isArray(sessionData.messages) && sessionData.messages.length > 0) {
-                // Check if messages are already in localStorage
-                const existingMessages = typeof window !== 'undefined' ? localStorage.getItem(messagesStorageKey) : null
-                if (!existingMessages || existingMessages.trim() === '[]') {
-                  // Load messages from backend session
-                  console.log(`[Chat] Loading ${sessionData.messages.length} messages from existing session`)
-                  const qaMessages = convertBackendMessagesToQAMessages(sessionData.messages)
-                  if (qaMessages.length > 0 && typeof window !== 'undefined') {
-                    const serializedMessages = qaMessages.map((msg) => ({
-                      ...msg,
-                      timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp,
-                    }))
-                    localStorage.setItem(messagesStorageKey, JSON.stringify(serializedMessages))
-                    console.log(`[Chat] Loaded ${qaMessages.length} messages from existing session`)
-                    // Trigger a custom event to notify useQAMessages to reload
-                    window.dispatchEvent(new CustomEvent('chatMessagesLoaded', { detail: { messagesStorageKey } }))
-                    setMessagesLoaded(true)
-                  }
-                }
+              const backendMessages = sessionData.messages && Array.isArray(sessionData.messages) ? sessionData.messages : []
+              
+              if (backendMessages.length > 0) {
+                // Session has messages in MongoDB - useQAMessages will load them
+                console.log(`[Chat] Session has ${backendMessages.length} messages in MongoDB`)
+                setMessagesLoaded(true)
+              } else {
+                // Session exists but has no messages
+                console.log(`[Chat] Session exists but has no messages`)
+                setMessagesLoaded(false)
               }
             }
           } catch (error) {
             console.warn("[Chat] Error verifying session:", error)
+            // On error, try to create/find session
+            await createNewSession(false)
           }
         } else {
-          await createNewSession()
+          // No saved session, try to find existing or create new
+          await createNewSession(false)
         }
       } catch (error: any) {
         console.error("[Chat] Failed to initialize session:", error)
@@ -222,7 +224,6 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
     sessionId,
     isInitializing,
     storageKey,
-    messagesStorageKey,
     messagesLoaded,
     createNewSession,
     clearSession,

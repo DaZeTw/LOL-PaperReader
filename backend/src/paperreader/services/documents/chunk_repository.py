@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional
 import hashlib
@@ -67,6 +68,10 @@ async def replace_document_chunks(
         chunk_id = chunk.get("chunk_id") or _make_chunk_id(document_key, chunk, idx)
         text = chunk.get("text", "") or ""
         
+        # Remove "[View CSV](...)" patterns from text
+        # Pattern matches: [View CSV](path/to/file.csv) or [View CSV]() with optional whitespace before
+        text = re.sub(r'\s*\[View CSV\]\([^)]*\)', '', text)
+        
         # Calculate SHA256 hash of text to avoid duplicate embeddings
         text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
         
@@ -81,7 +86,7 @@ async def replace_document_chunks(
         # Get page number (support both 'page' and 'page_number' fields)
         page_number = chunk.get("page_number") or chunk.get("page") or 0
         
-        payload = {
+        payload: Dict[str, Any] = {
             "document_id": doc_object_id,  # ObjectId or None
             "document_key": document_key,  # Keep for backward compatibility
             "chunk_id": chunk_id,  # Keep for backward compatibility
@@ -89,12 +94,19 @@ async def replace_document_chunks(
             "text": text,  # Required field
             "hash": text_hash,  # Required field: SHA256(text)
             "created_at": now,  # Required field
-            # Optional fields for backward compatibility
-            "title": chunk.get("title"),
-            "images": chunk.get("images") or [],
-            "tables": chunk.get("tables") or [],
-            "metadata": chunk.get("metadata") or {},
         }
+        # Removed title field as requested
+
+        images = chunk.get("images") or []
+        filtered_images = [img for img in images if img]
+        if filtered_images:
+            payload["images"] = filtered_images
+
+        tables = chunk.get("tables") or []
+        filtered_tables = [tbl for tbl in tables if tbl]
+        if filtered_tables:
+            payload["tables"] = filtered_tables
+
         docs.append(payload)
 
     if docs:
@@ -146,3 +158,39 @@ async def get_document_chunks(
         cursor = cursor.limit(limit)
     return await cursor.to_list(length=None if limit is None else limit)
 
+
+async def delete_document_chunks(
+    document_id: Optional[str] = None,
+    document_key: Optional[str] = None,
+) -> int:
+    """
+    Delete all chunks associated with a document.
+    
+    Args:
+        document_id: Document ID (ObjectId string) to delete by.
+        document_key: Document key to delete by (backward compatibility).
+    
+    Returns:
+        Number of chunks deleted.
+    """
+    collection = _chunks_collection()
+    
+    # Build query - prefer document_id if available
+    query: Dict[str, Any] = {}
+    if document_id:
+        try:
+            query["document_id"] = ObjectId(document_id)
+        except Exception:
+            # If document_id is not a valid ObjectId, fall back to document_key
+            if document_key:
+                query["document_key"] = document_key
+    elif document_key:
+        query["document_key"] = document_key
+    else:
+        return 0
+    
+    result = await collection.delete_many(query)
+    deleted_count = result.deleted_count or 0
+    if deleted_count > 0:
+        print(f"[Chunks] ✅ Deleted {deleted_count} chunks from MongoDB (document_id={document_id}, document_key={document_key})")
+    return deleted_count

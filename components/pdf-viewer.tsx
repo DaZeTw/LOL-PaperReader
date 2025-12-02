@@ -52,19 +52,19 @@ export function PDFViewer({
   const zoomRef = useRef(1)
   const zoomLabelRef = useRef<HTMLSpanElement>(null)
 
-  // 🔑 CREATE PLUGIN INSTANCES USING useRef - This prevents recreation
+  // Create plugin instances using useRef to prevent recreation
   const pageNavigationPluginInstance = useRef(pageNavigationPlugin()).current
   const zoomPluginInstance = useRef(zoomPlugin()).current
   const thumbnailPluginInstance = useRef(thumbnailPlugin()).current
   const bookmarkPluginInstance = useRef(bookmarkPlugin()).current
   
-  // 🔑 CITATION PLUGIN - Call hook at top level
+  // Citation plugin - call hook at top level
   const citationPluginInstance = useCitationPlugin({
     pdfUrl: pdfUrl,
     extractedCitations: extractedCitations,
   });
 
-  // 🔑 CREATE PLUGINS ARRAY - Use useRef to keep it stable
+  // Create plugins array - use useRef to keep it stable
   const pluginsRef = useRef([
     pageNavigationPluginInstance,
     zoomPluginInstance,
@@ -104,7 +104,7 @@ export function PDFViewer({
     }
   }, [navigationTarget])
 
-  // 🔍 Zoom controls without re-render
+  // Zoom controls without re-render
   const handleZoomIn = () => {
     const newScale = Math.min(2, zoomRef.current + 0.1)
     zoomRef.current = newScale

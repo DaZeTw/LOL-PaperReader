@@ -8,6 +8,8 @@ from pathlib import Path
 from .embeddings import get_embedder, Embedder
 from .vectorstore import InMemoryVectorStore
 from .persistent_vectorstore import PersistentVectorStore
+from .elasticsearch_client import knn_search
+from paperreader.services.documents.chunk_repository import get_document_chunks
 
 
 @dataclass
@@ -17,18 +19,24 @@ class Corpus:
 
 
 class Retriever:
-    def __init__(self, name: str, store: InMemoryVectorStore, embedder: Optional[Embedder] = None, persistent_store: Optional[PersistentVectorStore] = None, pdf_name_filter: Optional[str] = None):
+    def __init__(self, name: str, store: Optional[InMemoryVectorStore] = None, embedder: Optional[Embedder] = None, persistent_store: Optional[PersistentVectorStore] = None, pdf_name_filter: Optional[str] = None, document_key: Optional[str] = None, use_elasticsearch: bool = True):
         self.name = name
         self.store = store
         self.embedder = embedder
         self.persistent_store = persistent_store
         self.pdf_name_filter = pdf_name_filter  # Filter chunks by PDF name (doc_id)
+        self.document_key = document_key  # Document key for Elasticsearch filtering
+        self.use_elasticsearch = use_elasticsearch  # Use Elasticsearch instead of in-memory store
         
-        # If PDF filter is set, create a filtered store that only contains chunks from that PDF
-        if pdf_name_filter and store.metadatas:
-            self._filter_store_by_pdf()
+        # If using Elasticsearch, skip store filtering
+        if not self.use_elasticsearch and store:
+            # If PDF filter is set, create a filtered store that only contains chunks from that PDF
+            if pdf_name_filter and store.metadatas:
+                self._filter_store_by_pdf()
+            else:
+                self.filtered_store = store
         else:
-            self.filtered_store = store
+            self.filtered_store = None
 
     def _filter_store_by_pdf(self):
         """Filter store to only include chunks from the specified PDF"""
@@ -105,11 +113,24 @@ class Retriever:
                 tfidf_vectorizer=self.store.tfidf_vectorizer,
             )
 
-    def retrieve(self, question: str, top_k: int = 5, image: str | None = None):
-        print(f"[DEBUG] Retrieving with {self.name} retriever, top_k={top_k}, image: {image}")
-        print(f"[DEBUG] Store has {len(self.filtered_store.metadatas)} documents (filtered by PDF: {self.pdf_name_filter or 'none'})")
+    async def retrieve(self, question: str, top_k: int = 5, image: str | None = None):
+        """Retrieve chunks using Elasticsearch or in-memory store"""
+        print(f"[DEBUG] Retrieving with {self.name} retriever, top_k={top_k}, image: {image}, use_elasticsearch={self.use_elasticsearch}, document_key={self.document_key}")
         
-        # Use filtered store for chunk embeddings (no persistent store for chunks)
+        # Use Elasticsearch if enabled and document_key is available
+        if self.use_elasticsearch and self.document_key:
+            return await self._retrieve_from_elasticsearch(question, top_k, image)
+        
+        # Fallback to in-memory store
+        if not self.filtered_store:
+            error_msg = "No chunks available for retrieval."
+            if self.use_elasticsearch and not self.document_key:
+                error_msg += " Elasticsearch is enabled but document_key is missing. Please ensure the PDF has been uploaded and processed, and the session has the correct document_key in metadata."
+            elif not self.use_elasticsearch:
+                error_msg += " The in-memory store is not initialized - no chunks available. The document may not have been processed yet. Please ensure the PDF has been uploaded and processed."
+            raise ValueError(error_msg)
+        
+        print(f"[DEBUG] Store has {len(self.filtered_store.metadatas)} documents (filtered by PDF: {self.pdf_name_filter or 'none'})")
         search_store = self.filtered_store
         
         if self.name == "keyword":
@@ -144,6 +165,91 @@ class Retriever:
             print(f"[DEBUG] Hybrid search returned {len(hits)} hits")
             return [self._format_hit(i, s, search_store) for i, s in hits]
         raise ValueError(f"Unknown retriever: {self.name}")
+    
+    async def _retrieve_from_elasticsearch(self, question: str, top_k: int, image: str | None = None):
+        """Retrieve chunks from Elasticsearch and fetch full chunks from MongoDB"""
+        if self.embedder is None:
+            raise ValueError("Elasticsearch retriever requires an embedder.")
+        
+        # Generate query embedding
+        if hasattr(self.embedder, "encode_query"):
+            print(f"[DEBUG] Using encode_query with image={image}, text={question[:100]}...")
+            query_vector = self.embedder.encode_query(image=image, text=question)
+            print(f"[DEBUG] Query vector shape: {len(query_vector) if isinstance(query_vector, list) else query_vector.shape}")
+        else:
+            print(f"[DEBUG] Using embed with text={question[:100]}...")
+            query_vector = self.embedder.embed([question])[0]
+        
+        # Convert to list if numpy array
+        if isinstance(query_vector, np.ndarray):
+            query_vector = query_vector.tolist()
+        
+        # Search Elasticsearch
+        print(f"[DEBUG] Searching Elasticsearch with document_key={self.document_key}, top_k={top_k}")
+        es_hits = await knn_search(
+            document_key=self.document_key,
+            query_vector=query_vector,
+            top_k=top_k,
+        )
+        
+        print(f"[DEBUG] Elasticsearch returned {len(es_hits)} hits")
+        
+        if not es_hits:
+            return []
+        
+        # Extract chunk_ids from Elasticsearch hits
+        chunk_ids = []
+        hit_scores = {}
+        for hit in es_hits:
+            chunk_id = hit.get("_source", {}).get("chunk_id")
+            if chunk_id:
+                chunk_ids.append(chunk_id)
+                # Store score for this chunk
+                hit_scores[chunk_id] = hit.get("_score", 0.0)
+        
+        if not chunk_ids:
+            print(f"[WARNING] No chunk_ids found in Elasticsearch hits")
+            return []
+        
+        # Fetch full chunks from MongoDB using document_key
+        # We need to get all chunks for the document and filter by chunk_id
+        print(f"[DEBUG] Fetching chunks from MongoDB for document_key={self.document_key}")
+        all_chunks = await get_document_chunks(document_key=self.document_key)
+        print(f"[DEBUG] MongoDB returned {len(all_chunks)} chunks for document_key={self.document_key}")
+        
+        # Create mapping of chunk_id to chunk
+        chunk_map = {}
+        for chunk in all_chunks:
+            chunk_id = chunk.get("chunk_id")
+            if chunk_id and chunk_id in chunk_ids:
+                chunk_map[chunk_id] = chunk
+        
+        print(f"[DEBUG] Matched {len(chunk_map)}/{len(chunk_ids)} chunks from MongoDB")
+        
+        # Build hits in order of Elasticsearch results
+        hits = []
+        for idx, chunk_id in enumerate(chunk_ids):
+            chunk = chunk_map.get(chunk_id)
+            if chunk:
+                # Format chunk to match expected hit format
+                hit = {
+                    "index": idx,
+                    "score": hit_scores.get(chunk_id, 0.0),
+                    "text": chunk.get("text", ""),
+                    "metadata": {
+                        "chunk_id": chunk_id,
+                        "doc_id": chunk.get("document_key") or self.document_key,
+                        # title field removed from database schema
+                        "page": chunk.get("page_number") or chunk.get("page"),
+                        # Keep images and tables for generator
+                        "images": chunk.get("images", []),
+                        "tables": chunk.get("tables", []),
+                    }
+                }
+                hits.append(hit)
+        
+        print(f"[DEBUG] Retrieved {len(hits)} hits from Elasticsearch + MongoDB")
+        return hits
 
     def _format_hit(self, idx: int, score: float, store: InMemoryVectorStore):
         meta = store.metadatas[idx]
@@ -283,5 +389,5 @@ async def build_persistent_store(corpus: Corpus, embedder: Optional[Embedder]) -
     return persistent_store
 
 
-def get_retriever(name: str, store: InMemoryVectorStore, embedder: Embedder, persistent_store: Optional[PersistentVectorStore] = None, pdf_name_filter: Optional[str] = None) -> Retriever:
-    return Retriever(name=name, store=store, embedder=embedder, persistent_store=persistent_store, pdf_name_filter=pdf_name_filter)
+def get_retriever(name: str, store: Optional[InMemoryVectorStore] = None, embedder: Optional[Embedder] = None, persistent_store: Optional[PersistentVectorStore] = None, pdf_name_filter: Optional[str] = None, document_key: Optional[str] = None, use_elasticsearch: bool = True) -> Retriever:
+    return Retriever(name=name, store=store, embedder=embedder, persistent_store=persistent_store, pdf_name_filter=pdf_name_filter, document_key=document_key, use_elasticsearch=use_elasticsearch)

@@ -17,27 +17,29 @@ interface QAInterfaceProps {
   onHighlight?: (text: string | null) => void
   isOpen?: boolean
   onToggle?: () => void
+  isActive?: boolean
 }
 
-export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onToggle }: QAInterfaceProps) {
+export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onToggle, isActive = true }: QAInterfaceProps) {
   const [question, setQuestion] = useState("")
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
 
   // Custom hooks
-  const { sessionId, isInitializing, messagesStorageKey, clearSession } = useQASession({ pdfFile, tabId })
-  const { messages, showHistory, setShowHistory, addMessage, clearMessages } = useQAMessages({ 
+  const { sessionId, isInitializing, clearSession } = useQASession({ pdfFile, tabId })
+  const { messages, showHistory, setShowHistory, addMessage, clearMessages, loadMessages } = useQAMessages({ 
     pdfFile, 
     tabId, 
-    messagesStorageKey 
+    sessionId 
   })
-  const { isPipelineReady, pipelineStatus } = usePipelineStatus()
-  const { isLoading, askQuestion } = useQAActions({ 
+  const { isPipelineReady, pipelineStatus } = usePipelineStatus({ pdfFile, tabId })
+  const { isLoading, askQuestion, clearThinkingState } = useQAActions({ 
     sessionId, 
     pdfFile, 
     tabId, 
     isPipelineReady, 
     addMessage,
+    reloadMessages: loadMessages,
     createNewSession: async () => (await clearSession()) || ""
   })
 
@@ -65,6 +67,7 @@ export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onTogg
 
   const handleClearHistory = async () => {
     clearMessages()
+    clearThinkingState() // Clear thinking state when chat is cleared
     await clearSession()
     toast({
       title: "History cleared",
@@ -78,6 +81,21 @@ export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onTogg
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
     }
   }, [messages, showHistory])
+
+  // Reload messages when tab becomes active to sync with backend
+  useEffect(() => {
+    if (isActive && sessionId && !isInitializing) {
+      console.log(`[QAInterface:${tabId}] Tab became active, reloading messages to sync with backend`)
+      // Use a small delay to avoid race conditions
+      const timeoutId = setTimeout(() => {
+        loadMessages().catch((err: any) => {
+          console.warn(`[QAInterface:${tabId}] Failed to reload messages when tab became active:`, err)
+        })
+      }, 100)
+      
+      return () => clearTimeout(timeoutId)
+    }
+  }, [isActive, sessionId, isInitializing, tabId, loadMessages])
 
   const shouldShowHistory = messages.length > 0
 
@@ -268,13 +286,13 @@ export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onTogg
                       ? "Preparing documents, please wait..."
                       : "Ask anything about this document..."
                   }
-                  disabled={isLoading || isInitializing || !sessionId || isPipelineReady === false}
+                  disabled={!isActive || isLoading || isInitializing || !sessionId || isPipelineReady === false}
                   className="h-12 resize-none border-2 font-mono text-sm shadow-sm focus:border-primary"
                 />
               </div>
               <Button
                 onClick={handleAskQuestion}
-                disabled={isLoading || !question.trim() || isInitializing || !sessionId || isPipelineReady === false}
+                disabled={!isActive || isLoading || !question.trim() || isInitializing || !sessionId || isPipelineReady === false}
                 size="lg"
                 className="h-12 gap-2 px-6 shadow-sm"
               >

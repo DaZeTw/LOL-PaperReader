@@ -123,8 +123,18 @@ def _extract_image_elements(
 
             image_filename = f"{pdf_stem}-p{page_index + 1}-img{image_counter:03d}.{img_ext}"
             image_path = images_dir / image_filename
-            with open(image_path, "wb") as fh:
-                fh.write(img_bytes)
+            try:
+                with open(image_path, "wb") as fh:
+                    fh.write(img_bytes)
+            except FileNotFoundError as exc:
+                # Directory may have been cleaned up by the caller (e.g. /tmp cleaned); skip silently
+                _log.debug(
+                    "[PDF] Skipping embedded image %s on page %s – destination disappeared: %s",
+                    image_filename,
+                    page_index + 1,
+                    exc,
+                )
+                continue
 
             bbox = list(img[1:5]) if len(img) >= 5 else [0, 0, 0, 0]
             x0, y0, x1, y1 = bbox
@@ -221,6 +231,9 @@ def _extract_table_elements(
 
     try:
         tables = page.find_tables()
+        # Ensure tables is always iterable (handle None case)
+        if tables is None:
+            tables = []
     except Exception as exc:
         _log.warning(f"[PDF] ⚠️ Table detection failed on page {page_index + 1}: {exc}")
         return table_elements, tables_saved
@@ -239,6 +252,12 @@ def _extract_table_elements(
         csv_path = tables_dir / csv_filename
         try:
             df.to_csv(csv_path, index=False)
+            _log.debug(
+                "[PDF] Saved table %s on page %s -> %s",
+                table_id,
+                page_index + 1,
+                csv_path,
+            )
         except Exception as exc:
             _log.warning(f"[PDF] ⚠️ Failed to save CSV for table {table_idx} on page {page_index + 1}: {exc}")
             continue
@@ -271,6 +290,8 @@ def _clean_overlapping_elements(
     table_elements: List[Dict[str, Any]],
 ) -> List[Dict[str, Any]]:
     cleaned: List[Dict[str, Any]] = []
+    IMAGE_OVERLAP_THRESHOLD = 0.7
+    TABLE_OVERLAP_THRESHOLD = 0.95
 
     for text_elem in text_elements:
         text_bbox = text_elem.get("bbox") or [0, 0, 0, 0]
@@ -280,24 +301,29 @@ def _clean_overlapping_elements(
             continue
 
         keep = True
+        text_page = text_elem.get("page")
 
         for image in image_elements:
+            if image.get("page") != text_page:
+                continue
             img_rect = fitz.Rect(image.get("bbox") or [0, 0, 0, 0])
             if not text_rect.intersects(img_rect):
                 continue
             overlap = (text_rect & img_rect).get_area()
-            if overlap / text_area > 0.7:
+            if overlap / text_area > IMAGE_OVERLAP_THRESHOLD:
                 keep = False
                 break
         if not keep:
             continue
 
         for table in table_elements:
+            if table.get("page") != text_page:
+                continue
             tbl_rect = fitz.Rect(table.get("bbox") or [0, 0, 0, 0])
             if not text_rect.intersects(tbl_rect):
                 continue
             overlap = (text_rect & tbl_rect).get_area()
-            if overlap / text_area > 0.7:
+            if overlap / text_area > TABLE_OVERLAP_THRESHOLD:
                 keep = False
                 break
 
@@ -312,6 +338,31 @@ def _merge_to_markdown(
     image_elements: List[Dict[str, Any]],
     table_elements: List[Dict[str, Any]],
 ) -> str:
+    def _get_position(elem: Dict[str, Any]) -> Tuple[float, float]:
+        pos = elem.get("position") or {}
+        x = pos.get("x")
+        y = pos.get("y")
+        if x is not None and y is not None:
+            return float(x), float(y)
+
+        bbox = elem.get("bbox") or []
+        if len(bbox) >= 2:
+            return float(bbox[0]), float(bbox[1])
+
+        return 0.0, 0.0
+
+    def _get_bbox(elem: Dict[str, Any]) -> Tuple[float, float, float, float]:
+        bbox = elem.get("bbox")
+        if bbox and len(bbox) == 4:
+            return float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3])
+
+        pos = elem.get("position") or {}
+        x = float(pos.get("x", 0.0))
+        y = float(pos.get("y", 0.0))
+        width = float(pos.get("width", 0.0))
+        height = float(pos.get("height", 0.0))
+        return x, y, x + width, y + height
+
     pages: Dict[int, Dict[str, Any]] = {}
 
     for elem in text_elements:
@@ -334,36 +385,78 @@ def _merge_to_markdown(
         page_data = pages[page_num]
         markdown_lines.append(f"# Page {page_num}\n")
 
-        combined: List[Tuple[str, float, Dict[str, Any]]] = []
-        for text in page_data["text"]:
-            combined.append(("text", text.get("position", {}).get("y", 0.0), text))
-        for img in page_data["images"]:
-            combined.append(("image", img.get("position", {}).get("y", 0.0), img))
-        for table in page_data["tables"]:
-            combined.append(("table", table.get("position", {}).get("y", 0.0), table))
+        text_blocks = sorted(
+            page_data["text"],
+            key=lambda t: (_get_position(t)[1], _get_position(t)[0], t.get("block_id", 0)),
+        )
+        images_sorted = sorted(
+            page_data["images"], key=lambda img: (_get_position(img)[1], _get_position(img)[0])
+        )
+        tables_sorted = sorted(
+            page_data["tables"], key=lambda tbl: (_get_position(tbl)[1], _get_position(tbl)[0])
+        )
 
-        combined.sort(key=lambda item: item[1])
+        img_index = 0
+        tbl_index = 0
 
-        for elem_type, _, elem in combined:
-            if elem_type == "text":
-                content = elem.get("content", "").strip()
-                if not content:
-                    continue
-                if elem.get("text_type") == "heading" and len(content) < 150:
-                    markdown_lines.append(f"## {content}\n")
+        def _append_image(elem: Dict[str, Any]) -> None:
+            image_id = elem.get("image_id", "image")
+            rel_path = elem.get("relative_path") or elem.get("filename") or ""
+            markdown_lines.append(f"![{image_id}]({rel_path})\n")
+
+        def _append_table(elem: Dict[str, Any]) -> None:
+            table_id = elem.get("table_id", "Table")
+            rel_path = elem.get("relative_path") or elem.get("filename") or ""
+            markdown_lines.append(f"### {table_id.replace('_', ' ').title()}\n")
+            markdown_lines.append(f"[View CSV]({rel_path})\n")
+
+        if not text_blocks:
+            for img in images_sorted:
+                _append_image(img)
+            for table in tables_sorted:
+                _append_table(table)
+            markdown_lines.append("")
+            continue
+
+        for text in text_blocks:
+            _, current_y = _get_position(text)
+            x0, _, x1, _ = _get_bbox(text)
+            if x1 <= x0:
+                x1 = float("inf")
+
+            while img_index < len(images_sorted):
+                img = images_sorted[img_index]
+                img_x, img_y = _get_position(img)
+                if img_y <= current_y and img_x < x1:
+                    _append_image(img)
+                    img_index += 1
                 else:
-                    markdown_lines.append(f"{content}\n")
+                    break
 
-            elif elem_type == "image":
-                image_id = elem.get("image_id", "image")
-                rel_path = elem.get("relative_path") or elem.get("filename") or ""
-                markdown_lines.append(f"![{image_id}]({rel_path})\n")
+            while tbl_index < len(tables_sorted):
+                tbl = tables_sorted[tbl_index]
+                tbl_x, tbl_y = _get_position(tbl)
+                if tbl_y <= current_y and tbl_x < x1:
+                    _append_table(tbl)
+                    tbl_index += 1
+                else:
+                    break
 
-            elif elem_type == "table":
-                table_id = elem.get("table_id", "Table")
-                rel_path = elem.get("relative_path") or elem.get("filename") or ""
-                markdown_lines.append(f"### {table_id.replace('_', ' ').title()}\n")
-                markdown_lines.append(f"[View CSV]({rel_path})\n")
+            content = text.get("content", "").strip()
+            if not content:
+                continue
+            if text.get("text_type") == "heading" and len(content) < 150:
+                markdown_lines.append(f"## {content}\n")
+            else:
+                markdown_lines.append(f"{content}\n")
+
+        while img_index < len(images_sorted):
+            _append_image(images_sorted[img_index])
+            img_index += 1
+
+        while tbl_index < len(tables_sorted):
+            _append_table(tables_sorted[tbl_index])
+            tbl_index += 1
 
         markdown_lines.append("")
 

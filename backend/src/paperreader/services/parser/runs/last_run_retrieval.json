@@ -1,59 +1,64 @@
 {
-  "question": "What is the main finding?",
+  "question": "vậy finding bài này là gì",
   "hits": [
     {
-      "index": 8,
-      "score": 0.23781759653694684,
-      "text": "Finally, we are developing and releasing open science resources\nthat drive both the research and the product. These resources to-\ngether open-source software, 3,4 AI models [ 11 , 20 , 42 , 86 ], and open\ndatasets [50, 61] to support continued work in this area.\nIn this paper, we focus on summarizing our efforts under the\nresearch pillar of the Semantic Reader Project. We structure our\ndiscussion around five broad challenges faced by readers of research\npapers:\n• Discovery: Following paper citations is one of the main\nstrategies that scholars employ to discover additional rel-\nevant papers, but keeping track of the large numbers of\ncitations can be overwhelming. In §2, we explore ways to\nvisually augment research papers to help readers prioritize\ntheir paper exploration during literature reviews.\n1 Semantic Reader: https://www.semanticscholar.org/product/semantic-reader\n2 Available for over 369K papers as of February 2023.\n3 For UI development: https://github.com/allenai/pdf-component-library\n4 For processing PDFs: https://github.com/allenai/papermage\n5 Hypothes.is: https://web.hypothes.ishttps://web.hypothes.is",
+      "index": 0,
+      "score": 0.7467831,
+      "text": "2025. Bingo: Radix-based Bias Factorization for Random Walk on Dynamic Graphs. In Proceedings of the Twentieth European Conference on Computer Systems (Rotterdam, Netherlands) (EuroSys ’25) . Association for Computing Machinery, 16 pages. [57] Shenao Wang, Yanjie Zhao, Xinyi Hou, and Haoyu Wang. 2024. Large language model supply chain: A research agenda. ACM Transactions on Software Engineer- ing and Methodology (2024). [58] Mengwei Xu, Wangsong Yin, Dongqi Cai, Rongjie Yi, Daliang Xu, Qipeng Wang, Bingyang Wu, Yihao Zhao, Chen Yang, Shihe Wang, et al . 2024. A survey of resource-efficient llm and multimodal foundation models. arXiv preprint arXiv:2401.08092 (2024). [59] Zhuoyan Xu, Zhenmei Shi, Junyi Wei, Fangzhou Mu, Yin Li, and Yingyu Liang. 2024. Towards Few-Shot Adaptation of Foundation Models via Multitask Fine- tuning. arXiv preprint arXiv:2402.15017 (2024).",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 2",
-        "page": 2,
-        "images": []
+        "chunk_id": "7652f06d3834a156821eb0a3650665da6a2e30ad",
+        "doc_id": "2507.14240v3",
+        "page": 9,
+        "images": [],
+        "tables": []
       }
     },
     {
-      "index": 82,
-      "score": 0.23394287149033818,
-      "text": "ms (2021).\n[94] Richard Van Noorden et al . 2015. Interdisciplinary research by the numbers.\nNature 525, 7569 (2015), 306–307.\n[95] David Wadden, Shanchuan Lin, Kyle Lo, Lucy Lu Wang, Madeleine van Zuylen,\nArman Cohan, and Hannaneh Hajishirzi. 2020. Fact or Fiction: Verifying Sci-\nentific Claims. In Proceedings of the 2020 Conference on Empirical Methods in\nNatural Language Processing (EMNLP) . Association for Computational Linguis-\ntics, Online, 7534–7550. https://doi.org/10.18653/v1/2020.emnlp-main.609\n[96] Chong Wang and David M. Blei. 2011. Collaborative topic modeling for recom-\nmending scientific articles. In KDD .\n[97] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea\nHaupt, Matt Latzke, Bailey Kuehl, Madeleine N van Zuylen, Linda Wagner,\nand Daniel Weld. 2021. SciA11y: Converting Scientific Papers to Accessible\nHTML. In Proceedings of the 23rd International ACM SIGACCESS Conference\non Computers and Accessibility (Virtual Event, USA) (ASSETS ’21) . Association\nfor Computing Machinery, New York, NY, USA, Article 85, 4 pages.\nhttps:\n//doi.org/10.1145/3441852.3476545\n[98] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea Hess\nHaupt,",
+      "index": 1,
+      "score": 0.73435104,
+      "text": "IEEE, 88–93. [14] Hugging Face. [n. d.]. Hugging Face – The AI community building the future. https://huggingface.co/ [15] Wang Feng, Shiyang Chen, Hang Liu, and Yuede Ji. 2023. Peek: A Prune-Centric Approach for K Shortest Path Computation. In Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis . 1–14. [16] Qiang Fu, Yuede Ji, and H Howie Huang.",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 11",
-        "page": 11,
-        "images": []
-      }
-    },
-    {
-      "index": 51,
-      "score": 0.22134469334503695,
-      "text": "en the content is important. For instance, our systems\ncould design pathways that, while they may be more efficient, do\nnot obfuscate the full context (e.g., Scim §3.1), and that encourage\ngood practices such as verification and provenance tracing. A final\nconsideration is around what is ethical reuse of a paper’s contents\nto support reader experiences outside of that paper and its licensing\nimplications. For instance, CiteRead (§2.2) extracts paper citances\nand places them in the cited paper, and Relatedly (§5.2) extracts\nrelated work sections from different papers for users to explore.\nRecent trends in open science and datasets [ 29 , 61 , 67 , 68 ] point to\na promising future where we could continue to explore different\nways to remix and reuse scholarly content across context so that\nfuture scientists can take fuller advantage of prior research.\n8\nCONCLUSION",
-      "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 8",
+        "chunk_id": "e9d3c9680bf4d49697869b59d21e830be405b53b",
+        "doc_id": "2507.14240v3",
         "page": 8,
-        "images": []
+        "images": [],
+        "tables": []
       }
     },
     {
-      "index": 83,
-      "score": 0.2183274416856906,
-      "text": "tion\nfor Computing Machinery, New York, NY, USA, Article 85, 4 pages.\nhttps:\n//doi.org/10.1145/3441852.3476545\n[98] Lucy Lu Wang, Isabel Cachola, Jonathan Bragg, Evie Yu-Yen Cheng, Chelsea Hess\nHaupt, Matt Latzke, Bailey Kuehl, Madeleine van Zuylen, Linda Wagner, and\nDaniel S. Weld. 2021. Improving the Accessibility of Scientific Documents:\nCurrent State, User Needs, and a System Solution to Enhance Scientific PDF\nAccessibility for Blind and Low Vision Users. arXiv: 2105.00076 [cs.DL] (2021).\narXiv:2105.00076 [cs.DL]\n[99] Wenhui Wang, Hangbo Bao, Shaohan Huang, Li Dong, and Furu Wei. 2021.\nMiniLMv2: Multi-Head Self-Attention Relation Distillation for Compressing\nPretrained Transformers. In Findings of the Association for Computational Lin-\nguistics: ACL-IJCNLP 2021 . Association for Computational Linguistics, Online,\n2140–2151. https://doi.org/10.18653/v1/2021.findings-acl.188\n[100] Wenhui Wang, Furu Wei, Li Dong, Hangbo Bao, Nan Yang, and Ming Zhou. 2020.\nMiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of\nPre-Trained Transformers. In Advances in Neural Information Processing Systems ,\nH. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin (Eds.), Vol",
+      "index": 2,
+      "score": 0.7341149,
+      "text": "2025. Evolu- tionary optimization of model merging recipes. Nature Machine Intelligence 7, 2 (2025), 195–204. [3] Dean Allemang and Juan Sequeda. 2024. Increasing the LLM Accuracy for Question Answering: Ontologies to the Rescue! arXiv preprint arXiv:2405.11706 (2024). [4] Anonymous. 2022. Review of Supply Chain Management in Manufacturing Organizations. ResearchGate (2022). https://www.researchgate.net/publication/ 377659033_Review_of_supply_chain_management_in_manufacturing_ organizations [5] Mourad Bahani, Aziza El Ouaazizi, and Khalil Maalmi. 2023. The effectiveness of T5, GPT-2, and BERT on text-to-image generation task. Pattern Recognition Letters 173 (2023), 57–63. [6] Casper Solheim Bojer and Jens Peder Meldgaard. 2021. Kaggle forecasting compe- titions: An overlooked learning opportunity. International Journal of Forecasting 37, 2 (2021), 587–603. [7] Euan Bonner, Ryan Lege, and Erin Frazier. 2023. Large Language Model-Based Artificial Intelligence in the Language Classroom: Practical Ideas for Teaching. Teaching English with Technology 23, 1 (2023), 23–41. [8] Dalton A Brucker-Hahn, Wang Feng, Shanchao Li, Matthew Petillo, Alexan- dru G Bardas, Drew Davidson, and Yuede Ji.",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "Page 11",
-        "page": 11,
-        "images": []
+        "chunk_id": "8bed460c76ca71ac6128ac4fbbb8a19803f8ff5b",
+        "doc_id": "2507.14240v3",
+        "page": 8,
+        "images": [],
+        "tables": []
       }
     },
     {
       "index": 3,
-      "score": 0.21741308565768408,
-      "text": "we’ve de-\nveloped ten research prototype interfaces and conducted usability\nstudies with 300+ participants and real-world users showing im-\nproved reading experiences for scholars. We’ve also released a pro-\nduction research paper reader that will incorporate novel features\nas they mature. We structure this paper around challenges scholars\nand the public face when reading research papers—discovery, effi-\nciency, comprehension, synthesis, and accessibility—and present\nan overview of our progress and remaining open challenges.\n1\nINTRODUCTION\nThe exponential growth of scientific publication [ 7 , 8 ] and increas-\ning interdisciplinary nature of scientific progress [ 71 , 94 ] makes\n∗ [ .......\nClick...to.......\nopen....\nin.....\nthe ............\nSemantic..........\nReader ]\n[ .............\nDownload.....\nthe ..........\nversion.......\nwith .........\nalt-text ]",
+      "score": 0.73393446,
+      "text": "Acknowledgment This work was supported in part by National Science Foundation grants 2331301, 2508118, 2516003, 2419843. The views, opinions, and/or findings expressed in this material are those of the authors and should not be interpreted as representing the official views of the National Science Foundation, or the U.S. Government.",
       "metadata": {
-        "doc_id": "2303.14334v2-embedded",
-        "title": "through AI-Powered Interactive Reading Interfaces ∗",
-        "page": 1,
-        "images": []
+        "chunk_id": "566ba6d729825c009cf20d832793cc9fa1aa1606",
+        "doc_id": "2507.14240v3",
+        "page": 7,
+        "images": [],
+        "tables": []
+      }
+    },
+    {
+      "index": 4,
+      "score": 0.73021346,
+      "text": "1.2 Contribution Our main contributions are threefold. First, we design a methodol- ogy to systematically collect the supply chain information of LLMs. In this paper, we mainly study the most popular AI platform, i.e., Hugging Face, but the same strategy applies to other platforms. In particular, we use the APIs from the AI platform to collect the metadata about the hosted models and datasets.",
+      "metadata": {
+        "chunk_id": "30255534c81b5efd6c421216dc5b7ba8a3726233",
+        "doc_id": "2507.14240v3",
+        "page": 2,
+        "images": [],
+        "tables": []
       }
     }
   ]

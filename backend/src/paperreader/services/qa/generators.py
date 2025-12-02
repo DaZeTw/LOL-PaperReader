@@ -167,8 +167,9 @@ class OpenAIGenerator(Generator):
                 # For substantive questions, use document contexts
                 prompt = (
                     f"Answer the question using the {len(contexts)} contexts below. "
-                    "IMPORTANT: You MUST append [cN] markers where you use contextual info (e.g., [c1], [c2], etc.). "
-                    f"Each [cN] should correspond to the context number you're referencing (1 to {len(contexts)}). "
+                    "IMPORTANT: When you use information from a context, mark it with [cN] where N is the context number (1 to {len(contexts)}). "
+                    "If you use information from chat history, mark it with [CHAT_HISTORY]. "
+                    "For example: 'Based on context 1 [c1] and previous conversation [CHAT_HISTORY], the answer is...' "
                     "At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]\n\n"
                     + "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)])
                     + f"\n\nQuestion: {question}\nAnswer:"
@@ -181,9 +182,18 @@ class OpenAIGenerator(Generator):
                 max_tokens=max_tokens,
                 temperature=0.2,
             )
+            if not resp or not resp.choices or len(resp.choices) == 0:
+                raise ValueError("OpenAI API returned empty response")
+            if not resp.choices[0].message or not resp.choices[0].message.content:
+                raise ValueError("OpenAI API returned response with no content")
             answer = resp.choices[0].message.content.strip()
             import re
             citations = [int(m.group(1)) - 1 for m in re.finditer(r"\[c(\d+)\]", answer)]
+            
+            # Check if chat history was used (marked with [CHAT_HISTORY])
+            used_chat_history = bool(re.search(r"\[CHAT_HISTORY\]", answer, re.IGNORECASE))
+            # Remove [CHAT_HISTORY] marker from answer (keep it readable)
+            answer = re.sub(r"\[CHAT_HISTORY\]", "", answer, flags=re.IGNORECASE).strip()
             
             # Extract confidence score if present
             confidence = None
@@ -201,7 +211,12 @@ class OpenAIGenerator(Generator):
             if len(citations) != len(valid_citations):
                 print(f"[WARNING] Found invalid citations: {citations}, valid ones: {valid_citations}")
             
-            return {"answer": answer, "citations": valid_citations, "confidence": confidence}
+            return {
+                "answer": answer, 
+                "citations": valid_citations, 
+                "confidence": confidence,
+                "used_chat_history": used_chat_history
+            }
 
         # --- Multimodal mode ---
         from pathlib import Path
@@ -282,7 +297,7 @@ class OpenAIGenerator(Generator):
             user_content.append({"type": "text", "text": f"[Reference Image {i+1}] {cap}"})
             user_content.append({"type": "image_url", "image_url": {"url": data_url}})
 
-        user_content.append({"type": "text", "text": f"Question: {question}\nAnswer: (Please append [cN] markers where you use contextual info from the {len(contexts)} contexts above. Use [c1] to [c{len(contexts)}] only. At the end, provide a confidence score [CONFIDENCE:0.85] based on how well the document context supports your answer.)"})
+        user_content.append({"type": "text", "text": f"Question: {question}\nAnswer: (IMPORTANT: When you use information from the {len(contexts)} contexts above, mark it with [cN] where N is the context number (1 to {len(contexts)}). If you use information from chat history, mark it with [CHAT_HISTORY]. For example: 'Based on context 1 [c1] and previous conversation [CHAT_HISTORY], the answer is...' At the end, provide a confidence score [CONFIDENCE:0.85] based on how well the document context supports your answer.)"})
         messages.append({"role": "user", "content": user_content})
 
         # --- Send request ---
@@ -297,10 +312,20 @@ class OpenAIGenerator(Generator):
         except Exception as e:
             print(f"[ERROR] OpenAI API call failed: {e}")
             raise
-
+        
+        if not resp or not resp.choices or len(resp.choices) == 0:
+            raise ValueError("OpenAI API returned empty response")
+        if not resp.choices[0].message or not resp.choices[0].message.content:
+            raise ValueError("OpenAI API returned response with no content")
+        
         answer = resp.choices[0].message.content.strip()
         import re
         citations = [int(m.group(1)) - 1 for m in re.finditer(r"\[c(\d+)\]", answer)]
+        
+        # Check if chat history was used (marked with [CHAT_HISTORY])
+        used_chat_history = bool(re.search(r"\[CHAT_HISTORY\]", answer, re.IGNORECASE))
+        # Remove [CHAT_HISTORY] marker from answer (keep it readable)
+        answer = re.sub(r"\[CHAT_HISTORY\]", "", answer, flags=re.IGNORECASE).strip()
         
         # Extract confidence score if present
         confidence = None
@@ -318,7 +343,12 @@ class OpenAIGenerator(Generator):
         if len(citations) != len(valid_citations):
             print(f"[WARNING] Found invalid citations: {citations}, valid ones: {valid_citations}")
         
-        return {"answer": answer, "citations": valid_citations, "confidence": confidence}
+        return {
+            "answer": answer, 
+            "citations": valid_citations, 
+            "confidence": confidence,
+            "used_chat_history": used_chat_history
+        }
 
 
 # ============================ #
