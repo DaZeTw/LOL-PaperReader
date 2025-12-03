@@ -39,6 +39,7 @@ interface PDFViewerProps {
   isActive?: boolean
   hiddenHighlightIds?: Set<number>
   activeHighlightIds?: Set<number>
+  highlights?: SkimmingHighlight[]
 }
 
 export function PDFViewer({
@@ -52,6 +53,7 @@ export function PDFViewer({
   isActive,
   hiddenHighlightIds = new Set(),
   activeHighlightIds = new Set(),
+  highlights = [],
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
   const [numPages, setNumPages] = useState(0)
@@ -59,7 +61,7 @@ export function PDFViewer({
   const [viewMode, setViewMode] = useState<"reading" | "skimming">("reading")
   const [bookmarks, setBookmarks] = useState<any[]>([])
   const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
-    new Set(["novelty", "method", "result"])
+    new Set(["objective", "method", "result"])
   )
 
   // Citation state - now managed in viewer
@@ -69,7 +71,13 @@ export function PDFViewer({
   const { extractCitations, getCitationById, loading: extracting, progress } = useExtractCitations()
 
   // Skimming highlights hook
-  const { highlights, loading: highlightsLoading, error: highlightsError, highlightCounts } = useSkimmingHighlights()
+  // Highlights are now passed from parent via props
+  // const { highlights, loading: highlightsLoading, error: highlightsError, highlightCounts } = useSkimmingHighlights()
+  const highlightCounts = {
+    objective: highlights.filter((h) => h.label === "objective").length,
+    method: highlights.filter((h) => h.label === "method").length,
+    result: highlights.filter((h) => h.label === "result").length,
+  }
 
   // ✅ ADD: Annotation hook for user text highlighting
   const { 
@@ -388,7 +396,7 @@ export function PDFViewer({
       {/* Main viewer area */}
       <div className="flex flex-1 flex-col min-w-0 min-h-0">
         {/* Skimming Controls - Show when highlights are loaded */}
-        {viewMode === "reading" && !highlightsLoading && highlights.length > 0 && (
+        {viewMode === "reading" && highlights.length > 0 && (
           <SkimmingControls
             visibleCategories={visibleCategories}
             onToggleCategory={(category) => {
@@ -400,7 +408,7 @@ export function PDFViewer({
             }}
             onToggleAll={() => {
               setVisibleCategories((prev) =>
-                prev.size === 3 ? new Set() : new Set(["novelty", "method", "result"])
+                prev.size === 3 ? new Set() : new Set(["objective", "method", "result"])
               )
             }}
             highlightCounts={highlightCounts}

@@ -7,7 +7,7 @@ export interface SkimmingHighlight {
   id: number
   text: string
   section: string
-  label: "novelty" | "method" | "result"
+  label: "objective" | "method" | "result"
   score: number
   boxes: {
     left: number
@@ -29,15 +29,15 @@ interface PDFHighlightOverlayProps {
 }
 
 const CATEGORY_COLORS = {
-  novelty: "rgba(234, 179, 8, 0.85)", // yellow-600 with very high opacity (darker yellow)
-  method: "rgba(37, 99, 235, 0.85)",  // blue-600 with very high opacity (darker blue)
-  result: "rgba(22, 163, 74, 0.85)",  // green-600 with very high opacity (darker green)
+  objective: "rgba(249, 115, 22, 0.85)", // orange-600 with very high opacity
+  method: "rgba(37, 99, 235, 0.85)",     // blue-600 with very high opacity
+  result: "rgba(22, 163, 74, 0.85)",     // green-600 with very high opacity
 } as const
 
 const CATEGORY_BORDERS = {
-  novelty: "rgba(234, 179, 8, 1)",  // yellow-600 solid
-  method: "rgba(37, 99, 235, 1)",   // blue-600 solid
-  result: "rgba(22, 163, 74, 1)",   // green-600 solid
+  objective: "rgba(249, 115, 22, 1)",  // orange-600 solid
+  method: "rgba(37, 99, 235, 1)",      // blue-600 solid
+  result: "rgba(22, 163, 74, 1)",      // green-600 solid
 } as const
 
 
@@ -137,7 +137,7 @@ function HighlightTooltip({
   }, [])
 
   const labelColors = {
-    novelty: "bg-yellow-100 text-yellow-900 border-yellow-300",
+    objective: "bg-orange-100 text-orange-900 border-orange-300",
     method: "bg-blue-100 text-blue-900 border-blue-300",
     result: "bg-green-100 text-green-900 border-green-300",
   }

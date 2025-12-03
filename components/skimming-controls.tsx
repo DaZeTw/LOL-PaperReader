@@ -16,7 +16,7 @@ interface SkimmingControlsProps {
   onToggleCategory: (category: string) => void
   onToggleAll: () => void
   highlightCounts: {
-    novelty: number
+    objective: number
     method: number
     result: number
   }
@@ -24,13 +24,13 @@ interface SkimmingControlsProps {
 
 const CATEGORIES = [
   {
-    id: "novelty",
-    label: "Novelty",
+    id: "objective",
+    label: "Objective",
     icon: Sparkles,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-100",
-    hoverColor: "hover:bg-yellow-200",
-    description: "Novel contributions and key insights",
+    color: "text-orange-600",
+    bgColor: "bg-orange-100",
+    hoverColor: "hover:bg-orange-200",
+    description: "Research objectives and goals",
   },
   {
     id: "method",
