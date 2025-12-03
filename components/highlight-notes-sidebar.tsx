@@ -18,10 +18,10 @@ interface HighlightNotesSidebarProps {
 }
 
 const CATEGORY_INFO = {
-  novelty: {
-    color: "bg-yellow-100 border-yellow-300 text-yellow-900",
-    label: "Novelty",
-    icon: "💡",
+  objective: {
+    color: "bg-orange-100 border-orange-300 text-orange-900",
+    label: "Objective",
+    icon: "🎯",
   },
   method: {
     color: "bg-blue-100 border-blue-300 text-blue-900",

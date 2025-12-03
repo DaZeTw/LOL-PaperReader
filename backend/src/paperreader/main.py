@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from paperreader.api import pdf_routes  # main backend routes
 from paperreader.api.routes import router as qa_router  # QA RAG routes
 from paperreader.api.chat_routes import router as chat_router  # Chat routes
+from paperreader.api.skimming_routes import router as skimming_router  # Skimming/highlighting routes
 # from paperreader.api.chat_embedding_routes import router as chat_embedding_router  # Chat embedding routes (removed as unused)
 
 from paperreader.services.qa.embeddings import get_embedder
@@ -47,6 +48,7 @@ def create_app() -> FastAPI:
     app.include_router(pdf_routes.router, prefix="/api/pdf", tags=["PDF"])
     app.include_router(qa_router, prefix="/api/qa", tags=["QA"])
     app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
+    app.include_router(skimming_router, prefix="/api/skimming", tags=["Skimming"])
     # Chat Embedding API disabled as unused
     # app.include_router(chat_embedding_router, prefix="/api/chat-embedding", tags=["Chat Embedding"])
 

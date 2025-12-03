@@ -1,0 +1,1665 @@
+{
+  "highlights": [
+    {
+      "id": 10,
+      "text": "This paper explores the question Can recent advances in AI and HCI power intelligent , interactive , and accessible reading interfaceseven for legacy PDFs?",
+      "section": "ABSTRACT",
+      "label": "method",
+      "score": 3,
+      "boxes": [
+        {
+          "left": 0.2846650531346405,
+          "top": 0.6183189393939393,
+          "width": 0.1958056060235297,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08625,
+          "top": 0.6321560606060606,
+          "width": 0.39582345681568654,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6459919191919191,
+          "width": 0.3488987986823531,
+          "height": 0.011321212121212176,
+          "page": 0
+        }
+      ],
+      "block_id": "9e75ddaa-2954-4105-80c6-c3ee3286dabe",
+      "is_sparse": true
+    },
+    {
+      "id": 11,
+      "text": "We describe the Semantic Reader Project , a collaborative effort across multiple institutions to explore automatic creation of dynamic reading interfaces for research papers .",
+      "section": "ABSTRACT",
+      "label": "method",
+      "score": 2.9,
+      "boxes": [
+        {
+          "left": 0.4404509494797387,
+          "top": 0.6459919191919191,
+          "width": 0.042497805803921596,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6598290404040403,
+          "width": 0.3925639360000004,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6736661616161616,
+          "width": 0.3950305750588237,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6875032828282829,
+          "width": 0.20320446832941186,
+          "height": 0.011321212121212176,
+          "page": 0
+        }
+      ],
+      "block_id": "9e75ddaa-2954-4105-80c6-c3ee3286dabe",
+      "is_sparse": true
+    },
+    {
+      "id": 12,
+      "text": "Through this project , we've developed ten research prototype interfaces and conducted usability studies with 300 + participants and real-world users showing improved reading experiences for scholars .",
+      "section": "ABSTRACT",
+      "label": "result",
+      "score": 3.8,
+      "boxes": [
+        {
+          "left": 0.2947650873934641,
+          "top": 0.6875032828282829,
+          "width": 0.18817185920000035,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08753921568627451,
+          "top": 0.701340404040404,
+          "width": 0.3933085281254902,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7151775252525253,
+          "width": 0.3950296960000002,
+          "height": 0.011321212121211954,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7290146464646464,
+          "width": 0.23784086572549024,
+          "height": 0.011321212121212176,
+          "page": 0
+        }
+      ],
+      "block_id": "9e75ddaa-2954-4105-80c6-c3ee3286dabe",
+      "is_sparse": true
+    },
+    {
+      "id": 13,
+      "text": "We've also released a production research paper reader that will incorporate novel features as they mature .",
+      "section": "ABSTRACT",
+      "label": "method",
+      "score": 2.7,
+      "boxes": [
+        {
+          "left": 0.3294116232679739,
+          "top": 0.7290146464646464,
+          "width": 0.15353370368627456,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7428517676767677,
+          "width": 0.3925638627450981,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7566888888888889,
+          "width": 0.0898664765490196,
+          "height": 0.011321212121212176,
+          "page": 0
+        }
+      ],
+      "block_id": "9e75ddaa-2954-4105-80c6-c3ee3286dabe",
+      "is_sparse": true
+    },
+    {
+      "id": 14,
+      "text": "We structure this paper around challenges scholars and the public face when reading research papersdiscovery , efficiency , comprehension , synthesis , and accessibilityand present an overview of our progress and remaining open challenges .",
+      "section": "ABSTRACT",
+      "label": "method",
+      "score": 2.6,
+      "boxes": [
+        {
+          "left": 0.1812894056993464,
+          "top": 0.7566888888888889,
+          "width": 0.2991768288627452,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7705260101010102,
+          "width": 0.3950317178352944,
+          "height": 0.011321212121211954,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7843618686868687,
+          "width": 0.392563936,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7981989898989899,
+          "width": 0.3615568941176472,
+          "height": 0.011321212121212176,
+          "page": 0
+        }
+      ],
+      "block_id": "9e75ddaa-2954-4105-80c6-c3ee3286dabe",
+      "is_sparse": true
+    },
+    {
+      "id": 27,
+      "text": "This raises an exciting challenge : Can we create intelligent , interactive , and accessible reading interfaces for research papers , even atop existing PDFs ?",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 3,
+      "boxes": [
+        {
+          "left": 0.7494420837960785,
+          "top": 0.8500878787878787,
+          "width": 0.16512465101176466,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.863925,
+          "width": 0.03629651463529415,
+          "height": 0.011321212121211954,
+          "page": 0
+        },
+        {
+          "left": 0.5595032679738562,
+          "top": 0.8665741636363636,
+          "width": 0.35259471359999994,
+          "height": 0.011321212121212176,
+          "page": 0
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.8804112848484847,
+          "width": 0.31764790588235303,
+          "height": 0.011321212121212176,
+          "page": 0
+        }
+      ],
+      "block_id": "d943dcd2-cbf0-4e4d-9476-eb76d1c475a6",
+      "is_sparse": true
+    },
+    {
+      "id": 36,
+      "text": "We continues to integrate research features into this product as they mature ( e.g .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 3,
+      "boxes": [
+        {
+          "left": 0.8061976810457516,
+          "top": 0.42238363434343434,
+          "width": 0.1058972862745099,
+          "height": 0.01132121212121212,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.43622075555555556,
+          "width": 0.4242630901960785,
+          "height": 0.01132121212121212,
+          "page": 1
+        }
+      ],
+      "block_id": "69279bcd-9771-49ad-8209-3bec90c73143",
+      "is_sparse": true
+    },
+    {
+      "id": 38,
+      "text": "To explore this question , we present the Semantic Reader Project , a broad collaborative effort across multiple non-profit , industry , and academic institutions to create interactive , intelligent reading interfaces for research papers .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.9,
+      "boxes": [
+        {
+          "left": 0.10418464052287582,
+          "top": 0.4692040404040404,
+          "width": 0.3765826797385621,
+          "height": 0.013936412121212216,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.48565636161616166,
+          "width": 0.04698569411764707,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.134890522875817,
+          "top": 0.4830411616161616,
+          "width": 0.3471939519999999,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.49687828282828284,
+          "width": 0.3925610058039218,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.5107154040404039,
+          "width": 0.22204586352941186,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "69279bcd-9771-49ad-8209-3bec90c73143",
+      "is_sparse": true
+    },
+    {
+      "id": 39,
+      "text": "This project consists of three pillars : research , product , and open science resources .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.8,
+      "boxes": [
+        {
+          "left": 0.3129949799738562,
+          "top": 0.5107154040404039,
+          "width": 0.16747125458823525,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.5245525252525252,
+          "width": 0.32809552000000014,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "69279bcd-9771-49ad-8209-3bec90c73143",
+      "is_sparse": true
+    },
+    {
+      "id": 41,
+      "text": "We developed research prototypes and conducted usability studies that clarify their benefits .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.7,
+      "boxes": [
+        {
+          "left": 0.08720261437908497,
+          "top": 0.5798997474747475,
+          "width": 0.3932681939764706,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.5937368686868687,
+          "width": 0.15051973330196083,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "69279bcd-9771-49ad-8209-3bec90c73143",
+      "is_sparse": true
+    },
+    {
+      "id": 42,
+      "text": "On the product front , we are developing the Semantic Reader ( Figure 1 ) , 1 a freely available reading interface that integrates features from research prototypes as they mature .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.6,
+      "boxes": [
+        {
+          "left": 0.24206926157385622,
+          "top": 0.5937368686868687,
+          "width": 0.23838945703529424,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6056026515151516,
+          "width": 0.3925598058039215,
+          "height": 0.013292550505050515,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6214111111111111,
+          "width": 0.38621699943529436,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "69279bcd-9771-49ad-8209-3bec90c73143",
+      "is_sparse": true
+    },
+    {
+      "id": 43,
+      "text": "2 Finally , we are developing and releasing open science resources that drive both the research and the product .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.5,
+      "boxes": [
+        {
+          "left": 0.47412581699346407,
+          "top": 0.6194397727272728,
+          "width": 0.005525825980392141,
+          "height": 0.009182702020201994,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6352482323232324,
+          "width": 0.39256393600000017,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6490853535353533,
+          "width": 0.2726981120000001,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "69279bcd-9771-49ad-8209-3bec90c73143",
+      "is_sparse": true
+    },
+    {
+      "id": 45,
+      "text": "In this paper , we focus on summarizing our efforts under the research pillar of the Semantic Reader Project .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 3,
+      "boxes": [
+        {
+          "left": 0.10418464052287582,
+          "top": 0.6905967171717172,
+          "width": 0.37627497600000004,
+          "height": 0.011321212121211954,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.707083002020202,
+          "width": 0.08489686400000006,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.17824019607843136,
+          "top": 0.7044338383838384,
+          "width": 0.19337536000000002,
+          "height": 0.011321212121211954,
+          "page": 1
+        }
+      ],
+      "block_id": "7f4fbf09-36af-4d03-93cf-fc6e6b777fed",
+      "is_sparse": true
+    },
+    {
+      "id": 46,
+      "text": "We structure our discussion around five broad challenges faced by readers of research papers :  Discovery : Following paper citations is one of the main strategies that scholars employ to discover additional relevant papers , but keeping track of the large numbers of citations can be overwhelming .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.9,
+      "boxes": [
+        {
+          "left": 0.37600909207843136,
+          "top": 0.7044338383838384,
+          "width": 0.10472755200000006,
+          "height": 0.011321212121211954,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.718269696969697,
+          "width": 0.3925610058039216,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7321068181818182,
+          "width": 0.04317643921568627,
+          "height": 0.011321212121211954,
+          "page": 1
+        },
+        {
+          "left": 0.11399509803921569,
+          "top": 0.7487646464646465,
+          "width": 0.36646541218300666,
+          "height": 0.013936412121212216,
+          "page": 1
+        },
+        {
+          "left": 0.1277892156862745,
+          "top": 0.7626017676767677,
+          "width": 0.35515910400000017,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.1277892156862745,
+          "top": 0.7764388888888889,
+          "width": 0.3526784000000002,
+          "height": 0.011321212121211954,
+          "page": 1
+        },
+        {
+          "left": 0.1277892156862745,
+          "top": 0.7902760101010101,
+          "width": 0.191686688,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "7f4fbf09-36af-4d03-93cf-fc6e6b777fed",
+      "is_sparse": true
+    },
+    {
+      "id": 47,
+      "text": "In  2 , we explore ways to visually augment research papers to help readers prioritize their paper exploration during literature reviews .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 3,
+      "boxes": [
+        {
+          "left": 0.3235406716862745,
+          "top": 0.7902760101010101,
+          "width": 0.1569269440000003,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.1274232026143791,
+          "top": 0.8041131313131313,
+          "width": 0.35304473311372564,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.1277892156862745,
+          "top": 0.8179502525252526,
+          "width": 0.2940451764705884,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "e5da7fc1-654d-40e9-97a5-fec7f4b29690",
+      "is_sparse": true
+    },
+    {
+      "id": 50,
+      "text": "In  3 , we explore how support for non-linear reading can help readers consume research papers more efficiently .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 3,
+      "boxes": [
+        {
+          "left": 0.8095055106614378,
+          "top": 0.5107154040404039,
+          "width": 0.10259609807058834,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.5594183006535948,
+          "top": 0.5245525252525252,
+          "width": 0.35515910400000017,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.5594183006535948,
+          "top": 0.5383896464646464,
+          "width": 0.2289801725490196,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "f0729466-acc8-4aa0-aae4-12e010ea1a99",
+      "is_sparse": true
+    },
+    {
+      "id": 52,
+      "text": "In  4 , we explore how providing in-situ definitions and summaries can benefit readers especially when reading outside of their domains .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.9,
+      "boxes": [
+        {
+          "left": 0.6325124081045752,
+          "top": 0.5965676767676767,
+          "width": 0.2820616268235293,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.5594183006535948,
+          "top": 0.610404797979798,
+          "width": 0.35267840000000006,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.5594183006535948,
+          "top": 0.6242419191919192,
+          "width": 0.19764172549019599,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "f0729466-acc8-4aa0-aae4-12e010ea1a99",
+      "is_sparse": true
+    },
+    {
+      "id": 55,
+      "text": "In  5 , we explore how to help readers collect information from and make sense of many papers to gain better understanding of broad research topics .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.8,
+      "boxes": [
+        {
+          "left": 0.9000465623006537,
+          "top": 0.6824199494949494,
+          "width": 0.012046329098039377,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.5594183006535948,
+          "top": 0.6962570707070708,
+          "width": 0.35267497167058826,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.5594183006535948,
+          "top": 0.7100941919191919,
+          "width": 0.3526745907450982,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.5594183006535948,
+          "top": 0.7239313131313132,
+          "width": 0.14608492549019603,
+          "height": 0.011321212121211954,
+          "page": 1
+        }
+      ],
+      "block_id": "f0729466-acc8-4aa0-aae4-12e010ea1a99",
+      "is_sparse": true
+    },
+    {
+      "id": 59,
+      "text": "In  6 , we explore methods for converting legacy papers to more accessible representations .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.7,
+      "boxes": [
+        {
+          "left": 0.8810604007633988,
+          "top": 0.8097835858585859,
+          "width": 0.032638985286274624,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.558875816993464,
+          "top": 0.823620707070707,
+          "width": 0.3532163840000003,
+          "height": 0.011321212121212176,
+          "page": 1
+        },
+        {
+          "left": 0.5594183006535948,
+          "top": 0.8374565656565656,
+          "width": 0.15824523921568623,
+          "height": 0.011321212121212176,
+          "page": 1
+        }
+      ],
+      "block_id": "f0729466-acc8-4aa0-aae4-12e010ea1a99",
+      "is_sparse": true
+    },
+    {
+      "id": 63,
+      "text": "We conclude by discussing ongoing re-search opportunities in both AI and HCI for developing the future of scholarly reading interfaces .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 3,
+      "boxes": [
+        {
+          "left": 0.24442868475816992,
+          "top": 0.4035866161616162,
+          "width": 0.2385062400000001,
+          "height": 0.011321212121212176,
+          "page": 2
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.41742373737373734,
+          "width": 0.3925622364862746,
+          "height": 0.01132121212121212,
+          "page": 2
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.43126085858585855,
+          "width": 0.18207237769411766,
+          "height": 0.01132121212121212,
+          "page": 2
+        }
+      ],
+      "block_id": "417214db-7311-4bd3-a0de-2298e16d7089",
+      "is_sparse": true
+    },
+    {
+      "id": 64,
+      "text": "We provide pointers to our production reading interface and associated open resources to invite the broader research community to join our effort .",
+      "section": "1 INTRODUCTION",
+      "label": "method",
+      "score": 2.9,
+      "boxes": [
+        {
+          "left": 0.27363611741699345,
+          "top": 0.43126085858585855,
+          "width": 0.20930153242352956,
+          "height": 0.01132121212121212,
+          "page": 2
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.44509797979797977,
+          "width": 0.39256797967058843,
+          "height": 0.01132121212121212,
+          "page": 2
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.458935101010101,
+          "width": 0.27869094901960795,
+          "height": 0.01132121212121212,
+          "page": 2
+        }
+      ],
+      "block_id": "417214db-7311-4bd3-a0de-2298e16d7089",
+      "is_sparse": true
+    },
+    {
+      "id": 72,
+      "text": "Here we discuss how interactive reading interfaces can help scholars more effectively explore citations to important relevant work in both directions with two systems called CiteSee [ 15 ] and CiteRead [ 82 ] .",
+      "section": "2 UNLOCKING CITATIONS FOR DISCOVERY",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.35512618894640524,
+          "top": 0.7257128787878787,
+          "width": 0.12588336257254906,
+          "height": 0.011321212121212176,
+          "page": 2
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.73955,
+          "width": 0.39293753600000025,
+          "height": 0.011321212121212176,
+          "page": 2
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7533858585858586,
+          "width": 0.39256100580392167,
+          "height": 0.011321212121212176,
+          "page": 2
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7672229797979797,
+          "width": 0.30286506666666674,
+          "height": 0.011321212121212176,
+          "page": 2
+        }
+      ],
+      "block_id": "90cde6a6-f7cc-4348-8726-0a9a165a722a",
+      "is_sparse": false
+    },
+    {
+      "id": 78,
+      "text": "To address this , CiteSee provides a personalized research paper reading experience by automatically identifying and resolving in-line citations in PDFs to research paper entities in our academic graph [ 50 ] , and visually augmenting inline citations based on their connections to the current reader .",
+      "section": "2 UNLOCKING CITATIONS FOR DISCOVERY",
+      "label": "method",
+      "score": 1.0933091759681701,
+      "boxes": [
+        {
+          "left": 0.5358137254901961,
+          "top": 0.2729666666666666,
+          "width": 0.3765520846431374,
+          "height": 0.011321212121212176,
+          "page": 2
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.28680378787878785,
+          "width": 0.3950342671058824,
+          "height": 0.01132121212121212,
+          "page": 2
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.3006396464646464,
+          "width": 0.39256393600000006,
+          "height": 0.01132121212121212,
+          "page": 2
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.3144767676767677,
+          "width": 0.39283723857777786,
+          "height": 0.011321212121212176,
+          "page": 2
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.32831388888888885,
+          "width": 0.19638818760784305,
+          "height": 0.01132121212121212,
+          "page": 2
+        }
+      ],
+      "block_id": "0f51dcd8-0381-4d6f-9e4b-ad655a8ad66b",
+      "is_sparse": false
+    },
+    {
+      "id": 103,
+      "text": "In this section we discuss two systems , Scim [ 28 ] and Ocean [ 75 ] , which demonstrate different approaches to helping readers navigate efficiently through a paper toward high-value , relevant information .",
+      "section": "2 UNLOCKING CITATIONS FOR DISCOVERY @@ 2.2 Exploring Future Work with CiteRead",
+      "label": "result",
+      "score": 2,
+      "boxes": [
+        {
+          "left": 0.29646082708496735,
+          "top": 0.7123252525252526,
+          "width": 0.18400547199999995,
+          "height": 0.011321212121211954,
+          "page": 3
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7261623737373737,
+          "width": 0.3925648783267973,
+          "height": 0.011321212121212176,
+          "page": 3
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.739999494949495,
+          "width": 0.3928416013803923,
+          "height": 0.011321212121212176,
+          "page": 3
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7538353535353536,
+          "width": 0.24399742745098052,
+          "height": 0.011321212121212176,
+          "page": 3
+        }
+      ],
+      "block_id": "84cf39e5-7d84-4c56-9288-b72c3ce07102",
+      "is_sparse": false
+    },
+    {
+      "id": 127,
+      "text": "In this section , we discuss several ways in which interactive reading aids can help a reader understand a paper with less work through three systems : ScholarPhi [ 33 ] , PaperPlain [ 1 ] and Papeo [ 92 ] .",
+      "section": " @@ 3.1 Guided Reading with Scim",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.13302116475816994,
+          "top": 0.34999065656565653,
+          "width": 0.34991376000000024,
+          "height": 0.011321212121212176,
+          "page": 4
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.36382777777777775,
+          "width": 0.3925639360000001,
+          "height": 0.011321212121212176,
+          "page": 4
+        },
+        {
+          "left": 0.08736437908496732,
+          "top": 0.37766489898989897,
+          "width": 0.39309643779346415,
+          "height": 0.011321212121212176,
+          "page": 4
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.3915020202020202,
+          "width": 0.06606103508496729,
+          "height": 0.011321212121212176,
+          "page": 4
+        }
+      ],
+      "block_id": "b2f1797c-18b5-48ce-aa05-8854cf26ef36",
+      "is_sparse": false
+    },
+    {
+      "id": 132,
+      "text": "How can we design interactive aids that present definitions of terms when and where readers most need them ?",
+      "section": " @@ 3.1 Guided Reading with Scim",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.4067067209620915,
+          "top": 0.5515474747474747,
+          "width": 0.07375318180392165,
+          "height": 0.011321212121212176,
+          "page": 4
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.5653845959595959,
+          "width": 0.3925583686274512,
+          "height": 0.011321212121212176,
+          "page": 4
+        },
+        {
+          "left": 0.08736437908496732,
+          "top": 0.5792217171717171,
+          "width": 0.1930549430588236,
+          "height": 0.011321212121212176,
+          "page": 4
+        }
+      ],
+      "block_id": "622575d8-cabf-470f-8e14-482fd01df647",
+      "is_sparse": false
+    },
+    {
+      "id": 154,
+      "text": "Can we make complex texts more approachable by incorporating plain language summaries in the margins of the text ?",
+      "section": " @@ 4.2 Simplifying Complex Passages with Paper Plain",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.6982856511372549,
+          "top": 0.8264464646464647,
+          "width": 0.21380380799999998,
+          "height": 0.011321212121211954,
+          "page": 4
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.8402835858585859,
+          "width": 0.39256393600000006,
+          "height": 0.011321212121212176,
+          "page": 4
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.8541207070707071,
+          "width": 0.11516520345098036,
+          "height": 0.011321212121212176,
+          "page": 4
+        }
+      ],
+      "block_id": "6992d43b-ca04-4e35-8159-25e54aa0a826",
+      "is_sparse": false
+    },
+    {
+      "id": 168,
+      "text": "To grant authors more control over how their work is presented , we developed an AI-supported authoring interface for linking paper passages and videos efficiently : candidate passages are linked to excerpts of videos as suggestions using a pretrained language model [ 100 ] , and an author interactively confirms or refines them .",
+      "section": " @@ 4.2 Simplifying Complex Passages with Paper Plain",
+      "label": "method",
+      "score": 1.0976841628551484,
+      "boxes": [
+        {
+          "left": 0.37873924729934644,
+          "top": 0.5863808080808081,
+          "width": 0.10172262127058845,
+          "height": 0.011321212121212176,
+          "page": 5
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6002166666666666,
+          "width": 0.3950305750588237,
+          "height": 0.011321212121212176,
+          "page": 5
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6140537878787878,
+          "width": 0.39256100580392156,
+          "height": 0.011321212121212176,
+          "page": 5
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.627890909090909,
+          "width": 0.3925672324705883,
+          "height": 0.011321212121212176,
+          "page": 5
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6417280303030303,
+          "width": 0.3928435944575163,
+          "height": 0.011321212121212065,
+          "page": 5
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6555651515151515,
+          "width": 0.22940505098039232,
+          "height": 0.011321212121212176,
+          "page": 5
+        }
+      ],
+      "block_id": "5d087feb-7920-4a90-be33-a9e3241f684d",
+      "is_sparse": false
+    },
+    {
+      "id": 171,
+      "text": "Our early-stage evaluations of Papeo suggest that readers can use these interactions to fluidly transition between watching video and reading text , using video to quickly understand , and then selectively descending into the text when they desire a detailed understanding of the paper .",
+      "section": " @@ 4.2 Simplifying Complex Passages with Paper Plain",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.29296679675816995,
+          "top": 0.7524237373737374,
+          "width": 0.1875023680000002,
+          "height": 0.011321212121212176,
+          "page": 5
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7662608585858586,
+          "width": 0.3929375360000002,
+          "height": 0.011321212121212176,
+          "page": 5
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7800979797979799,
+          "width": 0.3925610058039217,
+          "height": 0.011321212121211954,
+          "page": 5
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.793935101010101,
+          "width": 0.39256261741176485,
+          "height": 0.011321212121212176,
+          "page": 5
+        },
+        {
+          "left": 0.08736437908496732,
+          "top": 0.8077722222222222,
+          "width": 0.33265050980392163,
+          "height": 0.011321212121212176,
+          "page": 5
+        }
+      ],
+      "block_id": "3927efed-d84c-4916-8b4e-7e31ade1061f",
+      "is_sparse": false
+    },
+    {
+      "id": 222,
+      "text": "One question is how to integrate the different kinds of functionality across these projects into one coherent user interface , especially as we migrate research features into the production interface .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.7902908496732026,
+          "top": 0.81605,
+          "width": 0.12235085003921575,
+          "height": 0.011321212121212176,
+          "page": 6
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.8298871212121213,
+          "width": 0.3925610058039216,
+          "height": 0.011321212121211954,
+          "page": 6
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.8437242424242424,
+          "width": 0.39256642666666697,
+          "height": 0.011321212121212176,
+          "page": 6
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.8575601010101009,
+          "width": 0.23485990400000012,
+          "height": 0.011321212121212176,
+          "page": 6
+        }
+      ],
+      "block_id": "55366810-5f89-4b07-b6c0-0c3ca4595afd",
+      "is_sparse": false
+    },
+    {
+      "id": 228,
+      "text": "Finally is the question of how we can allow the scholarly community to step in where current AI systems fall short , such as by fixing improperly-extracted content or incorrect generated text which are especially problematic for interfaces such as SciA11y (  6 ) .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.30745280711111117,
+          "top": 0.2591295454545454,
+          "width": 0.17355902996078437,
+          "height": 0.01132121212121212,
+          "page": 7
+        },
+        {
+          "left": 0.08736437908496732,
+          "top": 0.2729666666666666,
+          "width": 0.39309471171764726,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.28680378787878785,
+          "width": 0.39255495494901976,
+          "height": 0.01132121212121212,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.3006396464646464,
+          "width": 0.3928329280000001,
+          "height": 0.01132121212121212,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.3144767676767677,
+          "width": 0.18741534117647068,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "f87d1077-1f38-4063-9887-9ed152f2b1d4",
+      "is_sparse": false
+    },
+    {
+      "id": 231,
+      "text": "The bar for deploying AI models to support real-world reading is high ; we often found during iterative design and usability studies that even slight errors in these models can have detrimental effects on the readers .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "result",
+      "score": 2,
+      "boxes": [
+        {
+          "left": 0.45682775675816994,
+          "top": 0.3767431818181818,
+          "width": 0.023641407999999975,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.390580303030303,
+          "width": 0.39360759858823546,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08736437908496732,
+          "top": 0.4044174242424242,
+          "width": 0.3931019199999998,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.41825454545454543,
+          "width": 0.3925654304000003,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.43209166666666665,
+          "width": 0.07031767341176472,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "b3dc01c2-41d3-4bbc-b5b3-dafc3360ef7c",
+      "is_sparse": true
+    },
+    {
+      "id": 235,
+      "text": "For example , when developing Paper Plain (  4.2 ) , LLMs enabled us to quickly test different granularities and complexity-levels of plain language summaries with participants , eschewing the need for expensive changes to data requirements and model retraining .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "method",
+      "score": 0.9,
+      "boxes": [
+        {
+          "left": 0.22315172470588235,
+          "top": 0.556624494949495,
+          "width": 0.2573100993882353,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.0874656862745098,
+          "top": 0.5704616161616162,
+          "width": 0.392998952909804,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.5842987373737374,
+          "width": 0.39416588884705883,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.5981358585858586,
+          "width": 0.3925610058039217,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6119729797979798,
+          "width": 0.10136720313725488,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "b3dc01c2-41d3-4bbc-b5b3-dafc3360ef7c",
+      "is_sparse": false
+    },
+    {
+      "id": 236,
+      "text": "In the near-term , we will revisit interface designs relying on bespoke AI models to evaluate whether LLMs can close the gap between research prototype and ready-for-production ( e.g . , more accurate definition identification for ScholarPhi  4.1 ) .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "method",
+      "score": 0.8,
+      "boxes": [
+        {
+          "left": 0.19273270044444443,
+          "top": 0.6119729797979798,
+          "width": 0.28773353411764724,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.625810101010101,
+          "width": 0.3925581928156865,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6396472222222223,
+          "width": 0.3941690974117648,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.6534843434343435,
+          "width": 0.3453376727843137,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "b3dc01c2-41d3-4bbc-b5b3-dafc3360ef7c",
+      "is_sparse": false
+    },
+    {
+      "id": 238,
+      "text": "While recent work has shown that these models can occasionally make critical errors or generate factually incorrect text when processing scientific text [ 72 ] , we remain cautiously optimistic about developing ways to address their limitations [ 25 , 55 ] .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "result",
+      "score": 1.6,
+      "boxes": [
+        {
+          "left": 0.08720261437908497,
+          "top": 0.6949944444444445,
+          "width": 0.3936428341960786,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7088315656565656,
+          "width": 0.3950291978666668,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7226686868686869,
+          "width": 0.39256098610196083,
+          "height": 0.011321212121211954,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.736505808080808,
+          "width": 0.3160069960784315,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "b3dc01c2-41d3-4bbc-b5b3-dafc3360ef7c",
+      "is_sparse": false
+    },
+    {
+      "id": 240,
+      "text": "Finally , all the new interfaces for reading that we propose pose a number of important ethical considerations that will require further research and discussion .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.2773202614379085,
+          "top": 0.7572608585858587,
+          "width": 0.20341772799999996,
+          "height": 0.011321212121211954,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.7710979797979798,
+          "width": 0.39504134352941206,
+          "height": 0.011321212121211954,
+          "page": 7
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.784935101010101,
+          "width": 0.36386024800000005,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "d2d7d416-c514-4f4e-aeba-168772bb8e96",
+      "is_sparse": false
+    },
+    {
+      "id": 244,
+      "text": "Another tension that we have encountered is the potential discrepancy between author desires and reader desires for how a work is presented and how much control to provide authors .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "method",
+      "score": 0.9,
+      "boxes": [
+        {
+          "left": 0.38512937495424837,
+          "top": 0.8817936868686869,
+          "width": 0.09533685960784322,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.10692247474747472,
+          "width": 0.39256393600000017,
+          "height": 0.011321212121212149,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.12075959595959587,
+          "width": 0.39256411181176487,
+          "height": 0.011321212121212149,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.13459671717171715,
+          "width": 0.22236173866666653,
+          "height": 0.011321212121212149,
+          "page": 7
+        }
+      ],
+      "block_id": "d2d7d416-c514-4f4e-aeba-168772bb8e96",
+      "is_sparse": false
+    },
+    {
+      "id": 245,
+      "text": "For instance , in our work on Papeo (  4.3 ) , we found that authors desired control over placement of their talk video snippets , even as they found automated mapping support to be helpful .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "result",
+      "score": 2,
+      "boxes": [
+        {
+          "left": 0.7454855425882354,
+          "top": 0.13459671717171715,
+          "width": 0.16660977694117662,
+          "height": 0.011321212121212149,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.1484338383838383,
+          "width": 0.3925610058039216,
+          "height": 0.011321212121212149,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.16226969696969698,
+          "width": 0.3925610058039216,
+          "height": 0.011321212121212149,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.17610681818181814,
+          "width": 0.13120831999999993,
+          "height": 0.011321212121212149,
+          "page": 7
+        }
+      ],
+      "block_id": "4d128bd5-dc45-4a4d-9c3b-ea6f7b537604",
+      "is_sparse": false
+    },
+    {
+      "id": 249,
+      "text": "Instead of simply seeking to increase reading throughput uniformly , our systems should enable triage , so that readers can dedicate time for thoughtful and careful reading when the content is important .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "method",
+      "score": 0.9,
+      "boxes": [
+        {
+          "left": 0.7404813537254902,
+          "top": 0.2729666666666666,
+          "width": 0.17161689599999985,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.28680378787878785,
+          "width": 0.39255967256470603,
+          "height": 0.01132121212121212,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.3006396464646464,
+          "width": 0.39255404813594774,
+          "height": 0.013970375757575704,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.3144767676767677,
+          "width": 0.23595134343529423,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "4d128bd5-dc45-4a4d-9c3b-ea6f7b537604",
+      "is_sparse": false
+    },
+    {
+      "id": 250,
+      "text": "For instance , our systems could design pathways that , while they may be more efficient , do not obfuscate the full context ( e.g . , Scim  3.1 ) , and that encourage good practices such as verification and provenance tracing .",
+      "section": "7 DISCUSSION AND FUTURE WORK",
+      "label": "method",
+      "score": 0.8,
+      "boxes": [
+        {
+          "left": 0.7591629360313726,
+          "top": 0.3144767676767677,
+          "width": 0.15292458917647078,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.32831388888888885,
+          "width": 0.39255829537254905,
+          "height": 0.01132121212121212,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.3421510101010101,
+          "width": 0.3925583686274513,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.3559881313131313,
+          "width": 0.34886020800000006,
+          "height": 0.01132121212121212,
+          "page": 7
+        }
+      ],
+      "block_id": "4d128bd5-dc45-4a4d-9c3b-ea6f7b537604",
+      "is_sparse": false
+    },
+    {
+      "id": 255,
+      "text": "This paper describes the Semantic Reader Project , which currently consists of ten research prototypes focusing on supporting scientists around Discovery [ 15 , 82 ] , Efficiency [ 28 , 75 ] , Comprehension [ 1 , 33 , 92 ] , Synthesis [ 43 , 73 ] , and Accessibility [ 91 , 97 ] when reading research papers .",
+      "section": "8 CONCLUSION",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.51909477124183,
+          "top": 0.5297406565656566,
+          "width": 0.3933841125333336,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.5435777777777778,
+          "width": 0.39504134352941167,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.557414898989899,
+          "width": 0.39504256763398704,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.5712520202020203,
+          "width": 0.3925583686274511,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.5850891414141414,
+          "width": 0.14867785600000005,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "276322e5-3e71-4ade-ae63-b49409f3c174",
+      "is_sparse": false
+    },
+    {
+      "id": 256,
+      "text": "Validating our approach of augmenting existing PDFs of research papers , we have seen tremendous adoption of the freely-available Semantic Reader product 1 which has grown to 10k weekly users .",
+      "section": "8 CONCLUSION",
+      "label": "method",
+      "score": 0.9,
+      "boxes": [
+        {
+          "left": 0.6719182817254902,
+          "top": 0.5850891414141414,
+          "width": 0.24017996799999985,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.5989262626262626,
+          "width": 0.3950291978666667,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.6107920454545455,
+          "width": 0.3925534409411764,
+          "height": 0.013292550505050515,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.6265992424242424,
+          "width": 0.15941643858823518,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "276322e5-3e71-4ade-ae63-b49409f3c174",
+      "is_sparse": false
+    },
+    {
+      "id": 257,
+      "text": "7 While we focused on augmenting PDF documents to support common scholar reading practices , all of our reading interfaces are built with web technologiesallowing these novel interactions to extend to future publication formats which can be rendered in web browsers .",
+      "section": "8 CONCLUSION",
+      "label": "method",
+      "score": 0.8,
+      "boxes": [
+        {
+          "left": 0.6789460784313726,
+          "top": 0.6246291666666667,
+          "width": 0.005525825980392085,
+          "height": 0.009182702020201994,
+          "page": 7
+        },
+        {
+          "left": 0.6885539215686274,
+          "top": 0.6265992424242424,
+          "width": 0.22389804047058826,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.6404363636363636,
+          "width": 0.3925639360000003,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.6542734848484849,
+          "width": 0.39255485239215715,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5195343137254902,
+          "top": 0.668110606060606,
+          "width": 0.39256393600000006,
+          "height": 0.011321212121212176,
+          "page": 7
+        },
+        {
+          "left": 0.5189918300653594,
+          "top": 0.6819477272727272,
+          "width": 0.23407783466666665,
+          "height": 0.011321212121212176,
+          "page": 7
+        }
+      ],
+      "block_id": "276322e5-3e71-4ade-ae63-b49409f3c174",
+      "is_sparse": false
+    },
+    {
+      "id": 263,
+      "text": "This project is supported in part by NSF Grant OIA-2033558 , NSF Grant CNS-2213656 .",
+      "section": "ACKNOWLEDGMENTS",
+      "label": "method",
+      "score": 1,
+      "boxes": [
+        {
+          "left": 0.0874656862745098,
+          "top": 0.12421792929292924,
+          "width": 0.393346884392157,
+          "height": 0.011321212121212149,
+          "page": 8
+        },
+        {
+          "left": 0.08790522875816993,
+          "top": 0.13805505050505054,
+          "width": 0.12225686399999998,
+          "height": 0.011321212121212149,
+          "page": 8
+        }
+      ],
+      "block_id": "2cd90ee0-c006-4090-b00d-ce65b39e1d74",
+      "is_sparse": false
+    }
+  ],
+  "status": "success"
+}
