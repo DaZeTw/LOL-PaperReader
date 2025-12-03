@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useToast } from '@/hooks/use-toast'
 
 interface UseQASessionProps {
@@ -18,6 +18,23 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
   const uniqueKey = tabId ? `${pdfFile?.name || ''}_${tabId}` : (pdfFile?.name || '')
   const storageKey = `chat_session_${uniqueKey}`
   const clearedFlagKey = `chat_cleared_${uniqueKey}` // Flag to track if session was cleared
+  const pdfFileName = pdfFile?.name || ''
+  const pdfBaseName = useMemo(() => pdfFileName.replace(/\.pdf$/i, ''), [pdfFileName])
+  const cacheKeys = useMemo<string[]>(() => {
+    const keys = new Set<string>()
+    if (uniqueKey) {
+      keys.add(`chat_messages_${uniqueKey}`)
+    } else {
+      keys.add('chat_messages_')
+    }
+    if (pdfFileName) {
+      keys.add(`chat_messages_${pdfFileName}`)
+    }
+    if (pdfBaseName) {
+      keys.add(`chat_messages_${pdfBaseName}`)
+    }
+    return Array.from(keys)
+  }, [uniqueKey, pdfFileName, pdfBaseName])
 
   const createNewSession = async (forceNew = false, retryCount = 0, maxRetries = 2) => {
     try {
@@ -90,8 +107,13 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
       const thinkingFlagKey = `chat_thinking_${uniqueKey}`
       localStorage.removeItem(thinkingFlagKey)
       // Clear messages cache when session is cleared
-      const messagesCacheKey = `chat_messages_${uniqueKey}`
-      localStorage.removeItem(messagesCacheKey)
+      cacheKeys.forEach((key: string) => {
+        try {
+          localStorage.removeItem(key)
+        } catch (error) {
+          console.warn(`[Chat] Failed to clear cache key ${key}:`, error)
+        }
+      })
     }
 
     // Delete all chat sessions related to this PDF document

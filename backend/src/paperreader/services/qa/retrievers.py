@@ -216,6 +216,8 @@ class Retriever:
         print(f"[DEBUG] Fetching chunks from MongoDB for document_key={self.document_key}")
         all_chunks = await get_document_chunks(document_key=self.document_key)
         print(f"[DEBUG] MongoDB returned {len(all_chunks)} chunks for document_key={self.document_key}")
+        if not all_chunks:
+            print(f"[WARNING] MongoDB returned zero chunks for document_key={self.document_key}. Possible key mismatch.")
         
         # Create mapping of chunk_id to chunk
         chunk_map = {}

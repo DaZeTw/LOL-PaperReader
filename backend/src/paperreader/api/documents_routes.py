@@ -69,7 +69,7 @@ class DeleteDocumentsRequest(BaseModel):
     deleteAll: Optional[bool] = False
 
 
-@router.get("/")
+@router.get("")
 async def list_documents(
     search: Optional[str] = Query(None),
     user_id: str = Depends(require_user_id),
@@ -107,7 +107,7 @@ async def get_document_file(document_id: str, user_id: str = Depends(require_use
     return await _stream_document_response(document_id, user_id)
 
 
-@router.post("/")
+@router.post("")
 async def upload_document(
     file: UploadFile = File(...),
     user_id: str = Depends(require_user_id),

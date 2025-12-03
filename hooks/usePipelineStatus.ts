@@ -39,7 +39,16 @@ export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {
       setIsPipelineReady(null)
       setPipelineStatus({})
       currentDocumentKeyRef.current = documentKey
-      hasInitializedRef.current = false
+      hasInitializedRef.current = true
+
+      // When selecting a new PDF, immediately refresh to kick off any missing steps
+      refreshStatus(documentKey).then(() => {
+        const updatedStatus = getStatus(documentKey)
+        if (updatedStatus) {
+          setIsPipelineReady(Boolean(updatedStatus.ready))
+          setPipelineStatus(updatedStatus)
+        }
+      })
     }
 
     // Get status from cache first
@@ -67,12 +76,11 @@ export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {
         (!isReady && !isBuilding && hasChunks && embeddingStatus !== 'ready' && embeddingStatus !== 'processing') ||
         (!isReady && !isBuilding && !hasChunks && documentStatus !== 'parsing' && documentStatus !== 'processing' && documentStatus !== 'uploading')
       
-      if (age > 5000 || cachedStatus.building || needsTrigger) {
-        if (!hasInitializedRef.current) {
-          hasInitializedRef.current = true
-          // Refresh status - backend will auto-trigger missing steps
-          refreshStatus(documentKey)
-        }
+      const mightBeStuck = embeddingStatus === 'processing' && age > 10000
+
+      if (age > 5000 || cachedStatus.building || needsTrigger || mightBeStuck) {
+        // Refresh status - backend will auto-trigger missing steps
+        refreshStatus(documentKey)
       }
     } else {
       // No cache, fetch status (backend will auto-trigger missing steps)
@@ -98,25 +106,25 @@ export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {
         
         // Auto-refresh if building
         const isBuilding = Boolean(status.building)
-        if (isBuilding && !isReady) {
-          refreshStatus(documentKey)
-        } else if (!isReady && !isBuilding) {
-          // Not ready and not building - check if we need to trigger missing steps
-          const hasChunks = (status.chunk_count || 0) > 0
-          const embeddingStatus = (status as any).embedding_status || 'unknown'
-          const documentStatus = (status as any).document_status || 'unknown'
-          const age = status.lastChecked ? Date.now() - status.lastChecked : Infinity
-          
-          // Trigger if:
-          // 1. Has chunks but embedding not ready/processing (and status is fresh, < 10s)
-          // 2. No chunks but document exists (and status is fresh, < 10s)
-          const needsTrigger = 
-            (hasChunks && embeddingStatus !== 'ready' && embeddingStatus !== 'processing' && age < 10000) ||
-            (!hasChunks && documentStatus !== 'parsing' && documentStatus !== 'processing' && documentStatus !== 'uploading' && age < 10000)
-          
-          if (needsTrigger) {
-            // Refresh status - backend will auto-trigger missing steps
+        const hasChunks = (status.chunk_count || 0) > 0
+        const embeddingStatus = (status as any).embedding_status || 'unknown'
+        const documentStatus = (status as any).document_status || 'unknown'
+        const age = status.lastChecked ? Date.now() - status.lastChecked : Infinity
+        const mightBeStuck = embeddingStatus === 'processing' && age > 10000
+
+        if (!isReady) {
+          // Keep refreshing while building, or if status indicates we should trigger missing steps
+          if (isBuilding) {
             refreshStatus(documentKey)
+          } else {
+            const needsTrigger = 
+              (hasChunks && embeddingStatus !== 'ready' && embeddingStatus !== 'processing' && age < 10000) ||
+              (!hasChunks && documentStatus !== 'parsing' && documentStatus !== 'processing' && documentStatus !== 'uploading' && age < 10000)
+
+            if (needsTrigger || mightBeStuck) {
+              // Refresh status - backend will auto-trigger missing steps (chunking/embedding)
+              refreshStatus(documentKey)
+            }
           }
         }
       }

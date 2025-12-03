@@ -1,12 +1,11 @@
 "use client"
-
+import { useAuth } from "@/hooks/useAuth"
 import { useState, useCallback } from "react"
 import type { MouseEvent } from "react"
 import { FileText, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LibraryView } from "@/components/library-view"
 import { SinglePDFReader } from "@/components/pdf-reader"
-import { useAuth } from "@/hooks/useAuth"
 
 interface PDFTab {
   id: string
@@ -15,6 +14,7 @@ interface PDFTab {
   fileName: string
 }
 
+// Generate stable IDs using a counter
 let tabCounter = 0
 
 interface WorkspaceManagerProps {
@@ -37,16 +37,25 @@ export function WorkspaceManager({
     return `tab-${tabCounter}`
   }, [])
 
+  // Enhanced function to find existing tab
   const findExistingTab = useCallback((file: File, title: string) => {
     return openTabs.find((tab: PDFTab) => {
+      // Multiple ways to match:
+      // 1. Exact title match
       if (tab.title === title) return true
+      
+      // 2. File name match (in case title is different)
       if (tab.fileName === file.name) return true
+      
+      // 3. File size and name match (more precise)
       if (tab.file.name === file.name && tab.file.size === file.size) return true
+      
       return false
     })
   }, [openTabs])
 
   const handleOpenPDF = useCallback((file: File, title: string) => {
+    // Check authentication before allowing PDF open
     if (!user) {
       console.log("[Workspace Manager] PDF open blocked - user not authenticated")
       login()
@@ -55,6 +64,7 @@ export function WorkspaceManager({
 
     console.log("[Workspace Manager] Opening PDF:", { title, fileName: file.name, fileSize: file.size })
     
+    // Enhanced duplicate detection
     const existingTab = findExistingTab(file, title)
     if (existingTab) {
       console.log("[Workspace Manager] Found existing tab, switching to:", existingTab.id)
@@ -85,13 +95,16 @@ export function WorkspaceManager({
     setOpenTabs((prev: PDFTab[]) => {
       const newTabs = prev.filter((tab) => tab.id !== tabId)
       
+      // Handle active tab switching
       if (activeTabId === tabId) {
         if (newTabs.length > 0) {
+          // Switch to the last tab
           const nextActiveTab = newTabs[newTabs.length - 1]
           setActiveTabId(nextActiveTab.id)
           onViewChange('pdf')
           console.log("[Workspace Manager] Switched to tab:", nextActiveTab.id)
         } else {
+          // No tabs left, go back to library
           setActiveTabId(null)
           onViewChange('library')
           console.log("[Workspace Manager] No tabs left, returning to library")
@@ -111,10 +124,12 @@ export function WorkspaceManager({
   const activeTab = openTabs.find((tab: PDFTab) => tab.id === activeTabId)
   const showTabBar = openTabs.length > 0
 
+  // When view changes to library from outside, clear active tab
   if (currentView === 'library' && activeTabId) {
     setActiveTabId(null)
   }
 
+  // Debug logging
   console.log("[Workspace Manager] State:", {
     openTabsCount: openTabs.length,
     activeTabId,
@@ -124,6 +139,7 @@ export function WorkspaceManager({
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
+      {/* Tab Bar - Only shown when PDF tabs are open */}
       {showTabBar && (
         <div className="flex items-center gap-1 border-b border-border bg-muted/30 px-2 py-1">
           <div className="flex flex-1 items-center gap-1 overflow-x-auto">
@@ -155,20 +171,35 @@ export function WorkspaceManager({
         </div>
       )}
 
-      <div className="flex-1 overflow-hidden">
-        {currentView === 'library' && (
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden relative">
+        {/* Library View - Always mounted, shown/hidden with CSS */}
+        <div 
+          className={cn(
+            "absolute inset-0 z-10",
+            currentView === 'library' ? "block" : "hidden"
+          )}
+        >
           <LibraryView onOpenPDF={handleOpenPDF} />
-        )}
+        </div>
         
-        {currentView === 'pdf' && activeTab && (
-          <SinglePDFReader 
-            file={activeTab.file}
-            tabId={activeTab.id}
-            isActive={true}
-          />
-        )}
+        {/* PDF Readers - All tabs always mounted, shown/hidden with CSS */}
+        {openTabs.map((tab: PDFTab) => (
+          <div
+            key={tab.id}
+            className={cn(
+              "absolute inset-0 z-10",
+              currentView === 'pdf' && activeTabId === tab.id ? "block" : "hidden"
+            )}
+          >
+            <SinglePDFReader 
+              file={tab.file}
+              tabId={tab.id}
+              isActive={activeTabId === tab.id}
+            />
+          </div>
+        ))}
       </div>
     </div>
   )
 }
-

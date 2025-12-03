@@ -440,6 +440,11 @@ async def _process_saved_pdfs(
                         "embedding_updated_at": datetime.utcnow(),
                         "metadata": metadata,
                     }
+                    
+                    # ✅ UPDATE DOCUMENT STATUS IMMEDIATELY - Don't wait for all PDFs to finish
+                    # This allows each PDF to become available for chat as soon as it's done
+                    await _update_document_safe(document_id, document_updates[document_id])
+                    print(f"[PDF] ✅ Updated document {document_id} status to ready immediately for {pdf_path.name}")
             finally:
                 shutil.rmtree(temp_output, ignore_errors=True)
                 file_lock.release()
@@ -450,7 +455,12 @@ async def _process_saved_pdfs(
         if _PARSE_CANCEL_FLAG.is_set():
             raise RuntimeError("Operation was cancelled")
 
+        # Documents are now updated immediately above when each PDF finishes
+        # This loop is kept as a safety net for edge cases where document_id might not have been set
+        # But in normal flow, documents are already updated
         for doc_id, updates in document_updates.items():
+            # Double-check if document was already updated (avoid redundant updates)
+            # In practice, all documents should already be updated above
             await _update_document_safe(doc_id, updates)
 
         payload = {"status": "ok", "count": len(parse_results), "results": parse_results}

@@ -206,7 +206,13 @@ async def index_chunks(
     embedding_dim = len(embeddings[0]) if embeddings else 0
     if embedding_dim == 0:
         raise ValueError("Cannot determine embedding dimension (empty embeddings)")
-    
+
+    # Diagnostic logging to help trace indexing issues
+    print("[Elasticsearch] 📤 Preparing to index chunks")
+    print(f"[Elasticsearch]    document_key='{document_key}' (len={len(document_key) if document_key else 0})")
+    print(f"[Elasticsearch]    document_id={document_id}")
+    print(f"[Elasticsearch]    chunks={len(chunks)}, embeddings={len(embeddings)}, dim={embedding_dim}")
+
     print(f"[Elasticsearch] Indexing {len(chunks)} chunks for document_key={document_key}, dimension={embedding_dim}")
     await ensure_index(embedding_dim)
     
@@ -287,6 +293,40 @@ async def knn_search(
     top_k: int = 5,
 ) -> List[Dict[str, Any]]:
     client = get_elasticsearch_client()
+
+    # Diagnostics to ensure the document_key exists within the index
+    try:
+        count_query = {"query": {"term": {"document_key": document_key}}}
+        count_response = await client.count(index=ELASTICSEARCH_INDEX, body=count_query)
+        doc_count = count_response.get("count", 0)
+        print(f"[Elasticsearch] 🔎 document_key='{document_key}' => {doc_count} docs in index")
+        if doc_count == 0:
+            print(f"[Elasticsearch] ⚠️ No exact document_key match. Searching for similar keys…")
+            similar = await client.search(
+                index=ELASTICSEARCH_INDEX,
+                body={
+                    "size": 5,
+                    "query": {
+                        "wildcard": {
+                            "document_key": {
+                                "value": f"*{document_key[:32]}*"
+                            }
+                        }
+                    },
+                    "_source": ["document_key"]
+                }
+            )
+            candidate_hits = similar.get("hits", {}).get("hits", [])
+            if candidate_hits:
+                for hit in candidate_hits:
+                    alt_key = hit.get("_source", {}).get("document_key")
+                    if alt_key:
+                        print(f"[Elasticsearch]    similar document_key='{alt_key}'")
+            else:
+                print(f"[Elasticsearch]    no similar document keys found")
+    except Exception as exc:
+        print(f"[Elasticsearch] ⚠️ Failed to count documents for document_key '{document_key}': {exc}")
+
     # Use search API with knn in body (more compatible across ES versions)
     # Filter goes inside knn block for ES 8+
     body = {
@@ -304,8 +344,10 @@ async def knn_search(
         "size": top_k,
     }
     try:
+        print(f"[Elasticsearch] 🔍 knn search -> document_key='{document_key}', top_k={top_k}")
         response = await client.search(index=ELASTICSEARCH_INDEX, body=body)
     except NotFoundError:
+        print(f"[Elasticsearch] ❌ Index '{ELASTICSEARCH_INDEX}' not found during knn search")
         return []
     except Exception as e:
         print(f"[Elasticsearch] Search with KNN failed: {e}")
@@ -313,5 +355,9 @@ async def knn_search(
         print(f"[Elasticsearch] Traceback: {traceback.format_exc()}")
         return []
     hits = response.get("hits", {}).get("hits", [])
+    print(f"[Elasticsearch] ✅ knn returned {len(hits)} hits")
+    if hits:
+        top_hit = hits[0]
+        print(f"[Elasticsearch]    top chunk_id={top_hit.get('_source', {}).get('chunk_id')} score={top_hit.get('_score')}")
     return hits
 

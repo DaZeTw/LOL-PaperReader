@@ -492,6 +492,17 @@ class QAPipeline:
             print(f"[DEBUG] Contexts: {len(contexts)}")
             print(f"[DEBUG] Context details: {[len(c.get('text', c) if isinstance(c, dict) else c) for c in contexts[:3]]}")
             print(f"[DEBUG] Chat history: {len(chat_history) if chat_history else 0} messages")
+            if chat_history:
+                preview = []
+                for msg in chat_history[:5]:
+                    if isinstance(msg, dict):
+                        preview.append({
+                            "role": msg.get("role"),
+                            "content": (msg.get("content") or "")[:120],
+                        })
+                    else:
+                        preview.append(str(msg))
+                print(f"[DEBUG] Chat history preview (first {len(preview)} messages): {preview}")
             
             # Ensure question is not empty
             if not question or not question.strip():
@@ -894,16 +905,48 @@ async def _find_document_by_key(doc_key: str) -> Optional[Dict[str, Any]]:
 
 
 def _normalise_document_key(input_key: str, document: Optional[Dict[str, Any]]) -> str:
-    """Return a canonical document key (prefer stored title)."""
+    """Return a canonical document key suitable for chunk/embedding lookup.
+
+    We must preserve the exact key that was used when chunks were stored and
+    indexed (typically the PDF filename stem). Titles often differ from the
+    filename, so only fall back to them as a last resort.
+    """
+    def _strip_pdf(value: Optional[str]) -> Optional[str]:
+        if not value:
+            return None
+        value = value.strip()
+        return value[:-4] if value.lower().endswith(".pdf") else value
+
     if document:
-        if document.get("title"):
-            return str(document["title"])
-        original = document.get("original_filename")
-        if original:
-            return Path(original).stem
-    if input_key.lower().endswith(".pdf"):
-        return input_key[:-4]
-    return input_key
+        # Explicit document key fields (if persisted by callers)
+        for key_field in ("document_key", "document_key_base"):
+            val = document.get(key_field)
+            if isinstance(val, str) and val.strip():
+                return _strip_pdf(val) or val
+
+        # Some callers may store aliases inside metadata
+        metadata = document.get("metadata") or {}
+        if isinstance(metadata, dict):
+            for key_field in ("document_key", "document_key_base", "document_filename"):
+                val = metadata.get(key_field)
+                if isinstance(val, str) and val.strip():
+                    cleaned = _strip_pdf(val)
+                    if cleaned:
+                        return cleaned
+
+        # Prefer original filename (matches chunk/document storage)
+        original = document.get("original_filename") or document.get("filename")
+        if isinstance(original, str) and original.strip():
+            return Path(original.strip()).stem
+
+        # As a fallback, use stored title
+        title = document.get("title")
+        if isinstance(title, str) and title.strip():
+            return title.strip()
+
+    # Final fallback: strip .pdf extension from provided key
+    cleaned_input = _strip_pdf(input_key)
+    return cleaned_input or input_key
 
 
 async def _resolve_chunk_count(document_id: Optional[str], document_key: str, existing_count: Optional[int]) -> int:
@@ -1157,6 +1200,13 @@ async def pipeline_status(pdf_name: Optional[str] = None, document_key: Optional
         with _PROCESSING_LOCK:
             is_processing_embedding = _PROCESSING_DOCUMENTS.get(document_id) == "embedding"
         
+        # Detect stuck processing states (status says processing but nothing is running)
+        is_stuck_processing = (
+            embedding_status == "processing"
+            and not is_processing_embedding
+            and not resume_running
+        )
+        
         if chunk_count > 0 and embedding_status not in {"ready", "processing"} and not is_processing_embedding:
             # Mark as processing embedding
             with _PROCESSING_LOCK:
@@ -1168,6 +1218,14 @@ async def pipeline_status(pdf_name: Optional[str] = None, document_key: Optional
         elif is_processing_embedding:
             # Already processing, just update status
             resume_running = True
+            embedding_status = "processing"
+        elif is_stuck_processing:
+            print(f"[Pipeline] ⚠️ Detected stuck embedding status for {document_id}, re-triggering resume job")
+            with _PROCESSING_LOCK:
+                _PROCESSING_DOCUMENTS[document_id] = "embedding"
+            await _maybe_schedule_embedding_resume(document_id, canonical_key)
+            resume_running = True
+            resume_triggered = True
             embedding_status = "processing"
 
         if ready:

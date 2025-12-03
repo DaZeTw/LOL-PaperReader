@@ -95,14 +95,14 @@ def _extract_document_ids(raw_ids: Optional[List[Any]]) -> List[ObjectId]:
     return object_ids
 
 
-@router.get("/")
+@router.get("")
 async def list_collections(user_id: str = Depends(require_user_id)):
     collections = await get_collections_by_user_id(user_id)
     formatted = [format_collection_for_response(collection) for collection in collections]
     return {"collections": formatted}
 
 
-@router.post("/", status_code=201)
+@router.post("", status_code=201)
 async def create_collection_route(
     payload: CreateCollectionRequest,
     user_id: str = Depends(require_user_id),

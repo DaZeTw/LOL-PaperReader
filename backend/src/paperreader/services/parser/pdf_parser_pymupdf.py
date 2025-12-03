@@ -8,16 +8,20 @@ PyMuPDF là một lựa chọn tốt vì:
 - Hỗ trợ text extraction tốt
 - Có thể extract images và metadata
 """
+
 import json
 import logging
 import re
+import threading
 import time
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
-import threading
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 
 try:
     import fitz  # PyMuPDF
+
     HAS_PYMUPDF = True
 except ImportError:
     HAS_PYMUPDF = False
@@ -51,7 +55,9 @@ def _extract_text_elements(page: "fitz.Page", page_index: int) -> List[Dict[str,
     try:
         layout = page.get_text("dict", flags=fitz.TEXTFLAGS_DICT)
     except Exception as exc:
-        _log.warning(f"[PDF] ⚠️ Failed to extract text layout for page {page_index + 1}: {exc}")
+        _log.warning(
+            f"[PDF] ⚠️ Failed to extract text layout for page {page_index + 1}: {exc}"
+        )
         return text_elements
 
     for block_idx, block in enumerate(layout.get("blocks", [])):
@@ -76,7 +82,9 @@ def _extract_text_elements(page: "fitz.Page", page_index: int) -> List[Dict[str,
             continue
 
         full_text = " ".join(block_lines)
-        text_type = "heading" if is_bold_detected and len(full_text) < 100 else "paragraph"
+        text_type = (
+            "heading" if is_bold_detected and len(full_text) < 100 else "paragraph"
+        )
 
         text_elements.append(
             {
@@ -109,7 +117,9 @@ def _extract_image_elements(
     try:
         image_list = page.get_images(full=True)
     except Exception as exc:
-        _log.warning(f"[PDF] ⚠️ Failed to enumerate embedded images on page {page_index + 1}: {exc}")
+        _log.warning(
+            f"[PDF] ⚠️ Failed to enumerate embedded images on page {page_index + 1}: {exc}"
+        )
 
     image_counter = 1
     for img_index, img in enumerate(image_list):
@@ -121,7 +131,9 @@ def _extract_image_elements(
             if not img_bytes:
                 continue
 
-            image_filename = f"{pdf_stem}-p{page_index + 1}-img{image_counter:03d}.{img_ext}"
+            image_filename = (
+                f"{pdf_stem}-p{page_index + 1}-img{image_counter:03d}.{img_ext}"
+            )
             image_path = images_dir / image_filename
             try:
                 with open(image_path, "wb") as fh:
@@ -155,7 +167,9 @@ def _extract_image_elements(
             images_saved += 1
             image_counter += 1
         except Exception as exc:
-            _log.warning(f"[PDF] ⚠️ Error extracting embedded image {img_index} on page {page_index + 1}: {exc}")
+            _log.warning(
+                f"[PDF] ⚠️ Error extracting embedded image {img_index} on page {page_index + 1}: {exc}"
+            )
 
     # Attempt to capture vector drawings as images as well
     try:
@@ -217,7 +231,9 @@ def _extract_image_elements(
                 images_saved += 1
                 image_counter += 1
             except Exception as exc:
-                _log.debug(f"[PDF] ⚠️ Failed to rasterize vector figure on page {page_index + 1}: {exc}")
+                _log.debug(
+                    f"[PDF] ⚠️ Failed to rasterize vector figure on page {page_index + 1}: {exc}"
+                )
 
     return image_elements, images_saved
 
@@ -242,7 +258,9 @@ def _extract_table_elements(
         try:
             df = table.to_pandas()
         except Exception as exc:
-            _log.debug(f"[PDF] ⚠️ Failed to convert table {table_idx} on page {page_index + 1}: {exc}")
+            _log.debug(
+                f"[PDF] ⚠️ Failed to convert table {table_idx} on page {page_index + 1}: {exc}"
+            )
             continue
         if df.empty:
             continue
@@ -259,7 +277,9 @@ def _extract_table_elements(
                 csv_path,
             )
         except Exception as exc:
-            _log.warning(f"[PDF] ⚠️ Failed to save CSV for table {table_idx} on page {page_index + 1}: {exc}")
+            _log.warning(
+                f"[PDF] ⚠️ Failed to save CSV for table {table_idx} on page {page_index + 1}: {exc}"
+            )
             continue
 
         table_text = df.to_string(index=False)
@@ -276,7 +296,9 @@ def _extract_table_elements(
                 "local_path": str(csv_path),
                 "bbox": bbox,
                 "position": {"x": x0, "y": y0},
-                "preview": (table_text[:300] + "...") if len(table_text) > 300 else table_text,
+                "preview": (
+                    (table_text[:300] + "...") if len(table_text) > 300 else table_text
+                ),
             }
         )
         tables_saved += 1
@@ -497,15 +519,21 @@ def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, 
 
         text_elements.extend(_extract_text_elements(page, page_index))
 
-        imgs, img_count = _extract_image_elements(page, page_index, images_dir, pdf_stem, doc)
+        imgs, img_count = _extract_image_elements(
+            page, page_index, images_dir, pdf_stem, doc
+        )
         image_elements.extend(imgs)
         total_images_saved += img_count
 
-        tables, tbl_count = _extract_table_elements(page, page_index, tables_dir, pdf_stem)
+        tables, tbl_count = _extract_table_elements(
+            page, page_index, tables_dir, pdf_stem
+        )
         table_elements.extend(tables)
         total_tables_saved += tbl_count
 
-    cleaned_text = _clean_overlapping_elements(text_elements, image_elements, table_elements)
+    cleaned_text = _clean_overlapping_elements(
+        text_elements, image_elements, table_elements
+    )
     markdown_content = _merge_to_markdown(cleaned_text, image_elements, table_elements)
     markdown_content = _clean_markdown(markdown_content)
 
@@ -556,13 +584,13 @@ def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, 
 def _clean_markdown(text: str) -> str:
     """Clean và format markdown text"""
     # Remove excessive whitespace
-    text = re.sub(r'\n{3,}', '\n\n', text)
-    
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
     # Remove leading/trailing whitespace from lines
-    lines = [line.rstrip() for line in text.split('\n')]
-    
+    lines = [line.rstrip() for line in text.split("\n")]
+
     # Join và return
-    return '\n'.join(lines)
+    return "\n".join(lines)
 
 
 # Alias để tương thích với code cũ
@@ -572,4 +600,3 @@ def parse_pdf_with_docling(input_pdf_path: Path, output_dir: Path) -> dict:
     Gọi parse_pdf_with_pymupdf thay vì docling.
     """
     return parse_pdf_with_pymupdf(input_pdf_path, output_dir)
-

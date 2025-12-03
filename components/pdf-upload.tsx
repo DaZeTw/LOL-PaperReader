@@ -106,6 +106,43 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
     })
   }, [])
 
+    const clearChatCacheForDocuments = useCallback((docs: UploadedDocument[]) => {
+      if (typeof window === "undefined") return
+      docs.forEach((doc: UploadedDocument) => {
+        const names = new Set<string>()
+        if (doc.original_filename) {
+          names.add(doc.original_filename.trim())
+        }
+        if (doc.title) {
+          names.add(doc.title.trim())
+        }
+        if (doc.original_filename && doc.original_filename.endsWith(".pdf")) {
+          names.add(doc.original_filename.replace(/\.pdf$/i, "").trim())
+        }
+        if (doc.title && doc.title.endsWith(".pdf")) {
+          names.add(doc.title.replace(/\.pdf$/i, "").trim())
+        }
+
+        names.forEach((name: string) => {
+          const trimmed = name.trim()
+          if (!trimmed) return
+          const keys = new Set<string>([
+            `chat_messages_${trimmed}`,
+            `chat_messages_${trimmed.replace(/\.pdf$/i, "")}`,
+          ])
+          keys.forEach((key: string) => {
+            if (!key || key.endsWith("_")) return
+            try {
+              localStorage.removeItem(key)
+              console.log(`[PDFUpload] Cleared chat cache key: ${key}`)
+            } catch (error) {
+              console.warn(`[PDFUpload] Failed to clear chat cache key ${key}:`, error)
+            }
+          })
+        })
+      })
+    }, [])
+
   const handleDeleteDocuments = useCallback(
     async (options: { ids?: string[]; deleteAll?: boolean; toastMessage?: string }) => {
       if (isDeleting) return
@@ -138,6 +175,12 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
         }
 
         const result = await response.json()
+        if (options.deleteAll) {
+          clearChatCacheForDocuments(previousDocuments)
+        } else if (options.ids && options.ids.length > 0) {
+          const docsToClear = previousDocuments.filter((doc: UploadedDocument) => options.ids?.includes(doc._id))
+          clearChatCacheForDocuments(docsToClear)
+        }
         await loadPreviousDocuments()
         setSelectedDocuments([])
 
@@ -160,7 +203,7 @@ export const PDFUpload = forwardRef<PDFUploadRef, PDFUploadProps>(
         setIsDeleting(false)
       }
     },
-    [isDeleting, loadPreviousDocuments, login, toast, userId],
+    [clearChatCacheForDocuments, isDeleting, loadPreviousDocuments, login, previousDocuments, toast, userId],
   )
 
   const handleDeleteSingleDocument = useCallback(

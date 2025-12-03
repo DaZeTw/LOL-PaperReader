@@ -1,65 +1,82 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
-
+import { useState, useEffect } from "react"
+import { MessageSquare, BookmarkIcon } from "lucide-react"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { QAInterface } from "@/components/qa-interface"
-import { DocumentHistorySidebar } from "@/components/document-history-sidebar"
-import { useToast } from "@/hooks/use-toast"
-import type { UploadedDocument } from "@/components/pdf-upload"
-import { BACKEND_API_URL } from "@/lib/config"
-import { useAuth } from "@/hooks/useAuth"
-import { cn } from "@/lib/utils"
+import { HighlightNotesSidebar } from "@/components/highlight-notes-sidebar"
+import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
+import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
+import { Button } from "@/components/ui/button"
 
 interface NavigationTarget {
   page: number
   yPosition: number
+  highlightText?: string
+  highlightId?: number
 }
 
 interface SinglePDFReaderProps {
   file: File
   tabId: string
   isActive: boolean
-  onOpenDocument?: (document: UploadedDocument) => Promise<void>
 }
 
-export function SinglePDFReader({ file, tabId, isActive, onOpenDocument }: SinglePDFReaderProps) {
-  const { user } = useAuth()
-  const stableUserId = user
-    ? user.dbId
-      ? String(user.dbId)
-      : user.id
-    : undefined
+export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps) {
   // PDF Navigation State
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
   const [currentPage, setCurrentPage] = useState(1)
+  const [numPages, setNumPages] = useState<number>(0)
 
   // Annotation State
   const [highlightColor, setHighlightColor] = useState("#fef08a")
   const [annotationMode, setAnnotationMode] = useState<"highlight" | "erase" | null>(null)
 
-  // QA State - only keep the open/close state
-  const [qaOpen, setQaOpen] = useState(false)
+  // Right sidebar state
+  const [rightSidebarMode, setRightSidebarMode] = useState<"qa" | "highlights">("qa")
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false)
 
-  // History Sidebar State
-  const [historyOpen, setHistoryOpen] = useState(false)
-  const [historyDocuments, setHistoryDocuments] = useState<UploadedDocument[]>([])
-  const [historyLoading, setHistoryLoading] = useState(false)
-  const [historyError, setHistoryError] = useState<string | null>(null)
-  const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(null)
-  const [historyLoaded, setHistoryLoaded] = useState(false)
+  // Highlights state
+  const {
+    highlights,
+    loading: highlightsLoading,
+    processing: highlightsProcessing,
+    enableSkimming,
+    fetchHighlights,
+  } = useSkimmingHighlights()
+  const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
+    new Set(["objective", "method", "result"])
+  )
+  const [hiddenHighlightIds, setHiddenHighlightIds] = useState<Set<number>>(new Set())
+  // Track which highlights should be visible (starts empty - no highlights shown initially)
+  const [activeHighlightIds, setActiveHighlightIds] = useState<Set<number>>(new Set())
+  const [skimmingEnabled, setSkimmingEnabled] = useState(false)
+  const [selectedPreset, setSelectedPreset] = useState<"light" | "medium" | "heavy">("medium")
 
-  const { toast } = useToast()
-  const historyLoadingRef = useRef(false)
-  const isMountedRef = useRef(true)
-
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false
+  // Handle enabling skimming
+  const handleEnableSkimming = async () => {
+    try {
+      console.log(`[SinglePDFReader:${tabId}] Enabling skimming with preset: ${selectedPreset}`)
+      await enableSkimming(file, selectedPreset)
+      setSkimmingEnabled(true)
+      // Switch to highlights sidebar to show results
+      setRightSidebarMode("highlights")
+      setRightSidebarOpen(true)
+    } catch (error) {
+      console.error(`[SinglePDFReader:${tabId}] Failed to enable skimming:`, error)
     }
-  }, [])
+  }
+
+  // Auto-activate all highlights when they are loaded
+  useEffect(() => {
+    if (highlights.length > 0 && skimmingEnabled) {
+      const allHighlightIds = new Set(highlights.map((h) => h.id))
+      setActiveHighlightIds(allHighlightIds)
+      console.log(`[SinglePDFReader:${tabId}] Auto-activated ${highlights.length} highlights`)
+    }
+  }, [highlights.length, skimmingEnabled, tabId])
 
   // Only reset states when file actually changes (not when tab becomes active/inactive)
   useEffect(() => {
@@ -68,7 +85,10 @@ export function SinglePDFReader({ file, tabId, isActive, onOpenDocument }: Singl
     setNavigationTarget(undefined)
     setCurrentPage(1)
     setAnnotationMode(null)
-    setQaOpen(false)
+    setRightSidebarOpen(false)
+    setRightSidebarMode("qa")
+    setActiveHighlightIds(new Set()) // Reset active highlights when file changes
+    setSkimmingEnabled(false) // Reset skimming state when file changes
   }, [file.name, file.size, file.lastModified, tabId])
 
   // Handle page changes from PDF viewer
@@ -76,156 +96,144 @@ export function SinglePDFReader({ file, tabId, isActive, onOpenDocument }: Singl
     setCurrentPage(page)
   }
 
-  // Handle annotation highlight (placeholder for now)
-  const handleHighlight = () => {
-    console.log(`[SinglePDFReader:${tabId}] Highlight triggered`)
-    // TODO: Implement highlighting logic
+  // Handle highlight click - navigate to highlight location and toggle visibility
+  const handleHighlightClick = (highlight: SkimmingHighlight) => {
+    console.log(`[SinglePDFReader:${tabId}] Clicking highlight:`, highlight.text.substring(0, 50))
+
+    // Toggle highlight in active set (show/hide it in PDF)
+    setActiveHighlightIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(highlight.id)) {
+        // If already active, remove it (hide)
+        next.delete(highlight.id)
+        console.log(`[SinglePDFReader:${tabId}] Hiding highlight ${highlight.id}`)
+      } else {
+        // If not active, add it (show)
+        next.add(highlight.id)
+        console.log(`[SinglePDFReader:${tabId}] Showing highlight ${highlight.id}`)
+      }
+      return next
+    })
+
+    // Get the first box to determine page and position
+    const firstBox = highlight.boxes[0]
+    const page = firstBox.page + 1 // Convert from 0-indexed to 1-indexed
+
+    // Set navigation target with highlight ID for direct element scrolling
+    setNavigationTarget({
+      page,
+      yPosition: firstBox.top,
+      highlightId: highlight.id,
+    })
+
+    // Update current page
+    setCurrentPage(page)
   }
 
-  // Close QA when tab becomes inactive
-  useEffect(() => {
-    if (!isActive && qaOpen) {
-      setQaOpen(false)
-    }
-  }, [isActive, qaOpen])
+  // Handle highlight toggle - show/hide individual highlight
+  const handleHighlightToggle = (highlightId: number) => {
+    setHiddenHighlightIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(highlightId)) {
+        next.delete(highlightId)
+      } else {
+        next.add(highlightId)
+      }
+      return next
+    })
+  }
 
-  // Track if this tab has loaded documents before
-  const hasLoadedOnceRef = useRef(false)
+  // Handle citation click - navigate to citation page
+  const handleCitationClick = (page: number, text?: string) => {
+    console.log(`[SinglePDFReader:${tabId}] Navigating to citation page:`, page, text?.substring(0, 50))
 
-  // Load document history - exactly like pdf-upload.tsx
-  const loadHistoryDocuments = useCallback(async (force = false) => {
-    // Don't reload if already loaded and not forcing, or if already loading
-    if (!force && (historyLoadingRef.current || hasLoadedOnceRef.current)) {
+    // Validate page number
+    if (numPages > 0 && (page < 1 || page > numPages)) {
+      console.warn(`[SinglePDFReader:${tabId}] Invalid page number ${page}, PDF only has ${numPages} pages`)
       return
     }
-    
-    historyLoadingRef.current = true
-    
-    try {
-      if (!stableUserId) {
-        setHistoryError("Please sign in to load documents.")
-        setHistoryLoading(false)
-        return
-      }
 
-      setHistoryLoading(true)
-      setHistoryError(null)
+    // Set navigation target with page and text to highlight
+    setNavigationTarget({
+      page,
+      yPosition: 0,
+      highlightText: text,
+    })
 
-      const baseUrl = `${BACKEND_API_URL.replace(/\/$/, "")}/api/documents`
+    // Update current page
+    setCurrentPage(page)
+  }
 
-      const response = await fetch(baseUrl, {
-        headers: {
-          "X-User-Id": stableUserId,
-        },
-        cache: "no-store",
-        credentials: "include",
-      })
-      if (!response.ok) {
-        throw new Error("Failed to fetch documents")
-      }
-      const data = (await response.json()) as { documents?: UploadedDocument[] }
-      setHistoryDocuments(data.documents ?? [])
-    } catch (error) {
-      console.error(`[SinglePDFReader:${tabId}] Failed to load uploaded documents:`, error)
-      setHistoryError("Unable to load uploaded PDFs.")
-      toast({
-        title: "Failed to load PDFs",
-        description: "Could not load your uploaded documents. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      historyLoadingRef.current = false
-      setHistoryLoading(false)
-      setHistoryLoaded(true)
-      hasLoadedOnceRef.current = true
-    }
-  }, [stableUserId, tabId, toast])
+  // Clear navigation target after navigation completes
+  const handleNavigationComplete = () => {
+    console.log(`[SinglePDFReader:${tabId}] Navigation completed, clearing target`)
+    setNavigationTarget(undefined)
+  }
 
-  // Load documents once when component mounts (like pdf-upload.tsx)
+  // Close sidebar when tab becomes inactive
   useEffect(() => {
-    if (!hasLoadedOnceRef.current) {
-      void loadHistoryDocuments()
+    if (!isActive && rightSidebarOpen) {
+      setRightSidebarOpen(false)
     }
-  }, [loadHistoryDocuments])
-
-  // Listen for PDF upload events to refresh documents list
-  useEffect(() => {
-    const handlePdfUploaded = () => {
-      // Only refresh if this tab has already loaded documents before
-      if (hasLoadedOnceRef.current) {
-        console.log(`[SinglePDFReader:${tabId}] PDF uploaded event received, refreshing documents`)
-        void loadHistoryDocuments(true)
-      }
-    }
-
-    if (typeof window !== "undefined") {
-      window.addEventListener("pdf-uploaded", handlePdfUploaded)
-      return () => {
-        window.removeEventListener("pdf-uploaded", handlePdfUploaded)
-      }
-    }
-  }, [tabId, loadHistoryDocuments])
-
-  const handleOpenHistoryDocument = useCallback(
-    async (document: UploadedDocument) => {
-      if (!onOpenDocument) {
-        toast({
-          title: "Action unavailable",
-          description: "Cannot open documents from history in this view.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      try {
-        setOpeningDocumentId(document._id)
-        await onOpenDocument(document)
-      } catch (error) {
-        console.error(`[SinglePDFReader:${tabId}] Failed to open document:`, error)
-        const description =
-          error instanceof Error && error.message
-            ? error.message
-            : "Could not open the selected document. Please try again."
-        toast({
-          title: "Failed to open PDF",
-          description,
-          variant: "destructive",
-        })
-      } finally {
-        setOpeningDocumentId(null)
-      }
-    },
-    [onOpenDocument, tabId, toast],
-  )
+  }, [isActive, rightSidebarOpen])
 
   console.log(`[SinglePDFReader:${tabId}] Render - file: ${file.name}, page: ${currentPage}, active: ${isActive}`)
 
   return (
-    <div className="relative flex h-full">
-      {isActive && (
-        <DocumentHistorySidebar
-          documents={historyDocuments}
-          loading={historyLoading}
-          hasLoaded={historyLoaded}
-          error={historyError}
-          isOpen={historyOpen}
-          side="right"
-          onToggle={() => setHistoryOpen((prev: boolean) => !prev)}
-          onRefresh={() => {
-            void loadHistoryDocuments(true)
-          }}
-          onOpenDocument={handleOpenHistoryDocument}
-          activeFileName={file.name}
-          openingDocumentId={openingDocumentId}
-        />
-      )}
+    <div className="flex h-full">
       {/* Main PDF Viewer Section */}
-      <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-h-0">
+        {/* Skimming Control Panel */}
+        {isActive && !skimmingEnabled && (
+          <div className="absolute left-4 top-4 z-10 flex items-center gap-2 bg-background border border-border rounded-lg shadow-md p-3">
+            <span className="font-mono text-sm font-medium text-foreground">Enable Skimming:</span>
+            <select
+              value={selectedPreset}
+              onChange={(e) => setSelectedPreset(e.target.value as "light" | "medium" | "heavy")}
+              className="px-2 py-1 text-sm border border-border rounded bg-background font-mono"
+            >
+              <option value="light">Light (30%)</option>
+              <option value="medium">Medium (50%)</option>
+              <option value="heavy">Heavy (70%)</option>
+            </select>
+            <Button
+              onClick={handleEnableSkimming}
+              disabled={highlightsProcessing}
+              size="sm"
+              className="gap-2"
+            >
+              {highlightsProcessing ? (
+                <>
+                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Processing...
+                </>
+              ) : (
+                "Enable"
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Skimming Status (after enabled) */}
+        {isActive && skimmingEnabled && highlights.length > 0 && (
+          <div className="absolute left-4 top-4 z-10 flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-lg shadow-md px-3 py-2">
+            <span className="text-lg">✨</span>
+            <span className="font-mono text-sm font-medium text-foreground">
+              Skimming: {highlights.length} highlights ({selectedPreset})
+            </span>
+          </div>
+        )}
+
         <PDFViewer
           file={file}
           navigationTarget={navigationTarget}
           onPageChange={handlePageChange}
+          onNavigationComplete={handleNavigationComplete}
+          onDocumentLoad={(pageCount) => setNumPages(pageCount)}
           isActive={isActive}
+          hiddenHighlightIds={hiddenHighlightIds}
+          activeHighlightIds={activeHighlightIds}
+          highlights={highlights}
         />
 
         {/* Annotation Toolbar */}
@@ -237,23 +245,97 @@ export function SinglePDFReader({ file, tabId, isActive, onOpenDocument }: Singl
         />
       </div>
 
-      {/* QA Interface Sidebar - Always rendered to preserve state, only hidden when tab is inactive */}
-      <div
-        key={`qa-wrapper-${tabId}-${file.name}`}
-        className={cn(
-          "absolute inset-y-0 right-0 transition-opacity duration-200",
-          isActive ? "opacity-100 z-30 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
-        )}
-      >
-        <QAInterface
-          tabId={tabId}
-          pdfFile={file}
-          onHighlight={handleHighlight}
-          isOpen={qaOpen}
-          onToggle={() => setQaOpen(!qaOpen)}
-          isActive={isActive}
-        />
-      </div>
+      {/* Right Sidebar - Toggle buttons when closed */}
+      {isActive && !rightSidebarOpen && (
+        <div className="flex flex-col gap-2 absolute right-4 top-20 z-10">
+          <Button
+            onClick={() => {
+              setRightSidebarMode("qa")
+              setRightSidebarOpen(true)
+            }}
+            variant="default"
+            size="icon"
+            className="h-12 w-12 rounded-full shadow-lg"
+            title="Open Q&A"
+          >
+            <MessageSquare className="h-5 w-5" />
+          </Button>
+          <Button
+            onClick={() => {
+              setRightSidebarMode("highlights")
+              setRightSidebarOpen(true)
+            }}
+            variant="default"
+            size="icon"
+            className="h-12 w-12 rounded-full shadow-lg"
+            title="Open Highlights"
+            disabled={highlightsLoading || highlights.length === 0}
+          >
+            <BookmarkIcon className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
+
+      {/* Right Sidebar Content */}
+      {isActive && (
+        <>
+          {/* Sidebar Mode Toggle - Show when sidebar is open */}
+          {rightSidebarOpen && (
+            <div className="absolute right-[384px] top-20 z-10 flex flex-col gap-1 bg-background border border-border rounded-lg shadow-md overflow-hidden">
+              <button
+                onClick={() => setRightSidebarMode("qa")}
+                className={`p-3 transition-colors ${
+                  rightSidebarMode === "qa"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
+                title="Q&A"
+              >
+                <MessageSquare className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setRightSidebarMode("highlights")}
+                className={`p-3 transition-colors ${
+                  rightSidebarMode === "highlights"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
+                title="Highlights"
+                disabled={highlightsLoading || highlights.length === 0}
+              >
+                <BookmarkIcon className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          {/* QA Interface */}
+          {rightSidebarMode === "qa" && (
+            <QAInterface
+              tabId={tabId}
+              pdfFile={file}
+              onHighlight={() => {}}
+              onCitationClick={handleCitationClick}
+              totalPages={numPages}
+              isOpen={rightSidebarOpen}
+              onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
+            />
+          )}
+
+          {/* Highlights Sidebar */}
+          {rightSidebarMode === "highlights" && (
+            <HighlightNotesSidebar
+              highlights={highlights}
+              visibleCategories={visibleCategories}
+              onHighlightClick={handleHighlightClick}
+              isOpen={rightSidebarOpen}
+              onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
+              hiddenHighlightIds={hiddenHighlightIds}
+              onHighlightToggle={handleHighlightToggle}
+              activeHighlightIds={activeHighlightIds}
+            />
+          )}
+        </>
+      )}
     </div>
   )
 }

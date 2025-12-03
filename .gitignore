@@ -6,6 +6,12 @@
 # python cache
 __pycache__/
 **/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
 
 # next.js
 /.next/
@@ -40,3 +46,7 @@ next-env.d.ts
 /backend/src/*.safetensors
 
 /backend/src/*.pth
+
+# Python cache
+__pycache__/
+*.py[cod]

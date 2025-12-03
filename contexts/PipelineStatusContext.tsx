@@ -75,8 +75,8 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
       
       updateStatus(documentKey, data)
       
-      // If still building, schedule next refresh
-      if (data.building && !data.ready) {
+      // Continue polling until pipeline ready (handles stalled states as well)
+      if (!data.ready) {
         // Clear existing timer for this document
         if (refreshTimersRef.current[documentKey]) {
           clearTimeout(refreshTimersRef.current[documentKey])

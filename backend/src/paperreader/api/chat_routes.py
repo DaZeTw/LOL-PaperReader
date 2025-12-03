@@ -22,7 +22,11 @@ from paperreader.services.qa.generators import get_generator
 from paperreader.services.qa.embeddings import get_embedder
 from paperreader.services.qa.elasticsearch_client import knn_search
 from paperreader.services.qa.config import PipelineConfig
-from paperreader.services.qa.pipeline import get_pipeline
+from paperreader.services.qa.pipeline import (
+    get_pipeline,
+    _find_document_by_key as qa_find_document_by_key,
+    _normalise_document_key as qa_normalise_document_key,
+)
 from paperreader.services.documents.minio_client import upload_bytes
 
 router = APIRouter()
@@ -110,6 +114,37 @@ def _extract_document_key(session: ChatSessionResponse | ChatSessionCreateReques
         return _normalise_document_key_value(normalized)
 
     return None
+
+
+async def _resolve_canonical_document_identity(
+    document_key: Optional[str],
+    document_id: Optional[str],
+    pdf_name: Optional[str],
+) -> tuple[Optional[str], Optional[str]]:
+    """Map user-provided identifiers to the canonical key/id stored in the database."""
+    candidates: List[str] = []
+
+    if document_id:
+        candidates.append(document_id)
+    for candidate in (document_key, pdf_name):
+        if candidate:
+            candidates.append(candidate)
+
+    for candidate in candidates:
+        try:
+            document = await qa_find_document_by_key(candidate)
+        except Exception as exc:
+            print(f"[WARNING] Failed to resolve document by key '{candidate}': {exc}")
+            continue
+
+        if not document:
+            continue
+
+        resolved_id = str(document.get("_id")) if document.get("_id") else document_id
+        resolved_key = qa_normalise_document_key(candidate, document)
+        return resolved_key, resolved_id
+
+    return document_key, document_id
 
 
 def _clean_citation_for_ui(citation: Dict[str, Any]) -> Dict[str, Any]:
@@ -453,6 +488,15 @@ async def ask_question(request: ChatAskRequest):
             print(f"[DEBUG] ⚠️ WARNING: No user/assistant messages in history - this is a new conversation")
         print(f"[DEBUG] ===============================================")
         
+        history_payload_preview = [
+            {
+                "role": msg.get("role"),
+                "content": (msg.get("content") or "")[:120],
+            }
+            for msg in history_for_generator
+        ]
+        print(f"[DEBUG] History payload preview (trimmed): {history_payload_preview}")
+        
         # Extract images from chat history for comparison
         history_images = []
         history_base64_images = []
@@ -628,6 +672,13 @@ async def ask_question(request: ChatAskRequest):
 
         if document_key and not pdf_name:
             pdf_name = document_key
+
+        # Align with canonical identifiers stored alongside chunks/embeddings
+        document_key, document_id = await _resolve_canonical_document_identity(
+            document_key,
+            document_id,
+            pdf_name,
+        )
 
         updated_metadata = dict(session_metadata)
         metadata_changed = False
