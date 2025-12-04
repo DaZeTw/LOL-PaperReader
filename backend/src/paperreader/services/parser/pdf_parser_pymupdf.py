@@ -287,109 +287,300 @@ def _extract_table_elements(
     return table_elements, tables_saved
 
 
-def _clean_overlapping_elements(
-    text_elements: List[Dict[str, Any]],
-    image_elements: List[Dict[str, Any]],
-    table_elements: List[Dict[str, Any]],
-) -> List[Dict[str, Any]]:
-    cleaned: List[Dict[str, Any]] = []
+def _clean_text_blocks_in_figures_tables(
+    text_elements, image_elements, table_elements, overlap_threshold=0.8
+):
+    """Clean text blocks that significantly overlap with figure or table regions"""
 
-    for text_elem in text_elements:
-        text_bbox = text_elem.get("bbox") or [0, 0, 0, 0]
+    def get_overlap_ratio(text_bbox, other_bbox):
+        """Calculate overlap ratio between two bounding boxes"""
         text_rect = fitz.Rect(text_bbox)
+        other_rect = fitz.Rect(other_bbox)
+
+        if not text_rect.intersects(other_rect):
+            return 0.0
+
+        overlap_rect = text_rect & other_rect  # Intersection
+        overlap_area = overlap_rect.get_area()
         text_area = text_rect.get_area()
+
         if text_area == 0:
-            continue
+            return 0.0
 
-        keep = True
+        return overlap_area / text_area
 
-        for image in image_elements:
-            img_rect = fitz.Rect(image.get("bbox") or [0, 0, 0, 0])
-            if not text_rect.intersects(img_rect):
-                continue
-            overlap = (text_rect & img_rect).get_area()
-            if overlap / text_area > 0.7:
-                keep = False
-                break
-        if not keep:
-            continue
+    cleaned_text_elements = []
+    removed_count = 0
 
-        for table in table_elements:
-            tbl_rect = fitz.Rect(table.get("bbox") or [0, 0, 0, 0])
-            if not text_rect.intersects(tbl_rect):
-                continue
-            overlap = (text_rect & tbl_rect).get_area()
-            if overlap / text_area > 0.7:
-                keep = False
-                break
+    for text_element in text_elements:
+        text_bbox = text_element["bbox"]
+        page_num = text_element["page"]
+        should_keep = True
 
-        if keep:
-            cleaned.append(text_elem)
+        # Check overlap with images on the same page
+        for image_element in image_elements:
+            if image_element["page"] == page_num:
+                image_bbox = image_element["bbox"]
+                overlap_ratio = get_overlap_ratio(text_bbox, image_bbox)
 
-    return cleaned
+                if overlap_ratio > overlap_threshold:
+                    print(
+                        f"[REMOVE] Text block {text_element['block_id']} on page {page_num}: {overlap_ratio:.2f} overlap with image {image_element['image_id']}"
+                    )
+                    should_keep = False
+                    break
+
+        # Check overlap with tables on the same page (if text wasn't already removed)
+        if should_keep:
+            for table_element in table_elements:
+                if table_element["page"] == page_num:
+                    table_bbox = table_element["bbox"]
+                    overlap_ratio = get_overlap_ratio(text_bbox, table_bbox)
+
+                    if overlap_ratio > overlap_threshold:
+                        should_keep = False
+                        break
+
+        if should_keep:
+            cleaned_text_elements.append(text_element)
+        else:
+            removed_count += 1
+
+    return cleaned_text_elements
 
 
-def _merge_to_markdown(
-    text_elements: List[Dict[str, Any]],
-    image_elements: List[Dict[str, Any]],
-    table_elements: List[Dict[str, Any]],
-) -> str:
-    pages: Dict[int, Dict[str, Any]] = {}
+def _clean_overlapping_images(image_elements, overlap_threshold=0.3):
+    """Clean overlapping images, keeping the largest one"""
 
-    for elem in text_elements:
-        page = elem.get("page", 1)
-        pages.setdefault(page, {"text": [], "images": [], "tables": []})
-        pages[page]["text"].append(elem)
+    def get_overlap_ratio(bbox1, bbox2):
+        """Calculate overlap ratio between two bounding boxes"""
+        rect1 = fitz.Rect(bbox1)
+        rect2 = fitz.Rect(bbox2)
 
+        if not rect1.intersects(rect2):
+            return 0.0
+
+        overlap_rect = rect1 & rect2
+        overlap_area = overlap_rect.get_area()
+
+        # Use the smaller area as denominator for overlap ratio
+        area1 = rect1.get_area()
+        area2 = rect2.get_area()
+        smaller_area = min(area1, area2)
+
+        if smaller_area == 0:
+            return 0.0
+
+        return overlap_area / smaller_area
+
+    def get_image_area(img):
+        """Calculate image area"""
+        bbox = img["bbox"]
+        return (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+
+    # Group images by page
+    page_images = {}
     for img in image_elements:
-        page = img.get("page", 1)
-        pages.setdefault(page, {"text": [], "images": [], "tables": []})
-        pages[page]["images"].append(img)
+        page_num = img["page"]
+        if page_num not in page_images:
+            page_images[page_num] = []
+        page_images[page_num].append(img)
 
-    for table in table_elements:
-        page = table.get("page", 1)
-        pages.setdefault(page, {"text": [], "images": [], "tables": []})
-        pages[page]["tables"].append(table)
+    cleaned_images = []
+    removed_count = 0
 
-    markdown_lines: List[str] = []
-    for page_num in sorted(pages.keys()):
-        page_data = pages[page_num]
-        markdown_lines.append(f"# Page {page_num}\n")
+    for page_num, images in page_images.items():
+        # Sort images by area (largest first)
+        images_by_size = sorted(images, key=get_image_area, reverse=True)
 
-        combined: List[Tuple[str, float, Dict[str, Any]]] = []
-        for text in page_data["text"]:
-            combined.append(("text", text.get("position", {}).get("y", 0.0), text))
-        for img in page_data["images"]:
-            combined.append(("image", img.get("position", {}).get("y", 0.0), img))
-        for table in page_data["tables"]:
-            combined.append(("table", table.get("position", {}).get("y", 0.0), table))
+        kept_images = []
 
-        combined.sort(key=lambda item: item[1])
+        for img in images_by_size:
+            should_keep = True
+            img_bbox = img["bbox"]
 
-        for elem_type, _, elem in combined:
-            if elem_type == "text":
-                content = elem.get("content", "").strip()
-                if not content:
-                    continue
-                if elem.get("text_type") == "heading" and len(content) < 150:
-                    markdown_lines.append(f"## {content}\n")
+            # Check against all already kept images on this page
+            for kept_img in kept_images:
+                kept_bbox = kept_img["bbox"]
+                overlap_ratio = get_overlap_ratio(img_bbox, kept_bbox)
+
+                if overlap_ratio > overlap_threshold:
+                    kept_area = get_image_area(kept_img)
+                    current_area = get_image_area(img)
+                    print(
+                        f"[REMOVE] Image {img['image_id']} (area: {current_area:.0f}) on page {page_num}: {overlap_ratio:.2f} overlap with larger image {kept_img['image_id']} (area: {kept_area:.0f})"
+                    )
+                    should_keep = False
+                    break
+
+            if should_keep:
+                kept_images.append(img)
+            else:
+                removed_count += 1
+
+        cleaned_images.extend(kept_images)
+
+    return cleaned_images
+
+
+def _merge_elements_by_reading_order(text_elements, image_elements, table_elements):
+    """Merge text, images, and tables in proper reading order considering column layout"""
+
+    # Group elements by page
+    page_elements = {}
+
+    # Initialize page structure
+    for text_elem in text_elements:
+        page_num = text_elem["page"]
+        if page_num not in page_elements:
+            page_elements[page_num] = {
+                "text": [],
+                "images": [],
+                "tables": [],
+                "merged_content": [],
+            }
+        page_elements[page_num]["text"].append(text_elem)
+
+    # Add images and tables to their respective pages
+    for img_elem in image_elements:
+        page_num = img_elem["page"]
+        if page_num in page_elements:
+            page_elements[page_num]["images"].append(img_elem)
+
+    for table_elem in table_elements:
+        page_num = table_elem["page"]
+        if page_num in page_elements:
+            page_elements[page_num]["tables"].append(table_elem)
+
+    # Process each page
+    all_merged_content = []
+
+    for page_num in sorted(page_elements.keys()):
+        page_data = page_elements[page_num]
+
+        print(f"\n--- Processing Page {page_num} ---")
+        print(f"Text blocks: {len(page_data['text'])}")
+        print(f"Images: {len(page_data['images'])}")
+        print(f"Tables: {len(page_data['tables'])}")
+
+        # Keep text blocks in original order (already in reading order from PyMuPDF)
+        text_blocks = page_data["text"]
+
+        # Sort images and tables by Y position, then by X position
+        images = page_data["images"]
+        tables = page_data["tables"]
+
+        page_content = []
+        page_content.append(
+            {
+                "type": "page_header",
+                "content": f"# Page {page_num}\n\n",
+                "page": page_num,
+                "position": {"x": 0, "y": 0},
+            }
+        )
+
+        # Initialize pointers for images and tables
+        img_index = 0
+        table_index = 0
+
+        # Loop through text elements in their original order
+        for text_i, text_block in enumerate(text_blocks):
+            text_bbox = text_block["bbox"]
+            current_page = text_block["page"]
+            current_y = text_bbox[1]  # Y position
+            x_end = text_bbox[2]
+
+            # Check if we should insert images before this text block
+            while img_index < len(images):
+                img = images[img_index]
+                img_bbox = img["bbox"]
+                img_page = img["page"]
+                img_x = img_bbox[0]
+                img_y = img_bbox[1]
+
+                # Insert image if it's on same page and positioned before current text block
+                if img_page == current_page and img_y <= current_y and img_x < x_end:
+                    # Create image content
+                    if "filename" in img:
+                        content = f"![{img['image_id']}]({img['filename']})\n\n"
+                    else:
+                        content = f"*[Image: {img['image_id']}]*\n\n"
+
+                    page_content.append(
+                        {
+                            "type": "image",
+                            "content": content,
+                            "image_type": img["type"],
+                            "page": page_num,
+                            "position": {"x": img_bbox[0], "y": img_y},
+                            "image_id": img["image_id"],
+                        }
+                    )
+
+                    img_index += 1
                 else:
-                    markdown_lines.append(f"{content}\n")
+                    break
 
-            elif elem_type == "image":
-                image_id = elem.get("image_id", "image")
-                rel_path = elem.get("relative_path") or elem.get("filename") or ""
-                markdown_lines.append(f"![{image_id}]({rel_path})\n")
+            # Check if we should insert tables before this text block
+            while table_index < len(tables):
+                table = tables[table_index]
+                table_bbox = table["bbox"]
+                table_page = table["page"]
+                table_x = table_bbox[0]
+                table_y = table_bbox[1]
 
-            elif elem_type == "table":
-                table_id = elem.get("table_id", "Table")
-                rel_path = elem.get("relative_path") or elem.get("filename") or ""
-                markdown_lines.append(f"### {table_id.replace('_', ' ').title()}\n")
-                markdown_lines.append(f"[View CSV]({rel_path})\n")
+                # Insert table if it's on same page and positioned before current text block
+                if (
+                    table_page == current_page
+                    and table_y <= current_y
+                    and table_x < x_end
+                ):
+                    # Create table content
+                    content = f"### {table['table_id'].replace('_', ' ').title()}\n\n"
+                    if "files" in table:
+                        content += f"[CSV]({table['files']['csv']}) | [HTML]({table['files']['html']})\n\n"
+                    if "content_preview" in table:
+                        content += f"```\n{table['content_preview'][:300]}...\n```\n\n"
 
-        markdown_lines.append("")
+                    page_content.append(
+                        {
+                            "type": "table",
+                            "content": content,
+                            "page": page_num,
+                            "position": {"x": table_bbox[0], "y": table_y},
+                            "table_id": table["table_id"],
+                            "dimensions": table.get("dimensions", {}),
+                        }
+                    )
 
-    return "\n".join(markdown_lines).strip()
+                    table_index += 1
+                else:
+                    break
+            # Add current text block
+            text_content = text_block["content"].strip()
+            if text_content:
+                # Determine if heading or paragraph
+                if text_block.get("text_type") == "heading":
+                    final_text = f"## {text_content}\n\n"
+                else:
+                    final_text = f"{text_content}\n\n"
+
+                page_content.append(
+                    {
+                        "type": "text",
+                        "content": final_text,
+                        "text_type": text_block.get("text_type", "paragraph"),
+                        "page": page_num,
+                        "position": {"x": text_bbox[0], "y": text_bbox[1]},
+                        "block_id": text_block.get("block_id", 0),
+                    }
+                )
+
+        page_elements[page_num]["merged_content"] = page_content
+        all_merged_content.extend(page_content)
+
+    return all_merged_content, page_elements
 
 
 def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, Any]:
@@ -438,10 +629,16 @@ def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, 
         table_elements.extend(tables)
         total_tables_saved += tbl_count
 
-    cleaned_text = _clean_overlapping_elements(
+    cleaned_text = _clean_text_blocks_in_figures_tables(
         text_elements, image_elements, table_elements
     )
-    markdown_content = _merge_to_markdown(cleaned_text, image_elements, table_elements)
+    cleaned_images = _clean_overlapping_images(image_elements)
+    merged_content, page_structure = _merge_elements_by_reading_order(
+        cleaned_text, cleaned_images, table_elements
+    )
+    markdown_content = []
+    for item in merged_content:
+        markdown_content.append(item["content"])
     markdown_content = _clean_markdown(markdown_content)
 
     md_path = output_dir / f"{pdf_stem}.md"
