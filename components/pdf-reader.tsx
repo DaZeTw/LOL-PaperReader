@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { MessageSquare, BookmarkIcon } from "lucide-react"
+import { MessageSquare, BookmarkIcon, BookOpen } from "lucide-react"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { QAInterface } from "@/components/qa-interface"
 import { HighlightNotesSidebar } from "@/components/highlight-notes-sidebar"
+import { ReferencesSidebar } from "@/components/references-sidebar"
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
+import { useReferences } from "@/hooks/useReferences"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 import { Button } from "@/components/ui/button"
 
@@ -35,7 +37,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
   const [annotationMode, setAnnotationMode] = useState<"highlight" | "erase" | null>(null)
 
   // Right sidebar state
-  const [rightSidebarMode, setRightSidebarMode] = useState<"qa" | "highlights">("qa")
+  const [rightSidebarMode, setRightSidebarMode] = useState<"qa" | "highlights" | "references">("qa")
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false)
 
   // Highlights state
@@ -54,6 +56,39 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
   const [activeHighlightIds, setActiveHighlightIds] = useState<Set<number>>(new Set())
   const [skimmingEnabled, setSkimmingEnabled] = useState(false)
   const [selectedPreset, setSelectedPreset] = useState<"light" | "medium" | "heavy">("medium")
+
+  // References state
+  const { references, loading: referencesLoading, error: referencesError } = useReferences()
+
+  // Handle citation click to open reference PDF
+  const handleReferenceClick = (citationId: string) => {
+    console.log(`[SinglePDFReader:${tabId}] Citation clicked:`, citationId)
+
+    // Extract numeric ID from citation (e.g., "cite.1" -> "1", "[1]" -> "1")
+    const numericMatch = citationId.match(/\d+/)
+    if (!numericMatch) {
+      console.warn(`[SinglePDFReader:${tabId}] Could not extract numeric ID from:`, citationId)
+      return
+    }
+
+    const refNumber = parseInt(numericMatch[0])
+    console.log(`[SinglePDFReader:${tabId}] Looking for reference #${refNumber}`)
+
+    // Find the reference
+    const reference = references.find((ref) => ref.id === refNumber)
+    if (!reference) {
+      console.warn(`[SinglePDFReader:${tabId}] Reference #${refNumber} not found`)
+      return
+    }
+
+    // Open the reference link
+    if (reference.link) {
+      console.log(`[SinglePDFReader:${tabId}] Opening reference link:`, reference.link)
+      window.open(reference.link, "_blank", "noopener,noreferrer")
+    } else {
+      console.warn(`[SinglePDFReader:${tabId}] Reference #${refNumber} has no link`)
+    }
+  }
 
   // Handle enabling skimming
   const handleEnableSkimming = async () => {
@@ -234,6 +269,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
           hiddenHighlightIds={hiddenHighlightIds}
           activeHighlightIds={activeHighlightIds}
           highlights={highlights}
+          onReferenceClick={handleReferenceClick}
         />
 
         {/* Annotation Toolbar */}
@@ -273,6 +309,18 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
           >
             <BookmarkIcon className="h-5 w-5" />
           </Button>
+          <Button
+            onClick={() => {
+              setRightSidebarMode("references")
+              setRightSidebarOpen(true)
+            }}
+            variant="default"
+            size="icon"
+            className="h-12 w-12 rounded-full shadow-lg"
+            title="Open References"
+          >
+            <BookOpen className="h-5 w-5" />
+          </Button>
         </div>
       )}
 
@@ -305,6 +353,17 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
               >
                 <BookmarkIcon className="h-4 w-4" />
               </button>
+              <button
+                onClick={() => setRightSidebarMode("references")}
+                className={`p-3 transition-colors ${
+                  rightSidebarMode === "references"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
+                title="References"
+              >
+                <BookOpen className="h-4 w-4" />
+              </button>
             </div>
           )}
 
@@ -332,6 +391,17 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
               hiddenHighlightIds={hiddenHighlightIds}
               onHighlightToggle={handleHighlightToggle}
               activeHighlightIds={activeHighlightIds}
+            />
+          )}
+
+          {/* References Sidebar */}
+          {rightSidebarMode === "references" && (
+            <ReferencesSidebar
+              references={references}
+              loading={referencesLoading}
+              error={referencesError}
+              isOpen={rightSidebarOpen}
+              onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
             />
           )}
         </>

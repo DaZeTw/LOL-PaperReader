@@ -444,20 +444,75 @@ def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, 
     outputs["markdown_referenced"] = str(md_embed)  # Same file for now
     # Add markdown content directly to output (no need to read file later)
     outputs["markdown_content"] = markdown_content
-    
+
+    # Extract references section
+    references_text = extract_references_section(markdown_content)
+    outputs["references_raw"] = references_text
+
     _log.info(f"Đã parse PDF thành công. Output: {md_embed}")
-    
+    if references_text:
+        _log.info(f"Found references section ({len(references_text)} chars)")
+
     return outputs
+
+
+def extract_references_section(markdown_content: str) -> Optional[str]:
+    """
+    Extract the references/bibliography section from markdown content.
+
+    Args:
+        markdown_content: Full markdown text from PDF
+
+    Returns:
+        References section text, or None if not found
+    """
+    # Look for common references heading patterns
+    patterns = [
+        r'#+\s*(References?)\s*\n',
+        r'#+\s*(Bibliography)\s*\n',
+        r'#+\s*(Works Cited)\s*\n',
+        r'#+\s*(Literature)\s*\n',
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, markdown_content, re.IGNORECASE)
+        if match:
+            start_pos = match.end()
+
+            # Find where references section ends (next major heading or end of doc)
+            # Look for next heading of same or higher level, or common ending sections
+            remaining_text = markdown_content[start_pos:]
+
+            # Try to find end marker (Appendix, Acknowledgments, or another top-level heading)
+            end_patterns = [
+                r'\n#+\s*(Appendix|Acknowledgment|Acknowledgement)s?\s*\n',
+                r'\n#+\s*[A-Z]',  # Any major heading after references
+            ]
+
+            end_pos = len(remaining_text)
+            for end_pattern in end_patterns:
+                end_match = re.search(end_pattern, remaining_text, re.IGNORECASE)
+                if end_match:
+                    end_pos = min(end_pos, end_match.start())
+                    break
+
+            references_text = remaining_text[:end_pos].strip()
+
+            # Only return if we found substantial content (> 100 chars)
+            if len(references_text) > 100:
+                return references_text
+
+    return None
 
 
 def _clean_markdown(text: str) -> str:
     """Clean và format markdown text"""
     # Remove excessive whitespace
     text = re.sub(r'\n{3,}', '\n\n', text)
-    
+
     # Remove leading/trailing whitespace from lines
     lines = [line.rstrip() for line in text.split('\n')]
-    
+
     # Join và return
     return '\n'.join(lines)
 

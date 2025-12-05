@@ -12,6 +12,7 @@ import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractC
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
 import { usePDFHighlightPlugin } from "@/hooks/usePDFHighlightPlugin"
 import { useAnnotation } from "@/hooks/useAnnotation" // ✅ ADD: Import annotation hook
+import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Eye, FileText, Highlighter, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -40,6 +41,7 @@ interface PDFViewerProps {
   hiddenHighlightIds?: Set<number>
   activeHighlightIds?: Set<number>
   highlights?: SkimmingHighlight[]
+  onReferenceClick?: (citationId: string) => void
 }
 
 export function PDFViewer({
@@ -54,6 +56,7 @@ export function PDFViewer({
   hiddenHighlightIds = new Set(),
   activeHighlightIds = new Set(),
   highlights = [],
+  onReferenceClick,
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
   const [numPages, setNumPages] = useState(0)
@@ -106,6 +109,12 @@ export function PDFViewer({
   const citationPluginInstance = useCitationPlugin({
     pdfUrl: pdfUrl,
     extractedCitations: extractedCitations,
+    onCitationClick: onReferenceClick ? (citation, event) => {
+      // Call the reference click handler with the citation ID
+      event.preventDefault()
+      event.stopPropagation()
+      onReferenceClick(citation.id)
+    } : undefined,
   });
 
   // 🔑 HIGHLIGHT PLUGIN - Call hook at top level
