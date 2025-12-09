@@ -19,13 +19,22 @@ class Corpus:
 
 
 class Retriever:
-    def __init__(self, name: str, store: Optional[InMemoryVectorStore] = None, embedder: Optional[Embedder] = None, persistent_store: Optional[PersistentVectorStore] = None, pdf_name_filter: Optional[str] = None, document_key: Optional[str] = None, use_elasticsearch: bool = True):
+    def __init__(
+        self,
+        name: str,
+        store: Optional[InMemoryVectorStore] = None,
+        embedder: Optional[Embedder] = None,
+        persistent_store: Optional[PersistentVectorStore] = None,
+        pdf_name_filter: Optional[str] = None,
+        document_id: Optional[str] = None,
+        use_elasticsearch: bool = True,
+    ):
         self.name = name
         self.store = store
         self.embedder = embedder
         self.persistent_store = persistent_store
         self.pdf_name_filter = pdf_name_filter  # Filter chunks by PDF name (doc_id)
-        self.document_key = document_key  # Document key for Elasticsearch filtering
+        self.document_id = document_id  # Document identifier for Elasticsearch filtering
         self.use_elasticsearch = use_elasticsearch  # Use Elasticsearch instead of in-memory store
         
         # If using Elasticsearch, skip store filtering
@@ -115,17 +124,17 @@ class Retriever:
 
     async def retrieve(self, question: str, top_k: int = 5, image: str | None = None):
         """Retrieve chunks using Elasticsearch or in-memory store"""
-        print(f"[DEBUG] Retrieving with {self.name} retriever, top_k={top_k}, image: {image}, use_elasticsearch={self.use_elasticsearch}, document_key={self.document_key}")
+        print(f"[DEBUG] Retrieving with {self.name} retriever, top_k={top_k}, image: {image}, use_elasticsearch={self.use_elasticsearch}, document_id={self.document_id}")
         
-        # Use Elasticsearch if enabled and document_key is available
-        if self.use_elasticsearch and self.document_key:
+        # Use Elasticsearch if enabled and document_id is available
+        if self.use_elasticsearch and self.document_id:
             return await self._retrieve_from_elasticsearch(question, top_k, image)
         
         # Fallback to in-memory store
         if not self.filtered_store:
             error_msg = "No chunks available for retrieval."
-            if self.use_elasticsearch and not self.document_key:
-                error_msg += " Elasticsearch is enabled but document_key is missing. Please ensure the PDF has been uploaded and processed, and the session has the correct document_key in metadata."
+            if self.use_elasticsearch and not self.document_id:
+                error_msg += " Elasticsearch is enabled but document_id is missing. Please ensure the PDF has been uploaded and processed, and the session has the correct document_id in metadata."
             elif not self.use_elasticsearch:
                 error_msg += " The in-memory store is not initialized - no chunks available. The document may not have been processed yet. Please ensure the PDF has been uploaded and processed."
             raise ValueError(error_msg)
@@ -185,9 +194,9 @@ class Retriever:
             query_vector = query_vector.tolist()
         
         # Search Elasticsearch
-        print(f"[DEBUG] Searching Elasticsearch with document_key={self.document_key}, top_k={top_k}")
+        print(f"[DEBUG] Searching Elasticsearch with document_id={self.document_id}, top_k={top_k}")
         es_hits = await knn_search(
-            document_key=self.document_key,
+            document_id=self.document_id,
             query_vector=query_vector,
             top_k=top_k,
         )
@@ -211,13 +220,13 @@ class Retriever:
             print(f"[WARNING] No chunk_ids found in Elasticsearch hits")
             return []
         
-        # Fetch full chunks from MongoDB using document_key
+        # Fetch full chunks from MongoDB using document_id
         # We need to get all chunks for the document and filter by chunk_id
-        print(f"[DEBUG] Fetching chunks from MongoDB for document_key={self.document_key}")
-        all_chunks = await get_document_chunks(document_key=self.document_key)
-        print(f"[DEBUG] MongoDB returned {len(all_chunks)} chunks for document_key={self.document_key}")
+        print(f"[DEBUG] Fetching chunks from MongoDB for document_id={self.document_id}")
+        all_chunks = await get_document_chunks(document_id=self.document_id)
+        print(f"[DEBUG] MongoDB returned {len(all_chunks)} chunks for document_id={self.document_id}")
         if not all_chunks:
-            print(f"[WARNING] MongoDB returned zero chunks for document_key={self.document_key}. Possible key mismatch.")
+            print(f"[WARNING] MongoDB returned zero chunks for document_id={self.document_id}. Possible id mismatch or missing processing.")
         
         # Create mapping of chunk_id to chunk
         chunk_map = {}
@@ -240,7 +249,7 @@ class Retriever:
                     "text": chunk.get("text", ""),
                     "metadata": {
                         "chunk_id": chunk_id,
-                        "doc_id": chunk.get("document_key") or self.document_key,
+                        "doc_id": chunk.get("document_id") or self.document_id,
                         # title field removed from database schema
                         "page": chunk.get("page_number") or chunk.get("page"),
                         # Keep images and tables for generator
@@ -391,5 +400,21 @@ async def build_persistent_store(corpus: Corpus, embedder: Optional[Embedder]) -
     return persistent_store
 
 
-def get_retriever(name: str, store: Optional[InMemoryVectorStore] = None, embedder: Optional[Embedder] = None, persistent_store: Optional[PersistentVectorStore] = None, pdf_name_filter: Optional[str] = None, document_key: Optional[str] = None, use_elasticsearch: bool = True) -> Retriever:
-    return Retriever(name=name, store=store, embedder=embedder, persistent_store=persistent_store, pdf_name_filter=pdf_name_filter, document_key=document_key, use_elasticsearch=use_elasticsearch)
+def get_retriever(
+    name: str,
+    store: Optional[InMemoryVectorStore] = None,
+    embedder: Optional[Embedder] = None,
+    persistent_store: Optional[PersistentVectorStore] = None,
+    pdf_name_filter: Optional[str] = None,
+    document_id: Optional[str] = None,
+    use_elasticsearch: bool = True,
+) -> Retriever:
+    return Retriever(
+        name=name,
+        store=store,
+        embedder=embedder,
+        persistent_store=persistent_store,
+        pdf_name_filter=pdf_name_filter,
+        document_id=document_id,
+        use_elasticsearch=use_elasticsearch,
+    )

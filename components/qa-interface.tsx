@@ -13,29 +13,43 @@ import { useQAActions } from "@/hooks/useQAActions"
 
 interface QAInterfaceProps {
   pdfFile: File
+  documentId: string
   tabId?: string
   onHighlight?: (text: string | null) => void
+  onCitationClick?: (page: number, text?: string) => void
+  totalPages?: number
   isOpen?: boolean
   onToggle?: () => void
   isActive?: boolean
 }
 
-export function QAInterface({ pdfFile, tabId, onHighlight, isOpen = true, onToggle, isActive = true }: QAInterfaceProps) {
+export function QAInterface({
+  pdfFile,
+  documentId,
+  tabId,
+  onHighlight,
+  onCitationClick: _onCitationClick,
+  totalPages: _totalPages,
+  isOpen = true,
+  onToggle,
+  isActive = true,
+}: QAInterfaceProps) {
   const [question, setQuestion] = useState("")
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
 
   // Custom hooks
-  const { sessionId, isInitializing, clearSession } = useQASession({ pdfFile, tabId })
+  const { sessionId, isInitializing, clearSession } = useQASession({ pdfFile, documentId, tabId })
   const { messages, showHistory, setShowHistory, addMessage, clearMessages, loadMessages } = useQAMessages({ 
     pdfFile, 
     tabId, 
     sessionId 
   })
-  const { isPipelineReady, pipelineStatus } = usePipelineStatus({ pdfFile, tabId })
+  const { isPipelineReady, pipelineStatus } = usePipelineStatus({ documentId, tabId })
   const { isLoading, askQuestion, clearThinkingState } = useQAActions({ 
     sessionId, 
     pdfFile, 
+    documentId,
     tabId, 
     isPipelineReady, 
     addMessage,

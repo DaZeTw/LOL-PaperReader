@@ -64,7 +64,6 @@ async def ensure_index(dimension: int) -> None:
         },
         "mappings": {
             "properties": {
-                "document_key": {"type": "keyword"},
                 "document_id": {"type": "keyword"},
                 "chunk_id": {"type": "keyword"},
                 "text": {"type": "text"},
@@ -141,10 +140,7 @@ async def ensure_index(dimension: int) -> None:
         raise RuntimeError(f"Failed to create Elasticsearch index: {exc}") from exc
 
 
-async def delete_document_chunks(
-    document_key: Optional[str] = None,
-    document_id: Optional[str] = None,
-) -> None:
+async def delete_document_chunks(document_id: Optional[str]) -> None:
     """
     Delete all chunks from Elasticsearch for a document.
     
@@ -152,34 +148,21 @@ async def delete_document_chunks(
         document_key: Document key to delete by.
         document_id: Document ID to delete by.
     """
-    if not document_key and not document_id:
+    if not document_id:
         return
     
     client = get_elasticsearch_client()
     try:
         # Build query - match by document_key or document_id
         query: Dict[str, Any] = {}
-        if document_id and document_key:
-            query = {
-                "bool": {
-                    "should": [
-                        {"term": {"document_id": str(document_id)}},
-                        {"term": {"document_key": document_key}},
-                    ],
-                    "minimum_should_match": 1,
-                }
-            }
-        elif document_id:
-            query = {"term": {"document_id": str(document_id)}}
-        elif document_key:
-            query = {"term": {"document_key": document_key}}
+        query = {"term": {"document_id": str(document_id)}}
         
         await client.delete_by_query(
             index=ELASTICSEARCH_INDEX,
             body={"query": query},
             conflicts="proceed",
         )
-        print(f"[Elasticsearch] ✅ Deleted embeddings from Elasticsearch (document_id={document_id}, document_key={document_key})")
+        print(f"[Elasticsearch] ✅ Deleted embeddings from Elasticsearch (document_id={document_id})")
     except NotFoundError:
         return
     except Exception as exc:
@@ -188,8 +171,7 @@ async def delete_document_chunks(
 
 async def index_chunks(
     *,
-    document_id: Optional[str],
-    document_key: str,
+    document_id: str,
     chunks: Iterable[Dict[str, Any]],
     embeddings: Iterable[List[float]],
 ) -> None:
@@ -209,17 +191,16 @@ async def index_chunks(
 
     # Diagnostic logging to help trace indexing issues
     print("[Elasticsearch] 📤 Preparing to index chunks")
-    print(f"[Elasticsearch]    document_key='{document_key}' (len={len(document_key) if document_key else 0})")
     print(f"[Elasticsearch]    document_id={document_id}")
     print(f"[Elasticsearch]    chunks={len(chunks)}, embeddings={len(embeddings)}, dim={embedding_dim}")
 
-    print(f"[Elasticsearch] Indexing {len(chunks)} chunks for document_key={document_key}, dimension={embedding_dim}")
+    print(f"[Elasticsearch] Indexing {len(chunks)} chunks for document_id={document_id}, dimension={embedding_dim}")
     await ensure_index(embedding_dim)
     
     # No need to verify - if ensure_index succeeded, index exists
     # If it failed, exception would have been raised
     
-    await delete_document_chunks(document_key)
+    await delete_document_chunks(document_id)
 
     client = get_elasticsearch_client()
     actions: List[Dict[str, Any]] = []
@@ -237,7 +218,6 @@ async def index_chunks(
             "_id": chunk_id,
             "_source": {
                 "document_id": document_id,
-                "document_key": document_key,
                 "chunk_id": chunk_id,
                 "text": chunk.get("text") or "",
                 "metadata": {
@@ -288,44 +268,20 @@ async def index_chunks(
 
 async def knn_search(
     *,
-    document_key: str,
+    document_id: str,
     query_vector: List[float],
     top_k: int = 5,
 ) -> List[Dict[str, Any]]:
     client = get_elasticsearch_client()
 
-    # Diagnostics to ensure the document_key exists within the index
+    # Diagnostics to ensure the document_id exists within the index
     try:
-        count_query = {"query": {"term": {"document_key": document_key}}}
+        count_query = {"query": {"term": {"document_id": document_id}}}
         count_response = await client.count(index=ELASTICSEARCH_INDEX, body=count_query)
         doc_count = count_response.get("count", 0)
-        print(f"[Elasticsearch] 🔎 document_key='{document_key}' => {doc_count} docs in index")
-        if doc_count == 0:
-            print(f"[Elasticsearch] ⚠️ No exact document_key match. Searching for similar keys…")
-            similar = await client.search(
-                index=ELASTICSEARCH_INDEX,
-                body={
-                    "size": 5,
-                    "query": {
-                        "wildcard": {
-                            "document_key": {
-                                "value": f"*{document_key[:32]}*"
-                            }
-                        }
-                    },
-                    "_source": ["document_key"]
-                }
-            )
-            candidate_hits = similar.get("hits", {}).get("hits", [])
-            if candidate_hits:
-                for hit in candidate_hits:
-                    alt_key = hit.get("_source", {}).get("document_key")
-                    if alt_key:
-                        print(f"[Elasticsearch]    similar document_key='{alt_key}'")
-            else:
-                print(f"[Elasticsearch]    no similar document keys found")
+        print(f"[Elasticsearch] 🔎 document_id='{document_id}' => {doc_count} docs in index")
     except Exception as exc:
-        print(f"[Elasticsearch] ⚠️ Failed to count documents for document_key '{document_key}': {exc}")
+        print(f"[Elasticsearch] ⚠️ Failed to count documents for document_id '{document_id}': {exc}")
 
     # Use search API with knn in body (more compatible across ES versions)
     # Filter goes inside knn block for ES 8+
@@ -337,14 +293,14 @@ async def knn_search(
             "num_candidates": min(max(top_k * 10, 100), 1000),
             "filter": {
                 "term": {
-                    "document_key": document_key,
+                    "document_id": document_id,
                 }
             }
         },
         "size": top_k,
     }
     try:
-        print(f"[Elasticsearch] 🔍 knn search -> document_key='{document_key}', top_k={top_k}")
+        print(f"[Elasticsearch] 🔍 knn search -> document_id='{document_id}', top_k={top_k}")
         response = await client.search(index=ELASTICSEARCH_INDEX, body=body)
     except NotFoundError:
         print(f"[Elasticsearch] ❌ Index '{ELASTICSEARCH_INDEX}' not found during knn search")

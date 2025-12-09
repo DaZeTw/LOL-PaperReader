@@ -11,39 +11,39 @@ interface PipelineStatus {
 }
 
 interface UsePipelineStatusProps {
+  documentId?: string | null
   pdfFile?: File | null
   tabId?: string
 }
 
-export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {}) {
+export function usePipelineStatus({ documentId, pdfFile, tabId }: UsePipelineStatusProps = {}) {
   const { getStatus, refreshStatus } = usePipelineStatusContext()
   const [isPipelineReady, setIsPipelineReady] = useState<boolean | null>(null)
   const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus>({})
-  const currentDocumentKeyRef = useRef<string | null>(null)
+  const currentIdentifierRef = useRef<string | null>(null)
   const hasInitializedRef = useRef(false)
 
   useEffect(() => {
-    if (!pdfFile?.name) {
+    const identifier = (documentId || pdfFile?.name?.replace(/\.pdf$/i, '').trim() || '').trim()
+
+    if (!identifier) {
       setIsPipelineReady(null)
       setPipelineStatus({})
-      currentDocumentKeyRef.current = null
+      currentIdentifierRef.current = null
       hasInitializedRef.current = false
       return
     }
 
-    // Extract document_key from PDF file name
-    const documentKey = pdfFile.name.replace(/\.pdf$/i, '').trim()
-    
-    // If document key changed, reset state
-    if (currentDocumentKeyRef.current !== documentKey) {
+    // If identifier changed, reset state
+    if (currentIdentifierRef.current !== identifier) {
       setIsPipelineReady(null)
       setPipelineStatus({})
-      currentDocumentKeyRef.current = documentKey
+      currentIdentifierRef.current = identifier
       hasInitializedRef.current = true
 
       // When selecting a new PDF, immediately refresh to kick off any missing steps
-      refreshStatus(documentKey).then(() => {
-        const updatedStatus = getStatus(documentKey)
+      refreshStatus(identifier).then(() => {
+        const updatedStatus = getStatus(identifier)
         if (updatedStatus) {
           setIsPipelineReady(Boolean(updatedStatus.ready))
           setPipelineStatus(updatedStatus)
@@ -52,7 +52,7 @@ export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {
     }
 
     // Get status from cache first
-    const cachedStatus = getStatus(documentKey)
+    const cachedStatus = getStatus(identifier)
     
     if (cachedStatus) {
       // Use cached status immediately
@@ -80,14 +80,14 @@ export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {
 
       if (age > 5000 || cachedStatus.building || needsTrigger || mightBeStuck) {
         // Refresh status - backend will auto-trigger missing steps
-        refreshStatus(documentKey)
+        refreshStatus(identifier)
       }
     } else {
       // No cache, fetch status (backend will auto-trigger missing steps)
       if (!hasInitializedRef.current) {
         hasInitializedRef.current = true
-        refreshStatus(documentKey).then(() => {
-          const updatedStatus = getStatus(documentKey)
+        refreshStatus(identifier).then(() => {
+          const updatedStatus = getStatus(identifier)
           if (updatedStatus) {
             setIsPipelineReady(Boolean(updatedStatus.ready))
             setPipelineStatus(updatedStatus)
@@ -98,7 +98,7 @@ export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {
 
     // Subscribe to status updates by polling cache
     const interval = setInterval(() => {
-      const status = getStatus(documentKey)
+      const status = getStatus(identifier)
       if (status) {
         const isReady = Boolean(status.ready)
         setIsPipelineReady(isReady)
@@ -115,7 +115,7 @@ export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {
         if (!isReady) {
           // Keep refreshing while building, or if status indicates we should trigger missing steps
           if (isBuilding) {
-            refreshStatus(documentKey)
+            refreshStatus(identifier)
           } else {
             const needsTrigger = 
               (hasChunks && embeddingStatus !== 'ready' && embeddingStatus !== 'processing' && age < 10000) ||
@@ -123,7 +123,7 @@ export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {
 
             if (needsTrigger || mightBeStuck) {
               // Refresh status - backend will auto-trigger missing steps (chunking/embedding)
-              refreshStatus(documentKey)
+              refreshStatus(identifier)
             }
           }
         }
@@ -133,7 +133,7 @@ export function usePipelineStatus({ pdfFile, tabId }: UsePipelineStatusProps = {
     return () => {
       clearInterval(interval)
     }
-  }, [pdfFile?.name, tabId, getStatus, refreshStatus])
+  }, [documentId, pdfFile?.name, tabId, getStatus, refreshStatus])
 
   return {
     isPipelineReady,

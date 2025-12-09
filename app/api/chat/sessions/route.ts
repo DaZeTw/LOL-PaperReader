@@ -5,7 +5,7 @@ const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_U
 
 export async function POST(request: NextRequest) {
   try {
-    const { user_id, title, initial_message, force_new, document_key } = await request.json()
+    const { user_id, title, initial_message, force_new, document_id } = await request.json()
 
     // Reduced timeout to 30 seconds - backend should respond faster
     // If it takes longer, there's likely a connection issue
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
             title: title || "Chat Session",
             initial_message: initial_message || null,
             force_new: force_new || false,
-            document_key: document_key || null, // Pass document_key to backend
+            document_id: document_id || null,
           }),
           signal: controller.signal,
         })
@@ -195,23 +195,17 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const document_id = searchParams.get("document_id")
-    const document_key = searchParams.get("document_key")
 
-    if (!document_id && !document_key) {
+    if (!document_id) {
       return NextResponse.json(
-        { error: "document_id or document_key is required" },
+        { error: "document_id is required" },
         { status: 400 }
       )
     }
 
     const url = `${BACKEND_URL}/api/chat/sessions`
     const params = new URLSearchParams()
-    if (document_id) {
-      params.append("document_id", document_id)
-    }
-    if (document_key) {
-      params.append("document_key", document_key)
-    }
+    params.append("document_id", document_id)
     const fullUrl = `${url}?${params.toString()}`
 
     const timeout = 30000

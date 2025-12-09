@@ -9,7 +9,6 @@ interface PipelineStatus {
   percent?: number
   stage?: string
   message?: string
-  document_key?: string
   document_id?: string
   embedding_status?: string
   document_status?: string
@@ -17,14 +16,14 @@ interface PipelineStatus {
 }
 
 interface PipelineStatusMap {
-  [documentKey: string]: PipelineStatus
+  [identifier: string]: PipelineStatus
 }
 
 interface PipelineStatusContextType {
   statusMap: PipelineStatusMap
-  getStatus: (documentKey: string) => PipelineStatus | null
-  updateStatus: (documentKey: string, status: PipelineStatus) => void
-  refreshStatus: (documentKey: string) => Promise<void>
+  getStatus: (identifier: string) => PipelineStatus | null
+  updateStatus: (identifier: string, status: PipelineStatus) => void
+  refreshStatus: (identifier: string) => Promise<void>
   refreshAllStatuses: () => Promise<void>
   isProcessing: (documentKey: string) => boolean
 }
@@ -37,17 +36,17 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
   const processingRef = useRef<Set<string>>(new Set())
 
   // Get status from cache
-  const getStatus = useCallback((documentKey: string): PipelineStatus | null => {
-    if (!documentKey) return null
-    return statusMap[documentKey] || null
+  const getStatus = useCallback((identifier: string): PipelineStatus | null => {
+    if (!identifier) return null
+    return statusMap[identifier] || null
   }, [statusMap])
 
   // Update status in cache
-  const updateStatus = useCallback((documentKey: string, status: PipelineStatus) => {
-    if (!documentKey) return
+  const updateStatus = useCallback((identifier: string, status: PipelineStatus) => {
+    if (!identifier) return
     setStatusMap(prev => ({
       ...prev,
-      [documentKey]: {
+      [identifier]: {
         ...status,
         lastChecked: Date.now(),
       },
@@ -55,66 +54,66 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
   }, [])
 
   // Refresh status for a specific document
-  const refreshStatus = useCallback(async (documentKey: string) => {
-    if (!documentKey) return
+  const refreshStatus = useCallback(async (identifier: string) => {
+    if (!identifier) return
 
     // Prevent duplicate refresh calls
-    if (processingRef.current.has(documentKey)) {
-      console.log(`[PipelineStatusContext] Already refreshing ${documentKey}, skipping`)
+    if (processingRef.current.has(identifier)) {
+      console.log(`[PipelineStatusContext] Already refreshing ${identifier}, skipping`)
       return
     }
 
-    processingRef.current.add(documentKey)
+    processingRef.current.add(identifier)
 
     try {
       const params = new URLSearchParams()
-      params.append('document_key', documentKey)
+      params.append('document_id', identifier)
       
       const res = await fetch(`/api/qa/status?${params.toString()}`)
       const data = await res.json().catch(() => ({}))
       
-      updateStatus(documentKey, data)
+      updateStatus(identifier, data)
       
       // Continue polling until pipeline ready (handles stalled states as well)
       if (!data.ready) {
         // Clear existing timer for this document
-        if (refreshTimersRef.current[documentKey]) {
-          clearTimeout(refreshTimersRef.current[documentKey])
+        if (refreshTimersRef.current[identifier]) {
+          clearTimeout(refreshTimersRef.current[identifier])
         }
         
         // Schedule next refresh in 2 seconds
-        refreshTimersRef.current[documentKey] = setTimeout(() => {
-          processingRef.current.delete(documentKey)
-          refreshStatus(documentKey)
+        refreshTimersRef.current[identifier] = setTimeout(() => {
+          processingRef.current.delete(identifier)
+          refreshStatus(identifier)
         }, 2000)
       } else {
         // Clear timer if done
-        if (refreshTimersRef.current[documentKey]) {
-          clearTimeout(refreshTimersRef.current[documentKey])
-          delete refreshTimersRef.current[documentKey]
+        if (refreshTimersRef.current[identifier]) {
+          clearTimeout(refreshTimersRef.current[identifier])
+          delete refreshTimersRef.current[identifier]
         }
       }
     } catch (error) {
-      console.error(`[PipelineStatusContext] Error refreshing status for ${documentKey}:`, error)
+      console.error(`[PipelineStatusContext] Error refreshing status for ${identifier}:`, error)
       // Retry after 2 seconds on error
-      if (refreshTimersRef.current[documentKey]) {
-        clearTimeout(refreshTimersRef.current[documentKey])
+      if (refreshTimersRef.current[identifier]) {
+        clearTimeout(refreshTimersRef.current[identifier])
       }
-      refreshTimersRef.current[documentKey] = setTimeout(() => {
-        processingRef.current.delete(documentKey)
-        refreshStatus(documentKey)
+      refreshTimersRef.current[identifier] = setTimeout(() => {
+        processingRef.current.delete(identifier)
+        refreshStatus(identifier)
       }, 2000)
     } finally {
       // Remove from processing set after a delay to allow for scheduled refresh
       setTimeout(() => {
-        processingRef.current.delete(documentKey)
+        processingRef.current.delete(identifier)
       }, 100)
     }
   }, [updateStatus])
 
   // Check if a document is currently processing
-  const isProcessing = useCallback((documentKey: string): boolean => {
-    const status = getStatus(documentKey)
+  const isProcessing = useCallback((identifier: string): boolean => {
+    const status = getStatus(identifier)
     return status?.building === true || status?.ready === false
   }, [getStatus])
 

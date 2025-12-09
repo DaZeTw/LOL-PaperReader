@@ -18,7 +18,7 @@ interface ReferenceTableProps {
   isLoading: boolean
   error: Error | null
   viewMode: 'table' | 'grid'
-  onOpenPDF: (file: File, title: string) => void
+  onOpenPDF: (file: File, title: string, documentId: string) => void
   onDeleteReference: (reference: any) => void
   isDeleting: boolean
   onCollectionChange?: () => void
@@ -94,7 +94,7 @@ export function ReferenceTable({
       toast.dismiss(loadingToast)
       toast.success('PDF opened successfully')
       
-      onOpenPDF(file, reference.title)
+      onOpenPDF(file, reference.title, refId)
     } catch (err: unknown) {
       console.error('Failed to open PDF:', err)
       const message = err instanceof Error ? err.message : 'Failed to open PDF file'

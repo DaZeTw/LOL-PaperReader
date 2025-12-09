@@ -19,11 +19,12 @@ interface NavigationTarget {
 
 interface SinglePDFReaderProps {
   file: File
+  documentId: string
   tabId: string
   isActive: boolean
 }
 
-export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps) {
+export function SinglePDFReader({ file, documentId, tabId, isActive }: SinglePDFReaderProps) {
   // PDF Navigation State
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
@@ -313,6 +314,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
             <QAInterface
               tabId={tabId}
               pdfFile={file}
+              documentId={documentId}
               onHighlight={() => {}}
               onCitationClick={handleCitationClick}
               totalPages={numPages}

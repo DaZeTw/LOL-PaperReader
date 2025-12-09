@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useLayoutEffect, useEffect, useCallback, useRef } from 'react'
 
 interface QAMessage {
   id: string
@@ -48,84 +48,14 @@ export const convertBackendMessagesToQAMessages = (backendMessages: any[]): QAMe
   return qaMessages
 }
 
-export function useQAMessages({ pdfFile, tabId, sessionId }: UseQAMessagesProps) {
+export function useQAMessages({ pdfFile: _pdfFile, tabId, sessionId }: UseQAMessagesProps) {
   const [messages, setMessages] = useState<QAMessage[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const currentSessionIdRef = useRef<string | null>(null)
-  
-  // Storage key for messages cache per tab
-  const uniqueKey = tabId ? `${pdfFile?.name || ''}_${tabId}` : (pdfFile?.name || '')
-  const messagesCacheKey = `chat_messages_${uniqueKey}`
-  const pdfFileName = pdfFile?.name || ''
-  const pdfBaseName = useMemo(() => pdfFileName.replace(/\.pdf$/i, ''), [pdfFileName])
-  
-  const cacheKeys = useMemo<string[]>(() => {
-    const keys = new Set<string>()
-    if (messagesCacheKey) keys.add(messagesCacheKey)
-    if (pdfFileName) keys.add(`chat_messages_${pdfFileName}`)
-    if (pdfBaseName) keys.add(`chat_messages_${pdfBaseName}`)
-    return Array.from(keys)
-  }, [messagesCacheKey, pdfFileName, pdfBaseName])
-
-  const persistMessagesToCache = useCallback((qaMessages: QAMessage[]) => {
-    if (typeof window === 'undefined') return
-    cacheKeys.forEach((key: string) => {
-      try {
-        localStorage.setItem(key, JSON.stringify(qaMessages))
-        console.log(`[QAMessages:${tabId}] Cached ${qaMessages.length} messages to key: ${key}`)
-      } catch (e) {
-        console.warn(`[QAMessages:${tabId}] Failed to cache messages to key ${key}:`, e)
-      }
-    })
-  }, [cacheKeys, tabId])
-
-  const clearCacheKeys = useCallback(() => {
-    if (typeof window === 'undefined') return
-    cacheKeys.forEach((key: string) => {
-      try {
-        localStorage.removeItem(key)
-        console.log(`[QAMessages:${tabId}] Cleared cache key: ${key}`)
-      } catch (e) {
-        console.warn(`[QAMessages:${tabId}] Failed to clear cache key ${key}:`, e)
-      }
-    })
-  }, [cacheKeys, tabId])
-
-  // Helper function to restore messages from cache with proper Date conversion
-  const restoreFromCache = useCallback((): QAMessage[] | null => {
-    if (typeof window === 'undefined') return null
-    try {
-      for (const key of cacheKeys) {
-        const cached = localStorage.getItem(key)
-        if (cached) {
-          const cachedMessages = JSON.parse(cached)
-          if (Array.isArray(cachedMessages) && cachedMessages.length > 0) {
-            // Convert timestamp strings back to Date objects
-            const restoredMessages = cachedMessages.map((msg: any) => ({
-              ...msg,
-              timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
-            }))
-            console.log(`[QAMessages:${tabId}] Restored ${restoredMessages.length} messages from cache key ${key}`)
-            return restoredMessages
-          }
-        }
-      }
-    } catch (e) {
-      console.warn(`[QAMessages:${tabId}] Failed to restore from cache:`, e)
-    }
-    return null
-  }, [cacheKeys, tabId])
 
   const loadMessages = useCallback(async () => {
     if (!sessionId) {
-      // Try to restore from cache when sessionId is null (e.g., during tab switch)
-      const cachedMessages = restoreFromCache()
-      if (cachedMessages) {
-        setMessages(cachedMessages)
-        setShowHistory(true)
-        return
-      }
       setMessages([])
       setShowHistory(false)
       currentSessionIdRef.current = null
@@ -138,25 +68,15 @@ export function useQAMessages({ pdfFile, tabId, sessionId }: UseQAMessagesProps)
       // Don't clear immediately - wait for backend response
     }
     
-    currentSessionIdRef.current = sessionId
-
     setIsLoading(true)
     try {
+      currentSessionIdRef.current = sessionId
+
       // Fetch messages from backend API
       const response = await fetch(`/api/chat/sessions?session_id=${sessionId}`)
       
       if (!response.ok) {
         if (response.status === 404) {
-          // Session not found, try cache first
-          const cachedMessages = restoreFromCache()
-          if (cachedMessages) {
-            console.log(`[QAMessages:${tabId}] Session not found, restored ${cachedMessages.length} messages from cache`)
-            setMessages(cachedMessages)
-            setShowHistory(true)
-            setIsLoading(false)
-            return
-          }
-          // No cache, clear messages
           console.log(`[QAMessages:${tabId}] Session not found, clearing messages`)
           setMessages([])
           setShowHistory(false)
@@ -176,78 +96,48 @@ export function useQAMessages({ pdfFile, tabId, sessionId }: UseQAMessagesProps)
         if (currentSessionIdRef.current === sessionId) {
           setMessages(qaMessages)
           setShowHistory(qaMessages.length > 0)
-          // Always sync cache with DB (DB is source of truth)
-          persistMessagesToCache(qaMessages)
         }
       } else {
         // No messages in session - try to restore from cache
         if (currentSessionIdRef.current === sessionId) {
           setMessages([])
           setShowHistory(false)
-          clearCacheKeys()
         }
       }
     } catch (error) {
       console.warn(`[QAMessages:${tabId}] Failed to load messages from backend:`, error)
-      // On error, try to restore from cache (best effort)
-      const cachedMessages = restoreFromCache()
-      if (cachedMessages) {
-        console.log(`[QAMessages:${tabId}] Error loading, restored ${cachedMessages.length} from cache`)
-        setMessages(cachedMessages)
-        setShowHistory(true)
-        setIsLoading(false)
-        return
-      }
-      // No cache, keep existing messages if session didn't change
-      if (currentSessionIdRef.current !== sessionId) {
-        setMessages([])
-        setShowHistory(false)
-      }
     } finally {
       setIsLoading(false)
     }
-  }, [sessionId, tabId, restoreFromCache, clearCacheKeys, persistMessagesToCache])
+  }, [sessionId, tabId])
 
   const addMessage = (newMessage: QAMessage) => {
     const updatedMessages = [...messages, newMessage]
     setMessages(updatedMessages)
     setShowHistory(true)
-    // Cache messages to localStorage for persistence when switching tabs
-    persistMessagesToCache(updatedMessages)
     return updatedMessages
   }
 
   const clearMessages = () => {
     setMessages([])
     setShowHistory(false)
-    // Clear cache when messages are cleared
-    clearCacheKeys()
   }
 
   // Load messages when sessionId changes
   useLayoutEffect(() => {
-    // When sessionId changes, try to restore from cache first to prevent flicker
+    if (!sessionId) {
+      setMessages([])
+      setShowHistory(false)
+      currentSessionIdRef.current = null
+      return
+    }
+
     if (currentSessionIdRef.current !== sessionId) {
-      const cachedMessages = restoreFromCache()
-      if (cachedMessages) {
-        console.log(`[QAMessages:${tabId}] Restoring ${cachedMessages.length} messages from cache during session change`)
-        setMessages(cachedMessages)
-        setShowHistory(true)
-        // Still load from backend to sync, but don't clear UI
-      } else if (sessionId === null) {
-        // No sessionId and no cache, clear messages
-        setMessages([])
-        setShowHistory(false)
-      }
+      currentSessionIdRef.current = sessionId
     }
-    // Then load messages for the new session (will update if different from cache)
-    if (sessionId) {
-      loadMessages()
-    } else {
-      // No sessionId, try cache (already done above)
-      loadMessages()
-    }
-  }, [sessionId, loadMessages, restoreFromCache, tabId])
+
+    loadMessages()
+  }, [sessionId, loadMessages, tabId])
 
   // Auto-show history when messages exist
   useEffect(() => {

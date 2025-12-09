@@ -7,13 +7,11 @@ export async function GET(request: NextRequest) {
   try {
     // Extract query parameters
     const { searchParams } = new URL(request.url)
-    const pdfName = searchParams.get("pdf_name")
-    const documentKey = searchParams.get("document_key")
+    const documentId = searchParams.get("document_id")
     
     // Build URL with query parameters
     const queryParams = new URLSearchParams()
-    if (pdfName) queryParams.append("pdf_name", pdfName)
-    if (documentKey) queryParams.append("document_key", documentKey)
+    if (documentId) queryParams.append("document_id", documentId)
     
     const url = queryParams.toString() 
       ? `${BACKEND_URL}/api/pdf/status?${queryParams.toString()}`

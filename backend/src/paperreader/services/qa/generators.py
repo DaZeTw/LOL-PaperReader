@@ -68,54 +68,25 @@ class OpenAIGenerator(Generator):
         if self.client is None:
             raise RuntimeError("OPENAI_API_KEY not set")
 
-        # --- Default system prompt (used only if not found in history) ---
-        default_system = (
-            "You are a helpful assistant that answers questions using chat history, images, and document context."
-            "\n\nPRIORITY ORDER:"
-            "\n1. Use chat history for questions about previous messages. When asked about previous messages or conversation history, summarize the conversation history clearly."
-            "\n2. Analyze user-uploaded images directly for image questions."
-            "\n3. Use provided document context only to support explanations."
-            "\n\nRULES:"
-            "\n- Never quote raw document text when answering."
-            "\n- Focus on what is visible in images for image-related queries."
-            "\n- Be concise and factual. Add [cN] markers when referencing document context."
-            "\n- When answering questions about previous messages or conversation history, provide a clear summary from the chat history."
-            "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
-        )
-
         # --- Build messages ---
         messages = []
         
-        # Check if chat history contains system message
-        system_message_found = False
-        system_content = default_system
-        
+        # Only include system message if provided in chat history
         if chat_history:
             print(f"[DEBUG] Checking {len(chat_history)} chat history messages for system message...")
             for msg in chat_history:
-                if isinstance(msg, dict) and "role" in msg and "content" in msg:
-                    if msg["role"] == "system":
-                        # Use system message from history
-                        system_content = msg["content"]
-                        system_message_found = True
-                        print(f"[DEBUG] Found system message in chat history")
-                        break
-        
-        # Add system message (from history or default)
-        messages.append({"role": "system", "content": system_content})
-        if system_message_found:
-            print(f"[DEBUG] Using system message from chat history")
-        else:
-            print(f"[DEBUG] Using default system prompt (no system message in history)")
-        
-        # Add chat history messages (excluding system since we already added it)
+                if isinstance(msg, dict) and msg.get("role") == "system":
+                    messages.append({"role": "system", "content": msg.get("content")})
+                    print(f"[DEBUG] Found system message in chat history")
+                    break
+
+        # Add chat history messages (excluding system)
         if chat_history:
             user_msgs = 0
             assistant_msgs = 0
             print(f"[DEBUG] Adding chat history messages (excluding system)...")
             for msg in chat_history:
                 if isinstance(msg, dict) and "role" in msg and "content" in msg:
-                    # Skip system message since we already added it above
                     if msg["role"] == "system":
                         continue
                     messages.append({"role": msg["role"], "content": msg["content"]})
@@ -138,42 +109,29 @@ class OpenAIGenerator(Generator):
         print(f"[DEBUG] Processing {len(contexts)} contexts for plain text generation")
         
         if plain_text_only and not has_query_images:
-            # Detect if question is simple greeting/casual chat that doesn't need document context
             question_lower = question.lower().strip()
-            simple_greetings = ['hi', 'hello', 'hey', 'thanks', 'thank you', 'bye', 'goodbye', 'ok', 'okay', 'yes', 'no']
-            is_simple_greeting = question_lower in simple_greetings or (len(question_lower.split()) <= 2 and question_lower in ['how are you', 'what\'s up', 'whats up'])
-            
-            if is_simple_greeting:
-                # For simple greetings, answer briefly without using document contexts
-                if len(contexts) > 0:
-                    prompt = (
-                        f"Question: {question}\n\n"
-                        "Answer briefly and naturally. This is a simple greeting or casual conversation, so respond in a friendly, concise way without referencing any document contexts. "
-                        "Keep your response short (1-2 sentences). Do NOT use the document contexts provided below."
-                    )
-                else:
-                    prompt = (
-                        f"Question: {question}\n\n"
-                        "Answer briefly and naturally. This is a simple greeting or casual conversation, so respond in a friendly, concise way. "
-                        "Keep your response short (1-2 sentences)."
-                    )
-            elif len(contexts) == 0:
-                # No contexts available, answer directly
-                prompt = (
-                    f"Question: {question}\n\n"
-                    "Answer the question directly. No document contexts are available, so provide a helpful response based on general knowledge or chat history."
-                )
-            else:
-                # For substantive questions, use document contexts
-                prompt = (
-                    f"Answer the question using the {len(contexts)} contexts below. "
-                    "IMPORTANT: When you use information from a context, mark it with [cN] where N is the context number (1 to {len(contexts)}). "
-                    "If you use information from chat history, mark it with [CHAT_HISTORY]. "
-                    "For example: 'Based on context 1 [c1] and previous conversation [CHAT_HISTORY], the answer is...' "
-                    "At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]\n\n"
-                    + "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)])
-                    + f"\n\nQuestion: {question}\nAnswer:"
-                )
+            context_section = ""
+            if contexts:
+                rendered_contexts = []
+                for i, ctx in enumerate(contexts):
+                    text = ctx.get("text") if isinstance(ctx, dict) else str(ctx)
+                    rendered_contexts.append(f"[Context {i+1}]\n{text}")
+                context_section = "\n\n" + "\n\n".join(rendered_contexts)
+
+            prompt = (
+                f"Question: {question}\n\n"
+                "Resources available to you:\n"
+                "- Chat history shown earlier in this conversation (system, user, assistant messages).\n"
+                f"- {len(contexts)} document contexts listed below (if any).\n\n"
+                "Instructions:\n"
+                "- Decide when to rely on chat history, document contexts, or general knowledge.\n"
+                "- When using chat history, add the marker [CHAT_HISTORY] in your answer.\n"
+                "- When referencing a document context, cite it as [cN] where N is the context number.\n"
+                "- Combine sources if needed and keep the response concise.\n"
+                "- Finish with a confidence marker like [CONFIDENCE:0.85] indicating document-support confidence.\n"
+                f"{context_section}\n\n"
+                "Answer:"
+            )
             messages.append({"role": "user", "content": prompt})
 
             resp = self.client.chat.completions.create(
@@ -352,54 +310,6 @@ class OpenAIGenerator(Generator):
 
 
 # ============================ #
-#       OLLAMA GENERATOR       #
-# ============================ #
-class OllamaGenerator(Generator):
-    def __init__(self, model: str = "llama3.1:8b-instruct") -> None:
-        import ollama
-        self.ollama = ollama
-        self.model = model
-        self.supports_images = False
-
-    def generate(
-        self, question: str, contexts: List[str], max_tokens: int = 512,
-        query_image: Optional[str] = None, query_images: Optional[List[str]] = None,
-        chat_history: Optional[List[Dict[str, str]]] = None
-    ) -> Dict[str, Any]:
-        prompt = (
-            f"You are a helpful assistant. Answer strictly using the {len(contexts)} contexts. "
-            "IMPORTANT: You MUST append [cN] markers where you use contextual info (e.g., [c1], [c2], etc.). "
-            f"Each [cN] should correspond to the context number you're referencing (1 to {len(contexts)}). "
-            "At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]\n\n"
-            + "\n\n".join([f"[Context {i+1}]\n{c}" for i, c in enumerate(contexts)])
-            + f"\n\nQuestion: {question}\nAnswer:"
-        )
-        r = self.ollama.chat(model=self.model, messages=[{"role": "user", "content": prompt}],
-                             options={"num_predict": max_tokens})
-        answer = r["message"]["content"].strip()
-        import re
-        citations = [int(m.group(1)) - 1 for m in re.finditer(r"\[c(\d+)\]", answer)]
-        
-        # Extract confidence score if present
-        confidence = None
-        confidence_pattern = re.search(r"\[CONFIDENCE:([\d.]+)\]", answer)
-        if confidence_pattern:
-            try:
-                confidence = float(confidence_pattern.group(1))
-                # Remove confidence marker from answer
-                answer = re.sub(r"\[CONFIDENCE:[\d.]+\]", "", answer).strip()
-            except ValueError:
-                pass
-        
-        # Validate citations - only include citations that exist in contexts
-        valid_citations = [c for c in citations if 0 <= c < len(contexts)]
-        if len(citations) != len(valid_citations):
-            print(f"[WARNING] Found invalid citations: {citations}, valid ones: {valid_citations}")
-        
-        return {"answer": answer, "citations": valid_citations, "confidence": confidence}
-
-
-# ============================ #
 #    SIMPLE EXTRACTIVE GEN     #
 # ============================ #
 class ExtractiveGenerator(Generator):
@@ -426,8 +336,6 @@ def get_generator(name: str, *, image_policy: str = "auto") -> Generator:
     if name == "openai":
         include_all = True if image_policy == "all" else False
         return OpenAIGenerator(image_include_all_override=include_all)
-    if name == "ollama":
-        return OllamaGenerator()
     if name == "extractive":
         return ExtractiveGenerator()
     raise ValueError(f"Unknown generator: {name}")

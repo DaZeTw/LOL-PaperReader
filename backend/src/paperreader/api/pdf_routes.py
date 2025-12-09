@@ -355,7 +355,6 @@ async def _process_saved_pdfs(
                 mongo_start = time.time()
                 await replace_document_chunks(
                     document_id=document_id,
-                    document_key=doc_key,
                     chunks=chunks,
                 )
                 mongo_elapsed = time.time() - mongo_start
@@ -387,7 +386,6 @@ async def _process_saved_pdfs(
                 try:
                     await index_chunks(
                         document_id=document_id,
-                        document_key=doc_key,
                         chunks=chunks,
                         embeddings=chunk_embeddings,
                     )
@@ -550,11 +548,11 @@ async def upload_and_parse_pdf(file: UploadFile = File(...)):
 @router.get("/status")
 async def qa_status(
     pdf_name: Optional[str] = Query(None, description="PDF name to check status for"),
-    document_key: Optional[str] = Query(None, description="Document key to check status for"),
+    document_id: Optional[str] = Query(None, description="Document ID to check status for"),
 ):
     """Return readiness status for QA pipeline by checking database instead of cache."""
     try:
-        status = await pipeline_status(pdf_name=pdf_name, document_key=document_key)
+        status = await pipeline_status(pdf_name=pdf_name, document_id=document_id)
         # Status logging is handled in pipeline.py
         return status
     except Exception as e:
