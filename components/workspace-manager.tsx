@@ -12,6 +12,7 @@ interface PDFTab {
   file: File
   title: string
   fileName: string
+  sidebarOpen?: boolean  // Add sidebar state per tab
 }
 
 // Generate stable IDs using a counter
@@ -77,7 +78,8 @@ export function WorkspaceManager({
       id: generateTabId(),
       file,
       title,
-      fileName: file.name
+      fileName: file.name,
+      sidebarOpen: false  // Initialize sidebar state
     }
     
     setOpenTabs((prev: PDFTab[]) => [...prev, newTab])
@@ -121,6 +123,16 @@ export function WorkspaceManager({
     onViewChange('pdf')
   }, [onViewChange])
 
+  // Handle sidebar toggle for any tab
+  const handleSidebarToggle = useCallback((tabId: string, isOpen: boolean) => {
+    console.log("[Workspace Manager] Toggling sidebar for tab:", tabId, "to:", isOpen)
+    setOpenTabs((prev) =>
+      prev.map((tab) =>
+        tab.id === tabId ? { ...tab, sidebarOpen: isOpen } : tab
+      )
+    )
+  }, [])
+
   const activeTab = openTabs.find((tab: PDFTab) => tab.id === activeTabId)
   const showTabBar = openTabs.length > 0
 
@@ -134,7 +146,8 @@ export function WorkspaceManager({
     openTabsCount: openTabs.length,
     activeTabId,
     currentView,
-    tabTitles: openTabs.map((tab: PDFTab) => tab.title)
+    tabTitles: openTabs.map((tab: PDFTab) => tab.title),
+    sidebarStates: openTabs.map((tab: PDFTab) => ({ id: tab.id, sidebarOpen: tab.sidebarOpen }))
   })
 
   return (
@@ -196,6 +209,8 @@ export function WorkspaceManager({
               file={tab.file}
               tabId={tab.id}
               isActive={activeTabId === tab.id}
+              sidebarOpen={tab.sidebarOpen ?? false}
+              onSidebarToggle={(isOpen) => handleSidebarToggle(tab.id, isOpen)}
             />
           </div>
         ))}

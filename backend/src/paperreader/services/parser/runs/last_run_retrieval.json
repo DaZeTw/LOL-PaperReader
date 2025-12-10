@@ -1,4 +1,65 @@
 {
   "question": "What is the main finding?",
-  "hits": []
+  "hits": [
+    {
+      "index": 0,
+      "score": 0.7397244,
+      "text": "3.1 Findings",
+      "metadata": {
+        "chunk_id": "f0db039f802caa7e82b797dc27aa20fe2a426148",
+        "doc_id": "CiteRead-Integrating-Localized-Citation-Contexts-into-Scientific-Paper-Reading",
+        "page": 4,
+        "images": [],
+        "tables": []
+      }
+    },
+    {
+      "index": 1,
+      "score": 0.71951824,
+      "text": "4.1 Selection Method Inspired by features proposed by prior work for identifying impor- tant citations in scientific papers [ 16 , 20 , 23 ], we selected a similar feature set to use in our selection method. Unlike prior work, we calculated a score of each citance using a linear combination of features and hand-tuned parameters instead of training a binary classifier. While a learned classifier might achieve higher precision, the need for a large training dataset was a barrier. Unfortunately, existing datasets used by prior work were not applicable for us due to differences in objectives. For example, the dataset used by Valen- zuela et al. [ 23 ] did not consider result comparison as an important citation, but our formative study had shown that researchers found those highly useful. When it came to choice of features, however, we relied heavily on previous machine learning models (e.g., SciB- ert [2], SPECTER [6], and Cohan’s citation intent classifier [5]). In the end, our selection approach used the following features (we annotate whether the feature is a positive or negative signal): • Participants expressed that citances were useful to under- stand how other researchers frame the reference paper. They further used this information to verify that they correctly understood the main point of the reference paper. Citances that discuss result comparisons were noted to be particularly useful. • Citances that discuss the limitations of the reference paper were also highly appreciated. One participant noted: “Au- thors [of the reference paper] usually put an emphasis on the novelty but not the other aspects of the work, like lim- itations ...” Participants also mentioned that they found it useful when a citing paper claims to have a solution to the issue. • Generic citations were not judged to be particularly inter- esting or useful. If there was a high information overlap between the citance and the reference paper’s abstract, then it was likely to be unhelpful. • (F1) Total number of direct citations : The total number of times the citing paper cited the reference paper. (positive) • (F2) Small co-citations : A Boolean feature, set to one if there are fewer than three other citations in the citance. (positive) • (F3) Citation appears in table or caption : A Boolean fea- ture, set to one if at least one citation appears in a table or a caption. (positive) • (F4) Sentence length : An ordinal feature based on the word count in the citance. (positive) • (F5) Similarity between papers : Cosine similarity be- tween the SPECTER embedding of the citing paper and the reference paper. (positive) • (F6) Similarity to abstract content : The highest cosine similarity between the SciBert embedding of the citance and sentences in the reference paper’s abstract. (negative) • (F7) Age : An ordinal feature based on the age of citing paper. (negative) • (F8) Contains cue words : A Boolean feature, set to one if the citance contains a signaling keyword, such as ‘however’ or ‘whereas.’ (positive) • (F9) In generic sections : A Boolean feature, set to one if the citance is from (or subsection of) generic sections, such as ‘Introduction’ or ‘Background.’ (negative) • (F10) In important sections : A Boolean feature, set to one if the citance is from (or subsection of) important sections, such as ‘Method’ or ‘Results.’ (positive) Finally, participants gave insights into what information they needed to better understand a citation, including information from the reference paper and from the citing paper: • Participants considered or looked for specific locations in the reference paper that would be the best place to present a given citance, but when asked, they said a precise location was unnecessary and maybe even a distraction—aligning at the section level often seemed sufficient. • Several types of information about a citing paper were iden- tified as useful for contextualizing the citance and deciding whether it was important.",
+      "metadata": {
+        "chunk_id": "cb9c825e382520778928e5b9a79dea2edb153164",
+        "doc_id": "CiteRead-Integrating-Localized-Citation-Contexts-into-Scientific-Paper-Reading",
+        "page": 4,
+        "images": [],
+        "tables": []
+      }
+    },
+    {
+      "index": 2,
+      "score": 0.71915627,
+      "text": "8 CONCLUSION AND FUTURE WORK In this work, we present a system, CiteRead, that integrates infor- mation from follow-on work directly in the scientific paper reading experience. Through a formative study, we discovered what types of information from citing papers scientists are interested in con- suming while reading. Based on these findings, we developed novel techniques to select and localize citation contexts in ways that support these discovered information needs. CiteRead provides a seamless interface for alternating between reading the paper and commentary from follow-on work. Our quantitative and qualitative evaluation of CiteRead demonstrates the benefits of this approach for understanding follow-on work, while reducing cognitive load. Finally, we synthesize a set of design considerations and implica- tions for future tools that integrate commentary into the reading experience, through automated selection and localization. We intend ultimately to deploy our system on a broad range of papers. Towards this end, we plan to improve the robustness of our citation context selection and localization approaches by collecting a new annotated dataset and tuning our models using supervised learning. We also plan to conduct field studies with a wider range of scientists, and investigate the potential engagement benefits of CiteRead. Finally, we are also excited to study how to integrate user commentary with automatically-localized author commentary. While we have tested our approach in the scientific literature domain, we are excited about the possibilities of localized discus- sion to augment reading experiences across a range of domains. For example, news articles are often accompanied by discussion threads.",
+      "metadata": {
+        "chunk_id": "940bea90da7221398bc362a6dbd04d6818d20994",
+        "doc_id": "CiteRead-Integrating-Localized-Citation-Contexts-into-Scientific-Paper-Reading",
+        "page": 12,
+        "images": [],
+        "tables": []
+      }
+    },
+    {
+      "index": 3,
+      "score": 0.71914345,
+      "text": "Select one or more statements that were made, either in this paper or in a citing paper. • GRU models outperform the current work’s (baseline) LSTM model with respect to BLEU score • Convolutional Neural Network yields similar result to the current work’s LSTM model for BLEU score • Bidirectional Long Short-term Memory encoder with attention-based architecture gets better results compared to plain LSTM encoder-decoder used in this paper • Human responses still outperform generated responses on appropriateness in this paper, but the responses generated by a tone-aware chatbot are perceived as appropriate as the responses by human agents • There was no statistically significant difference between this paper’s approach and human agents on empathy for emotional requests • Chatbots based on GRU models have shown better evaluation results than human’s responses on attentiveness. Q2: In contrast to the dataset used in this paper to train chatbots, what have other papers tried to use as datasets instead? Select one or more answers. • Gesture sets vary extensively between systems, so it is chal- lenging to compare their results. • It is very common to use multiple different gesture sets in evaluation. • From the perspective of new system design and evaluation, it is difficult to evaluate what does the new system add in terms of class of gesture. • Besides the set of five gestures evaluated in the current work, some works also examine a bending gesture. • False negative is more important than false positive in ges- ture recognition evaluation • Twitter conversations • Mail threads of DBpedia • Extracted data from mobile apps • Ubuntu dialogue corpus • The NPS Chat corpus Q3: In contrast to the factors used in this paper for human evalua- tion, what factors do other papers use to do human evaluation of chatbots? Select one or more answers. • Humor • Helpfulness • Flexibility • Attentiveness • Perceived humanness",
+      "metadata": {
+        "chunk_id": "8a3b98475c55a2422c0edd02fd6cfd1bf14c9025",
+        "doc_id": "CiteRead-Integrating-Localized-Citation-Contexts-into-Scientific-Paper-Reading",
+        "page": 13,
+        "images": [],
+        "tables": []
+      }
+    },
+    {
+      "index": 4,
+      "score": 0.71711636,
+      "text": "Incidental or Influential? - Challenges in Automatically Detecting Citation Importance Using Publication Full Texts. In International Conference on Theory and Practice of Digital Libraries . [21] Ariel S. Schwartz and Marti A. Hearst. 2006. Summarizing Key Concepts using Citation Sentences. In Proceedings of the Workshop on Linking Natural Language Processing and Biology: Towards Deeper Biological Literature Analysis . [22] Zejiang Shen, Kyle Lo, Lucy Lu Wang, Bailey Kuehl, Daniel S. Weld, and Doug Downey. 2022. VILA: Improving Structured Content Extraction from Scientific PDFs Using Visual Layout Groups. arXiv:2106.00676 [cs.CL] [23] Marco Valenzuela, Vu A. Ha, and Oren Etzioni. 2015. Identifying Meaningful Citations. In AAAI Workshop: Scholarly Big Data . [24] Hongyi Wen, Julian Ramos Rojas, and Anind K. Dey. 2016. Serendipity: Finger Gesture Recognition using an Off-the-Shelf Smartwatch. Proceedings of the 2016 CHI Conference on Human Factors in Computing Systems . [25] Anbang Xu, Zhe Liu, Yufan Guo, Vibha Sinha, and Rama Akkiraju. 2017. A New Chatbot for Customer Service on Social Media. Proceedings of the 2017 CHI Conference on Human Factors in Computing Systems . [26] Sacha Zyto, David Karger, Mark Ackerman, and Sanjoy Mahajan. 2012. Successful classroom deployment of a social document annotation system. In Proceedings of the 2012 CHI Conference on Human Factors in Computing Systems . 1883–1892.",
+      "metadata": {
+        "chunk_id": "b043e36c4e4c2e9fb4b44342a709fb967cf79a1e",
+        "doc_id": "CiteRead-Integrating-Localized-Citation-Contexts-into-Scientific-Paper-Reading",
+        "page": 12,
+        "images": [],
+        "tables": []
+      }
+    }
+  ]
 }
