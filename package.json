@@ -55,7 +55,7 @@
     "lucide-react": "^0.454.0",
     "minio": "^7.1.3",
     "mongodb": "^6.3.0",
-    "next": "15.2.4",
+    "next": "15.2.6",
     "next-themes": "latest",
     "pdfjs-dist": "^3.11.174",
     "pg": "^8.11.3",
