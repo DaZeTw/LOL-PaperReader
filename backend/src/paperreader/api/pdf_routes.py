@@ -1,35 +1,42 @@
 import asyncio
 import hashlib
+import json
 import mimetypes
 import os
 import re
 import shutil
 import tempfile
+import threading
 import time
 import traceback
 import uuid
 from datetime import datetime
 from pathlib import Path
-import threading
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, File, Header, HTTPException, Query, UploadFile
-from fastapi.responses import FileResponse
-from paperreader.services.parser.pdf_parser import parse_pdf_with_pymupdf
-from paperreader.services.parser.pdf_parser_pymupdf import set_parse_cancel_flag
-from paperreader.services.qa.config import PipelineConfig
-from paperreader.services.qa.pipeline import rebuild_pipeline, pipeline_status, get_pipeline, reset_pipeline_state, set_cancel_flag
-from paperreader.services.qa.chunking import split_markdown_into_chunks
+from fastapi.responses import FileResponse, StreamingResponse
+from paperreader.services.documents.chunk_repository import replace_document_chunks
+from paperreader.services.documents.minio_client import upload_bytes
 from paperreader.services.documents.repository import (
     get_document_by_id,
     to_object_id,
     update_document,
     update_document_status,
 )
-from paperreader.services.documents.minio_client import upload_bytes
-from paperreader.services.documents.chunk_repository import replace_document_chunks
+from paperreader.services.parser.pdf_parser import parse_pdf_with_pymupdf
+from paperreader.services.parser.pdf_parser_pymupdf import set_parse_cancel_flag
+from paperreader.services.qa.chunking import split_markdown_into_chunks
+from paperreader.services.qa.config import PipelineConfig
 from paperreader.services.qa.elasticsearch_client import index_chunks
 from paperreader.services.qa.embeddings import get_embedder
+from paperreader.services.qa.pipeline import (
+    get_pipeline,
+    pipeline_status,
+    rebuild_pipeline,
+    reset_pipeline_state,
+    set_cancel_flag,
+)
 
 router = APIRouter()
 
@@ -78,7 +85,9 @@ def _get_pdf_job(job_id: str) -> Optional[Dict[str, Any]]:
         return job.copy()
 
 
-async def _update_document_safe(document_id: Optional[str], updates: Dict[str, Any]) -> None:
+async def _update_document_safe(
+    document_id: Optional[str], updates: Dict[str, Any]
+) -> None:
     if not document_id:
         return
     object_id = to_object_id(document_id)
@@ -87,7 +96,9 @@ async def _update_document_safe(document_id: Optional[str], updates: Dict[str, A
     await update_document(object_id, updates)
 
 
-def _resolve_document_id(mapping: Optional[Dict[str, str]], pdf_path: Path) -> Optional[str]:
+def _resolve_document_id(
+    mapping: Optional[Dict[str, str]], pdf_path: Path
+) -> Optional[str]:
     if not mapping:
         return None
     candidates = [pdf_path.name, pdf_path.stem]
@@ -132,21 +143,27 @@ async def _process_saved_pdfs(
 
             acquired = file_lock.acquire(blocking=False)
             if not acquired:
-                print(f"[PDF] ⏳ {pdf_path.name} is already being parsed, waiting briefly...")
+                print(
+                    f"[PDF] ⏳ {pdf_path.name} is already being parsed, waiting briefly..."
+                )
                 for _ in range(10):
                     await asyncio.sleep(0.1)
                     if file_lock.acquire(blocking=False):
                         acquired = True
                         break
                 if not acquired:
-                    print(f"[PDF] ⚠️ {pdf_path.name} is still being parsed elsewhere, skipping duplicate")
+                    print(
+                        f"[PDF] ⚠️ {pdf_path.name} is still being parsed elsewhere, skipping duplicate"
+                    )
                     continue
 
             temp_output = Path(tempfile.mkdtemp(prefix=f"parsed_{pdf_path.stem}_"))
             try:
                 print(f"[PDF] [{index}/{len(saved_paths)}] Processing {pdf_path.name}")
                 parse_start = time.time()
-                result = await asyncio.to_thread(parse_pdf_with_pymupdf, pdf_path, temp_output)
+                result = await asyncio.to_thread(
+                    parse_pdf_with_pymupdf, pdf_path, temp_output
+                )
                 parse_elapsed = time.time() - parse_start
                 print(
                     "[PDF] ✅ Parse completed for "
@@ -159,7 +176,9 @@ async def _process_saved_pdfs(
 
                 markdown_content = result.get("markdown_content")
                 if not markdown_content:
-                    print(f"[PDF] ⚠️ Missing markdown content for {pdf_path.name}, skipping")
+                    print(
+                        f"[PDF] ⚠️ Missing markdown content for {pdf_path.name}, skipping"
+                    )
                     continue
 
                 document_id = _resolve_document_id(document_map, pdf_path)
@@ -179,9 +198,13 @@ async def _process_saved_pdfs(
                         if owner_object_id:
                             try:
                                 doc_record = await get_document_by_id(owner_object_id)
-                                cached_owner = doc_record.get("user_id") if doc_record else None
+                                cached_owner = (
+                                    doc_record.get("user_id") if doc_record else None
+                                )
                             except Exception as exc:
-                                print(f"[PDF] ⚠️ Failed to load document {document_id} for user lookup: {exc}")
+                                print(
+                                    f"[PDF] ⚠️ Failed to load document {document_id} for user lookup: {exc}"
+                                )
                                 cached_owner = None
                         else:
                             cached_owner = None
@@ -200,7 +223,11 @@ async def _process_saved_pdfs(
 
                 image_lookup: Dict[str, Dict[str, Any]] = {}
                 for image_meta in result.get("image_files") or []:
-                    rel_path = image_meta.get("relative_path") or image_meta.get("filename") or ""
+                    rel_path = (
+                        image_meta.get("relative_path")
+                        or image_meta.get("filename")
+                        or ""
+                    )
                     rel_path = rel_path.replace("\\", "/").lstrip("./")
                     if not rel_path:
                         continue
@@ -219,7 +246,9 @@ async def _process_saved_pdfs(
                             mime_type or "image/png",
                         )
                     except Exception as exc:
-                        print(f"[PDF] ⚠️ Failed to upload image {src_path} to Minio: {exc}")
+                        print(
+                            f"[PDF] ⚠️ Failed to upload image {src_path} to Minio: {exc}"
+                        )
                         continue
 
                     image_lookup[rel_path] = {
@@ -229,13 +258,18 @@ async def _process_saved_pdfs(
                         "page": image_meta.get("page"),
                         "position": image_meta.get("position"),
                         "caption": image_meta.get("caption"),
-                        "figure_id": image_meta.get("image_id") or image_meta.get("figure_id"),
+                        "figure_id": image_meta.get("image_id")
+                        or image_meta.get("figure_id"),
                         "local_path": str(src_path),
                     }
 
                 table_lookup: Dict[str, Dict[str, Any]] = {}
                 for table_meta in result.get("table_files") or []:
-                    rel_path = table_meta.get("relative_path") or table_meta.get("filename") or ""
+                    rel_path = (
+                        table_meta.get("relative_path")
+                        or table_meta.get("filename")
+                        or ""
+                    )
                     rel_path = rel_path.replace("\\", "/").lstrip("./")
                     if not rel_path:
                         continue
@@ -254,7 +288,9 @@ async def _process_saved_pdfs(
                             mime_type or "text/csv",
                         )
                     except Exception as exc:
-                        print(f"[PDF] ⚠️ Failed to upload table {src_path} to Minio: {exc}")
+                        print(
+                            f"[PDF] ⚠️ Failed to upload table {src_path} to Minio: {exc}"
+                        )
                         continue
 
                     table_lookup[rel_path] = {
@@ -268,7 +304,10 @@ async def _process_saved_pdfs(
 
                 result["image_files"] = list(image_lookup.values())
                 result["table_files"] = list(table_lookup.values())
-                result["assets"] = {"images": result["image_files"], "tables": result["table_files"]}
+                result["assets"] = {
+                    "images": result["image_files"],
+                    "tables": result["table_files"],
+                }
 
                 # Save markdown file for debugging
                 debug_md_path = DEBUG_CHUNKING_DIR / f"{doc_key}_chunking_debug.md"
@@ -289,7 +328,9 @@ async def _process_saved_pdfs(
                     assets={"images": image_lookup, "tables": table_lookup},
                 )
                 chunk_elapsed = time.time() - chunk_start
-                print(f"[PDF] ✅ Chunked {pdf_path.name} into {len(chunks)} chunks in {chunk_elapsed:.2f}s")
+                print(
+                    f"[PDF] ✅ Chunked {pdf_path.name} into {len(chunks)} chunks in {chunk_elapsed:.2f}s"
+                )
 
                 if not chunks:
                     continue
@@ -304,13 +345,19 @@ async def _process_saved_pdfs(
 
                     enriched_images: List[Dict[str, Any]] = []
                     for img_meta in chunk.get("images") or []:
-                        key = (img_meta.get("data") or "").replace("\\", "/").lstrip("./")
-                        lookup = image_lookup.get(key) or image_lookup.get(f"images/{Path(key).name}")
+                        key = (
+                            (img_meta.get("data") or "").replace("\\", "/").lstrip("./")
+                        )
+                        lookup = image_lookup.get(key) or image_lookup.get(
+                            f"images/{Path(key).name}"
+                        )
                         if lookup:
                             enriched_images.append(
                                 {
-                                    "caption": lookup.get("caption") or img_meta.get("caption"),
-                                    "figure_id": lookup.get("figure_id") or img_meta.get("figure_id"),
+                                    "caption": lookup.get("caption")
+                                    or img_meta.get("caption"),
+                                    "figure_id": lookup.get("figure_id")
+                                    or img_meta.get("figure_id"),
                                     "bucket": lookup.get("bucket"),
                                     "object_name": lookup.get("object_name"),
                                     "relative_path": lookup.get("relative_path"),
@@ -329,13 +376,22 @@ async def _process_saved_pdfs(
                     enriched_tables: List[Dict[str, Any]] = []
                     for tbl_meta in chunk.get("tables") or []:
                         key = (
-                            tbl_meta.get("data") or tbl_meta.get("relative_path") or ""
-                        ).replace("\\", "/").lstrip("./")
-                        lookup = table_lookup.get(key) or table_lookup.get(f"tables/{Path(key).name}")
+                            (
+                                tbl_meta.get("data")
+                                or tbl_meta.get("relative_path")
+                                or ""
+                            )
+                            .replace("\\", "/")
+                            .lstrip("./")
+                        )
+                        lookup = table_lookup.get(key) or table_lookup.get(
+                            f"tables/{Path(key).name}"
+                        )
                         if lookup:
                             enriched_tables.append(
                                 {
-                                    "label": lookup.get("label") or tbl_meta.get("label"),
+                                    "label": lookup.get("label")
+                                    or tbl_meta.get("label"),
                                     "bucket": lookup.get("bucket"),
                                     "object_name": lookup.get("object_name"),
                                     "relative_path": lookup.get("relative_path"),
@@ -351,7 +407,9 @@ async def _process_saved_pdfs(
                         chunk.pop("tables", None)
 
                 # Step 1: Save chunks to MongoDB first
-                print(f"[PDF] 💾 Saving {len(chunks)} chunks to MongoDB for {pdf_path.name}...")
+                print(
+                    f"[PDF] 💾 Saving {len(chunks)} chunks to MongoDB for {pdf_path.name}..."
+                )
                 mongo_start = time.time()
                 await replace_document_chunks(
                     document_id=document_id,
@@ -359,11 +417,15 @@ async def _process_saved_pdfs(
                     chunks=chunks,
                 )
                 mongo_elapsed = time.time() - mongo_start
-                print(f"[PDF] ✅ Saved {len(chunks)} chunks to MongoDB in {mongo_elapsed:.2f}s for {pdf_path.name}")
-                
+                print(
+                    f"[PDF] ✅ Saved {len(chunks)} chunks to MongoDB in {mongo_elapsed:.2f}s for {pdf_path.name}"
+                )
+
                 # Step 2: Generate embeddings after chunks are saved
                 # IMPORTANT: This must complete fully before moving to next PDF
-                print(f"[PDF] 🔢 Generating embeddings for {len(chunks)} chunks for {pdf_path.name}...")
+                print(
+                    f"[PDF] 🔢 Generating embeddings for {len(chunks)} chunks for {pdf_path.name}..."
+                )
                 embed_start = time.time()
                 try:
                     chunk_embeddings = await asyncio.to_thread(
@@ -372,17 +434,24 @@ async def _process_saved_pdfs(
                         doc_key,
                     )
                     embed_elapsed = time.time() - embed_start
-                    print(f"[PDF] ✅ Generated embeddings for {len(chunks)} chunks in {embed_elapsed:.2f}s for {pdf_path.name}")
+                    print(
+                        f"[PDF] ✅ Generated embeddings for {len(chunks)} chunks in {embed_elapsed:.2f}s for {pdf_path.name}"
+                    )
                 except Exception as embed_exc:
                     embed_elapsed = time.time() - embed_start
-                    print(f"[PDF] ❌ Failed to generate embeddings for {pdf_path.name} (took {embed_elapsed:.2f}s): {embed_exc}")
+                    print(
+                        f"[PDF] ❌ Failed to generate embeddings for {pdf_path.name} (took {embed_elapsed:.2f}s): {embed_exc}"
+                    )
                     import traceback
+
                     print(f"[PDF] Traceback: {traceback.format_exc()}")
                     raise  # Re-raise to stop processing this PDF and move to next
-                
+
                 # Step 3: Index chunks with embeddings to Elasticsearch
                 # IMPORTANT: This must complete fully before moving to next PDF
-                print(f"[PDF] 📤 Indexing {len(chunks)} chunks with embeddings to Elasticsearch for {pdf_path.name}...")
+                print(
+                    f"[PDF] 📤 Indexing {len(chunks)} chunks with embeddings to Elasticsearch for {pdf_path.name}..."
+                )
                 es_start = time.time()
                 try:
                     await index_chunks(
@@ -392,17 +461,24 @@ async def _process_saved_pdfs(
                         embeddings=chunk_embeddings,
                     )
                     es_elapsed = time.time() - es_start
-                    print(f"[PDF] ✅ Indexed {len(chunks)} chunks to Elasticsearch in {es_elapsed:.2f}s for {pdf_path.name}")
+                    print(
+                        f"[PDF] ✅ Indexed {len(chunks)} chunks to Elasticsearch in {es_elapsed:.2f}s for {pdf_path.name}"
+                    )
                 except Exception as exc:
                     es_elapsed = time.time() - es_start
-                    print(f"[PDF] ⚠️ Failed to index chunks to Elasticsearch for {pdf_path.name} (took {es_elapsed:.2f}s): {exc}")
+                    print(
+                        f"[PDF] ⚠️ Failed to index chunks to Elasticsearch for {pdf_path.name} (took {es_elapsed:.2f}s): {exc}"
+                    )
                     import traceback
+
                     print(f"[PDF] Traceback: {traceback.format_exc()}")
                     # Don't fail the entire job if Elasticsearch indexing fails
                     # The chunks are already saved to MongoDB, so we can continue
-                
+
                 # IMPORTANT: Log completion of this PDF before moving to next
-                print(f"[PDF] ✅ COMPLETED processing {pdf_path.name} (PDF {index}/{len(saved_paths)}) - ready for next PDF")
+                print(
+                    f"[PDF] ✅ COMPLETED processing {pdf_path.name} (PDF {index}/{len(saved_paths)}) - ready for next PDF"
+                )
 
                 parse_results.append(
                     {
@@ -420,13 +496,21 @@ async def _process_saved_pdfs(
 
                     keywords_value = metadata.get("keywords")
                     if isinstance(keywords_value, str):
-                        keywords_list = [k.strip() for k in re.split(r"[;,]", keywords_value) if k.strip()]
+                        keywords_list = [
+                            k.strip()
+                            for k in re.split(r"[;,]", keywords_value)
+                            if k.strip()
+                        ]
                     elif isinstance(keywords_value, list):
-                        keywords_list = [str(k).strip() for k in keywords_value if str(k).strip()]
+                        keywords_list = [
+                            str(k).strip() for k in keywords_value if str(k).strip()
+                        ]
                     else:
                         keywords_list = []
 
-                    total_pages = metadata.get("total_pages") or result.get("num_pages") or 0
+                    total_pages = (
+                        metadata.get("total_pages") or result.get("num_pages") or 0
+                    )
                     document_updates[document_id] = {
                         "status": "ready",
                         "num_pages": total_pages,
@@ -440,16 +524,23 @@ async def _process_saved_pdfs(
                         "embedding_updated_at": datetime.utcnow(),
                         "metadata": metadata,
                     }
-                    
+
                     # ✅ UPDATE DOCUMENT STATUS IMMEDIATELY - Don't wait for all PDFs to finish
                     # This allows each PDF to become available for chat as soon as it's done
-                    await _update_document_safe(document_id, document_updates[document_id])
-                    print(f"[PDF] ✅ Updated document {document_id} status to ready immediately for {pdf_path.name}")
+                    await _update_document_safe(
+                        document_id, document_updates[document_id]
+                    )
+                    print(
+                        f"[PDF] ✅ Updated document {document_id} status to ready immediately for {pdf_path.name}"
+                    )
             finally:
                 shutil.rmtree(temp_output, ignore_errors=True)
                 file_lock.release()
                 with _PARSING_LOCK:
-                    if pdf_key in _PARSING_FILES and not _PARSING_FILES[pdf_key].locked():
+                    if (
+                        pdf_key in _PARSING_FILES
+                        and not _PARSING_FILES[pdf_key].locked()
+                    ):
                         del _PARSING_FILES[pdf_key]
 
         if _PARSE_CANCEL_FLAG.is_set():
@@ -463,7 +554,11 @@ async def _process_saved_pdfs(
             # In practice, all documents should already be updated above
             await _update_document_safe(doc_id, updates)
 
-        payload = {"status": "ok", "count": len(parse_results), "results": parse_results}
+        payload = {
+            "status": "ok",
+            "count": len(parse_results),
+            "results": parse_results,
+        }
         if job_id:
             _update_pdf_job(job_id, status="completed", result=payload)
         return payload
@@ -473,7 +568,12 @@ async def _process_saved_pdfs(
                 _update_pdf_job(job_id, status="cancelled", error=str(exc))
             for doc_id in all_document_ids:
                 await _update_document_safe(doc_id, {"status": "cancelled"})
-            return {"status": "cancelled", "message": str(exc), "count": len(parse_results), "results": parse_results}
+            return {
+                "status": "cancelled",
+                "message": str(exc),
+                "count": len(parse_results),
+                "results": parse_results,
+            }
         if job_id:
             _update_pdf_job(job_id, status="failed", error=str(exc))
         for doc_id in all_document_ids:
@@ -498,6 +598,7 @@ async def _run_pdf_job(
     except Exception as exc:
         # _process_saved_pdfs already updates job status; just log to avoid warnings
         print(f"[PDF] ⚠️ Background job {job_id} failed: {exc}")
+
 
 # Set cancel flag in pipeline module so it can check during build
 set_cancel_flag(_PARSE_CANCEL_FLAG)
@@ -535,7 +636,9 @@ async def upload_and_parse_pdf(file: UploadFile = File(...)):
         size = input_pdf_path.stat().st_size
     except Exception:
         size = -1
-    print(f"[PDF] Received upload: name={file.filename}, size={size} bytes, temp={input_pdf_path}")
+    print(
+        f"[PDF] Received upload: name={file.filename}, size={size} bytes, temp={input_pdf_path}"
+    )
 
     try:
         payload = await _process_saved_pdfs([input_pdf_path], user_id=None)
@@ -550,7 +653,9 @@ async def upload_and_parse_pdf(file: UploadFile = File(...)):
 @router.get("/status")
 async def qa_status(
     pdf_name: Optional[str] = Query(None, description="PDF name to check status for"),
-    document_key: Optional[str] = Query(None, description="Document key to check status for"),
+    document_key: Optional[str] = Query(
+        None, description="Document key to check status for"
+    ),
 ):
     """Return readiness status for QA pipeline by checking database instead of cache."""
     try:
@@ -560,8 +665,42 @@ async def qa_status(
     except Exception as e:
         print(f"[STATUS] Error getting pipeline status: {e}")
         import traceback
+
         print(f"[STATUS] Traceback: {traceback.format_exc()}")
         return {"building": False, "ready": False, "error": str(e)}
+
+
+@router.get("/status/stream")
+async def stream_qa_status(
+    pdf_name: Optional[str] = Query(None),
+    document_key: Optional[str] = Query(None),
+):
+    """
+    Streams pipeline status updates via SSE.
+    Stops streaming when the document is ready or an error occurs.
+    """
+
+    async def event_generator():
+        retry_count = 0
+
+        while True:
+            # Re-use your existing logic.
+            # Note: This preserves your "lazy loading" side effects
+            # (triggering chunking/embedding) because we are calling the function.
+            status = await pipeline_status(pdf_name=pdf_name, document_key=document_key)
+
+            # Serialize the data for SSE format
+            yield f"data: {json.dumps(status)}\n\n"
+
+            # Stop the stream if processing is complete or failed
+            if status.get("ready") or status.get("stage") == "error":
+                print(f"[SSE] Stream completed for {document_key or pdf_name}")
+                break
+
+            # Server-side wait (much cheaper than a new HTTP request)
+            await asyncio.sleep(2)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @router.post("/save-and-parse/")
@@ -610,7 +749,9 @@ async def save_and_parse_pdfs(
             user_id=user_id_header,
         )
 
-    job_id = _register_pdf_job({"files": [str(p) for p in saved_paths], "count": len(saved_paths)})
+    job_id = _register_pdf_job(
+        {"files": [str(p) for p in saved_paths], "count": len(saved_paths)}
+    )
     asyncio.create_task(
         _run_pdf_job(saved_paths, document_map or None, job_id, user_id_header)
     )
@@ -636,11 +777,18 @@ async def parse_uploads_folder():
     uploads_dir = data_dir / "uploads"
 
     if not uploads_dir.exists():
-        raise HTTPException(status_code=404, detail=f"Uploads folder not found: {uploads_dir}")
+        raise HTTPException(
+            status_code=404, detail=f"Uploads folder not found: {uploads_dir}"
+        )
 
     pdf_paths = [p for p in uploads_dir.glob("*.pdf") if p.is_file()]
     if not pdf_paths:
-        return {"status": "ok", "count": 0, "results": [], "message": "No PDFs in uploads folder"}
+        return {
+            "status": "ok",
+            "count": 0,
+            "results": [],
+            "message": "No PDFs in uploads folder",
+        }
 
     print(f"[PDF] Parsing {len(pdf_paths)} existing PDF(s) from uploads folder...")
     result = await _process_saved_pdfs(pdf_paths, user_id=None)
@@ -650,9 +798,13 @@ async def parse_uploads_folder():
         rebuild_start = time.time()
         await rebuild_pipeline(cfg, lazy_store=False)
         rebuild_elapsed = time.time() - rebuild_start
-        print(f"[PDF] ✅ Pipeline rebuilt after parsing uploads (elapsed={rebuild_elapsed:.2f}s)")
+        print(
+            f"[PDF] ✅ Pipeline rebuilt after parsing uploads (elapsed={rebuild_elapsed:.2f}s)"
+        )
     except RuntimeError as exc:
-        print(f"[PDF] ⚠️ Pipeline rebuild cancelled or failed (will rebuild on demand): {exc}")
+        print(
+            f"[PDF] ⚠️ Pipeline rebuild cancelled or failed (will rebuild on demand): {exc}"
+        )
     except Exception as exc:
         print(f"[PDF] ⚠️ Pipeline rebuild failed (will rebuild on demand): {exc}")
 
@@ -662,19 +814,19 @@ async def parse_uploads_folder():
 @router.delete("/clear-output/")
 async def clear_parser_output():
     """Clear all files in the parser output directory and reset pipeline cache.
-    
+
     This is called when the page reloads to:
     - Cancel any ongoing parse/embed/chunk operations
     - Clear old PDF files to avoid noise
     - Reset pipeline cache so it rebuilds fresh
-    
+
     IMPORTANT: Files are deleted IMMEDIATELY before setting cancel flag to ensure
     output is cleared even if operations are in progress.
     """
     try:
         cfg = PipelineConfig()
         data_dir = Path(cfg.data_dir)
-        
+
         # CRITICAL: Delete files FIRST, before setting cancel flag
         # This ensures output is cleared immediately, even if operations are running
         deleted_count = 0
@@ -692,33 +844,48 @@ async def clear_parser_output():
                 except Exception as e:
                     print(f"[PDF] Failed to delete {item}: {e}")
                     continue
-            print(f"[PDF] ✅ Deleted {deleted_count} items from output directory immediately")
+            print(
+                f"[PDF] ✅ Deleted {deleted_count} items from output directory immediately"
+            )
         else:
             print("[PDF] Output directory does not exist, nothing to delete")
-        
+
         # Now set cancel flag to stop any ongoing operations
         print("[PDF] Setting cancel flag to stop ongoing6 operations...")
         _PARSE_CANCEL_FLAG.set()
         print("[PDF] ✅ Cancel flag set - ongoing parse operations will be stopped")
-        
+
         # Reset pipeline cache to cancel any ongoing build operations
         # NOTE: This only clears pipeline cache (chunks, embeddings), NOT the model itself
         # Model (Visualized_BGE) is a singleton in memory and is NOT affected by this
-        print("[PDF] Resetting pipeline cache to cancel ongoing embed/chunk operations...")
-        print("[PDF] ⚠️ NOTE: Model (Visualized_BGE) in memory is NOT cleared - it remains loaded and ready")
+        print(
+            "[PDF] Resetting pipeline cache to cancel ongoing embed/chunk operations..."
+        )
+        print(
+            "[PDF] ⚠️ NOTE: Model (Visualized_BGE) in memory is NOT cleared - it remains loaded and ready"
+        )
         reset_pipeline_state(str(data_dir))
         print("[PDF] ✅ Pipeline cache reset - ongoing builds will be cancelled")
-        print("[PDF] ✅ Model instance preserved (singleton in memory, not affected by cache reset)")
-        
+        print(
+            "[PDF] ✅ Model instance preserved (singleton in memory, not affected by cache reset)"
+        )
+
         print(f"[PDF] Pipeline cache reset and output cleared - ready for new uploads")
-        
+
         # Reset cancel flag after clearing (ready for new operations)
         _PARSE_CANCEL_FLAG.clear()
         print("[PDF] ✅ Cancel flag reset - ready for new parse operations")
-        
-        return {"status": "ok", "message": f"Cleared {deleted_count} items from output directory and reset pipeline cache", "deleted_count": deleted_count}
+
+        return {
+            "status": "ok",
+            "message": f"Cleared {deleted_count} items from output directory and reset pipeline cache",
+            "deleted_count": deleted_count,
+        }
     except Exception as e:
         print(f"[PDF] Error clearing parser output: {e}")
         import traceback
+
         print(f"[PDF] Traceback: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=f"Failed to clear output directory: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to clear output directory: {str(e)}"
+        )
