@@ -1,43 +1,45 @@
-import { useEffect } from 'react'
-import { usePipelineStatusContext, PipelineStatus } from '@/contexts/PipelineStatusContext'
+import { useEffect, useMemo } from 'react'
+import { usePipelineStatusContext } from '@/contexts/PipelineStatusContext'
 
 interface UsePipelineStatusProps {
+  documentId?: string | null
+  // Kept for backward compatibility but documentId is prioritized
   pdfFile?: File | null
   tabId?: string
 }
 
-export function usePipelineStatus({ pdfFile }: UsePipelineStatusProps = {}) {
+export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
   const { subscribeToStatus, unsubscribeFromStatus, getStatus } = usePipelineStatusContext()
 
-  // 1. Derive the stable document key from the file name.
-  // We do this OUTSIDE the effect so we can use the primitive string as a dependency.
-  // React compares strings by value, but objects (like 'pdfFile') by reference.
-  const documentKey = pdfFile?.name 
-    ? pdfFile.name.replace(/\.pdf$/i, '').trim() 
-    : null
+  // 1. Memoize the connection parameters
+  // We strictly use documentId as the key and the API parameter
+  const { trackingKey, apiParams } = useMemo(() => {
+    if (!documentId) return { trackingKey: null, apiParams: null }
+
+    return { 
+      trackingKey: documentId, 
+      apiParams: { document_id: documentId } 
+    }
+  }, [documentId])
 
   // 2. Manage the Subscription
   useEffect(() => {
-    // If there is no valid key (e.g. no file selected), do nothing.
-    if (!documentKey) return
+    if (!trackingKey || !apiParams) return
 
-    // Subscribe to the stream.
-    // The Context handles deduplication, so calling this multiple times is safe,
-    // but the dependency array below ensures we only call it when the file *actually* changes.
-    subscribeToStatus(documentKey, pdfFile?.name)
+    // This sends "document_id=..." to the backend stream endpoint
+    subscribeToStatus(trackingKey, apiParams)
 
-    // Cleanup: Unsubscribe when the component unmounts or the user switches files.
+    // Cleanup: Unsubscribe when component unmounts or ID changes
     return () => {
-      unsubscribeFromStatus(documentKey)
+      unsubscribeFromStatus(trackingKey)
     }
-  }, [documentKey, subscribeToStatus, unsubscribeFromStatus]) // Dependency is the STABLE string 'documentKey'
+  }, [trackingKey, apiParams, subscribeToStatus, unsubscribeFromStatus])
 
-  // 3. Get the latest status from the global store
-  const currentGlobalStatus = documentKey ? getStatus(documentKey) : null
+  // 3. Retrieve Status from Context
+  const currentGlobalStatus = trackingKey ? getStatus(trackingKey) : null
 
   return {
     isPipelineReady: !!currentGlobalStatus?.ready,
-    // If status is null, return an empty object to prevent "cannot read property of undefined" errors
     pipelineStatus: currentGlobalStatus || {},
   }
 }

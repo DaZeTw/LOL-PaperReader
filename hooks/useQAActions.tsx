@@ -14,6 +14,7 @@ interface QAMessage {
 interface UseQAActionsProps {
   sessionId: string | null
   pdfFile: File
+  documentId: string | null
   tabId?: string
   isPipelineReady: boolean | null
   addMessage: (message: QAMessage) => void
@@ -24,6 +25,7 @@ interface UseQAActionsProps {
 export function useQAActions({ 
   sessionId, 
   pdfFile, 
+  documentId,
   tabId, 
   isPipelineReady, 
   addMessage,
@@ -37,7 +39,8 @@ export function useQAActions({
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Storage keys for thinking state
-  const uniqueKey = tabId ? `${pdfFile?.name || ''}_${tabId}` : (pdfFile?.name || '')
+  const baseKey = documentId || pdfFile?.name || ''
+  const uniqueKey = tabId ? `${baseKey}_${tabId}` : baseKey
   const thinkingFlagKey = `chat_thinking_${uniqueKey}` // Flag to track if there's a pending question
 
   // Check if there's a pending question (user message without assistant response)
@@ -225,18 +228,45 @@ export function useQAActions({
 
     let currentSessionId = sessionId
 
-    // Create session if none exists
-    if (!currentSessionId) {
-      try {
+    // Ensure we have a valid session before asking a question
+    const ensureValidSession = async () => {
+      if (!currentSessionId) {
         currentSessionId = await createNewSession()
-      } catch (error: any) {
-        toast({
-          title: "Failed to start chat",
-          description: error?.message || "Please try again",
-          variant: "destructive",
-        })
         return
       }
+
+      try {
+        const verifyResp = await fetch(`/api/chat/sessions/${currentSessionId}`)
+        if (verifyResp.status === 404) {
+          currentSessionId = await createNewSession()
+        } else if (!verifyResp.ok) {
+          const errorText = await verifyResp.text()
+          throw new Error(errorText || `Failed to verify chat session (HTTP ${verifyResp.status})`)
+        }
+      } catch (error) {
+        console.warn("[Chat] Failed to verify existing session, creating a new one:", error)
+        currentSessionId = await createNewSession()
+      }
+    }
+
+    try {
+      await ensureValidSession()
+    } catch (error: any) {
+      toast({
+        title: "Failed to start chat",
+        description: error?.message || "Please try again",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!currentSessionId) {
+      toast({
+        title: "Failed to start chat",
+        description: "Could not initialize chat session. Please try again.",
+        variant: "destructive",
+      })
+      return
     }
 
     setIsLoading(true)

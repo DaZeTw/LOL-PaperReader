@@ -12,6 +12,7 @@ interface RightSidebarProps {
   // Props for QA
   tabId: string
   pdfFile: File
+  documentId: string
   onCitationClick: (page: number, text?: string) => void
   totalPages: number
   
@@ -40,6 +41,7 @@ interface RightSidebarProps {
 export function RightSidebar({
   tabId,
   pdfFile,
+  documentId,
   onCitationClick,
   totalPages,
   highlights,
@@ -104,6 +106,7 @@ export function RightSidebar({
           <QAInterface
             tabId={tabId}
             pdfFile={pdfFile}
+            documentId={documentId}
             onHighlight={() => {}}
             onCitationClick={onCitationClick}
             totalPages={totalPages}

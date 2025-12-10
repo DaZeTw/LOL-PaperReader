@@ -12,6 +12,7 @@ interface PDFTab {
   file: File
   title: string
   fileName: string
+  documentId: string
   sidebarOpen?: boolean  // Add sidebar state per tab
 }
 
@@ -39,8 +40,9 @@ export function WorkspaceManager({
   }, [])
 
   // Enhanced function to find existing tab
-  const findExistingTab = useCallback((file: File, title: string) => {
+  const findExistingTab = useCallback((file: File, title: string, documentId: string) => {
     return openTabs.find((tab: PDFTab) => {
+      if (tab.documentId === documentId) return true
       // Multiple ways to match:
       // 1. Exact title match
       if (tab.title === title) return true
@@ -55,7 +57,7 @@ export function WorkspaceManager({
     })
   }, [openTabs])
 
-  const handleOpenPDF = useCallback((file: File, title: string) => {
+  const handleOpenPDF = useCallback((file: File, title: string, documentId: string) => {
     // Check authentication before allowing PDF open
     if (!user) {
       console.log("[Workspace Manager] PDF open blocked - user not authenticated")
@@ -66,7 +68,7 @@ export function WorkspaceManager({
     console.log("[Workspace Manager] Opening PDF:", { title, fileName: file.name, fileSize: file.size })
     
     // Enhanced duplicate detection
-    const existingTab = findExistingTab(file, title)
+    const existingTab = findExistingTab(file, title, documentId)
     if (existingTab) {
       console.log("[Workspace Manager] Found existing tab, switching to:", existingTab.id)
       setActiveTabId(existingTab.id)
@@ -79,6 +81,7 @@ export function WorkspaceManager({
       file,
       title,
       fileName: file.name,
+      documentId,
       sidebarOpen: false  // Initialize sidebar state
     }
     
@@ -207,6 +210,7 @@ export function WorkspaceManager({
           >
             <SinglePDFReader 
               file={tab.file}
+              documentId={tab.documentId}
               tabId={tab.id}
               isActive={activeTabId === tab.id}
               sidebarOpen={tab.sidebarOpen ?? false}

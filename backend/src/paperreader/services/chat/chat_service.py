@@ -20,7 +20,7 @@ class ChatService:
         doc = await chat_repository.create_session(
             session_id=session_id,
             user_id=session_data.user_id,
-            title=session_data.title,
+            title=None,
             metadata=metadata,
         )
 
@@ -33,7 +33,7 @@ class ChatService:
         return await self.get_session(session_id) or ChatSession(
             session_id=session_id,
             user_id=session_data.user_id,
-            title=session_data.title,
+            title=None,
             metadata=metadata,
             messages=[],
         )
@@ -57,7 +57,7 @@ class ChatService:
         return ChatSession(
             session_id=session_doc["session_id"],
             user_id=session_doc.get("user_id"),
-            title=session_doc.get("title"),
+            title=None,
             metadata=session_doc.get("metadata") or {},
             messages=messages,
             created_at=session_doc.get("created_at"),
@@ -103,7 +103,7 @@ class ChatService:
             responses.append(
                 ChatSessionResponse(
                     session_id=session["session_id"],
-                    title=session.get("title"),
+                    title=None,
                     messages=messages,
                     created_at=session.get("created_at"),
                     updated_at=session.get("updated_at"),
@@ -136,16 +136,12 @@ class ChatService:
 
     async def find_session_by_document(
         self,
-        document_key: Optional[str] = None,
         document_id: Optional[str] = None,
-        title: Optional[str] = None,
         user_id: Optional[str] = None,
     ) -> Optional[ChatSession]:
-        """Find an existing chat session by document_key, document_id, or title."""
+        """Find an existing chat session by document_id."""
         session_doc = await chat_repository.find_session_by_document(
-            document_key=document_key,
             document_id=document_id,
-            title=title,
             user_id=user_id,
         )
         if not session_doc:
@@ -165,7 +161,7 @@ class ChatService:
         return ChatSession(
             session_id=session_doc["session_id"],
             user_id=session_doc.get("user_id"),
-            title=session_doc.get("title"),
+            title=None,
             metadata=session_doc.get("metadata") or {},
             messages=messages,
             created_at=session_doc.get("created_at"),

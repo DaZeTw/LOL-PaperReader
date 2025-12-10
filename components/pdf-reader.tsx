@@ -16,6 +16,7 @@ interface NavigationTarget {
 
 interface SinglePDFReaderProps {
   file: File
+  documentId: string
   tabId: string
   isActive: boolean
   sidebarOpen: boolean  // Controlled from parent
@@ -23,7 +24,7 @@ interface SinglePDFReaderProps {
 }
 
 export function SinglePDFReader({ 
-  file, 
+  file, documentId, 
   tabId, 
   isActive, 
   sidebarOpen, 
@@ -192,6 +193,7 @@ export function SinglePDFReader({
         <RightSidebar
           tabId={tabId}
           pdfFile={file}
+          documentId={documentId}
           onCitationClick={handleCitationClick}
           totalPages={numPages}
           highlights={highlights}

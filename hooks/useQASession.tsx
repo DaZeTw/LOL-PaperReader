@@ -3,10 +3,11 @@ import { useToast } from '@/hooks/use-toast'
 
 interface UseQASessionProps {
   pdfFile: File
+  documentId: string | null
   tabId?: string
 }
 
-export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
+export function useQASession({ pdfFile, documentId, tabId }: UseQASessionProps) {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
   const [messagesLoaded, setMessagesLoaded] = useState(false) // Track if messages were loaded from backend
@@ -38,9 +39,9 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
 
   const createNewSession = async (forceNew = false, retryCount = 0, maxRetries = 2) => {
     try {
-      // Extract document_key from PDF name (remove .pdf extension)
-      const documentKey = pdfFile?.name ? pdfFile.name.replace(/\.pdf$/i, '').trim() : null
-      
+      if (!documentId) {
+        throw new Error("Cannot create chat session without documentId")
+      }
       const response = await fetch("/api/chat/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -49,7 +50,7 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
           title: `Chat: ${pdfFile.name}`,
           initial_message: null,
           force_new: forceNew, // Pass force_new flag to backend
-          document_key: documentKey, // Send document_key so backend can find existing session
+          document_id: documentId, // Use document_id as canonical identifier
         }),
       })
 
@@ -116,24 +117,20 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
       })
     }
 
-    // Delete all chat sessions related to this PDF document
-    // Extract document_key from PDF file name (remove .pdf extension)
-    const documentKey = pdfFile?.name ? pdfFile.name.replace(/\.pdf$/i, '').trim() : null
-    
-    if (documentKey) {
+    // Delete all chat sessions related to this document
+    if (documentId) {
       try {
-        // Delete all sessions for this document
-        const response = await fetch(`/api/chat/sessions?document_key=${encodeURIComponent(documentKey)}`, { 
+        const response = await fetch(`/api/chat/sessions?document_id=${encodeURIComponent(documentId)}`, { 
           method: "DELETE" 
         })
         if (response.ok) {
           const result = await response.json()
-          console.log(`[Chat] Deleted ${result.deleted || 0} chat sessions for document: ${documentKey}`)
+          console.log(`[Chat] Deleted ${result.deleted || 0} chat sessions for document: ${documentId}`)
         } else {
-          console.warn("[Chat] Failed to delete sessions by document_key:", await response.text())
+          console.warn("[Chat] Failed to delete sessions by document_id:", await response.text())
         }
       } catch (error) {
-        console.warn("[Chat] Error deleting sessions by document_key:", error)
+        console.warn("[Chat] Error deleting sessions by document_id:", error)
       }
     }
 
@@ -158,6 +155,13 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
       setSessionId(null)
       setIsInitializing(false)
       prevPdfNameRef.current = null
+      return
+    }
+
+    if (!documentId) {
+      setSessionId(null)
+      setIsInitializing(false)
+      prevPdfNameRef.current = pdfFile?.name || null
       return
     }
 
@@ -195,38 +199,11 @@ export function useQASession({ pdfFile, tabId }: UseQASessionProps) {
         }
 
         if (savedSessionId) {
-          setSessionId(savedSessionId)
-          // Verify session exists and load messages if available
-          try {
-            const response = await fetch(`/api/chat/sessions?session_id=${savedSessionId}`)
-            if (!response.ok && response.status === 404) {
-              // Session not found, try to find existing session by document or create new
-              console.log("[Chat] Saved session not found, checking for existing session by document...")
-              await createNewSession(false) // This will find existing session if available
-            } else if (response.ok) {
-              // Session exists, check if it has messages and load them
-              const sessionData = await response.json()
-              const backendMessages = sessionData.messages && Array.isArray(sessionData.messages) ? sessionData.messages : []
-              
-              if (backendMessages.length > 0) {
-                // Session has messages in MongoDB - useQAMessages will load them
-                console.log(`[Chat] Session has ${backendMessages.length} messages in MongoDB`)
-                setMessagesLoaded(true)
-              } else {
-                // Session exists but has no messages
-                console.log(`[Chat] Session exists but has no messages`)
-                setMessagesLoaded(false)
-              }
-            }
-          } catch (error) {
-            console.warn("[Chat] Error verifying session:", error)
-            // On error, try to create/find session
-            await createNewSession(false)
-          }
-        } else {
-          // No saved session, try to find existing or create new
-          await createNewSession(false)
+          console.log("[Chat] Found session id in storage, syncing via document_id lookup...")
         }
+
+        // Always rely on backend lookup by document_id to reuse or create sessions
+        await createNewSession(false)
       } catch (error: any) {
         console.error("[Chat] Failed to initialize session:", error)
         toast({

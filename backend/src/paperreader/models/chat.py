@@ -37,7 +37,6 @@ class ChatSession(BaseModel):
 class ChatSessionCreate(BaseModel):
     session_id: str
     user_id: Optional[str] = None
-    title: Optional[str] = None
     initial_message: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
 

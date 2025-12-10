@@ -413,7 +413,6 @@ async def _process_saved_pdfs(
                 mongo_start = time.time()
                 await replace_document_chunks(
                     document_id=document_id,
-                    document_key=doc_key,
                     chunks=chunks,
                 )
                 mongo_elapsed = time.time() - mongo_start
@@ -456,7 +455,6 @@ async def _process_saved_pdfs(
                 try:
                     await index_chunks(
                         document_id=document_id,
-                        document_key=doc_key,
                         chunks=chunks,
                         embeddings=chunk_embeddings,
                     )
@@ -656,10 +654,13 @@ async def qa_status(
     document_key: Optional[str] = Query(
         None, description="Document key to check status for"
     ),
+    document_id: Optional[str] = Query(
+        None, description="Document ID to check status for"
+    ),
 ):
     """Return readiness status for QA pipeline by checking database instead of cache."""
     try:
-        status = await pipeline_status(pdf_name=pdf_name, document_key=document_key)
+        status = await pipeline_status(pdf_name=pdf_name, document_id=document_id)
         # Status logging is handled in pipeline.py
         return status
     except Exception as e:
@@ -672,8 +673,13 @@ async def qa_status(
 
 @router.get("/status/stream")
 async def stream_qa_status(
-    pdf_name: Optional[str] = Query(None),
-    document_key: Optional[str] = Query(None),
+    pdf_name: Optional[str] = Query(None, description="PDF name to check status for"),
+    document_key: Optional[str] = Query(
+        None, description="Document key to check status for"
+    ),
+    document_id: Optional[str] = Query(
+        None, description="Document ID to check status for"
+    ),
 ):
     """
     Streams pipeline status updates via SSE.
@@ -687,14 +693,14 @@ async def stream_qa_status(
             # Re-use your existing logic.
             # Note: This preserves your "lazy loading" side effects
             # (triggering chunking/embedding) because we are calling the function.
-            status = await pipeline_status(pdf_name=pdf_name, document_key=document_key)
+            status = await pipeline_status(pdf_name=pdf_name, document_id=document_id)
 
             # Serialize the data for SSE format
             yield f"data: {json.dumps(status)}\n\n"
 
             # Stop the stream if processing is complete or failed
             if status.get("ready") or status.get("stage") == "error":
-                print(f"[SSE] Stream completed for {document_key or pdf_name}")
+                print(f"[SSE] Stream completed for {document_id or pdf_name}")
                 break
 
             # Server-side wait (much cheaper than a new HTTP request)

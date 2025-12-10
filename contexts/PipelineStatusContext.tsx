@@ -9,16 +9,22 @@ export interface PipelineStatus {
   stage: string
   message: string
   chunk_count?: number
-  document_key?: string
+  document_id?: string
   error?: string
   lastUpdated?: number
 }
 
+// Define params to match your backend query arguments
+interface ApiParams {
+  document_id?: string
+  [key: string]: string | undefined
+}
+
 interface PipelineStatusContextType {
   statusMap: Record<string, PipelineStatus>
-  subscribeToStatus: (documentKey: string, pdfName?: string) => void
-  unsubscribeFromStatus: (documentKey: string) => void
-  getStatus: (documentKey: string) => PipelineStatus | null
+  subscribeToStatus: (trackingKey: string, apiParams: ApiParams) => void
+  unsubscribeFromStatus: (trackingKey: string) => void
+  getStatus: (trackingKey: string) => PipelineStatus | null
 }
 
 const PipelineStatusContext = createContext<PipelineStatusContextType | undefined>(undefined)
@@ -26,13 +32,13 @@ const PipelineStatusContext = createContext<PipelineStatusContextType | undefine
 export function PipelineStatusProvider({ children }: { children: React.ReactNode }) {
   const [statusMap, setStatusMap] = useState<Record<string, PipelineStatus>>({})
   
-  // 1. Ref to track status without triggering re-renders of functions
+  // Ref to track status logic without triggering re-renders inside callbacks
   const statusMapRef = useRef<Record<string, PipelineStatus>>({})
 
   const connectionsRef = useRef<Record<string, EventSource>>({})
   const subscribersRef = useRef<Record<string, number>>({})
 
-  // 2. Helper to update both State (for UI) and Ref (for logic)
+  // Helper to update state and ref simultaneously
   const updateStatus = useCallback((key: string, data: Partial<PipelineStatus>) => {
     setStatusMap(prev => {
       const updated = { 
@@ -41,48 +47,51 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
         lastUpdated: Date.now() 
       } as PipelineStatus
       
-      // Update the Ref immediately so logic can see it
       statusMapRef.current = { ...statusMapRef.current, [key]: updated }
       
       return { ...prev, [key]: updated }
     })
   }, [])
 
-  // 3. STABLE subscribe function (No dependencies on changing state)
-  const subscribeToStatus = useCallback((documentKey: string, pdfName?: string) => {
-    if (!documentKey) return
+  // STABLE subscribe function
+  const subscribeToStatus = useCallback((trackingKey: string, apiParams: ApiParams) => {
+    if (!trackingKey) return
 
-    // Increment subscriber count
-    subscribersRef.current[documentKey] = (subscribersRef.current[documentKey] || 0) + 1
+    // Increment subscriber count (Reference Counting)
+    subscribersRef.current[trackingKey] = (subscribersRef.current[trackingKey] || 0) + 1
 
     // If connection exists, do nothing
-    if (connectionsRef.current[documentKey]) return
+    if (connectionsRef.current[trackingKey]) return
 
-    // CHECK REF (Stable) instead of State (Unstable)
-    // This prevents the function from being recreated when status changes
-    if (statusMapRef.current[documentKey]?.ready) {
-      console.log(`[Pipeline] ${documentKey} is already ready. Skipping stream.`)
+    // If already ready locally, don't open new stream
+    if (statusMapRef.current[trackingKey]?.ready) {
+      console.log(`[Pipeline] ${trackingKey} is already ready. Skipping stream.`)
       return
     }
 
-    console.log(`[Pipeline] Opening stream for ${documentKey}`)
+    console.log(`[Pipeline] Opening stream for ${trackingKey}`, apiParams)
     
-    // NOTE: Ensure this path matches your Next.js API route exactly
-    const params = new URLSearchParams({ document_key: documentKey })
-    if (pdfName) params.append('pdf_name', pdfName)
+    // Construct Query Params
+    const params = new URLSearchParams()
+    Object.entries(apiParams).forEach(([key, value]) => {
+      if (value) params.append(key, value)
+    })
     
+    // Connect to the stream
+    // Ensure this path matches your Next.js API route proxy
     const es = new EventSource(`/api/qa/status/stream?${params.toString()}`)
-    connectionsRef.current[documentKey] = es
+    connectionsRef.current[trackingKey] = es
 
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data) as PipelineStatus
-        updateStatus(documentKey, data)
+        updateStatus(trackingKey, data)
 
+        // Close stream if ready or error
         if (data.ready || data.stage === 'error') {
-          console.log(`[Pipeline] Job finished for ${documentKey}, closing stream.`)
+          console.log(`[Pipeline] Job finished for ${trackingKey}, closing stream.`)
           es.close()
-          delete connectionsRef.current[documentKey]
+          delete connectionsRef.current[trackingKey]
         }
       } catch (err) {
         console.error('[Pipeline] Error parsing SSE:', err)
@@ -95,34 +104,36 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
         console.error('[Pipeline] Stream error:', err)
       }
       es.close()
-      delete connectionsRef.current[documentKey]
+      delete connectionsRef.current[trackingKey]
     }
-  }, [updateStatus]) // Dependency array is now STABLE
+  }, [updateStatus])
 
-  const unsubscribeFromStatus = useCallback((documentKey: string) => {
-    if (!documentKey) return
+  const unsubscribeFromStatus = useCallback((trackingKey: string) => {
+    if (!trackingKey) return
 
-    const count = (subscribersRef.current[documentKey] || 0) - 1
-    subscribersRef.current[documentKey] = Math.max(count, 0)
+    // Decrement subscriber count
+    const count = (subscribersRef.current[trackingKey] || 0) - 1
+    subscribersRef.current[trackingKey] = Math.max(count, 0)
 
-    if (subscribersRef.current[documentKey] === 0) {
-      const es = connectionsRef.current[documentKey]
+    // Only close connection if NO ONE is listening anymore
+    if (subscribersRef.current[trackingKey] === 0) {
+      const es = connectionsRef.current[trackingKey]
       if (es) {
-        console.log(`[Pipeline] No subscribers left for ${documentKey}, closing stream.`)
+        console.log(`[Pipeline] No subscribers left for ${trackingKey}, closing stream.`)
         es.close()
-        delete connectionsRef.current[documentKey]
+        delete connectionsRef.current[trackingKey]
       }
     }
   }, [])
 
   const getStatus = useCallback((key: string) => statusMap[key] || null, [statusMap])
 
-  // Initial sync of ref (for hydration)
+  // Sync ref on hydration
   useEffect(() => {
     statusMapRef.current = statusMap
   }, [statusMap])
 
-  // Cleanup on global unmount
+  // Cleanup all connections on global unmount
   useEffect(() => {
     return () => {
       Object.values(connectionsRef.current).forEach(es => es.close())
