@@ -224,16 +224,10 @@ async def delete_documents(
             except Exception as exc:
                 print(f"[Documents] Failed to delete associated files for document {document_id_str}: {exc}")
             
-            # Get document_key from document (usually the PDF filename without extension)
-            document_key = doc.get("filename") or doc.get("title") or document_id_str
-            if document_key and document_key.endswith(".pdf"):
-                document_key = document_key[:-4]  # Remove .pdf extension
-            
             # Delete chunks from MongoDB
             try:
                 chunks_deleted = await delete_document_chunks(
-                    document_id=document_id_str,
-                    document_key=document_key
+                    document_id=document_id_str
                 )
                 if chunks_deleted > 0:
                     print(f"[Documents] ✅ Deleted {chunks_deleted} chunks from MongoDB for document {document_id_str}")
@@ -243,7 +237,6 @@ async def delete_documents(
             # Delete embeddings from Elasticsearch
             try:
                 await delete_elasticsearch_chunks(
-                    document_key=document_key,
                     document_id=document_id_str
                 )
             except Exception as exc:
@@ -252,8 +245,7 @@ async def delete_documents(
             # Delete chat sessions and messages related to this document
             try:
                 sessions_deleted = await chat_repository.delete_sessions_by_document(
-                    document_id=document_id_str,
-                    document_key=document_key
+                    document_id=document_id_str
                 )
                 if sessions_deleted > 0:
                     print(f"[Documents] ✅ Deleted {sessions_deleted} chat sessions and messages for document {document_id_str}")

@@ -17,7 +17,7 @@ from .retrievers import build_corpus, build_store, build_persistent_store, get_r
 import re
 from .generators import get_generator
 from paperreader.database.mongodb import mongodb
-from paperreader.services.documents.repository import update_document, to_object_id
+from paperreader.services.documents.repository import update_document, to_object_id, get_document_by_id
 from paperreader.services.documents.chunk_repository import get_document_chunks
 from paperreader.services.qa.elasticsearch_client import index_chunks
 
@@ -104,10 +104,17 @@ class PipelineArtifacts:
 
 
 class QAPipeline:
-    def __init__(self, config: PipelineConfig, lazy_store: bool = True, docs: Optional[List[Dict[str, Any]]] = None, chunks: Optional[List[Dict[str, Any]]] = None, document_key: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        config: PipelineConfig,
+        lazy_store: bool = True,
+        docs: Optional[List[Dict[str, Any]]] = None,
+        chunks: Optional[List[Dict[str, Any]]] = None,
+        document_id: Optional[str] = None,
+    ) -> None:
         self.config = config
         self.lazy_store = lazy_store
-        self.document_key = document_key  # Document key for Elasticsearch retrieval
+        self.document_id = document_id  # Document identifier for Elasticsearch retrieval
         self._build(docs=docs, chunks=chunks)
 
     def _build(self, docs: Optional[List[Dict[str, Any]]] = None, chunks: Optional[List[Dict[str, Any]]] = None) -> None:
@@ -115,8 +122,8 @@ class QAPipeline:
         start_time = time.time()
         data_dir_key = str(self.config.data_dir)
         
-        # If using Elasticsearch (document_key provided), skip file loading and chunking
-        if self.document_key:
+        # If using Elasticsearch (document_id provided), skip file loading and chunking
+        if self.document_id:
             print(f"[LOG] Using Elasticsearch - skipping file loading and chunking")
             chunks = chunks or []
             chunk_time = 0.0
@@ -124,7 +131,7 @@ class QAPipeline:
             corpus_time = 0.0
             store_time = 0.0
             
-            _set_progress(100, "elasticsearch_ready", f"Using Elasticsearch for document_key: {self.document_key}", data_dir_key)
+            _set_progress(100, "elasticsearch_ready", f"Using Elasticsearch for document_id: {self.document_id}", data_dir_key)
             
             # Load embedder (needed for query encoding)
             embedder_start = time.time()
@@ -282,14 +289,14 @@ class QAPipeline:
 
         # Get PDF name filter from config if available
         pdf_name_filter = getattr(self.config, '_pdf_name_filter', None)
-        # Use Elasticsearch if document_key is available, otherwise use in-memory store
-        use_elasticsearch = self.document_key is not None
+        # Use Elasticsearch if document_id is available, otherwise use in-memory store
+        use_elasticsearch = self.document_id is not None
         retriever = get_retriever(
             self.config.retriever_name, 
             store, 
             embedder, 
             pdf_name_filter=pdf_name_filter,
-            document_key=self.document_key,
+            document_id=self.document_id,
             use_elasticsearch=use_elasticsearch
         )
         generator = get_generator(self.config.generator_name, image_policy=self.config.image_policy)
@@ -370,8 +377,8 @@ class QAPipeline:
         print(f"[LOG] Retrieving hits for question: '{question}'")
         
         # Check if we should use Elasticsearch
-        use_elasticsearch = self.document_key and self.retriever.use_elasticsearch
-        print(f"[DEBUG] Pipeline answer() - document_key: {self.document_key}, use_elasticsearch: {use_elasticsearch}")
+        use_elasticsearch = self.document_id and self.retriever.use_elasticsearch
+        print(f"[DEBUG] Pipeline answer() - document_id: {self.document_id}, use_elasticsearch: {use_elasticsearch}")
         
         # Only build store if not using Elasticsearch
         if not use_elasticsearch:
@@ -381,8 +388,8 @@ class QAPipeline:
             if not self.retriever.filtered_store:
                 # Provide more detailed error message
                 error_msg = "No chunks available for retrieval."
-                if not self.document_key:
-                    error_msg += " document_key is missing. Please ensure the PDF has been uploaded and processed, and the session has the correct document_key in metadata."
+                if not self.document_id:
+                    error_msg += " document_id is missing. Please ensure the PDF has been uploaded and processed, and the session has the correct document_id in metadata."
                 else:
                     error_msg += " The document may not have been processed yet, or there are no chunks in the document. Please ensure the PDF has been uploaded and processed."
                 raise ValueError(error_msg)
@@ -595,7 +602,11 @@ class QAPipeline:
             title = meta.get("title")
             page = meta.get("page")
             doc_id = meta.get("doc_id") or meta.get("document_id")
-            document_key = meta.get("document_key") or meta.get("doc_key")
+            if doc_id is not None:
+                try:
+                    doc_id = str(doc_id)
+                except Exception:
+                    pass
             # Get full text from hit - ensure we get the complete text
             text_content = h.get("text", "")
             if not text_content and meta.get("text"):
@@ -607,7 +618,6 @@ class QAPipeline:
                 "citation_number": citation_num,
                 "doc_id": doc_id,
                 "document_id": doc_id,  # Alias for consistency
-                "document_key": document_key,
                 "title": title,
                 "page": page,
                 "excerpt": excerpt
@@ -616,8 +626,6 @@ class QAPipeline:
             citation_map[hit_idx] = citation_info
             if doc_id:
                 document_ids_used.add(str(doc_id))
-            if document_key:
-                document_ids_used.add(document_key)
 
         # Get confidence from generator output if available
         confidence = gen_out.get("confidence")
@@ -665,30 +673,35 @@ def _calculate_data_hash(config: PipelineConfig) -> str:
     return hasher.hexdigest()
 
 
-async def get_pipeline(config: Optional[PipelineConfig] = None, lazy_store: bool = True, pdf_name: Optional[str] = None, document_key: Optional[str] = None) -> QAPipeline:
-    """Return pipeline. If document_key is provided, creates a lightweight pipeline using Elasticsearch.
+async def get_pipeline(
+    config: Optional[PipelineConfig] = None,
+    lazy_store: bool = True,
+    pdf_name: Optional[str] = None,
+    document_id: Optional[str] = None,
+) -> QAPipeline:
+    """Return pipeline. If document_id is provided, creates a lightweight pipeline using Elasticsearch.
     
     Args:
         config: Pipeline configuration (optional)
         lazy_store: If True (default), delay store building until first query. 
                    This makes pipeline building much faster but first query will be slower.
                    If False, build store immediately (slower build, faster first query).
-        pdf_name: Optional PDF name to use PDF-specific data directory
-        document_key: Optional document key for Elasticsearch retrieval (if provided, uses Elasticsearch)
+        pdf_name: Optional PDF name to use PDF-specific data directory (legacy fallback)
+        document_id: Optional document identifier for Elasticsearch retrieval.
     """
     cfg = config or PipelineConfig()
     
-    # If document_key is provided, use Elasticsearch - skip file loading and chunking
-    if document_key:
-        print(f"[LOG] Using Elasticsearch pipeline for document_key: {document_key}")
+    # If document_id is provided, use Elasticsearch - skip file loading and chunking
+    if document_id:
+        print(f"[LOG] Using Elasticsearch pipeline for document_id: {document_id}")
         # Create a lightweight pipeline that only uses Elasticsearch
         # Pass empty chunks to skip file loading and chunking
         loop = asyncio.get_running_loop()
         pipeline_obj = await loop.run_in_executor(
             None,
-            lambda: QAPipeline(cfg, lazy_store=True, chunks=[], document_key=document_key),
+            lambda: QAPipeline(cfg, lazy_store=True, chunks=[], document_id=document_id),
         )
-        print(f"[LOG] ✅ Created Elasticsearch-based pipeline for document_key: {document_key}")
+        print(f"[LOG] ✅ Created Elasticsearch-based pipeline for document_id: {document_id}")
         return pipeline_obj
     
     # Fallback to file-based pipeline (for backward compatibility)
@@ -731,7 +744,7 @@ async def get_pipeline(config: Optional[PipelineConfig] = None, lazy_store: bool
             build_lock.release()
             # Wait a bit and try again (other thread should finish soon)
             await asyncio.sleep(0.1)
-            return await get_pipeline(config, lazy_store=lazy_store, pdf_name=pdf_name, document_key=document_key)
+            return await get_pipeline(config, lazy_store=lazy_store, pdf_name=pdf_name, document_id=None)
         
         try:
             print(f"[LOG] Building pipeline for {data_dir_key} - creating chunks and embeddings...")
@@ -751,7 +764,7 @@ async def get_pipeline(config: Optional[PipelineConfig] = None, lazy_store: bool
                 loop = asyncio.get_running_loop()
                 pipeline_obj = await loop.run_in_executor(
                     None,
-                    lambda: QAPipeline(cfg, lazy_store=lazy_store, document_key=document_key),
+                    lambda: QAPipeline(cfg, lazy_store=lazy_store, document_id=None),
                 )
                 print(f"[LOG] ✅ Pipeline built with {len(pipeline_obj.artifacts.chunks)} chunks")
                 
@@ -797,7 +810,13 @@ def reset_pipeline_state(data_dir: Optional[str] = None) -> None:
         print("[LOG] All pipeline states reset")
 
 
-async def rebuild_pipeline(config: Optional[PipelineConfig] = None, lazy_store: bool = True, docs: Optional[List[Dict[str, Any]]] = None, chunks: Optional[List[Dict[str, Any]]] = None, document_key: Optional[str] = None) -> QAPipeline:
+async def rebuild_pipeline(
+    config: Optional[PipelineConfig] = None,
+    lazy_store: bool = True,
+    docs: Optional[List[Dict[str, Any]]] = None,
+    chunks: Optional[List[Dict[str, Any]]] = None,
+    document_id: Optional[str] = None,
+) -> QAPipeline:
     """Force rebuild of the pipeline.
     
     Args:
@@ -806,7 +825,7 @@ async def rebuild_pipeline(config: Optional[PipelineConfig] = None, lazy_store: 
                    This makes rebuild much faster (only chunking, no embedding).
         docs: Optional list of documents to use directly (bypasses file loading).
         chunks: Optional list of chunks to use directly (bypasses chunking).
-        document_key: Optional document key for Elasticsearch.
+        document_id: Optional document identifier for Elasticsearch.
     """
     cfg = config or PipelineConfig()
     data_dir_key = str(cfg.data_dir)
@@ -829,7 +848,7 @@ async def rebuild_pipeline(config: Optional[PipelineConfig] = None, lazy_store: 
         build_lock.release()
         # Wait a bit and try again
         await asyncio.sleep(0.1)
-        return await rebuild_pipeline(config, lazy_store=lazy_store, docs=docs, chunks=chunks, document_key=document_key)
+        return await rebuild_pipeline(config, lazy_store=lazy_store, docs=docs, chunks=chunks, document_id=document_id)
     
     try:
         # Initialize state if needed
@@ -851,12 +870,10 @@ async def rebuild_pipeline(config: Optional[PipelineConfig] = None, lazy_store: 
         _check_cancel("Before creating QAPipeline instance")
         
         print(f"[LOG] Creating new QAPipeline instance (lazy_store={lazy_store})...")
-        # Extract document_key from config if available
-        doc_key = getattr(cfg, '_document_key', None) or document_key
         loop = asyncio.get_running_loop()
         pipeline_obj = await loop.run_in_executor(
             None,
-            lambda: QAPipeline(cfg, lazy_store=lazy_store, docs=docs, chunks=chunks, document_key=doc_key),
+            lambda: QAPipeline(cfg, lazy_store=lazy_store, docs=docs, chunks=chunks, document_id=document_id),
         )
         print(f"[LOG] Store built: {pipeline_obj._store_built}, Ready: {_PIPELINE_READY[data_dir_key]}")
         _PIPELINE_BUILDING[data_dir_key] = False
@@ -949,30 +966,29 @@ def _normalise_document_key(input_key: str, document: Optional[Dict[str, Any]]) 
     return cleaned_input or input_key
 
 
-async def _resolve_chunk_count(document_id: Optional[str], document_key: str, existing_count: Optional[int]) -> int:
+async def _resolve_chunk_count(document_id: Optional[str], existing_count: Optional[int]) -> int:
     """Determine the number of chunks stored for the document."""
     if existing_count and existing_count > 0:
         return int(existing_count)
 
     collection = mongodb.get_collection("chunks")
-    query: Dict[str, Any] = {}
-
-    obj_id = to_object_id(document_id) if document_id else None
-    if obj_id:
-        query["document_id"] = obj_id
-    elif document_key:
-        query["document_key"] = document_key
-    else:
+    if not document_id:
         return 0
+
+    obj_id = to_object_id(document_id)
+    if obj_id:
+        query: Dict[str, Any] = {"document_id": obj_id}
+    else:
+        query = {"document_id": document_id}
 
     try:
         return await collection.count_documents(query)
     except Exception as exc:
-        print(f"[Pipeline] ⚠️ Failed to count chunks for document {document_id} ({document_key}): {exc}")
+        print(f"[Pipeline] ⚠️ Failed to count chunks for document {document_id}: {exc}")
         return 0
 
 
-async def _maybe_schedule_embedding_resume(document_id: str, document_key: str) -> None:
+async def _maybe_schedule_embedding_resume(document_id: str) -> None:
     """Start a background job to regenerate embeddings if not already running."""
     lock = _get_resume_lock()
     async with lock:
@@ -988,11 +1004,11 @@ async def _maybe_schedule_embedding_resume(document_id: str, document_key: str) 
                 print(f"[Pipeline] ⚠️ Unable to mark document {document_id} as processing: {exc}")
 
         loop = asyncio.get_running_loop()
-        task = loop.create_task(_resume_embeddings_job(document_id, document_key))
+        task = loop.create_task(_resume_embeddings_job(document_id))
         _RESUME_TASKS[document_id] = task
 
 
-async def _resume_embeddings_job(document_id: str, document_key: str) -> None:
+async def _resume_embeddings_job(document_id: str) -> None:
     """Background task that regenerates embeddings and re-indexes chunks for a document."""
     try:
         chunks = await get_document_chunks(document_id=document_id)
@@ -1007,11 +1023,10 @@ async def _resume_embeddings_job(document_id: str, document_key: str) -> None:
             return
 
         embedder = get_embedder(None)
-        embeddings = await asyncio.to_thread(embedder.embed_chunks, chunks, document_key)
+        embeddings = await asyncio.to_thread(embedder.embed_chunks, chunks, document_id)
 
         await index_chunks(
             document_id=document_id,
-            document_key=document_key,
             chunks=chunks,
             embeddings=embeddings,
         )
@@ -1083,7 +1098,7 @@ async def _maybe_trigger_chunking(document_id: str, document: Dict[str, Any]) ->
         return False
     
     # Check if chunks already exist
-    chunk_count = await _resolve_chunk_count(document_id, None, document.get("chunk_count"))
+    chunk_count = await _resolve_chunk_count(document_id, document.get("chunk_count"))
     if chunk_count > 0:
         with _PROCESSING_LOCK:
             _PROCESSING_DOCUMENTS.pop(document_id, None)
@@ -1134,44 +1149,63 @@ async def _maybe_trigger_chunking(document_id: str, document: Dict[str, Any]) ->
         return False
 
 
-async def pipeline_status(pdf_name: Optional[str] = None, document_key: Optional[str] = None) -> Dict[str, Any]:
+async def pipeline_status(
+    pdf_name: Optional[str] = None,
+    document_id: Optional[str] = None,
+) -> Dict[str, Any]:
     """Get pipeline status by checking database (Elasticsearch/MongoDB).
     
     Args:
         pdf_name: Optional PDF name to check
-        document_key: Optional document key to check in database
+        document_id: Optional document id to check in database
     """
-    # Use document_key if provided, otherwise use pdf_name
-    input_key = (document_key or pdf_name or "").strip()
+    identifier = (document_id or pdf_name or "").strip()
 
-    if not input_key:
+    if not identifier:
         return {
             "building": False,
             "ready": False,
             "percent": 0,
             "stage": "idle",
-            "message": "No document key provided",
+            "message": "No document identifier provided",
         }
 
     try:
-        document = await _find_document_by_key(input_key)
-        if not document:
+        resolved_document: Optional[Dict[str, Any]] = None
+        resolved_document_id: Optional[str] = None
+
+        if document_id:
+            obj_id = to_object_id(document_id)
+            if obj_id:
+                resolved_document = await get_document_by_id(obj_id)
+                if resolved_document:
+                    resolved_document_id = str(resolved_document.get("_id"))
+
+        if not resolved_document:
+            lookup_key = (pdf_name or "").strip()
+            if lookup_key:
+                resolved_document = await _find_document_by_key(lookup_key)
+                if resolved_document:
+                    resolved_document_id = str(resolved_document.get("_id"))
+
+        if not resolved_document:
             return {
                 "building": False,
                 "ready": False,
                 "percent": 0,
                 "stage": "not_found",
                 "message": "Document not found. Please upload or select a PDF first.",
-                "document_key": input_key,
+                "document_id": document_id,
             }
 
-        document_id = str(document.get("_id"))
-        canonical_key = _normalise_document_key(input_key, document)
-        chunk_count = await _resolve_chunk_count(document_id, canonical_key, document.get("chunk_count"))
+        assert resolved_document is not None  # for type checker
 
-        raw_embedding_status = document.get("embedding_status") or "pending"
+        document_id = resolved_document_id or str(resolved_document.get("_id"))
+        chunk_count = await _resolve_chunk_count(document_id, resolved_document.get("chunk_count"))
+
+        raw_embedding_status = resolved_document.get("embedding_status") or "pending"
         embedding_status = str(raw_embedding_status).lower()
-        raw_document_status = document.get("status") or "unknown"
+        raw_document_status = resolved_document.get("status") or "unknown"
         document_status = str(raw_document_status).lower()
 
         resume_task = _RESUME_TASKS.get(document_id)
@@ -1188,7 +1222,7 @@ async def pipeline_status(pdf_name: Optional[str] = None, document_key: Optional
 
         # Trigger chunking if document exists but has no chunks and is not actively processing
         if chunk_count == 0 and document_status not in {"uploading", "parsing", "processing"}:
-            chunking_triggered = await _maybe_trigger_chunking(document_id, document)
+            chunking_triggered = await _maybe_trigger_chunking(document_id, resolved_document)
             if chunking_triggered:
                 document_status = "parsing"
                 building = True
@@ -1211,7 +1245,7 @@ async def pipeline_status(pdf_name: Optional[str] = None, document_key: Optional
             # Mark as processing embedding
             with _PROCESSING_LOCK:
                 _PROCESSING_DOCUMENTS[document_id] = "embedding"
-            await _maybe_schedule_embedding_resume(document_id, canonical_key)
+            await _maybe_schedule_embedding_resume(document_id)
             resume_running = True
             resume_triggered = True
             embedding_status = "processing"
@@ -1223,7 +1257,7 @@ async def pipeline_status(pdf_name: Optional[str] = None, document_key: Optional
             print(f"[Pipeline] ⚠️ Detected stuck embedding status for {document_id}, re-triggering resume job")
             with _PROCESSING_LOCK:
                 _PROCESSING_DOCUMENTS[document_id] = "embedding"
-            await _maybe_schedule_embedding_resume(document_id, canonical_key)
+            await _maybe_schedule_embedding_resume(document_id)
             resume_running = True
             resume_triggered = True
             embedding_status = "processing"
@@ -1258,7 +1292,6 @@ async def pipeline_status(pdf_name: Optional[str] = None, document_key: Optional
             "message": message,
             "chunk_count": chunk_count,
             "document_id": document_id,
-            "document_key": canonical_key,
             "embedding_status": embedding_status,
             "document_status": document_status,
             "resume_running": resume_running,
@@ -1269,7 +1302,7 @@ async def pipeline_status(pdf_name: Optional[str] = None, document_key: Optional
             "[STATUS] Pipeline status check: "
             f"building={response['building']}, ready={response['ready']}, "
             f"embedding_status={embedding_status}, document_status={document_status}, "
-            f"chunk_count={chunk_count}, pdf_name={pdf_name}, document_key={document_key}"
+            f"chunk_count={chunk_count}, pdf_name={pdf_name}, document_id={document_id}"
         )
 
         return response
@@ -1284,5 +1317,5 @@ async def pipeline_status(pdf_name: Optional[str] = None, document_key: Optional
             "percent": 0,
             "stage": "error",
             "message": f"Error checking status: {str(e)}",
-            "document_key": input_key,
+            "document_id": document_id,
         }

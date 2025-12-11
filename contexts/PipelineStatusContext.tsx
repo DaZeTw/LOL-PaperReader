@@ -1,151 +1,147 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react'
 
-interface PipelineStatus {
-  building?: boolean
-  ready?: boolean
-  chunks?: number
-  percent?: number
-  stage?: string
-  message?: string
-  document_key?: string
+export interface PipelineStatus {
+  building: boolean
+  ready: boolean
+  percent: number
+  stage: string
+  message: string
+  chunk_count?: number
   document_id?: string
-  embedding_status?: string
-  document_status?: string
-  lastChecked?: number
+  error?: string
+  lastUpdated?: number
 }
 
-interface PipelineStatusMap {
-  [documentKey: string]: PipelineStatus
+// Define params to match your backend query arguments
+interface ApiParams {
+  document_id?: string
+  [key: string]: string | undefined
 }
 
 interface PipelineStatusContextType {
-  statusMap: PipelineStatusMap
-  getStatus: (documentKey: string) => PipelineStatus | null
-  updateStatus: (documentKey: string, status: PipelineStatus) => void
-  refreshStatus: (documentKey: string) => Promise<void>
-  refreshAllStatuses: () => Promise<void>
-  isProcessing: (documentKey: string) => boolean
+  statusMap: Record<string, PipelineStatus>
+  subscribeToStatus: (trackingKey: string, apiParams: ApiParams) => void
+  unsubscribeFromStatus: (trackingKey: string) => void
+  getStatus: (trackingKey: string) => PipelineStatus | null
 }
 
 const PipelineStatusContext = createContext<PipelineStatusContextType | undefined>(undefined)
 
 export function PipelineStatusProvider({ children }: { children: React.ReactNode }) {
-  const [statusMap, setStatusMap] = useState<PipelineStatusMap>({})
-  const refreshTimersRef = useRef<{ [key: string]: any }>({})
-  const processingRef = useRef<Set<string>>(new Set())
+  const [statusMap, setStatusMap] = useState<Record<string, PipelineStatus>>({})
+  
+  // Ref to track status logic without triggering re-renders inside callbacks
+  const statusMapRef = useRef<Record<string, PipelineStatus>>({})
 
-  // Get status from cache
-  const getStatus = useCallback((documentKey: string): PipelineStatus | null => {
-    if (!documentKey) return null
-    return statusMap[documentKey] || null
-  }, [statusMap])
+  const connectionsRef = useRef<Record<string, EventSource>>({})
+  const subscribersRef = useRef<Record<string, number>>({})
 
-  // Update status in cache
-  const updateStatus = useCallback((documentKey: string, status: PipelineStatus) => {
-    if (!documentKey) return
-    setStatusMap(prev => ({
-      ...prev,
-      [documentKey]: {
-        ...status,
-        lastChecked: Date.now(),
-      },
-    }))
+  // Helper to update state and ref simultaneously
+  const updateStatus = useCallback((key: string, data: Partial<PipelineStatus>) => {
+    setStatusMap(prev => {
+      const updated = { 
+        ...prev[key], 
+        ...data, 
+        lastUpdated: Date.now() 
+      } as PipelineStatus
+      
+      statusMapRef.current = { ...statusMapRef.current, [key]: updated }
+      
+      return { ...prev, [key]: updated }
+    })
   }, [])
 
-  // Refresh status for a specific document
-  const refreshStatus = useCallback(async (documentKey: string) => {
-    if (!documentKey) return
+  // STABLE subscribe function
+  const subscribeToStatus = useCallback((trackingKey: string, apiParams: ApiParams) => {
+    if (!trackingKey) return
 
-    // Prevent duplicate refresh calls
-    if (processingRef.current.has(documentKey)) {
-      console.log(`[PipelineStatusContext] Already refreshing ${documentKey}, skipping`)
+    // Increment subscriber count (Reference Counting)
+    subscribersRef.current[trackingKey] = (subscribersRef.current[trackingKey] || 0) + 1
+
+    // If connection exists, do nothing
+    if (connectionsRef.current[trackingKey]) return
+
+    // If already ready locally, don't open new stream
+    if (statusMapRef.current[trackingKey]?.ready) {
+      console.log(`[Pipeline] ${trackingKey} is already ready. Skipping stream.`)
       return
     }
 
-    processingRef.current.add(documentKey)
+    console.log(`[Pipeline] Opening stream for ${trackingKey}`, apiParams)
+    
+    // Construct Query Params
+    const params = new URLSearchParams()
+    Object.entries(apiParams).forEach(([key, value]) => {
+      if (value) params.append(key, value)
+    })
+    
+    // Connect to the stream
+    // Ensure this path matches your Next.js API route proxy
+    const es = new EventSource(`/api/qa/status/stream?${params.toString()}`)
+    connectionsRef.current[trackingKey] = es
 
-    try {
-      const params = new URLSearchParams()
-      params.append('document_key', documentKey)
-      
-      const res = await fetch(`/api/qa/status?${params.toString()}`)
-      const data = await res.json().catch(() => ({}))
-      
-      updateStatus(documentKey, data)
-      
-      // Continue polling until pipeline ready (handles stalled states as well)
-      if (!data.ready) {
-        // Clear existing timer for this document
-        if (refreshTimersRef.current[documentKey]) {
-          clearTimeout(refreshTimersRef.current[documentKey])
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data) as PipelineStatus
+        updateStatus(trackingKey, data)
+
+        // Close stream if ready or error
+        if (data.ready || data.stage === 'error') {
+          console.log(`[Pipeline] Job finished for ${trackingKey}, closing stream.`)
+          es.close()
+          delete connectionsRef.current[trackingKey]
         }
-        
-        // Schedule next refresh in 2 seconds
-        refreshTimersRef.current[documentKey] = setTimeout(() => {
-          processingRef.current.delete(documentKey)
-          refreshStatus(documentKey)
-        }, 2000)
-      } else {
-        // Clear timer if done
-        if (refreshTimersRef.current[documentKey]) {
-          clearTimeout(refreshTimersRef.current[documentKey])
-          delete refreshTimersRef.current[documentKey]
-        }
+      } catch (err) {
+        console.error('[Pipeline] Error parsing SSE:', err)
       }
-    } catch (error) {
-      console.error(`[PipelineStatusContext] Error refreshing status for ${documentKey}:`, error)
-      // Retry after 2 seconds on error
-      if (refreshTimersRef.current[documentKey]) {
-        clearTimeout(refreshTimersRef.current[documentKey])
+    }
+
+    es.onerror = (err) => {
+      // Don't log normal closures as errors
+      if (es.readyState !== EventSource.CLOSED) {
+        console.error('[Pipeline] Stream error:', err)
       }
-      refreshTimersRef.current[documentKey] = setTimeout(() => {
-        processingRef.current.delete(documentKey)
-        refreshStatus(documentKey)
-      }, 2000)
-    } finally {
-      // Remove from processing set after a delay to allow for scheduled refresh
-      setTimeout(() => {
-        processingRef.current.delete(documentKey)
-      }, 100)
+      es.close()
+      delete connectionsRef.current[trackingKey]
     }
   }, [updateStatus])
 
-  // Check if a document is currently processing
-  const isProcessing = useCallback((documentKey: string): boolean => {
-    const status = getStatus(documentKey)
-    return status?.building === true || status?.ready === false
-  }, [getStatus])
+  const unsubscribeFromStatus = useCallback((trackingKey: string) => {
+    if (!trackingKey) return
 
-  // Refresh all statuses (called on initial load)
-  const refreshAllStatuses = useCallback(async () => {
-    // This would need to get list of all documents from somewhere
-    // For now, we'll just refresh statuses that are already in cache
-    const keys = Object.keys(statusMap)
-    await Promise.all(keys.map(key => refreshStatus(key)))
-  }, [statusMap, refreshStatus])
+    // Decrement subscriber count
+    const count = (subscribersRef.current[trackingKey] || 0) - 1
+    subscribersRef.current[trackingKey] = Math.max(count, 0)
 
-  // Cleanup timers on unmount
+    // Only close connection if NO ONE is listening anymore
+    if (subscribersRef.current[trackingKey] === 0) {
+      const es = connectionsRef.current[trackingKey]
+      if (es) {
+        console.log(`[Pipeline] No subscribers left for ${trackingKey}, closing stream.`)
+        es.close()
+        delete connectionsRef.current[trackingKey]
+      }
+    }
+  }, [])
+
+  const getStatus = useCallback((key: string) => statusMap[key] || null, [statusMap])
+
+  // Sync ref on hydration
+  useEffect(() => {
+    statusMapRef.current = statusMap
+  }, [statusMap])
+
+  // Cleanup all connections on global unmount
   useEffect(() => {
     return () => {
-      Object.values(refreshTimersRef.current).forEach(timer => {
-        if (timer) clearTimeout(timer)
-      })
+      Object.values(connectionsRef.current).forEach(es => es.close())
     }
   }, [])
 
   return (
-    <PipelineStatusContext.Provider
-      value={{
-        statusMap,
-        getStatus,
-        updateStatus,
-        refreshStatus,
-        refreshAllStatuses,
-        isProcessing,
-      }}
-    >
+    <PipelineStatusContext.Provider value={{ statusMap, subscribeToStatus, unsubscribeFromStatus, getStatus }}>
       {children}
     </PipelineStatusContext.Provider>
   )
@@ -153,11 +149,6 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
 
 export function usePipelineStatusContext() {
   const context = useContext(PipelineStatusContext)
-  if (context === undefined) {
-    throw new Error('usePipelineStatusContext must be used within PipelineStatusProvider')
-  }
+  if (!context) throw new Error('usePipelineStatusContext must be used within PipelineStatusProvider')
   return context
 }
-
-
-

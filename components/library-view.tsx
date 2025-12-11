@@ -12,7 +12,7 @@ import { useDeleteReference } from "@/hooks/useDeleteReference"
 import { toast } from "sonner"
 
 interface LibraryViewProps {
-  onOpenPDF: (file: File, title: string) => void
+  onOpenPDF: (file: File, title: string, documentId: string) => void
 }
 
 export function LibraryView({ onOpenPDF }: LibraryViewProps) {

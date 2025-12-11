@@ -3,13 +3,14 @@ import { type NextRequest, NextResponse } from "next/server"
 const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000"
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     session_id: string
-  }
+  }>
 }
 
-export async function GET(request: NextRequest, { params }: RouteContext) {
-  const sessionId = params.session_id
+export async function GET(request: NextRequest, context: RouteContext) {
+  const { session_id } = await context.params
+  const sessionId = session_id
 
   if (!sessionId) {
     return NextResponse.json({ error: "session_id is required" }, { status: 400 })
@@ -67,8 +68,9 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteContext) {
-  const sessionId = params.session_id
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const { session_id } = await context.params
+  const sessionId = session_id
 
   if (!sessionId) {
     return NextResponse.json({ error: "session_id is required" }, { status: 400 })

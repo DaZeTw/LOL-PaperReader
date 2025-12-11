@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-import re
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from bson import ObjectId
@@ -46,6 +45,19 @@ async def update_session_metadata(session_id: str, metadata: Dict[str, Any]) -> 
     )
 
 
+def _convert_objectids_to_strings(obj: Any) -> Any:
+    """Recursively convert ObjectId instances to strings for JSON serialization"""
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    elif isinstance(obj, dict):
+        return {k: _convert_objectids_to_strings(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_convert_objectids_to_strings(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return tuple(_convert_objectids_to_strings(item) for item in obj)
+    return obj
+
+
 async def get_session(session_id: str) -> Optional[Dict[str, Any]]:
     session = await _sessions_collection().find_one({"session_id": session_id})
     if not session:
@@ -59,7 +71,13 @@ async def get_session(session_id: str) -> Optional[Dict[str, Any]]:
     messages = await messages_cursor.to_list(length=None)
     for msg in messages:
         msg["_id"] = str(msg.get("_id"))
+        # Convert ObjectIds in metadata
+        if "metadata" in msg and isinstance(msg["metadata"], dict):
+            msg["metadata"] = _convert_objectids_to_strings(msg["metadata"])
     session["_id"] = str(session.get("_id"))
+    # Convert ObjectIds in session metadata
+    if "metadata" in session and isinstance(session["metadata"], dict):
+        session["metadata"] = _convert_objectids_to_strings(session["metadata"])
     session["messages"] = messages
     return session
 
@@ -74,6 +92,9 @@ async def list_sessions(user_id: str, limit: int = 20) -> List[Dict[str, Any]]:
     sessions = await cursor.to_list(length=limit)
     for session in sessions:
         session["_id"] = str(session.get("_id"))
+        # Convert ObjectIds in session metadata
+        if "metadata" in session and isinstance(session["metadata"], dict):
+            session["metadata"] = _convert_objectids_to_strings(session["metadata"])
     return sessions
 
 
@@ -84,67 +105,33 @@ async def delete_session(session_id: str) -> None:
 
 async def delete_sessions_by_document(
     document_id: Optional[str] = None,
-    document_key: Optional[str] = None,
 ) -> int:
     """
     Delete all chat sessions and messages associated with a document.
     
     Args:
         document_id: Document ID (ObjectId string) to delete by.
-        document_key: Document key to delete by.
     
     Returns:
         Number of sessions deleted.
     """
-    if not document_id and not document_key:
+    if not document_id:
         return 0
     
-    # Build query to find sessions with matching document_id, document_key, or title patterns
-    conditions: List[Dict[str, Any]] = []
-    doc_id_str = str(document_id) if document_id else None
-    doc_key_str = str(document_key) if document_key else None
-
-    if doc_id_str:
-        conditions.append({"metadata.document_id": doc_id_str})
-        # Some sessions might have stored ObjectId instead of string
-        try:
-            conditions.append({"metadata.document_id": ObjectId(doc_id_str)})
-        except Exception:
-            pass
-
-    key_variants = set()
-    if doc_key_str:
-        key_variants.add(doc_key_str)
-        if doc_key_str.lower().endswith(".pdf"):
-            key_variants.add(doc_key_str[:-4])
-        else:
-            key_variants.add(f"{doc_key_str}.pdf")
-    if doc_id_str:
-        key_variants.add(doc_id_str)
-
-    for key in key_variants:
-        conditions.append({"metadata.document_key": key})
-        conditions.append({"metadata.document_filename": key})
-
-        # Match title patterns like "Chat: {key}" or "Chat: {key} - ..."
-        escaped = re.escape(key)
-        conditions.append(
-            {
-                "title": {
-                    "$regex": rf"^Chat:\s*{escaped}(?:\s*-\s*.*)?$",
-                    "$options": "i",
-                }
-            }
-        )
-
-    if not conditions:
+    doc_id_str = str(document_id).strip()
+    if not doc_id_str or doc_id_str.lower() in {"none", "null"}:
         return 0
 
-    query: Dict[str, Any]
-    if len(conditions) == 1:
-        query = conditions[0]
-    else:
-        query = {"$or": conditions}
+    query: Dict[str, Any] = {"metadata.document_id": doc_id_str}
+    try:
+        query = {
+            "$or": [
+                {"metadata.document_id": doc_id_str},
+                {"metadata.document_id": ObjectId(doc_id_str)},
+            ]
+        }
+    except Exception:
+        query = {"metadata.document_id": doc_id_str}
     
     # Find all matching sessions
     sessions_cursor = _sessions_collection().find(query)
@@ -163,7 +150,7 @@ async def delete_sessions_by_document(
     deleted_sessions = result.deleted_count or 0
     
     if deleted_sessions > 0:
-        print(f"[Chat] ✅ Deleted {deleted_sessions} chat sessions and their messages (document_id={document_id}, document_key={document_key})")
+        print(f"[Chat] ✅ Deleted {deleted_sessions} chat sessions and their messages (document_id={document_id})")
     
     return deleted_sessions
 
@@ -203,69 +190,35 @@ async def get_recent_messages(session_id: str, limit: int = 10) -> List[Dict[str
     messages.reverse()
     for msg in messages:
         msg["_id"] = str(msg.get("_id"))
+        # Convert ObjectIds in metadata
+        if "metadata" in msg and isinstance(msg["metadata"], dict):
+            msg["metadata"] = _convert_objectids_to_strings(msg["metadata"])
     return messages
 
 
 async def find_session_by_document(
-    document_key: Optional[str] = None,
     document_id: Optional[str] = None,
-    title: Optional[str] = None,
     user_id: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """
-    Find an existing chat session by document_key, document_id, or title.
+    Find an existing chat session by document_id.
     Returns the most recently updated session if multiple matches exist.
     """
-    conditions: List[Dict[str, Any]] = []
-    
-    # Build query conditions
-    if document_id:
-        doc_id_str = str(document_id).strip()
-        if doc_id_str and doc_id_str.lower() not in {"none", "null"}:
-            conditions.append({"metadata.document_id": doc_id_str})
-            try:
-                conditions.append({"metadata.document_id": ObjectId(doc_id_str)})
-            except Exception:
-                pass
-    
-    if document_key:
-        doc_key_str = str(document_key).strip()
-        if doc_key_str and doc_key_str.lower() not in {"none", "null"}:
-            # Normalize document_key (remove .pdf extension if present)
-            normalized_key = doc_key_str
-            if normalized_key.lower().endswith(".pdf"):
-                normalized_key = normalized_key[:-4].strip()
-            
-            # Try various key formats
-            key_variants = {normalized_key, f"{normalized_key}.pdf", doc_key_str}
-            for key in key_variants:
-                conditions.append({"metadata.document_key": key})
-                conditions.append({"metadata.document_key_base": key})
-                conditions.append({"metadata.document_filename": key})
-    
-    if title:
-        title_str = str(title).strip()
-        if title_str:
-            # Match exact title or title pattern "Chat: {title}"
-            conditions.append({"title": title_str})
-            if not title_str.startswith("Chat:"):
-                conditions.append({"title": f"Chat: {title_str}"})
-    
-    if not conditions:
+    doc_id_str = str(document_id).strip() if document_id else ""
+    if not doc_id_str or doc_id_str.lower() in {"none", "null"}:
         return None
-    
-    # Build query
-    query: Dict[str, Any]
-    if len(conditions) == 1:
-        query = conditions[0]
-    else:
-        query = {"$or": conditions}
-    
-    # Add user_id filter if provided
+
+    conditions: List[Dict[str, Any]] = [{"metadata.document_id": doc_id_str}]
+    try:
+        conditions.append({"metadata.document_id": ObjectId(doc_id_str)})
+    except Exception:
+        pass
+
+    query: Dict[str, Any] = {"$or": conditions}
+
     if user_id:
         query["user_id"] = user_id
-    
-    # Find the most recently updated matching session
+
     session = await _sessions_collection().find_one(
         query,
         sort=[("updated_at", -1)]
@@ -283,6 +236,12 @@ async def find_session_by_document(
     messages = await messages_cursor.to_list(length=None)
     for msg in messages:
         msg["_id"] = str(msg.get("_id"))
+        # Convert ObjectIds in metadata
+        if "metadata" in msg and isinstance(msg["metadata"], dict):
+            msg["metadata"] = _convert_objectids_to_strings(msg["metadata"])
     session["_id"] = str(session.get("_id"))
+    # Convert ObjectIds in session metadata
+    if "metadata" in session and isinstance(session["metadata"], dict):
+        session["metadata"] = _convert_objectids_to_strings(session["metadata"])
     session["messages"] = messages
     return session

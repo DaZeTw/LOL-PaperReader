@@ -20,59 +20,12 @@ from paperreader.models.chat import (
 )
 from paperreader.services.qa.generators import get_generator
 from paperreader.services.qa.embeddings import get_embedder
-from paperreader.services.qa.elasticsearch_client import knn_search
 from paperreader.services.qa.config import PipelineConfig
-from paperreader.services.qa.pipeline import (
-    get_pipeline,
-    _find_document_by_key as qa_find_document_by_key,
-    _normalise_document_key as qa_normalise_document_key,
-)
+from paperreader.services.qa.pipeline import get_pipeline
 from paperreader.services.documents.minio_client import upload_bytes
 
 router = APIRouter()
 MINIO_CHAT_BUCKET = os.getenv("MINIO_CHAT_BUCKET", "chat-images")
-
-
-async def _get_document_key_from_elasticsearch(doc_id: str) -> Optional[str]:
-    """Get document_key from Elasticsearch using document_id."""
-    try:
-        from paperreader.services.qa.elasticsearch_client import get_elasticsearch_client, ELASTICSEARCH_INDEX
-        client = get_elasticsearch_client()
-        # Query Elasticsearch to get document_key from document_id
-        response = await client.search(
-            index=ELASTICSEARCH_INDEX,
-            body={
-                "query": {"term": {"document_id": str(doc_id)}},
-                "size": 1,
-                "_source": ["document_key"]
-            }
-        )
-        hits = response.get("hits", {}).get("hits", [])
-        if hits and len(hits) > 0:
-            document_key = hits[0].get("_source", {}).get("document_key")
-            if document_key:
-                print(f"[DEBUG] Found document_key '{document_key}' from Elasticsearch using document_id '{doc_id}'")
-                return document_key
-        print(f"[DEBUG] No document_key found in Elasticsearch for document_id '{doc_id}'")
-        return None
-    except Exception as e:
-        print(f"[WARNING] Failed to query Elasticsearch for document_key: {e}")
-        return None
-
-
-def _normalise_document_key_value(value: Optional[Any]) -> Optional[str]:
-    """Convert various document key inputs into the canonical form used for indexing."""
-    if value is None:
-        return None
-    text = str(value).strip()
-    if not text:
-        return None
-    lowered = text.lower()
-    if lowered in {"none", "null"}:
-        return None
-    if lowered.endswith(".pdf"):
-        text = text[:-4].strip()
-    return text or None
 
 
 def _normalise_document_id_value(value: Optional[Any]) -> Optional[str]:
@@ -96,55 +49,23 @@ def _ensure_dict(value: Any) -> Dict[str, Any]:
         return {}
 
 
-def _extract_document_key(session: ChatSessionResponse | ChatSessionCreateRequest | Any) -> Optional[str]:
-    metadata = getattr(session, "metadata", None) or {}
-    document_key = metadata.get("document_key")
-    if document_key:
-        return _normalise_document_key_value(document_key)
-
-    document_id = metadata.get("document_id") if metadata else None
-    if document_id:
-        return str(document_id)
-
-    title = getattr(session, "title", None)
-    if isinstance(title, str) and title:
-        normalized = title.replace("Chat:", "").strip()
-        if " - " in normalized:
-            normalized = normalized.split(" - ")[0].strip()
-        return _normalise_document_key_value(normalized)
-
-    return None
-
-
-async def _resolve_canonical_document_identity(
-    document_key: Optional[str],
-    document_id: Optional[str],
-    pdf_name: Optional[str],
-) -> tuple[Optional[str], Optional[str]]:
-    """Map user-provided identifiers to the canonical key/id stored in the database."""
-    candidates: List[str] = []
-
-    if document_id:
-        candidates.append(document_id)
-    for candidate in (document_key, pdf_name):
-        if candidate:
-            candidates.append(candidate)
-
-    for candidate in candidates:
-        try:
-            document = await qa_find_document_by_key(candidate)
-        except Exception as exc:
-            print(f"[WARNING] Failed to resolve document by key '{candidate}': {exc}")
-            continue
-
-        if not document:
-            continue
-
-        resolved_id = str(document.get("_id")) if document.get("_id") else document_id
-        resolved_key = qa_normalise_document_key(candidate, document)
-        return resolved_key, resolved_id
-
-    return document_key, document_id
+def _convert_objectids_to_strings(obj: Any) -> Any:
+    """Recursively convert ObjectId instances to strings for JSON serialization"""
+    try:
+        from bson import ObjectId
+    except ImportError:
+        # If bson is not available, just return as-is
+        return obj
+    
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    elif isinstance(obj, dict):
+        return {k: _convert_objectids_to_strings(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_convert_objectids_to_strings(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return tuple(_convert_objectids_to_strings(item) for item in obj)
+    return obj
 
 
 def _clean_citation_for_ui(citation: Dict[str, Any]) -> Dict[str, Any]:
@@ -176,7 +97,50 @@ def _clean_citation_for_ui(citation: Dict[str, Any]) -> Dict[str, Any]:
         if not cleaned_tables:
             cleaned.pop("tables", None)
     
+    # Convert any ObjectIds to strings
+    cleaned = _convert_objectids_to_strings(cleaned)
+    
     return cleaned
+
+
+async def _ensure_chat_session(
+    *,
+    document_id: Optional[str],
+    user_id: Optional[str],
+    metadata: Optional[Dict[str, Any]] = None,
+    force_new: bool = False,
+    initial_message: Optional[str] = None,
+) -> ChatSessionResponse:
+    """Find existing chat session for document_id or create a new one."""
+    canonical_document_id = _normalise_document_id_value(document_id)
+    if not canonical_document_id:
+        raise HTTPException(status_code=400, detail="document_id is required to create or retrieve a chat session")
+
+    merged_metadata: Dict[str, Any] = dict(metadata or {})
+    merged_metadata["document_id"] = canonical_document_id
+
+    if not force_new:
+        existing_session = await chat_service.find_session_by_document(
+            document_id=canonical_document_id,
+            user_id=user_id,
+        )
+        if existing_session:
+            response = await chat_service.get_session_response(existing_session.session_id)
+            if response:
+                return response
+
+    session_id = str(uuid.uuid4())
+    session_data = ChatSessionCreate(
+        session_id=session_id,
+        user_id=user_id,
+        initial_message=initial_message,
+        metadata=merged_metadata,
+    )
+    await chat_service.create_session(session_data)
+    response = await chat_service.get_session_response(session_id)
+    if response is None:
+        raise RuntimeError("Session creation failed")
+    return response
 
 
 async def _store_user_images(session_id: str, images: Optional[List[str]]) -> List[str]:
@@ -228,10 +192,8 @@ class ChatAskResponse(BaseModel):
 
 class ChatSessionCreateRequest(BaseModel):
     user_id: Optional[str] = None
-    title: Optional[str] = None
     initial_message: Optional[str] = None
-    force_new: Optional[bool] = False  # If True, always create new session even if one with same title exists
-    document_key: Optional[str] = None
+    force_new: Optional[bool] = False  # If True, always create new session even if one exists
     document_id: Optional[str] = None
     tab_id: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
@@ -244,64 +206,44 @@ async def create_chat_session(request: ChatSessionCreateRequest):
     """Create a new chat session or return existing one if found."""
     try:
         metadata: Dict[str, Any] = request.metadata.copy() if request.metadata else {}
-
-        # Ensure document metadata is attached for downstream cleanup
-        derived_document_key = (
-            request.document_key
-            or metadata.get("document_key")
-            or _extract_document_key(request)
-        )
-        canonical_document_key = _normalise_document_key_value(derived_document_key)
-        if canonical_document_key:
-            metadata["document_key"] = canonical_document_key
-            metadata["document_key_base"] = canonical_document_key
-            # Use the original PDF filename if available from title, otherwise use document_key
-            if request.title and "Chat:" in request.title:
-                # Extract PDF filename from title: "Chat: filename.pdf" -> "filename.pdf"
-                pdf_filename = request.title.replace("Chat:", "").strip()
-                metadata["document_filename"] = pdf_filename
-            else:
-                metadata["document_filename"] = f"{canonical_document_key}.pdf"
-        canonical_document_id = _normalise_document_id_value(request.document_id)
-        if canonical_document_id:
-            metadata["document_id"] = canonical_document_id
         if request.tab_id:
             metadata["tab_id"] = request.tab_id
 
-        # Remove empty sentinel metadata entries
-        for key in ["document_key", "document_key_base", "document_filename", "document_id"]:
-            if key in metadata and not metadata[key]:
-                metadata.pop(key, None)
-
-        # If force_new is False, try to find existing session first
-        existing_session = None
-        if not request.force_new:
-            existing_session = await chat_service.find_session_by_document(
-                document_key=canonical_document_key,
-                document_id=canonical_document_id,
-                title=request.title,
-                user_id=request.user_id,
-            )
-            if existing_session:
-                print(f"[Chat] ✅ Found existing session {existing_session.session_id} for document (key={canonical_document_key}, id={canonical_document_id}, title={request.title})")
-                response = await chat_service.get_session_response(existing_session.session_id)
-                if response:
-                    return response
-
-        # Create new session
-        session_id = str(uuid.uuid4())
-        session_data = ChatSessionCreate(
-            session_id=session_id,
+        return await _ensure_chat_session(
+            document_id=request.document_id,
             user_id=request.user_id,
-            title=request.title,
-            initial_message=request.initial_message,
             metadata=metadata,
+            force_new=bool(request.force_new),
+            initial_message=request.initial_message,
         )
-        await chat_service.create_session(session_data)
-        response = await chat_service.get_session_response(session_id)
-        if response is None:
-            raise RuntimeError("Session creation failed")
-        return response
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/sessions/by-document", response_model=ChatSessionResponse)
+async def get_or_create_chat_session_by_document(
+    document_id: Optional[str] = Query(None),
+    user_id: Optional[str] = Query(None),
+    force_new: bool = Query(False),
+    tab_id: Optional[str] = Query(None),
+):
+    """Fetch an existing chat session for a document or create a new one if none exists."""
+    try:
+        metadata: Dict[str, Any] = {}
+        if tab_id:
+            metadata["tab_id"] = tab_id
+
+        return await _ensure_chat_session(
+            document_id=document_id,
+            user_id=user_id,
+            metadata=metadata,
+            force_new=force_new,
+            initial_message=None,
+        )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -335,17 +277,14 @@ async def list_chat_sessions(user_id: Optional[str] = None, limit: int = 20):
 @router.delete("/sessions")
 async def delete_sessions_for_document(
     document_id: Optional[str] = Query(None),
-    document_key: Optional[str] = Query(None),
 ):
     """Delete all chat sessions associated with a document."""
     document_id = _normalise_document_id_value(document_id)
-    document_key = _normalise_document_key_value(document_key)
-    if not document_id and not document_key:
-        raise HTTPException(status_code=400, detail="document_id or document_key is required")
+    if not document_id:
+        raise HTTPException(status_code=400, detail="document_id is required")
     try:
         deleted = await chat_repository.delete_sessions_by_document(
             document_id=document_id,
-            document_key=document_key,
         )
         return {"deleted": deleted}
     except Exception as e:
@@ -363,18 +302,15 @@ async def ask_question(request: ChatAskRequest):
     try:
         # Get or create session
         session = await chat_service.get_session(request.session_id)
+        created_metadata: Dict[str, Any] = {}
         if not session:
-            # Auto-create session if not found
-            print(f"[WARNING] Session {request.session_id} not found in database, creating new session...")
-            print(f"[WARNING] ⚠️ Make sure you created the session via POST /api/chat/sessions first!")
-            session_data = ChatSessionCreate(
-                session_id=request.session_id,
-                user_id=None,
-                title=f"Chat Session {request.session_id[:8]}",
-                initial_message=None
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Chat session not found. Please create the session via /api/chat/sessions "
+                    "or /api/chat/sessions/by-document before calling /api/chat/ask."
+                ),
             )
-            session = await chat_service.create_session(session_data)
-            print(f"[LOG] ✅ Auto-created session with session_id: {request.session_id}")
         else:
             print(f"[LOG] ✅ Found existing session: {request.session_id}")
             print(f"[LOG] Session has {len(session.messages) if session.messages else 0} existing messages")
@@ -601,8 +537,7 @@ async def ask_question(request: ChatAskRequest):
         print(f"[DEBUG] Total base64 images: {len(all_base64_images)}")
         print(f"[DEBUG] ============================")
         
-        # Add user question to chat history with file paths in metadata
-        print(f"[DEBUG] Saving user message to database for session: {request.session_id}")
+        # Prepare user message payload (persist after successful inference)
         user_message = ChatMessageCreate(
             role="user",
             content=request.question,
@@ -610,90 +545,38 @@ async def ask_question(request: ChatAskRequest):
                 "user_images": processed_user_images  # Store file paths, not base64
             }
         )
-        user_saved = await chat_service.add_message(request.session_id, user_message)
-        if user_saved:
-            print(f"[DEBUG] ✅ User message saved. Session now has {len(user_saved.messages)} messages")
-        else:
-            print(f"[ERROR] ❌ Failed to save user message")
         
-        # No more embedding - just save to chat history
+        # No more embedding - just save to chat history (after inference)
         
-        # Get session to extract PDF name and document_key
+        # Get session to extract identifiers
         session = await chat_service.get_session(request.session_id)
-        pdf_name = None
-        document_key = None
-        
         document_id = None
-        session_metadata: Dict[str, Any] = {}
+        session_metadata: Dict[str, Any] = _ensure_dict(getattr(session, "metadata", None) or created_metadata)
 
-        if session:
-            session_metadata = _ensure_dict(getattr(session, "metadata", None) or {})
+        if session_metadata:
             document_id = _normalise_document_id_value(
                 session_metadata.get("document_id") or session_metadata.get("documentId")
             )
-            document_key = (
-                _normalise_document_key_value(session_metadata.get("document_key_base"))
-                or _normalise_document_key_value(session_metadata.get("document_key"))
-                or _normalise_document_key_value(session_metadata.get("document_filename"))
+
+        if not document_id:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Session is missing document_id metadata. "
+                    "Please create or refresh the session via /api/chat/sessions or /api/chat/sessions/by-document "
+                    "with a valid document_id before asking questions."
+                ),
             )
-            if isinstance(getattr(session, "title", None), str):
-                title_without_prefix = session.title
-                if title_without_prefix.startswith("Chat:"):
-                    title_without_prefix = title_without_prefix.replace("Chat:", "", 1).strip()
-                if " - " in title_without_prefix:
-                    title_without_prefix = title_without_prefix.split(" - ")[0].strip()
-                pdf_name = title_without_prefix.strip() or None
-
-        if document_id and not document_key:
-            try:
-                from paperreader.services.documents.chunk_repository import get_document_chunks
-
-                chunks = await get_document_chunks(document_id=document_id, limit=1)
-                if chunks:
-                    candidate = _normalise_document_key_value(chunks[0].get("document_key"))
-                    if candidate:
-                        document_key = candidate
-                        print(f"[DEBUG] Found document_key '{document_key}' from MongoDB using document_id '{document_id}'")
-            except Exception as e:
-                print(f"[WARNING] Failed to query MongoDB for document_key: {e}")
-
-            if not document_key:
-                document_key = _normalise_document_key_value(
-                    await _get_document_key_from_elasticsearch(document_id)
-                )
-                if document_key:
-                    print(f"[DEBUG] Found document_key '{document_key}' from Elasticsearch using document_id '{document_id}'")
-
-        if not document_key and pdf_name:
-            candidate = _normalise_document_key_value(pdf_name)
-            if candidate:
-                document_key = candidate
-                print(f"[DEBUG] Derived document_key '{document_key}' from session title '{session.title}'")
-
-        if document_key and not pdf_name:
-            pdf_name = document_key
-
-        # Align with canonical identifiers stored alongside chunks/embeddings
-        document_key, document_id = await _resolve_canonical_document_identity(
-            document_key,
-            document_id,
-            pdf_name,
-        )
 
         updated_metadata = dict(session_metadata)
         metadata_changed = False
         if document_id and updated_metadata.get("document_id") != document_id:
             updated_metadata["document_id"] = document_id
             metadata_changed = True
-        if document_key:
-            if (
-                updated_metadata.get("document_key") != document_key
-                or updated_metadata.get("document_key_base") != document_key
-                or _normalise_document_key_value(updated_metadata.get("document_filename")) != document_key
-            ):
-                updated_metadata["document_key"] = document_key
-                updated_metadata["document_key_base"] = document_key
-                updated_metadata["document_filename"] = f"{document_key}.pdf"
+        # Remove stale document_key metadata if present
+        for stale_key in ("document_key", "document_key_base", "document_filename"):
+            if stale_key in updated_metadata:
+                updated_metadata.pop(stale_key, None)
                 metadata_changed = True
 
         if metadata_changed:
@@ -701,12 +584,6 @@ async def ask_question(request: ChatAskRequest):
             session_metadata = updated_metadata
             print(f"[DEBUG] Updated session metadata with canonical document info: {updated_metadata}")
 
-        if not document_key:
-            print(f"[WARNING] document_key is None or empty. PDF name: '{pdf_name or 'None'}'. Will try to use file-based pipeline.")
-        else:
-            print(f"[DEBUG] Using document_key: '{document_key}' for Elasticsearch retrieval")
-        print(f"[DEBUG] PDF name: '{pdf_name or 'default'}'")
-        
         # Configure and get cached QA pipeline (reuses chunks and embeddings)
         config = PipelineConfig(
             retriever_name=request.retriever,
@@ -717,9 +594,8 @@ async def ask_question(request: ChatAskRequest):
         )
         
         # Use cached pipeline - only rebuilds when PDFs change
-        # Pass pdf_name and document_key to get PDF-specific pipeline
-        print(f"[DEBUG] Getting pipeline for question: {request.question[:50]}... (PDF: {pdf_name or 'default'}, document_key: {document_key or 'none'})")
-        pipeline = await get_pipeline(config, pdf_name=pdf_name, document_key=document_key)
+        print(f"[DEBUG] Getting pipeline for question: {request.question[:50]}... (document_id: {document_id})")
+        pipeline = await get_pipeline(config, pdf_name=None, document_id=document_id)
         if pipeline is None:
             print(f"[ERROR] get_pipeline() returned None - this should not happen!")
             raise HTTPException(
@@ -744,6 +620,15 @@ async def ask_question(request: ChatAskRequest):
         
         print(f"[DEBUG] Pipeline answer completed. Result keys: {list(result.keys())}")
         print(f"[DEBUG] Answer length: {len(result.get('answer', ''))}, Citations: {len(result.get('cited_sections', []))}")
+        
+        # Persist user message only after successful pipeline answer
+        print(f"[DEBUG] Saving user message to database for session: {request.session_id}")
+        user_saved = await chat_service.add_message(request.session_id, user_message)
+        if user_saved:
+            print(f"[DEBUG] ✅ User message saved. Session now has {len(user_saved.messages)} messages")
+        else:
+            print(f"[ERROR] ❌ Failed to save user message")
+            raise HTTPException(status_code=500, detail="Failed to save user message")
         
         # Calculate confidence from retriever scores if not provided by generator
         confidence = result.get("confidence")
@@ -948,6 +833,8 @@ async def ask_question(request: ChatAskRequest):
                     "page": cit.get("page"),
                     "excerpt": excerpt  # Keep full excerpt for reference
                 }
+                # Convert ObjectIds to strings before cleaning
+                citation_data = _convert_objectids_to_strings(citation_data)
                 # Clean citation for UI (remove image/CSV paths)
                 cleaned_citation = _clean_citation_for_ui(citation_data)
                 used_citations.append(cleaned_citation)
@@ -972,17 +859,22 @@ async def ask_question(request: ChatAskRequest):
         document_ids_used = result.get("document_ids_used", [])
         used_chat_history = result.get("used_chat_history", False)
         
+        # Convert all ObjectIds to strings before saving to metadata
+        formatted_citations_clean = _convert_objectids_to_strings(formatted_citations)
+        document_ids_used_clean = _convert_objectids_to_strings(document_ids_used) if document_ids_used else []
+        retriever_scores_clean = _convert_objectids_to_strings(result.get("retriever_scores", []))
+        
         # Add assistant response to chat history with citations, confidence, and document info
         print(f"[DEBUG] Preparing assistant message with {len(formatted_citations)} citations, confidence: {confidence}")
-        print(f"[DEBUG] Documents used: {document_ids_used}, Used chat history: {used_chat_history}")
+        print(f"[DEBUG] Documents used: {document_ids_used_clean}, Used chat history: {used_chat_history}")
         assistant_message = ChatMessageCreate(
             role="assistant",
             content=updated_answer,
             metadata={
-                "cited_sections": formatted_citations,
+                "cited_sections": formatted_citations_clean,
                 "confidence": confidence,
-                "retriever_scores": result.get("retriever_scores", []),
-                "document_ids_used": document_ids_used,  # List of document IDs used in answer
+                "retriever_scores": retriever_scores_clean,
+                "document_ids_used": document_ids_used_clean,  # List of document IDs used in answer
                 "used_chat_history": used_chat_history,  # Whether chat history was used
                 "session_id": request.session_id,  # Session ID for reference
             }
@@ -1203,11 +1095,8 @@ async def ask_with_upload(
         
         # No more embedding - just save to chat history
         
-        # Get session to extract PDF name and document_key
+        # Get session to extract identifiers
         session = await chat_service.get_session(session_id)
-        pdf_name = None
-        document_key = None
-        
         document_id = None
         session_metadata: Dict[str, Any] = {}
 
@@ -1216,62 +1105,17 @@ async def ask_with_upload(
             document_id = _normalise_document_id_value(
                 session_metadata.get("document_id") or session_metadata.get("documentId")
             )
-            document_key = (
-                _normalise_document_key_value(session_metadata.get("document_key_base"))
-                or _normalise_document_key_value(session_metadata.get("document_key"))
-                or _normalise_document_key_value(session_metadata.get("document_filename"))
-            )
-            if isinstance(getattr(session, "title", None), str):
-                title_without_prefix = session.title
-                if title_without_prefix.startswith("Chat:"):
-                    title_without_prefix = title_without_prefix.replace("Chat:", "", 1).strip()
-                if " - " in title_without_prefix:
-                    title_without_prefix = title_without_prefix.split(" - ")[0].strip()
-                pdf_name = title_without_prefix.strip() or None
-
-        if document_id and not document_key:
-            try:
-                from paperreader.services.documents.chunk_repository import get_document_chunks
-
-                chunks = await get_document_chunks(document_id=document_id, limit=1)
-                if chunks:
-                    candidate = _normalise_document_key_value(chunks[0].get("document_key"))
-                    if candidate:
-                        document_key = candidate
-                        print(f"[DEBUG] Found document_key '{document_key}' from MongoDB using document_id '{document_id}'")
-            except Exception as e:
-                print(f"[WARNING] Failed to query MongoDB for document_key: {e}")
-
-            if not document_key:
-                document_key = _normalise_document_key_value(
-                    await _get_document_key_from_elasticsearch(document_id)
-                )
-                if document_key:
-                    print(f"[DEBUG] Found document_key '{document_key}' from Elasticsearch using document_id '{document_id}'")
-
-        if not document_key and pdf_name:
-            candidate = _normalise_document_key_value(pdf_name)
-            if candidate:
-                document_key = candidate
-                print(f"[DEBUG] Derived document_key '{document_key}' from session title '{session.title}'")
-
-        if document_key and not pdf_name:
-            pdf_name = document_key
+        if not document_id:
+            raise HTTPException(status_code=400, detail="Session is missing document_id metadata. Please recreate the chat session.")
 
         updated_metadata = dict(session_metadata)
         metadata_changed = False
         if document_id and updated_metadata.get("document_id") != document_id:
             updated_metadata["document_id"] = document_id
             metadata_changed = True
-        if document_key:
-            if (
-                updated_metadata.get("document_key") != document_key
-                or updated_metadata.get("document_key_base") != document_key
-                or _normalise_document_key_value(updated_metadata.get("document_filename")) != document_key
-            ):
-                updated_metadata["document_key"] = document_key
-                updated_metadata["document_key_base"] = document_key
-                updated_metadata["document_filename"] = f"{document_key}.pdf"
+        for stale_key in ("document_key", "document_key_base", "document_filename"):
+            if stale_key in updated_metadata:
+                updated_metadata.pop(stale_key, None)
                 metadata_changed = True
 
         if metadata_changed:
@@ -1279,12 +1123,6 @@ async def ask_with_upload(
             session_metadata = updated_metadata
             print(f"[DEBUG] Updated session metadata with canonical document info: {updated_metadata}")
 
-        if not document_key:
-            print(f"[WARNING] document_key is None or empty. PDF name: '{pdf_name or 'None'}'. Will try to use file-based pipeline.")
-        else:
-            print(f"[DEBUG] Using document_key: '{document_key}' for Elasticsearch retrieval")
-        print(f"[DEBUG] PDF name: '{pdf_name or 'default'}'")
-        
         # Configure and get cached QA pipeline (reuses chunks and embeddings)
         config = PipelineConfig(
             retriever_name=retriever,
@@ -1298,9 +1136,8 @@ async def ask_with_upload(
         all_base64_images = user_images_base64 + history_base64_images
         
         # Use cached pipeline - only rebuilds when PDFs change
-        # Pass pdf_name and document_key to get PDF-specific pipeline
-        print(f"[DEBUG] Getting pipeline for question: {question[:50]}... (PDF: {pdf_name or 'default'}, document_key: {document_key or 'none'})")
-        pipeline = await get_pipeline(config, pdf_name=pdf_name, document_key=document_key)
+        print(f"[DEBUG] Getting pipeline for question: {question[:50]}... (document_id: {document_id})")
+        pipeline = await get_pipeline(config, pdf_name=None, document_id=document_id)
         if pipeline is None:
             print(f"[ERROR] get_pipeline() returned None - this should not happen!")
             raise HTTPException(
@@ -1405,6 +1242,8 @@ async def ask_with_upload(
                     "page": cit.get("page"),
                     "excerpt": excerpt
                 }
+                # Convert ObjectIds to strings before cleaning
+                citation_data = _convert_objectids_to_strings(citation_data)
                 # Clean citation for UI (remove image/CSV paths)
                 cleaned_citation = _clean_citation_for_ui(citation_data)
                 used_citations.append(cleaned_citation)
@@ -1428,17 +1267,22 @@ async def ask_with_upload(
         document_ids_used = result.get("document_ids_used", [])
         used_chat_history = result.get("used_chat_history", False)
         
+        # Convert all ObjectIds to strings before saving to metadata
+        formatted_citations_clean = _convert_objectids_to_strings(formatted_citations)
+        document_ids_used_clean = _convert_objectids_to_strings(document_ids_used) if document_ids_used else []
+        retriever_scores_clean = _convert_objectids_to_strings(result.get("retriever_scores", []))
+        
         # Add assistant response to chat history with citations, confidence, and document info
         print(f"[DEBUG] Preparing assistant message with {len(formatted_citations)} citations, confidence: {confidence}")
-        print(f"[DEBUG] Documents used: {document_ids_used}, Used chat history: {used_chat_history}")
+        print(f"[DEBUG] Documents used: {document_ids_used_clean}, Used chat history: {used_chat_history}")
         assistant_message = ChatMessageCreate(
             role="assistant",
             content=updated_answer,
             metadata={
-                "cited_sections": formatted_citations,
+                "cited_sections": formatted_citations_clean,
                 "confidence": confidence,
-                "retriever_scores": result.get("retriever_scores", []),
-                "document_ids_used": document_ids_used,  # List of document IDs used in answer
+                "retriever_scores": retriever_scores_clean,
+                "document_ids_used": document_ids_used_clean,  # List of document IDs used in answer
                 "used_chat_history": used_chat_history,  # Whether chat history was used
                 "session_id": session_id,  # Session ID for reference
             }

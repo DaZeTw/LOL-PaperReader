@@ -16,20 +16,19 @@ def _chunks_collection() -> AsyncIOMotorCollection:
     return mongodb.get_collection("chunks")
 
 
-def _make_chunk_id(doc_key: str, chunk: Dict[str, Any], index: int) -> str:
+def _make_chunk_id(document_id: str, chunk: Dict[str, Any], index: int) -> str:
     text = chunk.get("text", "") or ""
-    seed = f"{doc_key}::{index}::{text[:200]}"
+    seed = f"{document_id}::{index}::{text[:200]}"
     return hashlib.sha1(seed.encode("utf-8")).hexdigest()
 
 
 async def replace_document_chunks(
     *,
-    document_id: Optional[str],
-    document_key: str,
+    document_id: str,
     chunks: Iterable[Dict[str, Any]],
 ) -> int:
     """
-    Replace all chunks associated with a document by document_key.
+    Replace all chunks associated with a document by document_id.
     
     Schema matches:
     {
@@ -42,30 +41,34 @@ async def replace_document_chunks(
     }
 
     Args:
-        document_id: Optional string identifier referencing documents collection.
-        document_key: Key used for retrieval (typically doc_id or pdf name/hash).
+        document_id: Document ID (ObjectId string) referencing documents collection.
         chunks: Iterable of chunk dictionaries produced by the parser.
 
     Returns:
         Number of chunks written.
     """
+    if not document_id:
+        raise ValueError("document_id is required")
+    
     collection = _chunks_collection()
-    # Delete by document_key for backward compatibility, or by document_id if available
-    if document_id:
-        try:
-            doc_object_id = ObjectId(document_id)
-            await collection.delete_many({"document_id": doc_object_id})
-        except Exception:
-            # If document_id is not a valid ObjectId, fall back to document_key
-            await collection.delete_many({"document_key": document_key})
-    else:
-        await collection.delete_many({"document_key": document_key})
+    # Delete by document_id
+    try:
+        doc_object_id = ObjectId(document_id)
+        await collection.delete_many({"document_id": doc_object_id})
+    except Exception:
+        raise ValueError(f"Invalid document_id: {document_id}")
 
     now = datetime.utcnow()
     docs: List[Dict[str, Any]] = []
 
+    # Convert document_id to ObjectId
+    try:
+        doc_object_id = ObjectId(document_id)
+    except Exception:
+        raise ValueError(f"Invalid document_id: {document_id}")
+    
     for idx, chunk in enumerate(chunks):
-        chunk_id = chunk.get("chunk_id") or _make_chunk_id(document_key, chunk, idx)
+        chunk_id = chunk.get("chunk_id") or _make_chunk_id(document_id, chunk, idx)
         text = chunk.get("text", "") or ""
         
         # Remove "[View CSV](...)" patterns from text
@@ -75,21 +78,12 @@ async def replace_document_chunks(
         # Calculate SHA256 hash of text to avoid duplicate embeddings
         text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
         
-        # Convert document_id to ObjectId if available
-        doc_object_id = None
-        if document_id:
-            try:
-                doc_object_id = ObjectId(document_id)
-            except Exception:
-                pass  # Keep as None if invalid
-        
         # Get page number (support both 'page' and 'page_number' fields)
         page_number = chunk.get("page_number") or chunk.get("page") or 0
         
         payload: Dict[str, Any] = {
-            "document_id": doc_object_id,  # ObjectId or None
-            "document_key": document_key,  # Keep for backward compatibility
-            "chunk_id": chunk_id,  # Keep for backward compatibility
+            "document_id": doc_object_id,  # ObjectId
+            "chunk_id": chunk_id,
             "page_number": int(page_number),  # Required field
             "text": text,  # Required field
             "hash": text_hash,  # Required field: SHA256(text)
@@ -116,8 +110,7 @@ async def replace_document_chunks(
 
 
 async def get_document_chunks(
-    document_key: Optional[str] = None,
-    document_id: Optional[str] = None,
+    document_id: str,
     *,
     limit: Optional[int] = None
 ) -> List[Dict[str, Any]]:
@@ -125,27 +118,21 @@ async def get_document_chunks(
     Fetch chunks for a specific document.
     
     Args:
-        document_key: Key used for retrieval (backward compatibility).
         document_id: Document ID (ObjectId string) to query by.
         limit: Optional limit on number of chunks to return.
     
     Returns:
         List of chunk dictionaries.
     """
+    if not document_id:
+        return []
+    
     collection = _chunks_collection()
     
-    # Build query - prefer document_id if available
-    query: Dict[str, Any] = {}
-    if document_id:
-        try:
-            query["document_id"] = ObjectId(document_id)
-        except Exception:
-            # Fall back to document_key if document_id is invalid
-            if document_key:
-                query["document_key"] = document_key
-    elif document_key:
-        query["document_key"] = document_key
-    else:
+    # Build query by document_id
+    try:
+        query = {"document_id": ObjectId(document_id)}
+    except Exception:
         return []
     
     cursor = (
@@ -160,37 +147,30 @@ async def get_document_chunks(
 
 
 async def delete_document_chunks(
-    document_id: Optional[str] = None,
-    document_key: Optional[str] = None,
+    document_id: str,
 ) -> int:
     """
     Delete all chunks associated with a document.
     
     Args:
         document_id: Document ID (ObjectId string) to delete by.
-        document_key: Document key to delete by (backward compatibility).
     
     Returns:
         Number of chunks deleted.
     """
+    if not document_id:
+        return 0
+    
     collection = _chunks_collection()
     
-    # Build query - prefer document_id if available
-    query: Dict[str, Any] = {}
-    if document_id:
-        try:
-            query["document_id"] = ObjectId(document_id)
-        except Exception:
-            # If document_id is not a valid ObjectId, fall back to document_key
-            if document_key:
-                query["document_key"] = document_key
-    elif document_key:
-        query["document_key"] = document_key
-    else:
+    # Build query by document_id
+    try:
+        query = {"document_id": ObjectId(document_id)}
+    except Exception:
         return 0
     
     result = await collection.delete_many(query)
     deleted_count = result.deleted_count or 0
     if deleted_count > 0:
-        print(f"[Chunks] ✅ Deleted {deleted_count} chunks from MongoDB (document_id={document_id}, document_key={document_key})")
+        print(f"[Chunks] ✅ Deleted {deleted_count} chunks from MongoDB (document_id={document_id})")
     return deleted_count

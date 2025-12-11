@@ -1,36 +1,36 @@
 "use client"
 
-import { useState, ReactNode } from "react"
-import { X, LucideIcon, MessageSquare, BookmarkIcon, Sparkles, FileText, Settings } from "lucide-react"
+import { useState } from "react"
+import { ChevronRight, MessageSquare, BookmarkIcon, Sparkles, FileText, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { QAInterface } from "@/components/qa-interface"
 import { HighlightNotesSidebar } from "@/components/highlight-notes-sidebar"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 
-interface SidebarTab {
-  id: string
-  icon: LucideIcon
-  label: string
-  content: ReactNode
-  disabled?: boolean
-}
-
 interface RightSidebarProps {
   // Props for QA
   tabId: string
   pdfFile: File
+  documentId: string
   onCitationClick: (page: number, text?: string) => void
   totalPages: number
   
-  // Props for Highlights
+  // Props for Highlights/Skimming
   highlights: SkimmingHighlight[]
   highlightsLoading: boolean
+  highlightsProcessing: boolean
   visibleCategories: Set<string>
   onHighlightClick: (highlight: SkimmingHighlight) => void
   hiddenHighlightIds: Set<number>
   onHighlightToggle: (highlightId: number) => void
   activeHighlightIds: Set<number>
+  
+  // Skimming controls
+  skimmingEnabled: boolean
+  selectedPreset: "light" | "medium" | "heavy"
+  onPresetChange: (preset: "light" | "medium" | "heavy") => void
+  onEnableSkimming: () => Promise<void>
   
   // Sidebar control
   isOpen: boolean
@@ -41,150 +41,245 @@ interface RightSidebarProps {
 export function RightSidebar({
   tabId,
   pdfFile,
+  documentId,
   onCitationClick,
   totalPages,
   highlights,
   highlightsLoading,
+  highlightsProcessing,
   visibleCategories,
   onHighlightClick,
   hiddenHighlightIds,
   onHighlightToggle,
   activeHighlightIds,
+  skimmingEnabled,
+  selectedPreset,
+  onPresetChange,
+  onEnableSkimming,
   isOpen,
   onToggle,
   className,
 }: RightSidebarProps) {
   const [activeTab, setActiveTab] = useState("qa")
 
-  // Define tabs internally
-  const tabs: SidebarTab[] = [
+  // Define tabs
+  const tabs = [
     {
       id: "qa",
       icon: MessageSquare,
       label: "Q&A",
-      content: (
-        <QAInterface
-          tabId={tabId}
-          pdfFile={pdfFile}
-          onHighlight={() => {}}
-          onCitationClick={onCitationClick}
-          totalPages={totalPages}
-          isOpen={true}
-          onToggle={() => {}}
-        />
-      ),
+      disabled: false,
     },
     {
       id: "highlights",
       icon: BookmarkIcon,
       label: "Highlights",
-      disabled: highlightsLoading || highlights.length === 0,
-      content: (
-        <HighlightNotesSidebar
-          highlights={highlights}
-          visibleCategories={visibleCategories}
-          onHighlightClick={onHighlightClick}
-          isOpen={true}
-          onToggle={() => {}}
-          hiddenHighlightIds={hiddenHighlightIds}
-          onHighlightToggle={onHighlightToggle}
-          activeHighlightIds={activeHighlightIds}
-        />
-      ),
+      disabled: false,
     },
     {
       id: "summary",
       icon: Sparkles,
       label: "AI Summary",
-      content: <div className="p-4">AI Summary coming soon...</div>,
+      disabled: true,
     },
     {
       id: "notes",
       icon: FileText,
       label: "Notes",
-      content: <div className="p-4">Notes coming soon...</div>,
+      disabled: true,
     },
     {
       id: "settings",
       icon: Settings,
       label: "Settings",
-      content: <div className="p-4">Settings coming soon...</div>,
+      disabled: true,
     },
   ]
 
   const activeTabData = tabs.find(tab => tab.id === activeTab)
 
-  if (!isOpen) {
-    return (
-      <div className="flex flex-col gap-2 absolute right-4 top-20 z-10">
-        {tabs.map((tab) => (
-          <Button
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id)
-              onToggle()
-            }}
-            variant="default"
-            size="icon"
-            className="h-12 w-12 rounded-full shadow-lg"
-            title={tab.label}
-            disabled={tab.disabled}
-          >
-            <tab.icon className="h-5 w-5" />
-          </Button>
-        ))}
-      </div>
-    )
+  // Render tab content
+  const renderContent = () => {
+    switch (activeTab) {
+      case "qa":
+        return (
+          <QAInterface
+            tabId={tabId}
+            pdfFile={pdfFile}
+            documentId={documentId}
+            onHighlight={() => {}}
+            onCitationClick={onCitationClick}
+            totalPages={totalPages}
+            isOpen={true}
+            onToggle={() => {}}
+          />
+        )
+      
+      case "highlights":
+        return (
+          <div className="flex flex-col h-full">
+            {/* Skimming Control Panel */}
+            {!skimmingEnabled && (
+              <div className="border-b p-4 bg-muted/30">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Enable Skimming</span>
+                  </div>
+                  <select
+                    value={selectedPreset}
+                    onChange={(e) => onPresetChange(e.target.value as "light" | "medium" | "heavy")}
+                    className="w-full px-3 py-2 text-sm border border-border rounded bg-background"
+                  >
+                    <option value="light">Light (30%)</option>
+                    <option value="medium">Medium (50%)</option>
+                    <option value="heavy">Heavy (70%)</option>
+                  </select>
+                  <Button
+                    onClick={onEnableSkimming}
+                    disabled={highlightsProcessing}
+                    size="sm"
+                    className="w-full gap-2"
+                  >
+                    {highlightsProcessing ? (
+                      <>
+                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Enable Skimming
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Skimming Status */}
+            {skimmingEnabled && highlights.length > 0 && (
+              <div className="border-b p-3 bg-primary/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">✨</span>
+                  <span className="text-sm font-medium">
+                    {highlights.length} highlights ({selectedPreset})
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Highlights List */}
+            <div className="flex-1 overflow-auto">
+              {highlights.length === 0 ? (
+                <div className="p-4 text-sm text-muted-foreground text-center">
+                  {highlightsLoading ? "Loading highlights..." : "Enable skimming to see highlights"}
+                </div>
+              ) : (
+                <HighlightNotesSidebar
+                  highlights={highlights}
+                  visibleCategories={visibleCategories}
+                  onHighlightClick={onHighlightClick}
+                  isOpen={true}
+                  onToggle={() => {}}
+                  hiddenHighlightIds={hiddenHighlightIds}
+                  onHighlightToggle={onHighlightToggle}
+                  activeHighlightIds={activeHighlightIds}
+                />
+              )}
+            </div>
+          </div>
+        )
+      
+      case "summary":
+        return <div className="p-4 text-muted-foreground">AI Summary coming soon...</div>
+      
+      case "notes":
+        return <div className="p-4 text-muted-foreground">Notes coming soon...</div>
+      
+      case "settings":
+        return <div className="p-4 text-muted-foreground">Settings coming soon...</div>
+      
+      default:
+        return null
+    }
   }
 
   return (
     <>
-      {/* Tab Switcher - Utility Bar */}
-      <div className="absolute right-[384px] top-20 z-10 flex flex-col gap-1 bg-background border border-border rounded-lg shadow-md overflow-hidden">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "p-3 transition-colors",
-              activeTab === tab.id
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted",
-              tab.disabled && "opacity-50 cursor-not-allowed"
-            )}
-            title={tab.label}
-            disabled={tab.disabled}
-          >
-            <tab.icon className="h-4 w-4" />
-          </button>
-        ))}
-      </div>
+      {/* Toggle Button - Vertical tab on the right edge */}
+      {!isOpen && (
+        <Button
+          onClick={onToggle}
+          variant="default"
+          className="absolute right-0 top-1/2 -translate-y-1/2 h-24 w-8 rounded-r-none rounded-l-lg shadow-lg hover:shadow-xl transition-all z-20 flex flex-col items-center justify-center gap-2 py-2"
+          title="Open sidebar"
+        >
+          <ChevronRight className="h-4 w-4" />
+          <div className="writing-mode-vertical text-xs font-medium">
+            Tools
+          </div>
+        </Button>
+      )}
 
-      {/* Sidebar Content */}
+      {/* Sidebar */}
       <div
         className={cn(
-          "flex h-full w-96 flex-col border-l bg-background",
+          "absolute right-0 top-0 h-full w-96 bg-background border-l shadow-2xl transition-transform duration-300 ease-in-out z-10",
+          !isOpen && "translate-x-full",
           className
         )}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b p-4">
-          <h2 className="text-lg font-semibold">{activeTabData?.label}</h2>
+        {/* Tab Icons & Close Button */}
+        <div className="flex items-center justify-between border-b p-2 bg-muted/30">
+          <div className="flex items-center gap-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                disabled={tab.disabled}
+                className={cn(
+                  "flex items-center justify-center h-9 w-9 rounded-md transition-colors",
+                  activeTab === tab.id
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted",
+                  tab.disabled && "opacity-50 cursor-not-allowed"
+                )}
+                title={tab.label}
+              >
+                <tab.icon className="h-4 w-4" />
+              </button>
+            ))}
+          </div>
+          
+          {/* Close Button */}
           <Button
+            onClick={onToggle}
             variant="ghost"
             size="icon"
-            onClick={onToggle}
-            className="h-8 w-8"
+            className="h-9 w-9"
+            title="Close sidebar"
           >
-            <X className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
 
+        {/* Header */}
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <h2 className="text-lg font-semibold">{activeTabData?.label}</h2>
+        </div>
+
         {/* Content */}
-        <div className="flex-1 overflow-hidden">
-          {activeTabData?.content}
+        <div className="h-[calc(100%-7.5rem)] overflow-hidden">
+          {renderContent()}
         </div>
       </div>
+
+      <style jsx>{`
+        .writing-mode-vertical {
+          writing-mode: vertical-rl;
+          text-orientation: mixed;
+        }
+      `}</style>
     </>
   )
 }

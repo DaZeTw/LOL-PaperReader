@@ -57,7 +57,7 @@ export function PDFViewer({
 }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
   const [numPages, setNumPages] = useState(0)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [viewMode, setViewMode] = useState<"reading" | "skimming">("reading")
   const [bookmarks, setBookmarks] = useState<any[]>([])
   const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
@@ -486,25 +486,7 @@ export function PDFViewer({
             )}
 
             {/* View Mode Toggle */}
-            <div className="w-px h-4 bg-border mx-1" />
-            <Button
-              variant={viewMode === "skimming" ? "default" : "ghost"}
-              size="sm"
-              onClick={toggleViewMode}
-              className="gap-2 h-7"
-            >
-              {viewMode === "skimming" ? (
-                <>
-                  <Eye className="h-3.5 w-3.5" />
-                  <span className="text-xs">Skimming</span>
-                </>
-              ) : (
-                <>
-                  <FileText className="h-3.5 w-3.5" />
-                  <span className="text-xs">Reading</span>
-                </>
-              )}
-            </Button>
+           
 
             {/* ✅ ADD: User Annotations Info - Show when there are annotations */}
             {annotationCount > 0 && (

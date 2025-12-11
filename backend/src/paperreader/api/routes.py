@@ -11,7 +11,7 @@ router = APIRouter()
 class AskRequest(BaseModel):
     question: str
     retriever: Literal["keyword", "dense", "hybrid"] = "hybrid"
-    generator: Literal["openai", "ollama", "extractive"] = "openai"
+    generator: Literal["openai", "extractive"] = "openai"
     image_policy: Literal["none", "auto", "all"] = "auto"
 
     top_k: int = 5
@@ -30,7 +30,7 @@ class AskResponse(BaseModel):
 class BenchmarkRequest(BaseModel):
     questions: List[str]
     retriever: Literal["keyword", "dense", "hybrid"] = "hybrid"
-    generator: Literal["openai", "ollama", "extractive"] = "openai"
+    generator: Literal["openai", "extractive"] = "openai"
     top_k: int = 5
 
 
