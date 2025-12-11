@@ -37,6 +37,7 @@ from paperreader.services.qa.pipeline import (
     reset_pipeline_state,
     set_cancel_flag,
 )
+from paperreader.services.references import parse_references, update_reference_link
 
 router = APIRouter()
 
@@ -707,6 +708,98 @@ async def stream_qa_status(
             await asyncio.sleep(2)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@router.get("/references")
+async def get_references():
+    """Extract and return references from the parsed PDF with clickable links."""
+    try:
+        # Get pipeline to access parsed data
+        pipeline = await get_pipeline()
+        if not pipeline or not pipeline.config:
+            return {"status": "empty", "references": []}
+
+        # Try to load cached references first
+        cfg = PipelineConfig()
+        data_dir = Path(cfg.data_dir)
+        cache_file = data_dir / "references_cache.json"
+
+        # Check if we have cached references
+        if cache_file.exists():
+            print(f"[REFERENCES] Loading cached references from {cache_file}")
+            with open(cache_file, "r", encoding="utf-8") as f:
+                cached_data = json.load(f)
+                return {
+                    "status": "ok",
+                    "references": cached_data.get("references", []),
+                    "count": len(cached_data.get("references", []))
+                }
+
+        # If not cached, parse from markdown
+        # Get markdown file path from pipeline artifacts
+        if not pipeline.artifacts or not pipeline.artifacts.chunks:
+            print("[REFERENCES] No chunks available yet, cannot extract references")
+            return {"status": "empty", "references": []}
+
+        # Find markdown file from data_dir
+        # Look for markdown files in data_dir
+        md_files = list(data_dir.glob("**/*-embedded.md"))
+        if not md_files:
+            md_files = list(data_dir.glob("**/*.md"))
+
+        if not md_files:
+            print("[REFERENCES] No markdown file found")
+            return {"status": "empty", "references": []}
+
+        # Use the most recent markdown file
+        md_file = max(md_files, key=lambda p: p.stat().st_mtime)
+        print(f"[REFERENCES] Reading markdown from {md_file}")
+
+        with open(md_file, "r", encoding="utf-8") as f:
+            markdown_content = f.read()
+
+        # Extract references section
+        from paperreader.services.parser.pdf_parser_pymupdf import extract_references_section
+        references_text = extract_references_section(markdown_content)
+
+        if not references_text:
+            print("[REFERENCES] No references section found in markdown")
+            return {"status": "empty", "references": []}
+
+        print(f"[REFERENCES] Found references section ({len(references_text)} chars)")
+
+        # Parse references
+        references = parse_references(references_text)
+        print(f"[REFERENCES] Parsed {len(references)} references")
+
+        # Generate links for each reference
+        for ref in references:
+            update_reference_link(ref)
+
+        # Convert to dict for JSON serialization
+        references_dict = [ref.to_dict() for ref in references]
+
+        # Cache the results
+        cache_data = {
+            "references": references_dict,
+            "cached_at": time.time()
+        }
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump(cache_data, f, indent=2)
+
+        print(f"[REFERENCES] Cached {len(references_dict)} references")
+
+        return {
+            "status": "ok",
+            "references": references_dict,
+            "count": len(references_dict)
+        }
+
+    except Exception as e:
+        print(f"[REFERENCES] Error getting references: {e}")
+        import traceback
+        print(f"[REFERENCES] Traceback: {traceback.format_exc()}")
+        return {"status": "error", "error": str(e), "references": []}
 
 
 @router.post("/save-and-parse/")

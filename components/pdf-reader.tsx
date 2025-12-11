@@ -5,6 +5,7 @@ import { PDFViewer } from "@/components/pdf-viewer"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { RightSidebar } from "@/components/right-sidebar"
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
+import { useReferences } from "@/hooks/useReferences"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 
 interface NavigationTarget {
@@ -23,12 +24,12 @@ interface SinglePDFReaderProps {
   onSidebarToggle: (isOpen: boolean) => void  // Callback to parent
 }
 
-export function SinglePDFReader({ 
-  file, documentId, 
-  tabId, 
-  isActive, 
-  sidebarOpen, 
-  onSidebarToggle 
+export function SinglePDFReader({
+  file, documentId,
+  tabId,
+  isActive,
+  sidebarOpen,
+  onSidebarToggle
 }: SinglePDFReaderProps) {
   // PDF Navigation State
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
@@ -57,6 +58,50 @@ export function SinglePDFReader({
   // Skimming state
   const [skimmingEnabled, setSkimmingEnabled] = useState(false)
   const [selectedPreset, setSelectedPreset] = useState<"light" | "medium" | "heavy">("medium")
+
+  // References state
+  const { references, loading: referencesLoading, error: referencesError } = useReferences()
+
+  // Handle citation click to open reference PDF
+  const handleReferenceClick = (citationId: string) => {
+    console.log(`[SinglePDFReader:${tabId}] Citation clicked:`, citationId)
+
+    // Extract numeric ID from citation (e.g., "cite.1" -> "1", "[1]" -> "1")
+    const numericMatch = citationId.match(/\d+/)
+    if (!numericMatch) {
+      console.warn(`[SinglePDFReader:${tabId}] Could not extract numeric ID from:`, citationId)
+      return
+    }
+
+    const refNumber = parseInt(numericMatch[0])
+    console.log(`[SinglePDFReader:${tabId}] Looking for reference #${refNumber}`)
+
+    // Find the reference
+    const reference = references.find((ref) => ref.id === refNumber)
+    if (!reference) {
+      console.warn(`[SinglePDFReader:${tabId}] Reference #${refNumber} not found`)
+      return
+    }
+
+    // Open the reference link
+    if (reference.link) {
+      console.log(`[SinglePDFReader:${tabId}] Opening reference link:`, reference.link, `(type: ${reference.link_type})`)
+      
+      const title = reference.title || `Reference ${refNumber}`
+      
+      // Try to open as new tab in app for supported types (arXiv, DOI, direct URL)
+      if (onOpenReferencePDF && reference.link_type !== 'scholar') {
+        // Use our proxy which supports arXiv, DOI (via Semantic Scholar), and direct PDFs
+        console.log(`[SinglePDFReader:${tabId}] Attempting to open PDF in app:`, reference.link)
+        onOpenReferencePDF(reference.link, title)
+      } else {
+        // Fallback to opening in browser for Scholar links (search results, not actual PDFs)
+        window.open(reference.link, "_blank", "noopener,noreferrer")
+      }
+    } else {
+      console.warn(`[SinglePDFReader:${tabId}] Reference #${refNumber} has no link`)
+    }
+  }
 
   // Handle enabling skimming
   const handleEnableSkimming = async () => {
@@ -183,9 +228,10 @@ export function SinglePDFReader({
           hiddenHighlightIds={hiddenHighlightIds}
           activeHighlightIds={activeHighlightIds}
           highlights={highlights}
+          onReferenceClick={handleReferenceClick}
         />
 
-      
+
       </div>
 
       {/* Right Sidebar - Only shown when tab is active */}
