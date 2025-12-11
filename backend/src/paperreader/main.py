@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 # Import routers
 from paperreader.api import pdf_routes  # main backend routes
+from paperreader.api.pdf_proxy import router as pdf_proxy_router  # PDF proxy for fetching reference papers
 from paperreader.api.routes import router as qa_router  # QA RAG routes
 from paperreader.api.chat_routes import router as chat_router  # Chat routes
 from paperreader.api.skimming_routes import router as skimming_router  # Skimming/highlighting routes
@@ -46,6 +47,7 @@ def create_app() -> FastAPI:
     # Routers
     # ------------------------
     app.include_router(pdf_routes.router, prefix="/api/pdf", tags=["PDF"])
+    app.include_router(pdf_proxy_router, tags=["PDF Proxy"])  # No prefix - router already has /api/pdf prefix
     app.include_router(qa_router, prefix="/api/qa", tags=["QA"])
     app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
     app.include_router(skimming_router, prefix="/api/skimming", tags=["Skimming"])

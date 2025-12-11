@@ -23,9 +23,10 @@ interface SinglePDFReaderProps {
   file: File
   tabId: string
   isActive: boolean
+  onOpenReferencePDF?: (pdfUrl: string, title: string) => void
 }
 
-export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps) {
+export function SinglePDFReader({ file, tabId, isActive, onOpenReferencePDF }: SinglePDFReaderProps) {
   // PDF Navigation State
   const [selectedSection, setSelectedSection] = useState<string | null>(null)
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
@@ -83,8 +84,19 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
 
     // Open the reference link
     if (reference.link) {
-      console.log(`[SinglePDFReader:${tabId}] Opening reference link:`, reference.link)
-      window.open(reference.link, "_blank", "noopener,noreferrer")
+      console.log(`[SinglePDFReader:${tabId}] Opening reference link:`, reference.link, `(type: ${reference.link_type})`)
+      
+      const title = reference.title || `Reference ${refNumber}`
+      
+      // Try to open as new tab in app for supported types (arXiv, DOI, direct URL)
+      if (onOpenReferencePDF && reference.link_type !== 'scholar') {
+        // Use our proxy which supports arXiv, DOI (via Semantic Scholar), and direct PDFs
+        console.log(`[SinglePDFReader:${tabId}] Attempting to open PDF in app:`, reference.link)
+        onOpenReferencePDF(reference.link, title)
+      } else {
+        // Fallback to opening in browser for Scholar links (search results, not actual PDFs)
+        window.open(reference.link, "_blank", "noopener,noreferrer")
+      }
     } else {
       console.warn(`[SinglePDFReader:${tabId}] Reference #${refNumber} has no link`)
     }
@@ -402,6 +414,7 @@ export function SinglePDFReader({ file, tabId, isActive }: SinglePDFReaderProps)
               error={referencesError}
               isOpen={rightSidebarOpen}
               onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
+              onOpenReferencePDF={onOpenReferencePDF}
             />
           )}
         </>

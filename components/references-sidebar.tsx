@@ -12,6 +12,7 @@ interface ReferencesSidebarProps {
   error?: string | null
   isOpen?: boolean
   onToggle?: () => void
+  onOpenReferencePDF?: (url: string, title: string) => void
 }
 
 const LINK_TYPE_INFO = {
@@ -43,10 +44,21 @@ export function ReferencesSidebar({
   error = null,
   isOpen = true,
   onToggle,
+  onOpenReferencePDF,
 }: ReferencesSidebarProps) {
-  const handleOpenReference = (link: string) => {
-    if (link) {
-      window.open(link, "_blank", "noopener,noreferrer")
+  const handleOpenReference = (ref: Reference) => {
+    if (!ref.link) return
+    
+    const title = ref.title || `Reference ${ref.id}`
+    
+    // If we have the callback and it's not a Scholar link, try to open in app
+    if (onOpenReferencePDF && ref.link_type !== 'scholar') {
+      console.log(`[ReferencesSidebar] Opening reference in app:`, ref.link, ref.link_type)
+      onOpenReferencePDF(ref.link, title)
+    } else {
+      // Fallback to external link for Scholar or if no callback
+      console.log(`[ReferencesSidebar] Opening external link:`, ref.link)
+      window.open(ref.link, "_blank", "noopener,noreferrer")
     }
   }
 
@@ -128,7 +140,7 @@ export function ReferencesSidebar({
                           "ml-auto flex-shrink-0 h-7 gap-1.5 text-xs",
                           linkInfo.color
                         )}
-                        onClick={() => handleOpenReference(ref.link || "")}
+                        onClick={() => handleOpenReference(ref)}
                       >
                         <span>{linkInfo.icon}</span>
                         <span>{linkInfo.label}</span>

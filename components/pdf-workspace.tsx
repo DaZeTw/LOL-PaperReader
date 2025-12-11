@@ -56,6 +56,48 @@ export function PDFWorkspace() {
     console.log("[PDF Workspace] Created new tab:", newTab.id)
   }
 
+  // Handle opening a reference paper PDF in a new tab
+  const handleOpenReferencePDF = async (pdfUrl: string, title: string) => {
+    console.log("[PDF Workspace] Opening reference PDF:", pdfUrl, title)
+    
+    try {
+      // Fetch PDF through our proxy endpoint (includes Semantic Scholar support)
+      const proxyUrl = `/api/pdf/proxy?url=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}`
+      console.log("[PDF Workspace] Fetching via proxy:", proxyUrl)
+      
+      const response = await fetch(proxyUrl)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("[PDF Workspace] Failed to fetch reference PDF:", response.status, errorText)
+        // Fallback to opening in new browser tab
+        window.open(pdfUrl, "_blank", "noopener,noreferrer")
+        return
+      }
+      
+      const blob = await response.blob()
+      const fileName = title.endsWith('.pdf') ? title : `${title}.pdf`
+      const file = new File([blob], fileName, { type: "application/pdf" })
+      
+      // Create new tab with this file
+      const newTab: PDFTab = {
+        id: generateTabId(),
+        file,
+        title: fileName
+      }
+      
+      setTabs((prev) => [...prev, newTab])
+      setActiveTabId(newTab.id)
+      setShowUpload(false)
+      
+      console.log("[PDF Workspace] Created new tab for reference:", newTab.id)
+    } catch (error) {
+      console.error("[PDF Workspace] Error fetching reference PDF:", error)
+      // Fallback to opening in new browser tab
+      window.open(pdfUrl, "_blank", "noopener,noreferrer")
+    }
+  }
+
   const handleCloseTab = (tabId: string, e: React.MouseEvent) => {
     e.stopPropagation()
     
@@ -195,6 +237,7 @@ export function PDFWorkspace() {
               file={tab.file}
               tabId={tab.id}
               isActive={activeTabId === tab.id && !showUpload}
+              onOpenReferencePDF={handleOpenReferencePDF}
             />
           </div>
         ))}
