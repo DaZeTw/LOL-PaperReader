@@ -24,8 +24,10 @@ from paperreader.services.documents.repository import (
     update_document,
     update_document_status,
 )
+from paperreader.services.parser.grobid_client import GrobidClient
 from paperreader.services.parser.pdf_parser import parse_pdf_with_pymupdf
 from paperreader.services.parser.pdf_parser_pymupdf import set_parse_cancel_flag
+from paperreader.services.parser.reference_extractor import ReferenceExtractorService
 from paperreader.services.qa.chunking import split_markdown_into_chunks
 from paperreader.services.qa.config import PipelineConfig
 from paperreader.services.qa.elasticsearch_client import index_chunks
@@ -732,7 +734,7 @@ async def get_references():
                 return {
                     "status": "ok",
                     "references": cached_data.get("references", []),
-                    "count": len(cached_data.get("references", []))
+                    "count": len(cached_data.get("references", [])),
                 }
 
         # If not cached, parse from markdown
@@ -759,7 +761,10 @@ async def get_references():
             markdown_content = f.read()
 
         # Extract references section
-        from paperreader.services.parser.pdf_parser_pymupdf import extract_references_section
+        from paperreader.services.parser.pdf_parser_pymupdf import (
+            extract_references_section,
+        )
+
         references_text = extract_references_section(markdown_content)
 
         if not references_text:
@@ -780,10 +785,7 @@ async def get_references():
         references_dict = [ref.to_dict() for ref in references]
 
         # Cache the results
-        cache_data = {
-            "references": references_dict,
-            "cached_at": time.time()
-        }
+        cache_data = {"references": references_dict, "cached_at": time.time()}
         with open(cache_file, "w", encoding="utf-8") as f:
             json.dump(cache_data, f, indent=2)
 
@@ -792,12 +794,13 @@ async def get_references():
         return {
             "status": "ok",
             "references": references_dict,
-            "count": len(references_dict)
+            "count": len(references_dict),
         }
 
     except Exception as e:
         print(f"[REFERENCES] Error getting references: {e}")
         import traceback
+
         print(f"[REFERENCES] Traceback: {traceback.format_exc()}")
         return {"status": "error", "error": str(e), "references": []}
 
@@ -988,3 +991,98 @@ async def clear_parser_output():
         raise HTTPException(
             status_code=500, detail=f"Failed to clear output directory: {str(e)}"
         )
+
+
+@router.post("/extract-references/")
+async def extract_references(
+    file: UploadFile = File(...),
+    document_id: Optional[str] = Query(
+        None, description="Document ID to associate references with"
+    ),
+):
+    """
+    Extract references from a PDF using GROBID.
+
+    Returns structured reference data including:
+    - Bibliographic information (title, authors, venue, year, etc.)
+    - Citation markers in the document with their locations
+    - Bounding boxes for both references and citations
+    """
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    temp_dir = Path(tempfile.mkdtemp(prefix="ref_extract_"))
+    pdf_path = temp_dir / file.filename
+    xml_path = temp_dir / f"{file.filename}.tei.xml"
+
+    try:
+        # Save uploaded PDF
+        with pdf_path.open("wb") as f:
+            shutil.copyfileobj(file.file, f)
+
+        print(f"[REFERENCES] Processing {file.filename} for reference extraction...")
+
+        # Step 1: Send PDF to GROBID for processing
+        grobid_client = GrobidClient()
+        xml_content = await asyncio.to_thread(
+            grobid_client.process_pdf, pdf_path, include_coords=True
+        )
+
+        # Save TEI XML for debugging
+        with xml_path.open("w", encoding="utf-8") as f:
+            f.write(xml_content)
+        print(f"[REFERENCES] Saved TEI XML to {xml_path}")
+
+        # Step 2: Extract references from TEI XML
+        extractor = ReferenceExtractorService(xml_content)
+        references = extractor.extract_references()
+
+        print(
+            f"[REFERENCES] Extracted {len(references)} references from {file.filename}"
+        )
+
+        # Convert to dict for JSON response
+        references_dict = [ref.to_dict() for ref in references]
+
+        # Step 3: Save to cache if document_id provided
+        if document_id:
+            cfg = PipelineConfig()
+            cache_dir = Path(cfg.data_dir) / "references_cache"
+            cache_dir.mkdir(parents=True, exist_ok=True)
+
+            cache_file = cache_dir / f"{document_id}_references.json"
+            cache_data = {
+                "document_id": document_id,
+                "filename": file.filename,
+                "references": references_dict,
+                "cached_at": datetime.utcnow().isoformat(),
+                "count": len(references_dict),
+            }
+
+            with cache_file.open("w", encoding="utf-8") as f:
+                json.dump(cache_data, f, indent=2, ensure_ascii=False)
+
+            print(f"[REFERENCES] Cached references to {cache_file}")
+
+        return {
+            "status": "ok",
+            "filename": file.filename,
+            "document_id": document_id,
+            "references": references_dict,
+            "count": len(references_dict),
+        }
+
+    except Exception as e:
+        print(f"[REFERENCES] Error extracting references: {e}")
+        import traceback
+
+        print(f"[REFERENCES] Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to extract references: {str(e)}"
+        )
+    finally:
+        # Cleanup temporary files
+        try:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+        except Exception as e:
+            print(f"[REFERENCES] Failed to cleanup temp dir: {e}")

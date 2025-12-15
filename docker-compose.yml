@@ -75,9 +75,28 @@ services:
       HUGGINGFACE_HUB_CACHE: /data/hf_cache/hub
       SENTENCE_TRANSFORMERS_HOME: /data/st_cache
       TORCH_HOME: /data/torch_cache
+      GROBID_URL: ${GROBID_URL:-http://grobid:8070}
     networks:
       - app-network
+    depends_on:
+      - grobid
 
+  grobid:
+    image: lfoppiano/grobid:0.8.0
+    container_name: paperreader-grobid
+    ports:
+      - "8070:8070"
+    environment:
+      - JAVA_OPTS=-Xmx4g
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8070/api/isalive"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine

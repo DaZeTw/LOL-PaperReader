@@ -30,7 +30,9 @@ RUN pip install --no-cache-dir \
     asyncpg==0.29.0 \
     Authlib==1.3.2 \
     PyJWT==2.9.0 \
-    itsdangerous==2.1.2
+    itsdangerous==2.1.2 \
+    "lxml>=4.9.0" \
+    "beautifulsoup4>=4.12.0"
 
 # ---- 4. Heavy ML libs (separate layer to preserve cache) ----
 # Use precompiled wheels (avoid source builds)
@@ -53,7 +55,7 @@ RUN pip install --no-cache-dir \
     "openai==1.109.0" \
     "httpx>=0.27.0" \
     "pydantic-settings"
-    
+
 RUN pip install --no-cache-dir \
     "transformers==4.40.1" \
     "llama-index" \
