@@ -60,7 +60,7 @@ export function SinglePDFReader({ file, documentId, tabId, isActive }: SinglePDF
   const handleEnableSkimming = async () => {
     try {
       console.log(`[SinglePDFReader:${tabId}] Enabling skimming with preset: ${selectedPreset}`)
-      await enableSkimming(file, selectedPreset)
+      await enableSkimming(file, documentId, selectedPreset)
       setSkimmingEnabled(true)
       // Switch to highlights sidebar to show results
       setRightSidebarMode("highlights")

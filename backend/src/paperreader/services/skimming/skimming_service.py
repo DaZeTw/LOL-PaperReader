@@ -125,23 +125,16 @@ async def get_highlights(
 ) -> Dict:
     """
     Call /get_highlight to retrieve highlights for a processed paper.
-    Uses cache if available.
 
     Args:
         file_name: Name of the PDF file
         alpha: Alpha parameter (for sparse mode)
         ratio: Ratio parameter (for sparse mode)
-        cache_dir: Directory for caching results
+        cache_dir: Directory for caching results (deprecated - not used, only MongoDB is used)
 
     Returns:
         Highlight JSON data
     """
-    # Check cache first
-    if cache_dir:
-        cache = get_cache(cache_dir)
-        cached = cache.get(file_name, mode="sparse", alpha=alpha, ratio=ratio)
-        if cached:
-            return cached
 
     url = f"{SKIMMING_API_BASE}/get_highlight"
 
@@ -166,10 +159,6 @@ async def get_highlights(
             result = response.json()
             print(f"[SkimmingService] Got {len(result.get('highlights', []))} highlights for {file_name}")
 
-            # Save to cache
-            if cache_dir:
-                cache.set(file_name, result, mode="sparse", alpha=alpha, ratio=ratio)
-
             return result
         except httpx.HTTPStatusError as e:
             print(f"[SkimmingService] HTTP Status Error: {e}")
@@ -193,25 +182,17 @@ async def process_and_highlight(
 ) -> Dict:
     """
     Call /process_and_highlight to process a paper and get highlights in one call.
-    Uses cache if available, otherwise processes and caches result.
 
     Args:
         file_name: Name of the PDF file (stem only, no extension)
         pdf_file: PDF file bytes
         alpha: Alpha parameter
         ratio: Ratio parameter
-        cache_dir: Directory for caching results
+        cache_dir: Directory for caching results (deprecated - not used, only MongoDB is used)
 
     Returns:
         Highlight JSON data
     """
-    # Check cache first
-    if cache_dir:
-        cache = get_cache(cache_dir)
-        cached = cache.get(file_name, mode="sparse", alpha=alpha, ratio=ratio)
-        if cached:
-            print(f"[SkimmingService] Using cached highlights for {file_name}")
-            return cached
 
     url = f"{SKIMMING_API_BASE}/process_and_highlight"
 
@@ -254,10 +235,6 @@ async def process_and_highlight(
                     "highlights": highlights,
                     "status": "success"
                 }
-
-                # Save to cache
-                if cache_dir:
-                    cache.set(file_name, return_data, mode="sparse", alpha=alpha, ratio=ratio)
 
                 return return_data
             else:

@@ -137,7 +137,7 @@ async def _select_important_sections(section_names: List[str]) -> List[str]:
     )
 
     agent = Agent(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         system_prompt=SELECT_IMPORTANT_SECTIONS_SYSTEM_PROMPT,
         output_type=ImportantSectionsResponse,
         retries=0,
