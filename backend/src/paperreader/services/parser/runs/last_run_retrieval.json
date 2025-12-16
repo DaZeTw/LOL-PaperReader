@@ -1,58 +1,58 @@
 {
-  "question": "What methodology was used?",
+  "question": "what method this paper use",
   "hits": [
     {
-      "index": 21,
-      "score": 0.28904789276195725,
-      "text": "Inspired by features proposed by prior work for identifying impor-\ntant citations in scientific papers [ 16 , 20 , 23 ], we selected a similar\nfeature set to use in our selection method. Unlike prior work, we\ncalculated a score of each citance using a linear combination of\nfeatures and hand-tuned parameters instead of training a binary\nclassifier. While a learned classifier might achieve higher precision,\nthe need for a large training dataset was a barrier. Unfortunately,\nexisting datasets used by prior work were not applicable for us due\nto differences in objectives. For example, the dataset used by Valen-\nzuela et al. [ 23 ] did not consider result comparison as an important\ncitation, but our formative study had shown that researchers found\nthose highly useful. When it came to choice of features, however,\nwe relied heavily on previous machine learning models (e.g., SciB-\nert [2], SPECTER [6], and Cohan’s citation intent classifier [5]).\nIn the end, our selection approach used the following features\n(we annotate whether the feature is a positive or negative signal):",
+      "index": 6,
+      "score": 0.3324468035009158,
+      "text": "However, once they find one research paper, it’s\nespecially common for scholars to use its references and citations\nto further expand their knowledge of a research area. This behavior,\nsometimes referred to as forward/backward chaining or footnote\nchasing , is ubiquitous and has been observed across many schol-\narly disciplines [ 74 ]. Supporting this, one popular feature in the\nSemantic Reader 1 is in-situ Paper Cards that pop up when readers\nclick on an inline citation, dramatically reducing the interaction\ncost caused by jumping back-and-forth between inline citations\nand their corresponding references at the end of a research paper\n(Figure 1). Despite this affordance, during literature reviews, read-\ners may still be overwhelmed trying to make sense of the tens to\nhundreds of inline citations in each paper [ 15 , 24 , 77 ]. Conversely,\nwhen reading a given paper, a reader cannot see relevant follow-on\nresearch papers that cited the current paper. Here we discuss how\ninteractive reading interfaces can help scholars more effectively\nexplore citations to important relevant work in both directions with\ntwo systems called CiteSee [15] and CiteRead [82].",
       "metadata": {
-        "doc_id": "CiteRead",
-        "title": "Selection Method",
+        "doc_id": "2303.14334v2-embedded",
+        "title": "UNLOCKING CITATIONS FOR DISCOVERY",
+        "page": 3,
+        "images": []
+      }
+    },
+    {
+      "index": 14,
+      "score": 0.30935683628264854,
+      "text": "abstracts offer one such separation, in essence an author-crafted\ndetermination of relevant content. However, static paper abstracts\ncan leave readers to desire additional details that then require them\nto skim the paper itself.\nScim [ 28 ] addresses this problem via an augmented reading\ninterface designed to guide readers’ attention using automatically-\ncreated in-situ faceted highlights (Figure 4). Though prior work\nhas explored highlighting as a visual cue for guiding reader atten-\ntion [ 18 , 102 , 105 ], the efficacy for reading of scholarly text is less\nwell-understood. Scim investigated the following design goals for\nintelligent highlights in scholarly reading: highlights should be\n(1) evenly-distributed throughout a paper, (2) have just the right\ndensity (too few highlights will present the guise of an inept tool,\nand too many will slow a reader down), and (3) highlight several\nkey categories of information in the paper. Because readers often\nskim for common types of information, Scim uses a pretrained lan-\nguage model [ 99 ] to classify salient sentences within papers into\none of four information facets: research objectives, novel aspects\nof the research, methodology, and results, coupled with heuristics\nthat ensure an even distribution of highlights. Usability studies\nof Scim have shown these highlights can reduce the time it takes\nreaders to find specific information within a paper. Readers found\nScim particularly useful when skimming text-dense papers, or for\npapers that fell outside their area of expertise. Moreover, readers\nlearned to use both Scim’s inline highlights and a sidebar summary\nof highlights to augment their existing reading strategies.",
+      "metadata": {
+        "doc_id": "2303.14334v2-embedded",
+        "title": "Guided Reading with Scim",
         "page": 4,
         "images": []
       }
     },
     {
-      "index": 66,
-      "score": 0.28522476039724315,
-      "text": "Q1: How do alternative approaches compare against the approach\nused in this paper? Select one or more statements that were made,\neither in this paper or in a citing paper.",
+      "index": 12,
+      "score": 0.30557791728112105,
+      "text": "Non-linear navigation can be especially burdensome when\nthe reader is interested in a particular type of information (e.g.,\nskimming a paper for the main results), but doesn’t know precisely\nwhere to find it within the paper. In this section we discuss two\nsystems, Scim [ 28 ] and Ocean [ 75 ], which demonstrate different\napproaches to helping readers navigate efficiently through a paper\ntoward high-value, relevant information.",
       "metadata": {
-        "doc_id": "CiteRead",
-        "title": "Service on Social Media”",
-        "page": 13,
+        "doc_id": "2303.14334v2-embedded",
+        "title": "NAVIGATION AND EFFICIENT READING",
+        "page": 4,
         "images": []
       }
     },
     {
-      "index": 43,
-      "score": 0.27296730935077557,
-      "text": "Unfortunately, typical methods for answering these questions\ntoday are extremely cumbersome, involving manually scanning\nthrough a long list of potentially hundreds of papers, finding the\ncitation contexts, and then interpreting them in light of the parts\nof the reference paper they discuss. Even our baseline condition\nin the user study is a step up from typical methods as we used\nour selection method to reduce the list to a more relevant and\nmanageable set. For instance, when asked how long it would take\nto answer the questions posed in our user study using existing tools,\none participant said:",
+      "index": 5,
+      "score": 0.30281946055170395,
+      "text": "Scholars use many methods to discover relevant research papers\nto read, including search engines, word of mouth, and browsing\nfamiliar venues.",
       "metadata": {
-        "doc_id": "CiteRead",
-        "title": "DISCUSSION",
-        "page": 10,
+        "doc_id": "2303.14334v2-embedded",
+        "title": "UNLOCKING CITATIONS FOR DISCOVERY",
+        "page": 3,
         "images": []
       }
     },
     {
-      "index": 67,
-      "score": 0.27092959081353946,
-      "text": "• GRU models outperform the current work’s (baseline) LSTM\nmodel with respect to BLEU score\n• Convolutional Neural Network yields similar result to the\ncurrent work’s LSTM model for BLEU score\n• Bidirectional Long Short-term Memory encoder with\nattention-based architecture gets better results compared\nto plain LSTM encoder-decoder used in this paper\n• Human responses still outperform generated responses on\nappropriateness in this paper, but the responses generated\nby a tone-aware chatbot are perceived as appropriate as the\nresponses by human agents\n• There was no statistically significant difference between\nthis paper’s approach and human agents on empathy for\nemotional requests\n• Chatbots based on GRU models have shown better evaluation\nresults than human’s responses on attentiveness.\nQ2: In contrast to the dataset used in this paper to train chatbots,\nwhat have other papers tried to use as datasets instead? Select one\nor more answers.",
+      "index": 35,
+      "score": 0.2552048970518061,
+      "text": "This paper describes the Semantic Reader Project, which currently\nconsists of ten research prototypes focusing on supporting scien-\ntists around Discovery [ 15 , 82 ], Efficiency [ 28 , 75 ], Comprehen-\nsion [1, 33, 92], Synthesis [43, 73], and Accessibility [91, 97] when\nreading research papers. Validating our approach of augmenting\nexisting PDFs of research papers, we have seen tremendous adop-\ntion of the freely-available Semantic Reader product 1 which has\ngrown to 10k weekly users. 7 While we focused on augmenting PDF\ndocuments to support common scholar reading practices, all of\nour reading interfaces are built with web technologies—allowing\nthese novel interactions to extend to future publication formats\nwhich can be rendered in web browsers. We plan to continue exper-\nimenting with novel AI-powered intelligent reading interfaces, as\nwell as migrating successful interactive features into the product.\nFinally, we offer a collection of freely-available resources to the\nlarger research community, including datasets of open-access re-\nsearch papers [ 61 ], APIs for accessing the academic citation graph\n[ 50 ], machine learning models for processing and understanding\nresearch papers [ 11 , 20 , 42 , 86 ], 4 and open-source software for ren-\ndering and augmenting PDF documents for developing reading\ninterfaces. 3 We hope by providing these resources we can enable\nand encourage the broader research community to work on exciting\nnovel intelligent reading interfaces for research papers with us.",
       "metadata": {
-        "doc_id": "CiteRead",
-        "title": "Service on Social Media”",
-        "page": 13,
-        "images": []
-      }
-    },
-    {
-      "index": 50,
-      "score": 0.2677431800248606,
-      "text": "Our evaluation was limited in several ways. First, our controlled\nlab experiment evaluated the benefits of CiteRead for a specific\nslice of scientists (HCI researchers) on a small set of papers. While\nour results are positive, more studies are needed to determine the\ngenerality of our findings. More extensive evaluation on a large\nrange of papers is also required to determine the general effective-\nness of our automated selection and localization techniques. Our\nend-to-end system evaluation provided support for its effectiveness\nin terms of strong quantitative and qualitative results corroborating\nthe value of these features, but evaluations of each individual tech-\nnique on many papers would provide additional evidence. We also\nnote the need for longitudinal studies to better understand how\ntools like CiteRead are used outside of laboratory settings. In this\nwork, we used existing extracted data from Semantic Scholar for\nselection and localization, which were pre-processed before study\nsessions. However, in the real world, it is impossible to exhaustively\npre-process all publications, and readers are likely to encounter\ndocuments that have not been processed. Moreover, this proces",
-      "metadata": {
-        "doc_id": "CiteRead",
-        "title": "LIMITATIONS AND SOCIETAL IMPACTS",
-        "page": 11,
+        "doc_id": "2303.14334v2-embedded",
+        "title": "CONCLUSION",
+        "page": 8,
         "images": []
       }
     }

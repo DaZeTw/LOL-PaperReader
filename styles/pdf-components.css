@@ -265,39 +265,48 @@ a[data-citation="true"]:hover {
   }
 }
 
-/* Citation Search Highlight Styles */
+/* Citation Search Highlight Styles - Enhanced for QA citations */
 .rpv-search__highlight {
-  background-color: rgba(251, 191, 36, 0.35) !important;
-  border-left: 3px solid rgba(251, 191, 36, 0.8) !important;
-  border-radius: 2px !important;
-  animation: citationHighlightPulse 2s ease-in-out 3 !important;
+  background-color: rgba(251, 191, 36, 0.5) !important;
+  border-left: 4px solid rgba(251, 191, 36, 1) !important;
+  border-radius: 3px !important;
+  animation: citationHighlightPulse 1.5s ease-in-out 3 !important;
   transition: all 0.3s ease !important;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.4) !important;
 }
 
 .rpv-search__highlight--current {
-  background-color: rgba(251, 191, 36, 0.5) !important;
-  border-left: 3px solid rgba(251, 191, 36, 1) !important;
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3) !important;
-  animation: citationHighlightPulse 1.5s ease-in-out infinite !important;
+  background-color: rgba(251, 191, 36, 0.7) !important;
+  border-left: 4px solid rgba(217, 119, 6, 1) !important;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.6), 0 0 0 3px rgba(251, 191, 36, 0.3) !important;
+  animation: citationHighlightPulse 1s ease-in-out infinite !important;
 }
 
 @keyframes citationHighlightPulse {
   0%, 100% {
-    background-color: rgba(251, 191, 36, 0.35);
-    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.3);
+    background-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
     filter: brightness(1);
+    transform: scale(1);
   }
   50% {
-    background-color: rgba(251, 191, 36, 0.5);
-    box-shadow: 0 0 0 5px rgba(251, 191, 36, 0.2);
-    filter: brightness(1.1);
+    background-color: rgba(251, 191, 36, 0.7);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.7), 0 0 0 4px rgba(251, 191, 36, 0.3);
+    filter: brightness(1.15);
+    transform: scale(1.02);
   }
 }
 
-/* Make citation highlights more visible */
+/* Make citation highlights more visible and on top */
 .rpv-core__text-layer .rpv-search__highlight {
-  z-index: 10 !important;
+  z-index: 20 !important;
   position: relative !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure highlights are visible even with multiple overlapping */
+.rpv-search__highlight + .rpv-search__highlight {
+  margin-left: -2px !important;
 }
 
 /* Skimming Highlight Navigation Pulse Animation */

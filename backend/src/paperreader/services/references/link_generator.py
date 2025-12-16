@@ -49,24 +49,42 @@ def generate_scholar_link(reference: Reference) -> str:
     """
     # Build search query from available metadata
     query_parts = []
-
-    if reference.title:
-        query_parts.append(reference.title)
-
+    
+    # Title is most important - use quotes for exact phrase matching
+    if reference.title and len(reference.title) > 10:
+        # Use the title as the main query (Scholar will match this best)
+        query_parts.append(f'"{reference.title}"')
+    
+    # Add first author surname for disambiguation
     if reference.authors and len(reference.authors) > 0:
-        # Add first author
-        query_parts.append(reference.authors[0])
+        first_author = reference.authors[0]
+        # Extract likely surname (last word in name, or everything for single-word names)
+        surname = first_author.split()[-1] if ' ' in first_author else first_author
+        # Remove initials and punctuation
+        surname = surname.strip('.,')
+        if len(surname) > 2:
+            query_parts.append(surname)
 
+    # Add year for filtering
     if reference.year:
         query_parts.append(str(reference.year))
 
-    # If no metadata extracted, use raw text (truncated)
-    if not query_parts:
-        # Use first 200 chars of raw text, remove numbers/brackets
-        raw_cleaned = reference.raw_text[:200]
-        raw_cleaned = raw_cleaned.replace('[', '').replace(']', '')
-        raw_cleaned = raw_cleaned.replace('(', '').replace(')', '')
-        query_parts.append(raw_cleaned)
+    # If we still don't have a good query, use cleaned raw text
+    if len(query_parts) == 0 or (len(query_parts) == 1 and reference.year and str(reference.year) in query_parts):
+        # Extract meaningful text from raw reference
+        raw_text = reference.raw_text
+        # Remove reference number
+        import re
+        raw_text = re.sub(r'^[\[\(]?\d+[\]\)]?\.?\s*', '', raw_text)
+        # Normalize whitespace
+        raw_text = ' '.join(raw_text.split())
+        # Take first 150 chars (likely contains title)
+        raw_text = raw_text[:150]
+        # Clean up special characters
+        raw_text = raw_text.replace('[', '').replace(']', '')
+        raw_text = raw_text.replace('(', '').replace(')', '')
+        if raw_text:
+            query_parts = [raw_text]  # Replace with raw text
 
     query = ' '.join(query_parts)
     encoded_query = quote_plus(query)

@@ -95,22 +95,25 @@ def parse_single_reference(ref_id: int, raw_text: str) -> Reference:
 
 def extract_doi(text: str) -> Optional[str]:
     """Extract DOI from reference text."""
+    # Normalize whitespace to handle DOIs split across lines
+    text = ' '.join(text.split())
+    
     # Pattern 1: doi:10.xxxx/yyyy or DOI:10.xxxx/yyyy
-    match = re.search(r'doi:\s*(10\.\d{4,}/[^\s,]+)', text, re.IGNORECASE)
+    match = re.search(r'doi:\s*(10\.\d{4,}/[^\s,\]]+)', text, re.IGNORECASE)
     if match:
-        return match.group(1).rstrip('.,;')
-
-    # Pattern 2: https://doi.org/10.xxxx/yyyy
-    match = re.search(r'doi\.org/(10\.\d{4,}/[^\s,]+)', text, re.IGNORECASE)
+        return match.group(1).rstrip('.,;)')
+    
+    # Pattern 2: https://doi.org/10.xxxx/yyyy (may have line breaks)
+    match = re.search(r'(?:https?://)?(?:dx\.)?doi\.org/(10\.\d{4,}/[^\s,\]]+)', text, re.IGNORECASE)
     if match:
-        return match.group(1).rstrip('.,;')
+        return match.group(1).rstrip('.,;)')
 
     # Pattern 3: Standalone 10.xxxx/yyyy pattern
-    match = re.search(r'\b(10\.\d{4,}/[^\s,]+)', text)
+    match = re.search(r'\b(10\.\d{4,}/[^\s,\)\]]+)', text)
     if match:
-        doi = match.group(1).rstrip('.,;')
-        # Validate it looks like a real DOI (contains letters/numbers)
-        if re.search(r'[a-zA-Z0-9]', doi.split('/')[1]):
+        doi = match.group(1).rstrip('.,;)')
+        # Validate it looks like a real DOI (contains letters/numbers after slash)
+        if re.search(r'[a-zA-Z0-9]', doi.split('/', 1)[1] if '/' in doi else ''):
             return doi
 
     return None
@@ -118,18 +121,36 @@ def extract_doi(text: str) -> Optional[str]:
 
 def extract_arxiv_id(text: str) -> Optional[str]:
     """Extract arXiv ID from reference text."""
+    # Normalize whitespace first
+    text = ' '.join(text.split())
+    
     # Pattern 1: arXiv:YYMM.NNNNN or arXiv:YYMM.NNNNNvN
     match = re.search(r'arXiv:\s*(\d{4}\.\d{4,5}(?:v\d+)?)', text, re.IGNORECASE)
     if match:
         return match.group(1)
-
+    
     # Pattern 2: arxiv.org/abs/YYMM.NNNNN
     match = re.search(r'arxiv\.org/abs/(\d{4}\.\d{4,5}(?:v\d+)?)', text, re.IGNORECASE)
     if match:
         return match.group(1)
-
-    # Pattern 3: Old arXiv format (e.g., cs/0506085)
+    
+    # Pattern 3: ArXiv abs/YYMM.NNNNN or ArXiv/abs/YYMM.NNNNN
+    match = re.search(r'arXiv\s*(?:/)?abs[/:]?\s*(\d{4}\.\d{4,5}(?:v\d+)?)', text, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    
+    # Pattern 4: Old arXiv format (e.g., cs/0506085, hep-ph/9905221)
     match = re.search(r'arXiv:\s*([a-z\-]+/\d{7})', text, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    
+    # Pattern 5: arxiv.org/pdf/YYMM.NNNNN
+    match = re.search(r'arxiv\.org/pdf/(\d{4}\.\d{4,5}(?:v\d+)?)', text, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    
+    # Pattern 6: Just a standalone arXiv ID pattern (common in "arXiv preprint arXiv:XXXX.XXXXX")
+    match = re.search(r'arXiv\s+(?:preprint\s+)?(?:arXiv:)?(\d{4}\.\d{4,5}(?:v\d+)?)', text, re.IGNORECASE)
     if match:
         return match.group(1)
 
@@ -171,48 +192,134 @@ def extract_year(text: str) -> Optional[int]:
 
 def extract_title(text: str) -> Optional[str]:
     """Extract paper title from reference text."""
+    # Normalize text - join lines with spaces
+    text_normalized = ' '.join(text.split())
+    
     # Remove reference number prefix [1], (1), 1.
-    cleaned = re.sub(r'^[\[\(]?\d+[\]\)]?\.?\s*', '', text)
-
-    # Strategy 1: Title in quotes
-    match = re.search(r'["""]([^"""]+)["""]', cleaned)
-    if match:
-        return match.group(1).strip()
-
-    # Strategy 2: Title between author and year (heuristic)
-    # Look for text after authors (ends with period or comma) and before year
-    match = re.search(r'(?:et al\.|[A-Z]\.\s|[A-Z][a-z]+,\s)+([^.]+?)\.?\s*(?:\(?\d{4}|\d{4}\))', cleaned)
+    cleaned = re.sub(r'^[\[\(]?\d+[\]\)]?\.?\s*', '', text_normalized)
+    
+    # Strategy 1: Title in quotes (various quote styles)
+    match = re.search(r'[""\"\'`'']([^""\"\'`'']{15,})[""\"\'`'']', cleaned)
     if match:
         title = match.group(1).strip()
-        if len(title) > 10:  # Reasonable title length
+        if len(title) > 10 and len(title) < 300:
             return title
-
-    # Strategy 3: First sentence after author names
-    # Look for first capital letter sequence that looks like a title
-    match = re.search(r'(?:[A-Z]\.\s*)+([A-Z][^.]+\.)', cleaned)
+    
+    # Strategy 2: Look for title after year in parentheses
+    # Pattern: Author et al. YEAR. Title text. Venue
+    match = re.search(r'(?:\d{4})[.)\s]+([A-Z][^.]+(?:\.[^.]+)?)\.\s*(?:In\s|Proceedings|arXiv|Journal|Trans|ACM|IEEE|Conference)', cleaned)
     if match:
-        title = match.group(1).strip().rstrip('.')
-        if len(title) > 10 and not title.endswith(('et al', 'eds', 'ed')):
+        title = match.group(1).strip()
+        # Filter out venue names mistakenly captured
+        if len(title) > 15 and not title.lower().startswith(('in ', 'proceedings', 'journal')):
             return title
-
+    
+    # Strategy 3: Look for capitalized title phrase after authors
+    # Authors usually end with: et al., a year, or multiple initials
+    # Common patterns: "LastName YEAR. Title here." or "et al. YEAR. Title here."
+    match = re.search(r'(?:et\s+al\.?|[A-Z][a-z]+)\s*[,.]?\s*(\d{4})[.)]*\s*([A-Z][^.]+)\.\s', cleaned)
+    if match:
+        title = match.group(2).strip()
+        if len(title) > 15 and len(title) < 250:
+            # Make sure it's not author names (author names have commas and single capitals)
+            if ',' not in title[:30] or not re.match(r'^[A-Z][a-z]+\s*,\s*[A-Z]\.', title):
+                return title
+    
+    # Strategy 4: Try to find title between author block and venue/year
+    # Look for the longest sentence-like string that looks like a title
+    sentences = re.split(r'\.\s+', cleaned)
+    for sent in sentences[1:5]:  # Skip first (likely authors), check next few
+        sent = sent.strip()
+        # Title characteristics: starts with capital, reasonable length, not author-like
+        if (len(sent) > 20 and len(sent) < 250 and 
+            sent[0].isupper() and
+            not re.match(r'^[A-Z][a-z]+,\s+[A-Z]\.', sent) and  # Not "LastName, F."
+            not sent.lower().startswith(('in ', 'proceedings', 'journal', 'vol', 'pp'))):
+            # Check it's not mostly author names (has "and" between single-word names)
+            if not re.match(r'^[A-Z][a-z]+\s+and\s+[A-Z][a-z]+', sent):
+                return sent.rstrip('.')
+    
     return None
 
 
 def extract_authors(text: str) -> Optional[List[str]]:
     """Extract author names from reference text."""
+    # Normalize text
+    text_normalized = ' '.join(text.split())
+    
     # Remove reference number prefix
-    cleaned = re.sub(r'^[\[\(]?\d+[\]\)]?\.?\s*', '', text)
-
-    # Look for author patterns before year or title
-    # Pattern: Last, F., Last, F., and Last, F.
-    match = re.search(r'^([^.]+?)(?:\.|,)\s+(?:[A-Z]\.?\s*)+', cleaned)
-    if match:
-        author_text = match.group(1)
-        # Split by common delimiters
-        authors = re.split(r',\s*and\s+|,\s+|\s+and\s+', author_text)
-        # Clean up and filter
-        authors = [a.strip() for a in authors if a.strip() and len(a.strip()) > 1]
-        if authors and len(authors) <= 20:  # Sanity check
-            return authors[:5]  # Return first 5 authors max
-
+    cleaned = re.sub(r'^[\[\(]?\d+[\]\)]?\.?\s*', '', text_normalized)
+    
+    # Look for author block - text before the year
+    # Pattern: Authors. Year. Title... or Authors (Year). Title...
+    match = re.match(r'^(.+?)\s*[.,]?\s*(?:\(?\d{4}\)?)[.,\s]', cleaned)
+    if not match:
+        # Try alternative: text before first quoted string
+        match = re.match(r'^(.+?)\s*["""\']', cleaned)
+    
+    if not match:
+        return None
+    
+    author_text = match.group(1).strip()
+    
+    # Remove any trailing punctuation
+    author_text = author_text.rstrip('.,;:')
+    
+    # Skip if too short or too long
+    if len(author_text) < 5 or len(author_text) > 500:
+        return None
+    
+    # Split by common delimiters
+    # Handle: "Author1, Author2, and Author3" or "Author1; Author2; Author3"
+    # First normalize "and" to comma
+    author_text = re.sub(r',?\s+and\s+', ', ', author_text, flags=re.IGNORECASE)
+    author_text = re.sub(r',?\s+&\s+', ', ', author_text)
+    
+    # Split by comma or semicolon
+    parts = re.split(r'[;,]\s*', author_text)
+    
+    authors = []
+    current_author = []
+    
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        
+        # Check if this looks like a name or initial
+        # Initials: single capital letter optionally followed by period
+        is_initial = re.match(r'^[A-Z]\.?$', part)
+        
+        if is_initial and current_author:
+            # This is an initial belonging to previous name part
+            current_author.append(part)
+        else:
+            # Start of new author name
+            if current_author:
+                # Save previous author
+                author_name = ' '.join(current_author)
+                if len(author_name) > 2:
+                    authors.append(author_name)
+            current_author = [part]
+    
+    # Don't forget the last author
+    if current_author:
+        author_name = ' '.join(current_author)
+        if len(author_name) > 2:
+            authors.append(author_name)
+    
+    # Clean up author names
+    cleaned_authors = []
+    for author in authors:
+        # Remove any remaining odd characters
+        author = re.sub(r'^\d+\.\s*', '', author)  # Remove leading numbers
+        author = author.strip('.,;:')
+        # Skip if it looks like a title or venue
+        if (len(author) > 2 and 
+            not author.lower().startswith(('in ', 'proceedings', 'journal', 'the '))):
+            cleaned_authors.append(author)
+    
+    if cleaned_authors and len(cleaned_authors) <= 20:
+        return cleaned_authors[:10]  # Return up to 10 authors
+    
     return None
