@@ -92,6 +92,52 @@ export function WorkspaceManager({
     console.log("[Workspace Manager] Created new tab:", newTab.id, "for file:", file.name)
   }, [user, findExistingTab, generateTabId, onViewChange, login])
 
+  // Handle opening a reference paper PDF in a new tab (fetched from external URL)
+  const handleOpenReferencePDF = useCallback(async (pdfUrl: string, title: string) => {
+    console.log("[Workspace Manager] Opening reference PDF:", pdfUrl, title)
+    
+    try {
+      // Fetch PDF through our proxy endpoint (includes Semantic Scholar support)
+      const proxyUrl = `/api/pdf/proxy?url=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}`
+      console.log("[Workspace Manager] Fetching via proxy:", proxyUrl)
+      
+      const response = await fetch(proxyUrl)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("[Workspace Manager] Failed to fetch reference PDF:", response.status, errorText)
+        // Fallback to opening in new browser tab
+        window.open(pdfUrl, "_blank", "noopener,noreferrer")
+        return
+      }
+      
+      const blob = await response.blob()
+      const fileName = title.endsWith('.pdf') ? title : `${title}.pdf`
+      const file = new File([blob], fileName, { type: "application/pdf" })
+      
+      // Create new tab with this file (use a special documentId for reference PDFs)
+      const referenceDocId = `ref-${Date.now()}`
+      const newTab: PDFTab = {
+        id: generateTabId(),
+        file,
+        title: fileName,
+        fileName: file.name,
+        documentId: referenceDocId,
+        sidebarOpen: false
+      }
+      
+      setOpenTabs((prev: PDFTab[]) => [...prev, newTab])
+      setActiveTabId(newTab.id)
+      onViewChange('pdf')
+      
+      console.log("[Workspace Manager] Created new tab for reference:", newTab.id)
+    } catch (error) {
+      console.error("[Workspace Manager] Error fetching reference PDF:", error)
+      // Fallback to opening in new browser tab
+      window.open(pdfUrl, "_blank", "noopener,noreferrer")
+    }
+  }, [generateTabId, onViewChange])
+
   const handleCloseTab = useCallback((tabId: string, e?: MouseEvent) => {
     e?.stopPropagation()
     
@@ -215,6 +261,7 @@ export function WorkspaceManager({
               isActive={activeTabId === tab.id}
               sidebarOpen={tab.sidebarOpen ?? false}
               onSidebarToggle={(isOpen) => handleSidebarToggle(tab.id, isOpen)}
+              onOpenReferencePDF={handleOpenReferencePDF}
             />
           </div>
         ))}

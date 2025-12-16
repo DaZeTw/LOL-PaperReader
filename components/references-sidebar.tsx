@@ -4,10 +4,10 @@ import React from "react"
 import { ChevronLeft, ChevronRight, ExternalLink, BookOpen, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Reference } from "@/hooks/useReferences"
+import { PaperReference } from "@/hooks/usePaperReferences"
 
 interface ReferencesSidebarProps {
-  references: Reference[]
+  references: PaperReference[]
   loading?: boolean
   error?: string | null
   isOpen?: boolean
@@ -46,15 +46,35 @@ export function ReferencesSidebar({
   onToggle,
   onOpenReferencePDF,
 }: ReferencesSidebarProps) {
-  const handleOpenReference = (ref: Reference) => {
-    if (!ref.link) return
+  const handleOpenReference = (ref: PaperReference, event: React.MouseEvent) => {
+    // IMPORTANT: Prevent any default behavior and stop propagation
+    event.preventDefault()
+    event.stopPropagation()
+    
+    if (!ref.link) {
+      console.warn(`[ReferencesSidebar] Reference ${ref.id} has no link`)
+      return
+    }
     
     const title = ref.title || `Reference ${ref.id}`
     
+    console.log(`[ReferencesSidebar] Processing reference click:`, {
+      id: ref.id,
+      link: ref.link,
+      link_type: ref.link_type,
+      hasCallback: !!onOpenReferencePDF
+    })
+    
     // If we have the callback and it's not a Scholar link, try to open in app
     if (onOpenReferencePDF && ref.link_type !== 'scholar') {
-      console.log(`[ReferencesSidebar] Opening reference in app:`, ref.link, ref.link_type)
-      onOpenReferencePDF(ref.link, title)
+      console.log(`[ReferencesSidebar] Opening reference in app via callback:`, ref.link, ref.link_type)
+      try {
+        onOpenReferencePDF(ref.link, title)
+      } catch (error) {
+        console.error(`[ReferencesSidebar] Error calling onOpenReferencePDF:`, error)
+        // Fallback to external link on error
+        window.open(ref.link, "_blank", "noopener,noreferrer")
+      }
     } else {
       // Fallback to external link for Scholar or if no callback
       console.log(`[ReferencesSidebar] Opening external link:`, ref.link)
@@ -140,7 +160,7 @@ export function ReferencesSidebar({
                           "ml-auto flex-shrink-0 h-7 gap-1.5 text-xs",
                           linkInfo.color
                         )}
-                        onClick={() => handleOpenReference(ref)}
+                        onClick={(e) => handleOpenReference(ref, e)}
                       >
                         <span>{linkInfo.icon}</span>
                         <span>{linkInfo.label}</span>

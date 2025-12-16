@@ -5,7 +5,7 @@ import { PDFViewer } from "@/components/pdf-viewer"
 import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { RightSidebar } from "@/components/right-sidebar"
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
-import { useReferences } from "@/hooks/useReferences"
+import { usePaperReferences } from "@/hooks/usePaperReferences"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 
 interface NavigationTarget {
@@ -22,6 +22,7 @@ interface SinglePDFReaderProps {
   isActive: boolean
   sidebarOpen: boolean  // Controlled from parent
   onSidebarToggle: (isOpen: boolean) => void  // Callback to parent
+  onOpenReferencePDF?: (pdfUrl: string, title: string) => void  // Callback to open reference in new tab
 }
 
 export function SinglePDFReader({
@@ -29,7 +30,8 @@ export function SinglePDFReader({
   tabId,
   isActive,
   sidebarOpen,
-  onSidebarToggle
+  onSidebarToggle,
+  onOpenReferencePDF
 }: SinglePDFReaderProps) {
   // PDF Navigation State
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
@@ -59,8 +61,8 @@ export function SinglePDFReader({
   const [skimmingEnabled, setSkimmingEnabled] = useState(false)
   const [selectedPreset, setSelectedPreset] = useState<"light" | "medium" | "heavy">("medium")
 
-  // References state
-  const { references, loading: referencesLoading, error: referencesError } = useReferences()
+  // References state (extracted references from PDF's References section)
+  const { references, loading: referencesLoading, error: referencesError } = usePaperReferences(documentId)
 
   // Handle citation click to open reference PDF
   const handleReferenceClick = (citationId: string) => {
