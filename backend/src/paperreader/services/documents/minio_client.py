@@ -140,3 +140,17 @@ async def get_presigned_url(
     except Exception:
         return url
 
+
+async def download_bytes(bucket: str, object_name: str) -> bytes:
+    """Download object bytes from MinIO."""
+    client = get_minio_client()
+
+    def _download() -> bytes:
+        response = client.get_object(bucket, object_name)
+        try:
+            return response.read()
+        finally:
+            response.close()
+            response.release_conn()
+
+    return await asyncio.to_thread(_download)

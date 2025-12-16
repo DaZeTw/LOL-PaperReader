@@ -24,6 +24,9 @@ from paperreader.api.routes import router as qa_router  # QA RAG routes
 from paperreader.api.skimming_routes import (
     router as skimming_router,  # Skimming/highlighting routes
 )
+from paperreader.api.summary_routes import (
+    router as summary_router,  # Paper summarization routes
+)
 from paperreader.database.mongodb import mongodb
 from paperreader.database.postgres import close_postgres_pool, init_postgres_pool
 from paperreader.services.qa.embeddings import get_embedder
@@ -90,6 +93,7 @@ def create_app() -> FastAPI:
     app.include_router(qa_router, prefix="/api/qa", tags=["QA"])
     app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
     app.include_router(skimming_router, prefix="/api/skimming", tags=["Skimming"])
+    app.include_router(summary_router, prefix="/api/summary", tags=["Summary"])
     app.include_router(reference_routes.router, prefix="/api")
     app.include_router(documents_router)
     app.include_router(collections_router)
