@@ -4,11 +4,34 @@ from pathlib import Path
 from typing import List, Optional
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from pydantic import BaseModel
 from paperreader.models.reference import ReferenceSchema, ReferenceUpdate
 from paperreader.services.references.reference_service import ReferenceService
+from paperreader.services.references.pdf_link_resolver import resolve_pdf_link
 
 router = APIRouter(prefix="/references", tags=["references"])
 reference_service = ReferenceService()
+
+
+# Request/Response schemas for PDF link endpoint
+class PdfLinkRequest(BaseModel):
+    """Request schema for PDF link resolution."""
+
+    doi: Optional[str] = None
+    arxiv_id: Optional[str] = None
+    title: Optional[str] = None
+    authors: Optional[List[str]] = None
+    year: Optional[int] = None
+
+
+class PdfLinkResponse(BaseModel):
+    """Response schema for PDF link resolution."""
+
+    pdf_url: Optional[str] = None
+    source: Optional[str] = None
+    is_open_access: bool = False
+
+
 
 
 @router.post("/extract", response_model=List[ReferenceSchema])
@@ -107,3 +130,37 @@ async def get_reference_count(document_id: str):
     """Get reference count for a document."""
     count = await reference_service.get_reference_count(document_id)
     return {"document_id": document_id, "count": count}
+
+
+@router.post("/pdf-link", response_model=PdfLinkResponse)
+async def get_pdf_link(request: PdfLinkRequest):
+    """
+    Resolve PDF link from paper metadata.
+
+    Searches multiple sources to find an open access PDF link:
+    1. arXiv (if arxiv_id provided)
+    2. Unpaywall (if DOI provided)
+    3. Semantic Scholar (DOI or title search)
+    4. CrossRef (if DOI provided)
+
+    Returns the PDF URL, source, and open access status.
+    """
+    if not any([request.doi, request.arxiv_id, request.title]):
+        raise HTTPException(
+            status_code=400,
+            detail="At least one of doi, arxiv_id, or title must be provided",
+        )
+
+    result = await resolve_pdf_link(
+        doi=request.doi,
+        arxiv_id=request.arxiv_id,
+        title=request.title,
+        authors=request.authors,
+        year=request.year,
+    )
+
+    return PdfLinkResponse(
+        pdf_url=result.pdf_url,
+        source=result.source,
+        is_open_access=result.is_open_access,
+    )
