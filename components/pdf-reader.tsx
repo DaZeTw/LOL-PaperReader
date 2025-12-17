@@ -174,7 +174,7 @@ export function SinglePDFReader({
 
     try {
       console.log(`[SinglePDFReader:${tabId}] Enabling skimming with preset: ${selectedPreset}`)
-      await enableSkimming(file, selectedPreset)
+      await enableSkimming(file, documentId, selectedPreset)
       setSkimmingEnabled(true)
     } catch (error) {
       console.error(`[SinglePDFReader:${tabId}] Failed to enable skimming:`, error)

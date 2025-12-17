@@ -16,24 +16,36 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const fileName = searchParams.get("file_name")
+    const documentId = searchParams.get("document_id")
     const preset = searchParams.get("preset") || "medium"
 
-    if (!fileName) {
+    if (!documentId) {
       return NextResponse.json(
         {
-          status: "empty",
-          message: "No file_name parameter provided"
+          status: "error",
+          message: "No document_id parameter provided"
         },
         { status: 400 }
       )
     }
 
-    console.log(`[API /api/pdf/skimming-data] Getting highlights for ${fileName} (preset: ${preset})`)
+    if (!fileName) {
+      console.warn("[API /api/pdf/skimming-data] No file_name provided - will rely on existing DB highlights")
+    }
+
+    const backendUrl = new URL(`${BACKEND_URL}/api/skimming/highlights`)
+    backendUrl.searchParams.set("document_id", documentId)
+    backendUrl.searchParams.set("preset", preset)
+    if (fileName) {
+      backendUrl.searchParams.set("file_name", fileName)
+    }
+
+    console.log(
+      `[API /api/pdf/skimming-data] Getting highlights for document_id=${documentId}, file=${fileName ?? "N/A"} (preset: ${preset})`
+    )
 
     // Call backend to get highlights (uses cache if available)
-    const response = await fetch(
-      `${BACKEND_URL}/api/skimming/highlights?file_name=${encodeURIComponent(fileName)}&preset=${preset}`
-    )
+    const response = await fetch(backendUrl.toString())
 
     if (!response.ok) {
       if (response.status === 404) {

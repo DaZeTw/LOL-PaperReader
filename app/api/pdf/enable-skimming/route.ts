@@ -17,20 +17,28 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get("file") as File | null
     const preset = (formData.get("preset") as string) || "medium"
+    const documentId = (formData.get("document_id") as string) || ""
 
-    if (!file) {
+    if (!documentId) {
       return NextResponse.json(
-        { status: "error", error: "No file provided" },
+        { status: "error", error: "No document_id provided" },
         { status: 400 }
       )
     }
 
-    console.log(`[API /api/pdf/enable-skimming] Processing ${file.name} with preset: ${preset}`)
+    if (file) {
+      console.log(`[API /api/pdf/enable-skimming] Processing ${file.name} with preset: ${preset}`)
+    } else {
+      console.log(`[API /api/pdf/enable-skimming] Processing document ${documentId} with preset: ${preset} (no file provided)`)
+    }
 
     // Forward request to backend
     const backendFormData = new FormData()
-    backendFormData.append("file", file)
     backendFormData.append("preset", preset)
+    backendFormData.append("document_id", documentId)
+    if (file) {
+      backendFormData.append("file", file)
+    }
 
     const response = await fetch(`${BACKEND_URL}/api/skimming/process-and-highlight`, {
       method: "POST",
@@ -51,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       status: "ok",
-      file_name: file.name,
+      file_name: result.file_name || file?.name || "",
       highlights: result.highlights || [],
       preset: result.preset,
       count: result.highlights?.length || 0,

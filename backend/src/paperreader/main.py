@@ -30,6 +30,7 @@ from paperreader.api.summary_routes import (
 from paperreader.database.mongodb import mongodb
 from paperreader.database.postgres import close_postgres_pool, init_postgres_pool
 from paperreader.services.qa.embeddings import get_embedder
+from paperreader.services.skimming.repository import create_skimming_indexes
 from starlette.middleware.sessions import SessionMiddleware
 
 # from paperreader.api.chat_embedding_routes import router as chat_embedding_router  # Chat embedding routes (removed as unused)
@@ -115,6 +116,14 @@ def create_app() -> FastAPI:
         """Initialize database connections and preload embedder model."""
         await mongodb.connect()
         await init_postgres_pool()
+
+        # Create indexes for skimming collections
+        try:
+            await create_skimming_indexes()
+        except Exception as e:
+            print(f"[STARTUP] Warning: Failed to create skimming indexes: {e}")
+            import traceback
+            print(f"[STARTUP] Traceback: {traceback.format_exc()}")
 
         # Preload Visualized_BGE embedder model in background (non-blocking)
         import asyncio

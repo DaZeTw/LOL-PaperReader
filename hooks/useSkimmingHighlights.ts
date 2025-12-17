@@ -13,8 +13,8 @@ interface UseSkimmingHighlightsResult {
     method: number
     result: number
   }
-  enableSkimming: (file: File, preset: PresetType) => Promise<void>
-  fetchHighlights: (fileName: string, preset: PresetType) => Promise<void>
+  enableSkimming: (file: File | null, documentId: string, preset?: PresetType) => Promise<void>
+  fetchHighlights: (documentId: string, fileName?: string, preset?: PresetType) => Promise<void>
   clearHighlights: () => void
 }
 
@@ -25,14 +25,21 @@ export function useSkimmingHighlights(): UseSkimmingHighlightsResult {
   const [error, setError] = useState<string | null>(null)
 
   // Fetch highlights for an already processed file
-  const fetchHighlights = useCallback(async (fileName: string, preset: PresetType = "medium") => {
+  const fetchHighlights = useCallback(async (documentId: string, fileName?: string, preset: PresetType = "medium") => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await fetch(
-        `/api/pdf/skimming-data?file_name=${encodeURIComponent(fileName)}&preset=${preset}`
-      )
+      const params = new URLSearchParams({
+        document_id: documentId,
+        preset,
+      })
+
+      if (fileName) {
+        params.set("file_name", fileName)
+      }
+
+      const response = await fetch(`/api/pdf/skimming-data?${params.toString()}`)
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
@@ -62,16 +69,48 @@ export function useSkimmingHighlights(): UseSkimmingHighlightsResult {
   }, [])
 
   // Enable skimming for a new file (triggers processing)
-  const enableSkimming = useCallback(async (file: File, preset: PresetType = "medium") => {
+  const enableSkimming = useCallback(async (file: File | null, documentId: string, preset: PresetType = "medium") => {
     setProcessing(true)
     setError(null)
 
     try {
-      console.log(`[useSkimmingHighlights] Enabling skimming for ${file.name} with preset: ${preset}`)
+      // FIRST: Check if highlights already exist in MongoDB for this document_id and preset
+      console.log(`[useSkimmingHighlights] Checking MongoDB for existing highlights: document_id=${documentId}, preset=${preset}`)
+      
+      try {
+        const checkParams = new URLSearchParams({
+          document_id: documentId,
+          preset,
+        })
+        if (file) {
+          checkParams.set("file_name", file.name)
+        }
+
+        const checkResponse = await fetch(`/api/pdf/skimming-data?${checkParams.toString()}`)
+        if (checkResponse.ok) {
+          const checkData = await checkResponse.json()
+          if (checkData.status === "ok" && checkData.highlights && checkData.highlights.length > 0) {
+            // Highlights exist in DB, use them immediately
+            console.log(`[useSkimmingHighlights] Found existing highlights in MongoDB: ${checkData.highlights.length} highlights`)
+            setHighlights(checkData.highlights)
+            setProcessing(false)
+            return
+          }
+        }
+      } catch (checkErr) {
+        // If check fails, continue to processing (highlights don't exist yet)
+        console.log(`[useSkimmingHighlights] No existing highlights found in MongoDB, will process new highlights`)
+      }
+
+      // If no highlights found in DB, proceed with processing
+      console.log(`[useSkimmingHighlights] Enabling skimming for ${file?.name || "document"} with preset: ${preset}`)
 
       const formData = new FormData()
-      formData.append("file", file)
+      if (file) {
+        formData.append("file", file)
+      }
       formData.append("preset", preset)
+      formData.append("document_id", documentId)
 
       const response = await fetch("/api/pdf/enable-skimming", {
         method: "POST",
