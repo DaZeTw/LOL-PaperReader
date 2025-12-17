@@ -1,10 +1,10 @@
 {
-  "question": "What is the main finding?",
+  "question": "What methodology was used?",
   "hits": [
     {
       "index": 0,
-      "score": 0.7175001,
-      "text": "4. Evaluation Results, Analysis and Discussion.",
+      "score": 0.76587963,
+      "text": "4.2 Localization Method Similarly to the selection method, we adopted an approach that leverages heuristics and existing pretrained machine learning mod- els instead of training a new model due to mismatch between available datasets and our new task. We ran each selected citance through our localization method to localize them on the reference paper. Fig.",
       "metadata": {
-        "chunk_id": "de52f479287453a6cc39373f3dd97288948c789a",
+        "chunk_id": "78dc9c4a423a2064de6a5329cd68c5cfc7da7d91",
         "doc_id": 

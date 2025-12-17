@@ -5,6 +5,7 @@ import { ChevronRight, MessageSquare, BookmarkIcon, Sparkles, FileText, Settings
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { QAInterface } from "@/components/qa-interface"
+import { SummaryInterface } from "@/components/summary-interface"
 import { HighlightNotesSidebar } from "@/components/highlight-notes-sidebar"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 
@@ -36,6 +37,28 @@ interface RightSidebarProps {
   isOpen: boolean
   onToggle: () => void
   className?: string
+  pipelineStatus?: {
+    isAllReady: boolean
+    isProcessing: boolean
+    overallProgress: number
+    isChatReady: boolean
+    isSummaryReady: boolean
+    isReferencesReady: boolean
+    availableFeatures: string[]
+    embeddingStatus: string
+    summaryStatus: string
+    referenceStatus: string
+    chunkCount: number
+    referenceCount: number
+    message: string
+    stage: string
+    hasErrors: boolean
+    errors: string[]
+    getTaskMessage: (task: 'embedding' | 'summary' | 'reference') => string
+    getCompletedTasks: () => string[]
+    getProcessingTasks: () => string[]
+    isFeatureAvailable: (feature: 'chat' | 'summary' | 'references') => boolean
+  }
 }
 
 export function RightSidebar({
@@ -59,40 +82,46 @@ export function RightSidebar({
   isOpen,
   onToggle,
   className,
+  pipelineStatus,
 }: RightSidebarProps) {
   const [activeTab, setActiveTab] = useState("qa")
 
-  // Define tabs
+  // Define tabs with status indicators
   const tabs = [
     {
       id: "qa",
       icon: MessageSquare,
       label: "Q&A",
       disabled: false,
+      ready: pipelineStatus?.isChatReady,
     },
     {
       id: "highlights",
       icon: BookmarkIcon,
       label: "Highlights",
       disabled: false,
+      ready: true,
     },
     {
       id: "summary",
       icon: Sparkles,
       label: "AI Summary",
-      disabled: true,
+      disabled: false,  // ✅ Changed from true
+      ready: pipelineStatus?.isSummaryReady,
     },
     {
       id: "notes",
       icon: FileText,
       label: "Notes",
       disabled: true,
+      ready: false,
     },
     {
       id: "settings",
       icon: Settings,
       label: "Settings",
       disabled: true,
+      ready: false,
     },
   ]
 
@@ -112,6 +141,8 @@ export function RightSidebar({
             totalPages={totalPages}
             isOpen={true}
             onToggle={() => {}}
+            isActive={activeTab === "qa"}
+            pipelineStatus={pipelineStatus}
           />
         )
       
@@ -191,7 +222,16 @@ export function RightSidebar({
         )
       
       case "summary":
-        return <div className="p-4 text-muted-foreground">AI Summary coming soon...</div>
+        return (
+          <SummaryInterface
+            documentId={documentId}
+            tabId={tabId}
+            isOpen={true}
+            onToggle={() => {}}
+            isActive={activeTab === "summary"}
+            pipelineStatus={pipelineStatus}
+          />
+        )
       
       case "notes":
         return <div className="p-4 text-muted-foreground">Notes coming soon...</div>
@@ -238,7 +278,7 @@ export function RightSidebar({
                 onClick={() => setActiveTab(tab.id)}
                 disabled={tab.disabled}
                 className={cn(
-                  "flex items-center justify-center h-9 w-9 rounded-md transition-colors",
+                  "relative flex items-center justify-center h-9 w-9 rounded-md transition-colors",
                   activeTab === tab.id
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-muted",
@@ -247,6 +287,7 @@ export function RightSidebar({
                 title={tab.label}
               >
                 <tab.icon className="h-4 w-4" />
+                
               </button>
             ))}
           </div>
@@ -265,7 +306,10 @@ export function RightSidebar({
 
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-lg font-semibold">{activeTabData?.label}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">{activeTabData?.label}</h2>
+            
+          </div>
         </div>
 
         {/* Content */}
