@@ -8,19 +8,36 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { useQASession } from "@/hooks/useQASession"
 import { useQAMessages } from "@/hooks/useQAMessages"
-import { usePipelineStatus } from "@/hooks/usePipelineStatus"
 import { useQAActions } from "@/hooks/useQAActions"
 
 interface QAInterfaceProps {
   pdfFile: File
   documentId: string
-  tabId?: string
+  tabId: string
   onHighlight?: (text: string | null) => void
   onCitationClick?: (page: number, text?: string) => void
   totalPages?: number
   isOpen?: boolean
   onToggle?: () => void
   isActive?: boolean
+  pipelineStatus?: {
+    isAllReady: boolean
+    isProcessing: boolean
+    isChatReady: boolean
+    isSummaryReady: boolean
+    isReferencesReady: boolean
+    availableFeatures: string[]
+    embeddingStatus: string
+    summaryStatus: string
+    referenceStatus: string
+    chunkCount: number
+    message: string
+    stage: string
+    overallProgress: number
+    hasErrors: boolean
+    errors: string[]
+    getTaskMessage: (task: 'embedding' | 'summary' | 'reference') => string
+  }
 }
 
 export function QAInterface({
@@ -33,25 +50,51 @@ export function QAInterface({
   isOpen = true,
   onToggle,
   isActive = true,
+  pipelineStatus,
 }: QAInterfaceProps) {
   const [question, setQuestion] = useState("")
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
 
-  // Custom hooks
-  const { sessionId, isInitializing, clearSession } = useQASession({ pdfFile, documentId, tabId })
-  const { messages, showHistory, setShowHistory, addMessage, clearMessages, loadMessages } = useQAMessages({ 
+  // Get chat readiness from parent's pipeline status
+  const isChatReady = pipelineStatus?.isChatReady ?? false
+  const embeddingStatus = pipelineStatus?.embeddingStatus ?? 'pending'
+  const chunkCount = pipelineStatus?.chunkCount ?? 0
+  const processingMessage = pipelineStatus?.message ?? 'Preparing documents...'
+  const overallProgress = pipelineStatus?.overallProgress ?? 0
+  const hasErrors = pipelineStatus?.hasErrors ?? false
+  const errors = pipelineStatus?.errors ?? []
+
+  // Custom hooks - tab-specific state management
+  const { sessionId, isInitializing, clearSession } = useQASession({ 
+    pdfFile, 
+    documentId, 
+    tabId 
+  })
+  
+  const { 
+    messages, 
+    showHistory, 
+    setShowHistory, 
+    addMessage, 
+    clearMessages, 
+    loadMessages 
+  } = useQAMessages({ 
     pdfFile, 
     tabId, 
     sessionId 
   })
-  const { isPipelineReady, pipelineStatus } = usePipelineStatus({ documentId, tabId })
-  const { isLoading, askQuestion, clearThinkingState } = useQAActions({ 
+  
+  const { 
+    isLoading, 
+    askQuestion, 
+    clearThinkingState 
+  } = useQAActions({ 
     sessionId, 
     pdfFile, 
     documentId,
     tabId, 
-    isPipelineReady, 
+    isPipelineReady: isChatReady,
     addMessage,
     reloadMessages: loadMessages,
     createNewSession: async () => (await clearSession()) || ""
@@ -81,7 +124,7 @@ export function QAInterface({
 
   const handleClearHistory = async () => {
     clearMessages()
-    clearThinkingState() // Clear thinking state when chat is cleared
+    clearThinkingState()
     await clearSession()
     toast({
       title: "History cleared",
@@ -100,7 +143,6 @@ export function QAInterface({
   useEffect(() => {
     if (isActive && sessionId && !isInitializing) {
       console.log(`[QAInterface:${tabId}] Tab became active, reloading messages to sync with backend`)
-      // Use a small delay to avoid race conditions
       const timeoutId = setTimeout(() => {
         loadMessages().catch((err: any) => {
           console.warn(`[QAInterface:${tabId}] Failed to reload messages when tab became active:`, err)
@@ -111,10 +153,45 @@ export function QAInterface({
     }
   }, [isActive, sessionId, isInitializing, tabId, loadMessages])
 
+  // Log chat readiness changes with detailed status - FIXED dependencies
+  useEffect(() => {
+    console.log(`[QAInterface:${tabId}] Pipeline Status Update:`, {
+      isChatReady,
+      embeddingStatus,
+      chunkCount,
+      overallProgress,
+      availableFeatures: pipelineStatus?.availableFeatures,
+      raw: pipelineStatus
+    })
+  }, [isChatReady, embeddingStatus, chunkCount, overallProgress, pipelineStatus, tabId])
+
   const shouldShowHistory = messages.length > 0
 
+  // Determine if chat is disabled
+  const isChatDisabled = !isActive || isLoading || isInitializing || !sessionId || !isChatReady
+
+  // Get status message based on current state
+  const getStatusMessage = () => {
+    if (!isActive) return "Tab inactive"
+    if (isInitializing) return "Initializing chat..."
+    if (!sessionId) return "Creating session..."
+    if (!isChatReady) {
+      if (embeddingStatus === 'processing') {
+        return `Processing embeddings...`
+      }
+      if (embeddingStatus === 'error') {
+        return "Error processing embeddings"
+      }
+      return processingMessage
+    }
+    return "Ask anything about this document..."
+  }
+
+  // Show processing bar only when NOT ready
+  const showProcessingBar = !isChatReady && embeddingStatus !== 'error'
+
   return (
-    <>
+    <React.Fragment>
       {!isOpen && onToggle && (
         <button
           onClick={onToggle}
@@ -138,13 +215,14 @@ export function QAInterface({
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="font-mono text-lg font-semibold text-foreground">Ask Questions</h2>
-              <p className="font-mono text-xs text-muted-foreground">Get instant answers from your document</p>
+              <h2 className="font-mono text-lg font-semibold text-foreground">
+                Ask Questions
+              </h2>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {messages.length > 0 && (
-              <>
+              <React.Fragment>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -152,40 +230,48 @@ export function QAInterface({
                   className="gap-2 text-xs"
                 >
                   <History className="h-4 w-4" />
-                  History ({messages.length})
+                  {showHistory ? 'Hide' : 'Show'} ({messages.length})
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleClearHistory} className="gap-2 text-xs">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleClearHistory} 
+                  className="gap-2 text-xs"
+                  disabled={isLoading}
+                >
                   <Trash2 className="h-4 w-4" />
                   Clear
                 </Button>
-              </>
+              </React.Fragment>
             )}
-            {onToggle && (
-              <button onClick={onToggle} className="rounded p-1.5 transition-colors hover:bg-muted">
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </button>
-            )}
+           
           </div>
         </div>
 
-        {/* Compact Processing Status Bar */}
-        {isPipelineReady === false && (
-          <div className="border-b border-border bg-primary/5 px-6 py-2">
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-3 w-3 animate-spin text-primary" />
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-medium text-foreground">
-                    Preparing documents...
+        {/* Minimal Processing Progress Bar - ONLY show when NOT ready */}
+        {showProcessingBar && (
+          <div className="border-b border-border bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-2.5">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="font-mono text-xs font-medium text-foreground truncate">
+                    {embeddingStatus === 'processing' 
+                      ? `Processing` 
+                      : 'Queued for processing'
+                    }
                   </span>
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {typeof pipelineStatus.percent === 'number' ? `${pipelineStatus.percent}%` : ''}
+                  <span className="font-mono text-xs font-semibold text-blue-600 flex-shrink-0">
+                    {overallProgress}%
                   </span>
                 </div>
-                <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-muted">
+                {/* Progress bar */}
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
                   <div 
-                    className="h-full bg-primary transition-all duration-500 ease-out"
-                    style={{ width: `${Math.max(10, Math.min(99, Number(pipelineStatus.percent ?? 10)))}%` }}
+                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500 ease-out"
+                    style={{ 
+                      width: `${Math.max(5, Math.min(100, overallProgress))}%` 
+                    }}
                   />
                 </div>
               </div>
@@ -193,11 +279,25 @@ export function QAInterface({
           </div>
         )}
 
-        {/* Main Content */}
+        {/* Error Status Bar */}
+        {hasErrors && errors.length > 0 && (
+          <div className="border-b border-red-200 bg-red-50 px-6 py-2">
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-medium text-red-600">⚠️ Errors:</span>
+              <div className="flex-1">
+                {errors.map((error, idx) => (
+                  <p key={idx} className="font-mono text-xs text-red-600">{error}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Area */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* History Section */}
-          {shouldShowHistory && (
-            <div ref={scrollAreaRef} className="flex-1 min-h-0 overflow-y-auto border-b border-border">
+          <div ref={scrollAreaRef} className="flex-1 min-h-0 overflow-y-auto">
+            {shouldShowHistory ? (
               <div className="space-y-4 p-6">
                 {messages.map((message, index) => (
                   <div key={message.id} className="space-y-2">
@@ -263,73 +363,80 @@ export function QAInterface({
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Input Section */}
-          <div className="p-6">
-            {/* Suggested Questions */}
-            {messages.length === 0 && (
-              <div className="mb-4">
-                <p className="mb-2 font-mono text-xs font-medium text-muted-foreground">Try asking:</p>
-                <div className="flex flex-wrap gap-2">
-                  {suggestedQuestions.map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => setQuestion(q)}
-                      className="rounded-full border border-border bg-muted/50 px-3 py-1.5 font-mono text-xs text-foreground transition-colors hover:border-primary hover:bg-primary/5"
-                    >
-                      {q}
-                    </button>
-                  ))}
+            ) : (
+              <div className="flex h-full items-center justify-center p-6">
+                <div className="max-w-md space-y-4 text-center">
+                  <div className="flex justify-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                      <Sparkles className="h-8 w-8 text-primary" />
+                    </div>
+                  </div>
+                  
+                  
+                  {/* Suggested Questions - Only when ready */}
+                  {isChatReady && (
+                    <div className="space-y-2">
+                      <p className="font-mono text-xs font-medium text-muted-foreground">Try asking:</p>
+                      <div className="flex flex-col gap-2">
+                        {suggestedQuestions.map((q) => (
+                          <button
+                            key={q}
+                            onClick={() => setQuestion(q)}
+                            className="rounded-lg border border-border bg-muted/50 px-4 py-2 font-mono text-sm text-foreground transition-colors hover:border-primary hover:bg-primary/5"
+                          >
+                            {q}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
+          </div>
 
-            {/* Input Field */}
+          {/* Input Section - Fixed at Bottom */}
+          <div className="border-t border-border bg-background p-6">
             <div className="flex items-end gap-3">
               <div className="flex-1">
                 <Input
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={
-                    isInitializing 
-                      ? "Initializing chat..." 
-                      : isPipelineReady === false
-                      ? "Preparing documents, please wait..."
-                      : "Ask anything about this document..."
-                  }
-                  disabled={!isActive || isLoading || isInitializing || !sessionId || isPipelineReady === false}
-                  className="h-12 resize-none border-2 font-mono text-sm shadow-sm focus:border-primary"
+                  placeholder={getStatusMessage()}
+                  disabled={isChatDisabled}
+                  className="h-12 resize-none border-2 font-mono text-sm shadow-sm focus:border-primary disabled:opacity-60"
                 />
               </div>
               <Button
                 onClick={handleAskQuestion}
-                disabled={!isActive || isLoading || !question.trim() || isInitializing || !sessionId || isPipelineReady === false}
+                disabled={isChatDisabled || !question.trim()}
                 size="lg"
                 className="h-12 gap-2 px-6 shadow-sm"
               >
                 {isLoading ? (
-                  <>
+                  <React.Fragment>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Thinking...</span>
-                  </>
+                  </React.Fragment>
                 ) : (
-                  <>
+                  <React.Fragment>
                     <Send className="h-4 w-4" />
                     <span>Ask</span>
-                  </>
+                  </React.Fragment>
                 )}
               </Button>
             </div>
 
-            <p className="mt-2 font-mono text-xs text-muted-foreground">
-              Press <kbd className="rounded border border-border bg-muted px-1.5 py-0.5">Enter</kbd> to send
-            </p>
+            {/* Removed the waiting message at bottom */}
+            {isChatReady && (
+              <p className="mt-2 font-mono text-xs text-muted-foreground">
+                Press <kbd className="rounded border border-border bg-muted px-1.5 py-0.5">Enter</kbd> to send
+              </p>
+            )}
           </div>
         </div>
       </aside>
-    </>
+    </React.Fragment>
   )
 }

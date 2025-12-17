@@ -2,14 +2,50 @@
 
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react'
 
+// Updated interface to match new backend response
 export interface PipelineStatus {
+  // Overall status
   building: boolean
-  ready: boolean
+  ready: boolean  // Main processing ready (chat available)
+  all_ready: boolean  // ALL tasks ready (chat + summary + references)
   percent: number
   stage: string
   message: string
+  
+  // Main processing details
   chunk_count?: number
   document_id?: string
+  document_status?: string
+  
+  // INDEPENDENT TASK READINESS
+  embedding_status?: string
+  embedding_ready?: boolean
+  embedding_error?: string
+  embedding_updated_at?: string
+  
+  summary_status?: string
+  summary_ready?: boolean
+  summary_error?: string
+  summary_updated_at?: string
+  
+  reference_status?: string
+  reference_ready?: boolean
+  reference_count?: number
+  reference_error?: string
+  reference_updated_at?: string
+  
+  // Feature availability
+  available_features?: string[]  // ["chat", "summary", "references"]
+  
+  // Progress details
+  progress?: {
+    completed: number
+    total: number
+    percentage: number
+  }
+  
+  // Error tracking
+  has_errors?: boolean
   error?: string
   lastUpdated?: number
 }
@@ -61,15 +97,18 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
     subscribersRef.current[trackingKey] = (subscribersRef.current[trackingKey] || 0) + 1
 
     // If connection exists, do nothing
-    if (connectionsRef.current[trackingKey]) return
-
-    // If already ready locally, don't open new stream
-    if (statusMapRef.current[trackingKey]?.ready) {
-      console.log(`[Pipeline] ${trackingKey} is already ready. Skipping stream.`)
+    if (connectionsRef.current[trackingKey]) {
+      console.log(`[Pipeline] Stream already exists for ${trackingKey}`)
       return
     }
 
-    console.log(`[Pipeline] Opening stream for ${trackingKey}`, apiParams)
+    // If already all tasks ready locally, don't open new stream
+    if (statusMapRef.current[trackingKey]?.all_ready) {
+      console.log(`[Pipeline] ${trackingKey} is already complete (all_ready). Skipping stream.`)
+      return
+    }
+
+    console.log(`[Pipeline] 📡 Opening SSE stream for ${trackingKey}`, apiParams)
     
     // Construct Query Params
     const params = new URLSearchParams()
@@ -87,21 +126,56 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
         const data = JSON.parse(event.data) as PipelineStatus
         updateStatus(trackingKey, data)
 
-        // Close stream if ready or error
-        if (data.ready || data.stage === 'error') {
-          console.log(`[Pipeline] Job finished for ${trackingKey}, closing stream.`)
+        // Log feature availability changes
+        if (data.available_features && data.available_features.length > 0) {
+          console.log(
+            `[Pipeline] ✅ ${trackingKey} available features:`,
+            data.available_features.join(', ')
+          )
+        }
+
+        // Log individual task completions
+        if (data.embedding_ready && !statusMapRef.current[trackingKey]?.embedding_ready) {
+          console.log(`[Pipeline] ✅ ${trackingKey} - Chat/QA ready`)
+        }
+        if (data.summary_ready && !statusMapRef.current[trackingKey]?.summary_ready) {
+          console.log(`[Pipeline] ✅ ${trackingKey} - Summary ready`)
+        }
+        if (data.reference_ready && !statusMapRef.current[trackingKey]?.reference_ready) {
+          console.log(`[Pipeline] ✅ ${trackingKey} - References ready`)
+        }
+
+        // Close stream if ALL tasks done or critical error
+        if (data.all_ready || data.stage === 'error' || data.stage === 'timeout') {
+          const reason = data.all_ready 
+            ? `all tasks complete (${data.available_features?.join(', ')})` 
+            : data.stage
+          console.log(`[Pipeline] 🔌 Closing stream for ${trackingKey}: ${reason}`)
+          es.close()
+          delete connectionsRef.current[trackingKey]
+        }
+        
+        // Also close if all tasks reached terminal state (ready or error)
+        const embeddingDone = ['ready', 'error'].includes(data.embedding_status || '') || data.embedding_ready
+        const summaryDone = ['ready', 'error'].includes(data.summary_status || '')
+        const referenceDone = ['ready', 'error'].includes(data.reference_status || '')
+        
+        if (embeddingDone && summaryDone && referenceDone && !data.all_ready) {
+          console.log(
+            `[Pipeline] 🔌 Closing stream for ${trackingKey}: all tasks in terminal state`
+          )
           es.close()
           delete connectionsRef.current[trackingKey]
         }
       } catch (err) {
-        console.error('[Pipeline] Error parsing SSE:', err)
+        console.error('[Pipeline] ❌ Error parsing SSE:', err)
       }
     }
 
     es.onerror = (err) => {
       // Don't log normal closures as errors
       if (es.readyState !== EventSource.CLOSED) {
-        console.error('[Pipeline] Stream error:', err)
+        console.error('[Pipeline] ❌ Stream error:', err)
       }
       es.close()
       delete connectionsRef.current[trackingKey]
@@ -119,7 +193,7 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
     if (subscribersRef.current[trackingKey] === 0) {
       const es = connectionsRef.current[trackingKey]
       if (es) {
-        console.log(`[Pipeline] No subscribers left for ${trackingKey}, closing stream.`)
+        console.log(`[Pipeline] 🔌 No subscribers left for ${trackingKey}, closing stream.`)
         es.close()
         delete connectionsRef.current[trackingKey]
       }

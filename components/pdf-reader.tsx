@@ -6,6 +6,7 @@ import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { RightSidebar } from "@/components/right-sidebar"
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
 import { useReferences } from "@/hooks/useReferences"
+import { usePipelineStatus } from "@/hooks/usePipelineStatus"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 
 interface NavigationTarget {
@@ -25,22 +26,84 @@ interface SinglePDFReaderProps {
 }
 
 export function SinglePDFReader({
-  file, documentId,
+  file, 
+  documentId,
   tabId,
   isActive,
   sidebarOpen,
   onSidebarToggle
 }: SinglePDFReaderProps) {
+  // ============================================================================
+  // PIPELINE STATUS - Centralized processing state management
+  // ============================================================================
+  const {
+    // Overall status
+    isAllReady,
+    isProcessing,
+    overallProgress,
+    message,
+    stage,
+    
+    // Independent task readiness
+    isChatReady,
+    isSummaryReady,
+    isReferencesReady,
+    
+    // Task statuses
+    embeddingStatus,
+    summaryStatus,
+    referenceStatus,
+    
+    // Available features
+    availableFeatures,
+    
+    // Helper functions
+    isFeatureAvailable,
+    getTaskMessage,
+    getCompletedTasks,
+    getProcessingTasks,
+    
+    // Metadata
+    chunkCount,
+    referenceCount,
+    
+    // Errors
+    hasErrors,
+    errors,
+    
+    // Raw status for advanced use
+    raw: pipelineStatus,
+  } = usePipelineStatus({ documentId })
+
+  // Log pipeline status changes
+  useEffect(() => {
+    if (availableFeatures.length > 0) {
+      console.log(`[SinglePDFReader:${tabId}] Available features:`, availableFeatures.join(', '))
+    }
+    if (isProcessing) {
+      console.log(`[SinglePDFReader:${tabId}] Processing:`, getProcessingTasks().join(', '))
+    }
+    if (isAllReady) {
+      console.log(`[SinglePDFReader:${tabId}] All processing complete!`)
+    }
+  }, [availableFeatures, isProcessing, isAllReady, tabId, getProcessingTasks])
+
+  // ============================================================================
   // PDF Navigation State
+  // ============================================================================
   const [navigationTarget, setNavigationTarget] = useState<NavigationTarget | undefined>(undefined)
   const [currentPage, setCurrentPage] = useState(1)
   const [numPages, setNumPages] = useState<number>(0)
 
+  // ============================================================================
   // Annotation State
+  // ============================================================================
   const [highlightColor, setHighlightColor] = useState("#fef08a")
   const [annotationMode, setAnnotationMode] = useState<"highlight" | "erase" | null>(null)
 
-  // Highlights state from hook
+  // ============================================================================
+  // Highlights State (depends on embeddings being ready)
+  // ============================================================================
   const {
     highlights,
     loading: highlightsLoading,
@@ -59,12 +122,24 @@ export function SinglePDFReader({
   const [skimmingEnabled, setSkimmingEnabled] = useState(false)
   const [selectedPreset, setSelectedPreset] = useState<"light" | "medium" | "heavy">("medium")
 
-  // References state
+  // ============================================================================
+  // References State (depends on reference extraction being ready)
+  // ============================================================================
   const { references, loading: referencesLoading, error: referencesError } = useReferences()
 
+  // ============================================================================
+  // Event Handlers
+  // ============================================================================
+  
   // Handle citation click to open reference PDF
   const handleReferenceClick = (citationId: string) => {
     console.log(`[SinglePDFReader:${tabId}] Citation clicked:`, citationId)
+
+    // Check if references are ready
+    if (!isReferencesReady) {
+      console.warn(`[SinglePDFReader:${tabId}] References not ready yet (status: ${referenceStatus})`)
+      return
+    }
 
     // Extract numeric ID from citation (e.g., "cite.1" -> "1", "[1]" -> "1")
     const numericMatch = citationId.match(/\d+/)
@@ -79,7 +154,7 @@ export function SinglePDFReader({
     // Find the reference
     const reference = references.find((ref) => ref.id === refNumber)
     if (!reference) {
-      console.warn(`[SinglePDFReader:${tabId}] Reference #${refNumber} not found`)
+      console.warn(`[SinglePDFReader:${tabId}] Reference #${refNumber} not found in ${references.length} references`)
       return
     }
 
@@ -87,24 +162,20 @@ export function SinglePDFReader({
     if (reference.link) {
       console.log(`[SinglePDFReader:${tabId}] Opening reference link:`, reference.link, `(type: ${reference.link_type})`)
       
-      const title = reference.title || `Reference ${refNumber}`
-      
-      // Try to open as new tab in app for supported types (arXiv, DOI, direct URL)
-      if (onOpenReferencePDF && reference.link_type !== 'scholar') {
-        // Use our proxy which supports arXiv, DOI (via Semantic Scholar), and direct PDFs
-        console.log(`[SinglePDFReader:${tabId}] Attempting to open PDF in app:`, reference.link)
-        onOpenReferencePDF(reference.link, title)
-      } else {
-        // Fallback to opening in browser for Scholar links (search results, not actual PDFs)
-        window.open(reference.link, "_blank", "noopener,noreferrer")
-      }
+      // Open in browser (you can customize this to open in-app)
+      window.open(reference.link, "_blank", "noopener,noreferrer")
     } else {
       console.warn(`[SinglePDFReader:${tabId}] Reference #${refNumber} has no link`)
     }
   }
 
-  // Handle enabling skimming
+  // Handle enabling skimming (depends on embeddings being ready)
   const handleEnableSkimming = async () => {
+    if (!isChatReady) {
+      console.warn(`[SinglePDFReader:${tabId}] Cannot enable skimming - embeddings not ready (status: ${embeddingStatus})`)
+      return
+    }
+
     try {
       console.log(`[SinglePDFReader:${tabId}] Enabling skimming with preset: ${selectedPreset}`)
       await enableSkimming(file, selectedPreset)
@@ -129,7 +200,6 @@ export function SinglePDFReader({
     setNavigationTarget(undefined)
     setCurrentPage(1)
     setAnnotationMode(null)
-    // Don't reset sidebar state - it's controlled by parent
     setActiveHighlightIds(new Set())
     setSkimmingEnabled(false)
   }, [file.name, file.size, file.lastModified, tabId])
@@ -207,7 +277,11 @@ export function SinglePDFReader({
     setNavigationTarget(undefined)
   }
 
-  console.log(`[SinglePDFReader:${tabId}] Render - file: ${file.name}, page: ${currentPage}, active: ${isActive}, sidebarOpen: ${sidebarOpen}`)
+  console.log(
+    `[SinglePDFReader:${tabId}] Render - file: ${file.name}, ` +
+    `page: ${currentPage}, active: ${isActive}, sidebarOpen: ${sidebarOpen}, ` +
+    `pipeline: ${stage} (${availableFeatures.join(', ') || 'none ready'})`
+  )
 
   return (
     <div className="relative flex h-full overflow-hidden">
@@ -229,9 +303,21 @@ export function SinglePDFReader({
           activeHighlightIds={activeHighlightIds}
           highlights={highlights}
           onReferenceClick={handleReferenceClick}
+          // Pass pipeline status to PDFViewer
+          // pipelineStatus={{
+          //   isAllReady,
+          //   isProcessing,
+          //   isChatReady,
+          //   isSummaryReady,
+          //   isReferencesReady,
+          //   availableFeatures,
+          //   embeddingStatus,
+          //   summaryStatus,
+          //   referenceStatus,
+          //   message,
+          //   stage,
+          // }}
         />
-
-
       </div>
 
       {/* Right Sidebar - Only shown when tab is active */}
@@ -256,6 +342,29 @@ export function SinglePDFReader({
           onEnableSkimming={handleEnableSkimming}
           isOpen={sidebarOpen}
           onToggle={() => onSidebarToggle(!sidebarOpen)}
+          // Pass pipeline status to RightSidebar
+          pipelineStatus={{
+            isAllReady,
+            isProcessing,
+            overallProgress,
+            isChatReady,
+            isSummaryReady,
+            isReferencesReady,
+            availableFeatures,
+            embeddingStatus,
+            summaryStatus,
+            referenceStatus,
+            chunkCount,
+            referenceCount,
+            message,
+            stage,
+            hasErrors,
+            errors,
+            getTaskMessage,
+            getCompletedTasks,
+            getProcessingTasks,
+            isFeatureAvailable,
+          }}
         />
       )}
     </div>
