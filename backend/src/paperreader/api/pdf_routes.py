@@ -628,13 +628,13 @@ async def _process_references(
     document_id: Optional[str],
 ) -> Dict[str, Any]:
     """
-    Extract references from a PDF document using GROBID.
+    Extract references from a PDF document using ReferenceService.
     This is independent of the main parsing pipeline.
 
     Steps:
-    1. Process PDF with GROBID to get TEI XML
-    2. Extract references from XML
-    3. Save references to database
+    1. Use ReferenceService to extract references from PDF
+    2. Service handles GROBID processing and database storage
+    3. Return result summary
 
     Returns:
         Dict containing:
@@ -655,84 +655,30 @@ async def _process_references(
                 },
             )
 
-        # Step 1: Process with GROBID
-        grobid_client = GrobidClient()
-        xml_content = await asyncio.to_thread(
-            grobid_client.process_pdf, pdf_path, include_coords=True
+        # Import ReferenceService
+        from paperreader.services.references.reference_service import ReferenceService
+
+        # Initialize service
+        reference_service = ReferenceService()
+
+        print(f"[REFERENCE] Processing {pdf_path.name} with ReferenceService...")
+
+        # Extract and save references using the service
+        # This handles GROBID processing and database storage
+        references = await reference_service.extract_and_save_references(
+            pdf_path=pdf_path,
+            document_id=document_id,
         )
 
-        print(f"[REFERENCE] Received TEI XML from GROBID for {pdf_path.name}")
+        reference_count = len(references)
 
-        # Step 2: Extract references from XML
-        extractor = ReferenceExtractorService(xml_content)
-        references = extractor.extract_references()
-
-        print(f"[REFERENCE] Found {len(references)} references in {pdf_path.name}")
-
-        # Step 3: Save to database
-        if document_id and references:
-            from paperreader.services.references.repository import (
-                replace_document_references,
-            )
-
-            # Convert to ReferenceCreate schema
-            reference_creates = []
-            for ref in references:
-                bib_location = [
-                    BoundingBoxSchema(
-                        page=box.page,
-                        left=box.left,
-                        top=box.top,
-                        width=box.width,
-                        height=box.height,
-                    )
-                    for box in ref.boxes
-                ]
-
-                mentions = [
-                    CitationMentionSchema(
-                        text=marker.text,
-                        boxes=[
-                            BoundingBoxSchema(
-                                page=box.page,
-                                left=box.left,
-                                top=box.top,
-                                width=box.width,
-                                height=box.height,
-                            )
-                            for box in marker.boxes
-                        ],
-                    )
-                    for marker in ref.citation_contexts
-                ]
-
-                reference_creates.append(
-                    ReferenceCreate(
-                        document_id=document_id,
-                        ref_id=ref.id,
-                        title=ref.title,
-                        venue=ref.venue,
-                        authors=ref.authors,
-                        year=ref.year,
-                        volume=ref.volume,
-                        issue=ref.issue,
-                        pages=ref.pages,
-                        doi=ref.doi,
-                        arxiv_id=ref.arxiv_id,
-                        bib_location=bib_location,
-                        mentions=mentions,
-                    )
-                )
-
-            # Save references to database
-            await replace_document_references(document_id, reference_creates)
-            print(
-                f"[REFERENCE] Saved {len(reference_creates)} references to database for document {document_id}"
-            )
+        print(
+            f"[REFERENCE] Service extracted {reference_count} references for {pdf_path.name}"
+        )
 
         elapsed = time.time() - start_time
         print(
-            f"[REFERENCE] ✅ Extracted and saved {len(references)} references "
+            f"[REFERENCE] ✅ Extracted and saved {reference_count} references "
             f"for {pdf_path.name} in {elapsed:.2f}s"
         )
 
@@ -742,7 +688,7 @@ async def _process_references(
                 document_id,
                 {
                     "reference_status": "ready",
-                    "reference_count": len(references),
+                    "reference_count": reference_count,
                     "reference_updated_at": datetime.utcnow(),
                 },
             )
@@ -750,7 +696,7 @@ async def _process_references(
 
         return {
             "status": "success",
-            "reference_count": len(references),
+            "reference_count": reference_count,
             "elapsed": elapsed,
         }
 
