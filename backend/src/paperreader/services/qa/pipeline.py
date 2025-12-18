@@ -1,26 +1,30 @@
 import asyncio
-import os
-import json
 import hashlib
-import threading
+import json
+import os
 import pickle
+import re
+import threading
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-from .config import PipelineConfig
-from .loaders import load_parsed_jsons
-from .chunking import split_sections_into_chunks
-from .embeddings import get_embedder
-from .retrievers import build_corpus, build_store, build_persistent_store, get_retriever
-import re
-from .generators import get_generator
 from paperreader.database.mongodb import mongodb
-from paperreader.services.documents.repository import update_document, to_object_id, get_document_by_id
 from paperreader.services.documents.chunk_repository import get_document_chunks
+from paperreader.services.documents.repository import (
+    get_document_by_id,
+    to_object_id,
+    update_document,
+)
 from paperreader.services.qa.elasticsearch_client import index_chunks
 
+from .chunking import split_sections_into_chunks
+from .config import PipelineConfig
+from .embeddings import get_embedder
+from .generators import get_generator
+from .loaders import load_parsed_jsons
+from .retrievers import build_corpus, build_persistent_store, build_store, get_retriever
 
 # Pipeline state tracking
 _PIPELINE_BUILDING: Dict[str, bool] = {}  # Key: data_dir path
@@ -30,7 +34,9 @@ _PIPELINE_PROGRESS: Dict[str, Dict[str, Any]] = {}  # Key: data_dir path
 _RESUME_TASKS: Dict[str, asyncio.Task] = {}
 _RESUME_LOCK: Optional[asyncio.Lock] = None
 # Track documents that are currently being processed (chunking or embedding)
-_PROCESSING_DOCUMENTS: Dict[str, str] = {}  # Key: document_id, Value: process_type ("chunking" or "embedding")
+_PROCESSING_DOCUMENTS: Dict[str, str] = (
+    {}
+)  # Key: document_id, Value: process_type ("chunking" or "embedding")
 _PROCESSING_LOCK = threading.Lock()  # Lock for _PROCESSING_DOCUMENTS
 # Locks to prevent concurrent rebuilds for the same data_dir
 _PIPELINE_BUILD_LOCKS: Dict[str, threading.Lock] = {}  # Key: data_dir path, Value: lock
@@ -60,12 +66,16 @@ def clear_processing_flag(document_id: str, process_type: str = None) -> None:
             # Clear only if matches the process type
             if _PROCESSING_DOCUMENTS.get(document_id) == process_type:
                 _PROCESSING_DOCUMENTS.pop(document_id, None)
-                print(f"[Pipeline] ✅ Cleared {process_type} processing flag for document {document_id}")
+                print(
+                    f"[Pipeline] ✅ Cleared {process_type} processing flag for document {document_id}"
+                )
         else:
             # Clear regardless of process type
             if document_id in _PROCESSING_DOCUMENTS:
                 _PROCESSING_DOCUMENTS.pop(document_id, None)
-                print(f"[Pipeline] ✅ Cleared processing flag for document {document_id}")
+                print(
+                    f"[Pipeline] ✅ Cleared processing flag for document {document_id}"
+                )
 
 
 def _get_resume_lock() -> asyncio.Lock:
@@ -76,11 +86,17 @@ def _get_resume_lock() -> asyncio.Lock:
     return _RESUME_LOCK
 
 
-def _set_progress(percent: int, stage: str, message: str = "", data_dir: Optional[str] = None) -> None:
+def _set_progress(
+    percent: int, stage: str, message: str = "", data_dir: Optional[str] = None
+) -> None:
     try:
         progress_key = str(data_dir) if data_dir else "default"
         if progress_key not in _PIPELINE_PROGRESS:
-            _PIPELINE_PROGRESS[progress_key] = {"percent": 0, "stage": "idle", "message": ""}
+            _PIPELINE_PROGRESS[progress_key] = {
+                "percent": 0,
+                "stage": "idle",
+                "message": "",
+            }
         _PIPELINE_PROGRESS[progress_key]["percent"] = max(0, min(100, int(percent)))
         _PIPELINE_PROGRESS[progress_key]["stage"] = stage
         if message:
@@ -92,7 +108,9 @@ def _set_progress(percent: int, stage: str, message: str = "", data_dir: Optiona
 def get_pipeline_progress(data_dir: Optional[str] = None) -> Dict[str, Any]:
     """Get current pipeline build progress."""
     progress_key = str(data_dir) if data_dir else "default"
-    return _PIPELINE_PROGRESS.get(progress_key, {"percent": 0, "stage": "idle", "message": ""})
+    return _PIPELINE_PROGRESS.get(
+        progress_key, {"percent": 0, "stage": "idle", "message": ""}
+    )
 
 
 @dataclass
@@ -114,14 +132,21 @@ class QAPipeline:
     ) -> None:
         self.config = config
         self.lazy_store = lazy_store
-        self.document_id = document_id  # Document identifier for Elasticsearch retrieval
+        self.document_id = (
+            document_id  # Document identifier for Elasticsearch retrieval
+        )
         self._build(docs=docs, chunks=chunks)
 
-    def _build(self, docs: Optional[List[Dict[str, Any]]] = None, chunks: Optional[List[Dict[str, Any]]] = None) -> None:
+    def _build(
+        self,
+        docs: Optional[List[Dict[str, Any]]] = None,
+        chunks: Optional[List[Dict[str, Any]]] = None,
+    ) -> None:
         import time
+
         start_time = time.time()
         data_dir_key = str(self.config.data_dir)
-        
+
         # If using Elasticsearch (document_id provided), skip file loading and chunking
         if self.document_id:
             print(f"[LOG] Using Elasticsearch - skipping file loading and chunking")
@@ -130,9 +155,14 @@ class QAPipeline:
             embedder_time = 0.0
             corpus_time = 0.0
             store_time = 0.0
-            
-            _set_progress(100, "elasticsearch_ready", f"Using Elasticsearch for document_id: {self.document_id}", data_dir_key)
-            
+
+            _set_progress(
+                100,
+                "elasticsearch_ready",
+                f"Using Elasticsearch for document_id: {self.document_id}",
+                data_dir_key,
+            )
+
             # Load embedder (needed for query encoding)
             embedder_start = time.time()
             try:
@@ -141,9 +171,10 @@ class QAPipeline:
                 print(f"[LOG] ✅ Embedder instance obtained in {embedder_time:.2f}s")
             except RuntimeError as e:
                 raise RuntimeError(f"Failed to initialize embedder: {e}")
-            
+
             # Create empty corpus and store (not used with Elasticsearch)
             from .retrievers import InMemoryVectorStore
+
             corpus = build_corpus(chunks)
             store = InMemoryVectorStore(
                 dense_vectors=None,
@@ -158,20 +189,31 @@ class QAPipeline:
         else:
             # Check cancel flag at the very start of build
             _check_cancel("At start of pipeline build")
-            
+
             # If chunks provided directly, use them (skip chunking)
             if chunks is not None:
                 print(f"[LOG] ✅ Using provided chunks directly (skipping chunking)")
                 chunk_time = 0.0
-                _set_progress(30, "chunking_done", f"Using provided chunks ({len(chunks)} chunks)", data_dir_key)
+                _set_progress(
+                    30,
+                    "chunking_done",
+                    f"Using provided chunks ({len(chunks)} chunks)",
+                    data_dir_key,
+                )
             else:
                 # If docs provided directly, use them; otherwise load from files
                 if docs is not None:
-                    print(f"[LOG] Using provided documents directly (no file loading needed)...")
-                    _set_progress(5, "load_docs", "Using provided documents", data_dir_key)
+                    print(
+                        f"[LOG] Using provided documents directly (no file loading needed)..."
+                    )
+                    _set_progress(
+                        5, "load_docs", "Using provided documents", data_dir_key
+                    )
                 else:
                     print(f"[LOG] Loading parsed documents from {data_dir_key}...")
-                    _set_progress(5, "load_docs", "Loading parsed documents", data_dir_key)
+                    _set_progress(
+                        5, "load_docs", "Loading parsed documents", data_dir_key
+                    )
                     _check_cancel("Loading documents")
                     docs = load_parsed_jsons(self.config)
                 print(f"[LOG] Number of documents loaded: {len(docs)}")
@@ -179,48 +221,74 @@ class QAPipeline:
 
                 # Use semantic splitter if available (from chunking module)
                 # It will automatically fallback to heuristic chunking if not available
-                from paperreader.services.qa.chunking import _SPLITTER, _HAS_SEMANTIC
+                from paperreader.services.qa.chunking import _HAS_SEMANTIC, _SPLITTER
+
                 semantic_splitter = _SPLITTER if _HAS_SEMANTIC else None
                 if semantic_splitter:
                     print("[LOG] ✅ Using semantic splitter for chunking")
                 else:
-                    print("[LOG] ⚠️ Semantic splitter not available, using heuristic chunking")
+                    print(
+                        "[LOG] ⚠️ Semantic splitter not available, using heuristic chunking"
+                    )
 
                 print("[LOG] Starting chunking process...")
                 _set_progress(10, "chunking", "Starting chunking", data_dir_key)
                 _check_cancel("Before chunking")
                 chunk_start = time.time()
-                chunks = split_sections_into_chunks(docs, semantic_splitter=semantic_splitter)
+                chunks = split_sections_into_chunks(
+                    docs, semantic_splitter=semantic_splitter
+                )
                 chunk_time = time.time() - chunk_start
                 _check_cancel("After chunking")
                 print(f"[LOG] ✅ Chunking completed in {chunk_time:.2f}s")
                 print(f"[LOG] Number of chunks created: {len(chunks)}")
-                _set_progress(30, "chunking_done", f"Chunking completed ({len(chunks)} chunks)", data_dir_key)
+                _set_progress(
+                    30,
+                    "chunking_done",
+                    f"Chunking completed ({len(chunks)} chunks)",
+                    data_dir_key,
+                )
 
             # Load embedder (lazy singleton)
             _check_cancel("Before loading embedder")
             embedder_start = time.time()
             try:
-                embedder = get_embedder(self.config.embedder_name)  # Singleton, lazy loads model on first use
-                _set_progress(40, "embedder_init", "Embedder instance obtained", data_dir_key)
+                embedder = get_embedder(
+                    self.config.embedder_name
+                )  # Singleton, lazy loads model on first use
+                _set_progress(
+                    40, "embedder_init", "Embedder instance obtained", data_dir_key
+                )
                 _check_cancel("After getting embedder instance")
                 # If NOT using lazy store, preload model now to avoid delay during store building
                 if not self.lazy_store:
-                    _set_progress(50, "embedder_loading", "Checking embedder model", data_dir_key)
+                    _set_progress(
+                        50, "embedder_loading", "Checking embedder model", data_dir_key
+                    )
                     _check_cancel("Before loading embedder model")
                     # Check if model is already loaded (singleton, may be loaded from startup or previous request)
                     # Also check if tokenizer is ready (model.tokenizer exists)
                     model_already_loaded = embedder.model is not None
-                    tokenizer_ready = model_already_loaded and hasattr(embedder.model, 'tokenizer') and embedder.model.tokenizer is not None
-                    
+                    tokenizer_ready = (
+                        model_already_loaded
+                        and hasattr(embedder.model, "tokenizer")
+                        and embedder.model.tokenizer is not None
+                    )
+
                     if model_already_loaded and tokenizer_ready:
-                        print(f"[LOG] ✅ Model and tokenizer already loaded (from previous request/startup), skipping reload")
+                        print(
+                            f"[LOG] ✅ Model and tokenizer already loaded (from previous request/startup), skipping reload"
+                        )
                     elif model_already_loaded and not tokenizer_ready:
-                        print(f"[LOG] ⚠️ Model loaded but tokenizer not ready, this should not happen")
+                        print(
+                            f"[LOG] ⚠️ Model loaded but tokenizer not ready, this should not happen"
+                        )
                         # Model is loaded but tokenizer missing - this is unusual, but we can continue
                         # Tokenizer will be loaded when needed during embedding
                     else:
-                        print(f"[LOG] Loading model (this will also load/download tokenizer if needed)...")
+                        print(
+                            f"[LOG] Loading model (this will also load/download tokenizer if needed)..."
+                        )
                         embedder._ensure_model()  # Load model which loads tokenizer
                         _check_cancel("After loading embedder model")
                         print(f"[LOG] Model loaded, testing embedding...")
@@ -229,10 +297,14 @@ class QAPipeline:
                         _check_cancel("After embedder warmup")
                     embedder_time = time.time() - embedder_start
                     print(f"[LOG] ✅ Embedder fully ready in {embedder_time:.2f}s")
-                    _set_progress(60, "embedder_ready", "Model & tokenizer ready", data_dir_key)
+                    _set_progress(
+                        60, "embedder_ready", "Model & tokenizer ready", data_dir_key
+                    )
                 else:
                     embedder_time = time.time() - embedder_start
-                    print(f"[LOG] ✅ Embedder instance obtained in {embedder_time:.2f}s (model will load on first use)")
+                    print(
+                        f"[LOG] ✅ Embedder instance obtained in {embedder_time:.2f}s (model will load on first use)"
+                    )
             except RuntimeError as e:
                 if "cancelled" in str(e).lower():
                     raise  # Re-raise cancel exception
@@ -244,29 +316,46 @@ class QAPipeline:
             corpus = build_corpus(chunks)
             corpus_time = time.time() - corpus_start
             _check_cancel("After building corpus")
-            print(f"[LOG] ✅ Corpus built with {len(corpus.texts)} texts in {corpus_time:.2f}s")
-            _set_progress(50 if self.lazy_store else 65, "corpus_ready", "Corpus built", data_dir_key)
+            print(
+                f"[LOG] ✅ Corpus built with {len(corpus.texts)} texts in {corpus_time:.2f}s"
+            )
+            _set_progress(
+                50 if self.lazy_store else 65,
+                "corpus_ready",
+                "Corpus built",
+                data_dir_key,
+            )
 
             # OPTIMIZATION: Lazy store building - only build when needed (first answer() call)
             store = None
             store_time = 0.0
             if not self.lazy_store:
-                _set_progress(70, "store_building", "Building memory store (embeddings)", data_dir_key)
+                _set_progress(
+                    70,
+                    "store_building",
+                    "Building memory store (embeddings)",
+                    data_dir_key,
+                )
                 _check_cancel("Before building store")
                 store_start = time.time()
                 store = build_store(corpus, embedder, cached_embeddings=None)
                 _check_cancel("After building store")
                 store_time = time.time() - store_start
-                print(f"[LOG] ✅ Memory store built with {len(store.metadatas)} metadatas in {store_time:.2f}s")
+                print(
+                    f"[LOG] ✅ Memory store built with {len(store.metadatas)} metadatas in {store_time:.2f}s"
+                )
                 _set_progress(95, "store_ready", "Store built", data_dir_key)
                 # Mark this pipeline as ready
                 _PIPELINE_READY[data_dir_key] = True
-                
+
                 # Embeddings are saved to Elasticsearch
             else:
-                print(f"[LOG] ⏭️  Store building deferred (lazy) - will build on first query")
+                print(
+                    f"[LOG] ⏭️  Store building deferred (lazy) - will build on first query"
+                )
                 # Create placeholder store that will be built on demand
                 from .retrievers import InMemoryVectorStore
+
                 store = InMemoryVectorStore(
                     dense_vectors=None,  # Will be built on demand
                     metadatas=corpus.metadatas,
@@ -278,28 +367,38 @@ class QAPipeline:
                 self._chunks = chunks
                 # Mark as not ready yet (will be ready after store is built)
                 _PIPELINE_READY[data_dir_key] = False
-        
+
         total_time = time.time() - start_time
         print(f"[LOG] ✅ Pipeline build completed in {total_time:.2f}s total")
-        print(f"[LOG]   - Chunking: {chunk_time:.2f}s ({chunk_time/total_time*100:.1f}%)")
-        print(f"[LOG]   - Embedder: {embedder_time:.2f}s ({embedder_time/total_time*100:.1f}%)")
-        print(f"[LOG]   - Corpus: {corpus_time:.2f}s ({corpus_time/total_time*100:.1f}%)")
+        print(
+            f"[LOG]   - Chunking: {chunk_time:.2f}s ({chunk_time/total_time*100:.1f}%)"
+        )
+        print(
+            f"[LOG]   - Embedder: {embedder_time:.2f}s ({embedder_time/total_time*100:.1f}%)"
+        )
+        print(
+            f"[LOG]   - Corpus: {corpus_time:.2f}s ({corpus_time/total_time*100:.1f}%)"
+        )
         if not self.lazy_store:
-            print(f"[LOG]   - Store: {store_time:.2f}s ({store_time/total_time*100:.1f}%)")
+            print(
+                f"[LOG]   - Store: {store_time:.2f}s ({store_time/total_time*100:.1f}%)"
+            )
 
         # Get PDF name filter from config if available
-        pdf_name_filter = getattr(self.config, '_pdf_name_filter', None)
+        pdf_name_filter = getattr(self.config, "_pdf_name_filter", None)
         # Use Elasticsearch if document_id is available, otherwise use in-memory store
         use_elasticsearch = self.document_id is not None
         retriever = get_retriever(
-            self.config.retriever_name, 
-            store, 
-            embedder, 
+            self.config.retriever_name,
+            store,
+            embedder,
             pdf_name_filter=pdf_name_filter,
             document_id=self.document_id,
-            use_elasticsearch=use_elasticsearch
+            use_elasticsearch=use_elasticsearch,
         )
-        generator = get_generator(self.config.generator_name, image_policy=self.config.image_policy)
+        generator = get_generator(
+            self.config.generator_name, image_policy=self.config.image_policy
+        )
 
         self.embedder = embedder
         self.retriever = retriever
@@ -308,7 +407,7 @@ class QAPipeline:
             chunks=chunks,
             corpus_texts=corpus.texts,
             store_metadatas=corpus.metadatas,
-            persistent_store=None  # Will be initialized when needed
+            persistent_store=None,  # Will be initialized when needed
         )
         self.store = store
         self._store_built = not self.lazy_store  # Track if store is built
@@ -318,52 +417,71 @@ class QAPipeline:
             print(f"[LOG] ✅ Pipeline marked as READY (store built)")
             _set_progress(100, "ready", "Pipeline ready", data_dir_key)
         else:
-            print(f"[LOG] ⏳ Pipeline marked as NOT READY (lazy store, will build on first query)")
-            _set_progress(55, "waiting", "Waiting for first query to build store", data_dir_key)
+            print(
+                f"[LOG] ⏳ Pipeline marked as NOT READY (lazy store, will build on first query)"
+            )
+            _set_progress(
+                55, "waiting", "Waiting for first query to build store", data_dir_key
+            )
 
     def _ensure_store_built(self):
         """Build store on-demand if using lazy loading"""
         import time
+
         if self._store_built:
             return
-        
+
         data_dir_key = str(self.config.data_dir)
-        print(f"[LOG] 🔨 Building store on-demand (first query) for {len(self._chunks)} chunks...")
+        print(
+            f"[LOG] 🔨 Building store on-demand (first query) for {len(self._chunks)} chunks..."
+        )
         print(f"[LOG] This may take 1-2 minutes for large documents. Please wait...")
-        
-        _set_progress(70, "store_building", "Building memory store (on-demand)", data_dir_key)
+
+        _set_progress(
+            70, "store_building", "Building memory store (on-demand)", data_dir_key
+        )
         store_start = time.time()
-        
+
         try:
             from .retrievers import build_store
-            self.store = build_store(self._corpus, self.embedder, cached_embeddings=None)
-            
+
+            self.store = build_store(
+                self._corpus, self.embedder, cached_embeddings=None
+            )
+
             # Update retriever with new store
             from .retrievers import get_retriever
-            pdf_name_filter = getattr(self.config, '_pdf_name_filter', None)
-            self.retriever = get_retriever(self.config.retriever_name, self.store, self.embedder, pdf_name_filter=pdf_name_filter)
-            
+
+            pdf_name_filter = getattr(self.config, "_pdf_name_filter", None)
+            self.retriever = get_retriever(
+                self.config.retriever_name,
+                self.store,
+                self.embedder,
+                pdf_name_filter=pdf_name_filter,
+            )
+
             store_time = time.time() - store_start
             print(f"[LOG] ✅ Store built in {store_time:.2f}s - ready for queries")
             self._store_built = True
-            
+
             # Embeddings are saved to Elasticsearch
-            
+
             # Mark ready now (use data_dir_key from config)
             global _PIPELINE_READY
             _PIPELINE_READY[data_dir_key] = True
             _set_progress(100, "ready", "Pipeline ready", data_dir_key)
             # Clean up temp references
-            if hasattr(self, '_corpus'):
-                delattr(self, '_corpus')
-            if hasattr(self, '_chunks'):
-                delattr(self, '_chunks')
+            if hasattr(self, "_corpus"):
+                delattr(self, "_corpus")
+            if hasattr(self, "_chunks"):
+                delattr(self, "_chunks")
         except Exception as e:
             print(f"[ERROR] Failed to build store: {e}")
             import traceback
+
             print(f"[ERROR] Traceback: {traceback.format_exc()}")
             raise
-    
+
     async def _ensure_persistent_store(self):
         """Initialize persistent store if not already done - DISABLED for chunk embeddings"""
         # Note: Chunk embeddings are kept in memory only for performance
@@ -373,13 +491,21 @@ class QAPipeline:
             # Keep using memory store for chunk embeddings
             self.persistent_store = None
 
-    async def answer(self, question: str, image: str | None = None, user_images: List[str] | None = None, chat_history: List[Dict[str, str]] | None = None) -> Dict[str, Any]:
+    async def answer(
+        self,
+        question: str,
+        image: str | None = None,
+        user_images: List[str] | None = None,
+        chat_history: List[Dict[str, str]] | None = None,
+    ) -> Dict[str, Any]:
         print(f"[LOG] Retrieving hits for question: '{question}'")
-        
+
         # Check if we should use Elasticsearch
         use_elasticsearch = self.document_id and self.retriever.use_elasticsearch
-        print(f"[DEBUG] Pipeline answer() - document_id: {self.document_id}, use_elasticsearch: {use_elasticsearch}")
-        
+        print(
+            f"[DEBUG] Pipeline answer() - document_id: {self.document_id}, use_elasticsearch: {use_elasticsearch}"
+        )
+
         # Only build store if not using Elasticsearch
         if not use_elasticsearch:
             # OPTIMIZATION: Build store on-demand if lazy loading was used
@@ -393,21 +519,21 @@ class QAPipeline:
                 else:
                     error_msg += " The document may not have been processed yet, or there are no chunks in the document. Please ensure the PDF has been uploaded and processed."
                 raise ValueError(error_msg)
-        
+
         # Ensure persistent store is initialized
         await self._ensure_persistent_store()
-        
+
         # Determine which image to use for query and resolve path
         query_image = image
         if user_images and len(user_images) > 0:
             print(f"[LOG] User provided {len(user_images)} images: {user_images}")
             query_image = user_images[0]  # Use first user image if available
-        
+
         # Resolve query image path if provided (only for file paths, not base64 data URLs)
         if query_image and not query_image.startswith("data:image/"):
             print(f"[LOG] Resolving image path: {query_image}")
             query_path = Path(query_image)
-            
+
             # Handle relative paths that start with "./paperreader/"
             if query_image.startswith("./paperreader/"):
                 # Extract just the filename from the path
@@ -452,8 +578,10 @@ class QAPipeline:
                     query_image = None
         elif query_image and query_image.startswith("data:image/"):
             print(f"[LOG] Using base64 data URL as query image")
-        
-        hits = await self.retriever.retrieve(question, top_k=self.config.top_k, image=query_image)
+
+        hits = await self.retriever.retrieve(
+            question, top_k=self.config.top_k, image=query_image
+        )
         print(f"[LOG] Number of hits retrieved: {len(hits)}")
         print(f"[LOG] Requested top_k: {self.config.top_k}")
         if len(hits) > 0:
@@ -478,18 +606,24 @@ class QAPipeline:
                     ctx = {"text": text, "images": images, "tables": tables}
                     contexts.append(ctx)
         else:
-            contexts = [h.get("text", "").strip() for h in hits if h.get("text", "").strip()]
-        
+            contexts = [
+                h.get("text", "").strip() for h in hits if h.get("text", "").strip()
+            ]
+
         # Validate contexts before calling generator
         if not contexts or len(contexts) == 0:
-            print(f"[WARNING] ⚠️ No valid contexts found! Hits: {len(hits)}, Contexts: {len(contexts)}")
+            print(
+                f"[WARNING] ⚠️ No valid contexts found! Hits: {len(hits)}, Contexts: {len(contexts)}"
+            )
             print(f"[WARNING] This might cause the generator to fail. Hits details:")
             for i, h in enumerate(hits[:3]):
-                print(f"[WARNING]   Hit {i}: text_length={len(h.get('text', ''))}, has_metadata={bool(h.get('metadata'))}")
+                print(
+                    f"[WARNING]   Hit {i}: text_length={len(h.get('text', ''))}, has_metadata={bool(h.get('metadata'))}"
+                )
             # Create a fallback context to prevent generator failure
             contexts = ["No relevant context found in the document."]
             print(f"[WARNING] Using fallback context to prevent generator failure")
-        
+
         try:
             print(f"[DEBUG] ===== CALLING GENERATOR =====")
             print(f"[DEBUG] Generator type: {type(self.generator)}")
@@ -497,50 +631,79 @@ class QAPipeline:
             print(f"[DEBUG] Question length: {len(question)} chars")
             print(f"[DEBUG] User images: {user_images}")
             print(f"[DEBUG] Contexts: {len(contexts)}")
-            print(f"[DEBUG] Context details: {[len(c.get('text', c) if isinstance(c, dict) else c) for c in contexts[:3]]}")
-            print(f"[DEBUG] Chat history: {len(chat_history) if chat_history else 0} messages")
+            print(
+                f"[DEBUG] Context details: {[len(c.get('text', c) if isinstance(c, dict) else c) for c in contexts[:3]]}"
+            )
+            print(
+                f"[DEBUG] Chat history: {len(chat_history) if chat_history else 0} messages"
+            )
             if chat_history:
                 preview = []
                 for msg in chat_history[:5]:
                     if isinstance(msg, dict):
-                        preview.append({
-                            "role": msg.get("role"),
-                            "content": (msg.get("content") or "")[:120],
-                        })
+                        preview.append(
+                            {
+                                "role": msg.get("role"),
+                                "content": (msg.get("content") or "")[:120],
+                            }
+                        )
                     else:
                         preview.append(str(msg))
-                print(f"[DEBUG] Chat history preview (first {len(preview)} messages): {preview}")
-            
+                print(
+                    f"[DEBUG] Chat history preview (first {len(preview)} messages): {preview}"
+                )
+
             # Ensure question is not empty
             if not question or not question.strip():
                 raise ValueError("Question cannot be empty")
-            
-            gen_out = self.generator.generate(question, contexts, max_tokens=self.config.max_tokens, query_image=query_image, query_images=user_images, chat_history=chat_history)
+
+            gen_out = self.generator.generate(
+                question,
+                contexts,
+                max_tokens=self.config.max_tokens,
+                query_image=query_image,
+                query_images=user_images,
+                chat_history=chat_history,
+            )
             if gen_out is None:
-                raise ValueError(f"Generator {type(self.generator).__name__} returned None")
+                raise ValueError(
+                    f"Generator {type(self.generator).__name__} returned None"
+                )
             print(f"[DEBUG] ✅ Generator completed successfully")
         except Exception as e:
             print(f"[ERROR] ===== GENERATOR FAILED =====")
             print(f"[ERROR] Generator failed: {e}. Using ExtractiveGenerator fallback.")
             try:
                 from .generators import ExtractiveGenerator
+
                 # fallback uses text-only
                 text_contexts = [h.get("text", "") for h in hits]
-                answer = ExtractiveGenerator().generate(question, text_contexts, max_tokens=self.config.max_tokens, query_image=query_image, query_images=user_images, chat_history=chat_history)
+                answer = ExtractiveGenerator().generate(
+                    question,
+                    text_contexts,
+                    max_tokens=self.config.max_tokens,
+                    query_image=query_image,
+                    query_images=user_images,
+                    chat_history=chat_history,
+                )
                 gen_out = {"answer": answer, "citations": []}
-                print(f"[ERROR] Using fallback generator - this explains why you get document text!")
+                print(
+                    f"[ERROR] Using fallback generator - this explains why you get document text!"
+                )
             except Exception as fallback_error:
                 print(f"[ERROR] Fallback generator also failed: {fallback_error}")
                 # Last resort: return a basic error message
                 gen_out = {
                     "answer": f"I encountered an error while generating an answer. Original error: {str(e)}. Fallback also failed: {str(fallback_error)}",
-                    "citations": []
+                    "citations": [],
                 }
 
         # Validate gen_out is not None
         if gen_out is None:
             print(f"[ERROR] Generator output is None - this should not happen!")
-            raise ValueError("Generator returned None. Please check generator implementation and logs.")
+            raise ValueError(
+                "Generator returned None. Please check generator implementation and logs."
+            )
 
         # Let the LLM decide whether to include figures in its response
         # We don't manually append figures - the LLM will include them if needed
@@ -549,20 +712,28 @@ class QAPipeline:
         try:
             run_path = Path(self.config.runs_dir) / "last_run_retrieval.json"
             with open(run_path, "w", encoding="utf-8") as f:
-                json.dump({"question": question, "hits": hits}, f, ensure_ascii=False, indent=2)
+                json.dump(
+                    {"question": question, "hits": hits},
+                    f,
+                    ensure_ascii=False,
+                    indent=2,
+                )
         except Exception as e:
             print(f"[WARNING] Failed to save retrieval log: {e}")
 
         # Build citations ordered by [cN] markers in the answer when present
         import re as _re
+
         answer_text = gen_out.get("answer", "")
         marker_pattern = _re.compile(r"\[c(\d+)\]")
-        marker_indices = gen_out.get("citations") or [int(m.group(1)) - 1 for m in marker_pattern.finditer(answer_text)]
-        
+        marker_indices = gen_out.get("citations") or [
+            int(m.group(1)) - 1 for m in marker_pattern.finditer(answer_text)
+        ]
+
         print(f"[DEBUG] Answer text: {answer_text[:200]}...")
         print(f"[DEBUG] Found citations in answer: {marker_indices}")
         print(f"[DEBUG] Generator citations: {gen_out.get('citations', [])}")
-        
+
         # ONLY include citations that are actually used in the answer
         # Don't include citations that aren't referenced with [cN] markers
         ordered_hit_indices = []
@@ -613,14 +784,14 @@ class QAPipeline:
                 # Fallback: try to get text from metadata
                 text_content = meta.get("text", "")
             excerpt = _norm_excerpt(text_content)
-            
+
             citation_info = {
                 "citation_number": citation_num,
                 "doc_id": doc_id,
                 "document_id": doc_id,  # Alias for consistency
                 "title": title,
                 "page": page,
-                "excerpt": excerpt
+                "excerpt": excerpt,
             }
             cited.append(citation_info)
             citation_map[hit_idx] = citation_info
@@ -635,10 +806,15 @@ class QAPipeline:
             "answer": gen_out.get("answer", ""),
             "citations": unique_ordered_indices,  # Only valid hit indices that have citations
             "cited_sections": cited,  # Only citations that are actually used
-            "retriever_scores": [{"index": h["index"], "score": h["score"]} for h in hits],
+            "retriever_scores": [
+                {"index": h["index"], "score": h["score"]} for h in hits
+            ],
             "confidence": confidence,
-            "document_ids_used": list(document_ids_used),  # List of document IDs used in answer
-            "used_chat_history": "[CHAT_HISTORY]" in gen_out.get("answer", "")  # Check if chat history was used
+            "document_ids_used": list(
+                document_ids_used
+            ),  # List of document IDs used in answer
+            "used_chat_history": "[CHAT_HISTORY]"
+            in gen_out.get("answer", ""),  # Check if chat history was used
         }
 
 
@@ -647,14 +823,14 @@ def _calculate_data_hash(config: PipelineConfig) -> str:
     data_dir = Path(config.data_dir)
     if not data_dir.exists():
         return "empty"
-    
+
     hasher = hashlib.md5()
     md_files = sorted(data_dir.glob("*.md"))
     json_files = sorted(data_dir.glob("*.json"))
-    
+
     if not md_files and not json_files:
         return "empty"
-    
+
     for file_path in md_files + json_files:
         try:
             # Include file name and content hash for better detection
@@ -669,7 +845,7 @@ def _calculate_data_hash(config: PipelineConfig) -> str:
                 hasher.update(f"{file_path.name}:{stat.st_size}".encode())
             except:
                 pass
-    
+
     return hasher.hexdigest()
 
 
@@ -680,17 +856,17 @@ async def get_pipeline(
     document_id: Optional[str] = None,
 ) -> QAPipeline:
     """Return pipeline. If document_id is provided, creates a lightweight pipeline using Elasticsearch.
-    
+
     Args:
         config: Pipeline configuration (optional)
-        lazy_store: If True (default), delay store building until first query. 
+        lazy_store: If True (default), delay store building until first query.
                    This makes pipeline building much faster but first query will be slower.
                    If False, build store immediately (slower build, faster first query).
         pdf_name: Optional PDF name to use PDF-specific data directory (legacy fallback)
         document_id: Optional document identifier for Elasticsearch retrieval.
     """
     cfg = config or PipelineConfig()
-    
+
     # If document_id is provided, use Elasticsearch - skip file loading and chunking
     if document_id:
         print(f"[LOG] Using Elasticsearch pipeline for document_id: {document_id}")
@@ -699,79 +875,98 @@ async def get_pipeline(
         loop = asyncio.get_running_loop()
         pipeline_obj = await loop.run_in_executor(
             None,
-            lambda: QAPipeline(cfg, lazy_store=True, chunks=[], document_id=document_id),
+            lambda: QAPipeline(
+                cfg, lazy_store=True, chunks=[], document_id=document_id
+            ),
         )
-        print(f"[LOG] ✅ Created Elasticsearch-based pipeline for document_id: {document_id}")
+        print(
+            f"[LOG] ✅ Created Elasticsearch-based pipeline for document_id: {document_id}"
+        )
         return pipeline_obj
-    
+
     # Fallback to file-based pipeline (for backward compatibility)
     # If pdf_name is provided, filter files by PDF name pattern
     if pdf_name:
         from pathlib import Path
+
         base_data_dir = Path(cfg.data_dir)
         # Remove "uploads" if present
         if base_data_dir.name == "uploads":
             base_data_dir = base_data_dir.parent
         cfg.data_dir = base_data_dir
-        if not hasattr(cfg, '_pdf_name_filter'):
+        if not hasattr(cfg, "_pdf_name_filter"):
             cfg._pdf_name_filter = pdf_name
-        print(f"[LOG] Using PDF-specific filter: {pdf_name} (data directory: {base_data_dir})")
+        print(
+            f"[LOG] Using PDF-specific filter: {pdf_name} (data directory: {base_data_dir})"
+        )
         data_dir_key = f"{base_data_dir}::{pdf_name}"
     else:
         data_dir_key = str(cfg.data_dir)
-    
+
     try:
         # Initialize state for this data_dir if needed
         if data_dir_key not in _PIPELINE_BUILDING:
             _PIPELINE_BUILDING[data_dir_key] = False
         if data_dir_key not in _PIPELINE_READY:
             _PIPELINE_READY[data_dir_key] = False
-        
+
         # Always build pipeline (no cache)
         # Get or create lock for this data_dir to prevent concurrent builds
         with _PIPELINE_BUILD_LOCK:
             if data_dir_key not in _PIPELINE_BUILD_LOCKS:
                 _PIPELINE_BUILD_LOCKS[data_dir_key] = threading.Lock()
             build_lock = _PIPELINE_BUILD_LOCKS[data_dir_key]
-        
+
         # Acquire lock to prevent concurrent builds
         acquired = build_lock.acquire(blocking=False)
         if not acquired:
             # Another thread is already building, wait for it to finish
-            print(f"[LOG] ⏳ Another build is in progress for {data_dir_key}, waiting...")
+            print(
+                f"[LOG] ⏳ Another build is in progress for {data_dir_key}, waiting..."
+            )
             build_lock.acquire(blocking=True)
             # Wait for other thread to finish building
             build_lock.release()
             # Wait a bit and try again (other thread should finish soon)
             await asyncio.sleep(0.1)
-            return await get_pipeline(config, lazy_store=lazy_store, pdf_name=pdf_name, document_id=None)
-        
+            return await get_pipeline(
+                config, lazy_store=lazy_store, pdf_name=pdf_name, document_id=None
+            )
+
         try:
-            print(f"[LOG] Building pipeline for {data_dir_key} - creating chunks and embeddings...")
+            print(
+                f"[LOG] Building pipeline for {data_dir_key} - creating chunks and embeddings..."
+            )
             # Clear cancel flag when starting a new build
             if _CANCEL_FLAG is not None and _CANCEL_FLAG.is_set():
-                print(f"[LOG] ✅ Clearing stale cancel flag before starting new pipeline build")
+                print(
+                    f"[LOG] ✅ Clearing stale cancel flag before starting new pipeline build"
+                )
                 _CANCEL_FLAG.clear()
-            
+
             print("[LOG] Starting pipeline build...")
-            
+
             _PIPELINE_BUILDING[data_dir_key] = True
             _PIPELINE_READY[data_dir_key] = False
-            
+
             _check_cancel("Before creating QAPipeline instance")
-            
+
             try:
                 loop = asyncio.get_running_loop()
                 pipeline_obj = await loop.run_in_executor(
                     None,
                     lambda: QAPipeline(cfg, lazy_store=lazy_store, document_id=None),
                 )
-                print(f"[LOG] ✅ Pipeline built with {len(pipeline_obj.artifacts.chunks)} chunks")
-                
+                print(
+                    f"[LOG] ✅ Pipeline built with {len(pipeline_obj.artifacts.chunks)} chunks"
+                )
+
                 # Clear cancel flag after successful build (ready for QA)
                 # This ensures that if cancel flag was set from a previous operation, it's cleared now
                 if _CANCEL_FLAG is not None and _CANCEL_FLAG.is_set():
-                    print(f"[LOG] ✅ Clearing cancel flag after successful pipeline build (ready for QA)")
+                    print(
+                        f"[LOG] ✅ Clearing cancel flag after successful pipeline build (ready for QA)"
+                    )
                     _CANCEL_FLAG.clear()
             except Exception as e:
                 raise
@@ -780,18 +975,19 @@ async def get_pipeline(
             # _PIPELINE_READY will be set inside QAPipeline depending on store status
         finally:
             build_lock.release()
-        
+
         return pipeline_obj
     except Exception as e:
         print(f"[ERROR] Failed to get pipeline: {e}")
         import traceback
+
         print(f"[ERROR] Traceback: {traceback.format_exc()}")
         raise
 
 
 def reset_pipeline_state(data_dir: Optional[str] = None) -> None:
     """Reset pipeline building state.
-    
+
     Args:
         data_dir: Optional data directory path to reset. If None, resets all states.
     """
@@ -818,7 +1014,7 @@ async def rebuild_pipeline(
     document_id: Optional[str] = None,
 ) -> QAPipeline:
     """Force rebuild of the pipeline.
-    
+
     Args:
         config: Pipeline configuration (optional)
         lazy_store: If True (default), delay store building until first query.
@@ -829,16 +1025,16 @@ async def rebuild_pipeline(
     """
     cfg = config or PipelineConfig()
     data_dir_key = str(cfg.data_dir)
-    
+
     # Check cancel flag at the very start
     _check_cancel("At start of rebuild_pipeline")
-    
+
     # Get or create lock for this data_dir to prevent concurrent rebuilds
     with _PIPELINE_BUILD_LOCK:
         if data_dir_key not in _PIPELINE_BUILD_LOCKS:
             _PIPELINE_BUILD_LOCKS[data_dir_key] = threading.Lock()
         build_lock = _PIPELINE_BUILD_LOCKS[data_dir_key]
-    
+
     # Acquire lock to prevent concurrent rebuilds
     acquired = build_lock.acquire(blocking=False)
     if not acquired:
@@ -848,42 +1044,64 @@ async def rebuild_pipeline(
         build_lock.release()
         # Wait a bit and try again
         await asyncio.sleep(0.1)
-        return await rebuild_pipeline(config, lazy_store=lazy_store, docs=docs, chunks=chunks, document_id=document_id)
-    
+        return await rebuild_pipeline(
+            config,
+            lazy_store=lazy_store,
+            docs=docs,
+            chunks=chunks,
+            document_id=document_id,
+        )
+
     try:
         # Initialize state if needed
         if data_dir_key not in _PIPELINE_BUILDING:
             _PIPELINE_BUILDING[data_dir_key] = False
         if data_dir_key not in _PIPELINE_READY:
             _PIPELINE_READY[data_dir_key] = False
-        
+
         if chunks is not None:
-            print(f"[LOG] Force rebuilding pipeline for {data_dir_key} with provided chunks (lazy_store={lazy_store})...")
+            print(
+                f"[LOG] Force rebuilding pipeline for {data_dir_key} with provided chunks (lazy_store={lazy_store})..."
+            )
         elif docs is not None:
-            print(f"[LOG] Force rebuilding pipeline for {data_dir_key} with provided docs (lazy_store={lazy_store})...")
+            print(
+                f"[LOG] Force rebuilding pipeline for {data_dir_key} with provided docs (lazy_store={lazy_store})..."
+            )
         else:
-            print(f"[LOG] Force rebuilding pipeline for {data_dir_key} (lazy_store={lazy_store})...")
+            print(
+                f"[LOG] Force rebuilding pipeline for {data_dir_key} (lazy_store={lazy_store})..."
+            )
         _PIPELINE_BUILDING[data_dir_key] = True
         _PIPELINE_READY[data_dir_key] = False
-        
+
         # Check cancel flag before creating QAPipeline (this is expensive)
         _check_cancel("Before creating QAPipeline instance")
-        
+
         print(f"[LOG] Creating new QAPipeline instance (lazy_store={lazy_store})...")
         loop = asyncio.get_running_loop()
         pipeline_obj = await loop.run_in_executor(
             None,
-            lambda: QAPipeline(cfg, lazy_store=lazy_store, docs=docs, chunks=chunks, document_id=document_id),
+            lambda: QAPipeline(
+                cfg,
+                lazy_store=lazy_store,
+                docs=docs,
+                chunks=chunks,
+                document_id=document_id,
+            ),
         )
-        print(f"[LOG] Store built: {pipeline_obj._store_built}, Ready: {_PIPELINE_READY[data_dir_key]}")
+        print(
+            f"[LOG] Store built: {pipeline_obj._store_built}, Ready: {_PIPELINE_READY[data_dir_key]}"
+        )
         _PIPELINE_BUILDING[data_dir_key] = False
-        
+
         # Clear cancel flag after successful rebuild (ready for QA)
         # This ensures that if cancel flag was set from a previous operation, it's cleared now
         if _CANCEL_FLAG is not None and _CANCEL_FLAG.is_set():
-            print(f"[LOG] ✅ Clearing cancel flag after successful pipeline rebuild (ready for QA)")
+            print(
+                f"[LOG] ✅ Clearing cancel flag after successful pipeline rebuild (ready for QA)"
+            )
             _CANCEL_FLAG.clear()
-        
+
         # _PIPELINE_READY will be set inside QAPipeline depending on store status
         return pipeline_obj
     finally:
@@ -928,6 +1146,7 @@ def _normalise_document_key(input_key: str, document: Optional[Dict[str, Any]]) 
     indexed (typically the PDF filename stem). Titles often differ from the
     filename, so only fall back to them as a last resort.
     """
+
     def _strip_pdf(value: Optional[str]) -> Optional[str]:
         if not value:
             return None
@@ -966,7 +1185,9 @@ def _normalise_document_key(input_key: str, document: Optional[Dict[str, Any]]) 
     return cleaned_input or input_key
 
 
-async def _resolve_chunk_count(document_id: Optional[str], existing_count: Optional[int]) -> int:
+async def _resolve_chunk_count(
+    document_id: Optional[str], existing_count: Optional[int]
+) -> int:
     """Determine the number of chunks stored for the document."""
     if existing_count and existing_count > 0:
         return int(existing_count)
@@ -1001,7 +1222,9 @@ async def _maybe_schedule_embedding_resume(document_id: str) -> None:
             try:
                 await update_document(obj_id, {"embedding_status": "processing"})
             except Exception as exc:
-                print(f"[Pipeline] ⚠️ Unable to mark document {document_id} as processing: {exc}")
+                print(
+                    f"[Pipeline] ⚠️ Unable to mark document {document_id} as processing: {exc}"
+                )
 
         loop = asyncio.get_running_loop()
         task = loop.create_task(_resume_embeddings_job(document_id))
@@ -1013,13 +1236,17 @@ async def _resume_embeddings_job(document_id: str) -> None:
     try:
         chunks = await get_document_chunks(document_id=document_id)
         if not chunks:
-            print(f"[Pipeline] ⚠️ No chunks found when attempting to resume embeddings for {document_id}")
+            print(
+                f"[Pipeline] ⚠️ No chunks found when attempting to resume embeddings for {document_id}"
+            )
             obj_id = to_object_id(document_id)
             if obj_id:
                 try:
                     await update_document(obj_id, {"embedding_status": "error"})
                 except Exception as exc:
-                    print(f"[Pipeline] ⚠️ Failed to update document {document_id} after missing chunks: {exc}")
+                    print(
+                        f"[Pipeline] ⚠️ Failed to update document {document_id} after missing chunks: {exc}"
+                    )
             return
 
         embedder = get_embedder(None)
@@ -1044,12 +1271,16 @@ async def _resume_embeddings_job(document_id: str) -> None:
                     },
                 )
             except Exception as exc:
-                print(f"[Pipeline] ⚠️ Failed to mark document {document_id} as ready: {exc}")
-        
+                print(
+                    f"[Pipeline] ⚠️ Failed to mark document {document_id} as ready: {exc}"
+                )
+
         # Clear processing flag when embedding completes
         clear_processing_flag(document_id, "embedding")
     except Exception as exc:
-        print(f"[Pipeline] ❌ Embedding resume job failed for document {document_id}: {exc}")
+        print(
+            f"[Pipeline] ❌ Embedding resume job failed for document {document_id}: {exc}"
+        )
         import traceback
 
         print(f"[Pipeline] Traceback:\n{traceback.format_exc()}")
@@ -1058,75 +1289,81 @@ async def _resume_embeddings_job(document_id: str) -> None:
             try:
                 await update_document(obj_id, {"embedding_status": "error"})
             except Exception as update_exc:
-                print(f"[Pipeline] ⚠️ Failed to mark document {document_id} as error: {update_exc}")
+                print(
+                    f"[Pipeline] ⚠️ Failed to mark document {document_id} as error: {update_exc}"
+                )
     finally:
         lock = _get_resume_lock()
         async with lock:
             task = _RESUME_TASKS.pop(document_id, None)
             if task and not task.done():
                 task.cancel()
-        
+
         # Clear processing flag in finally block
         clear_processing_flag(document_id, "embedding")
 
 
 async def _maybe_trigger_chunking(document_id: str, document: Dict[str, Any]) -> bool:
     """Trigger chunking for a document that exists but has no chunks.
-    
+
     Returns True if chunking was triggered, False otherwise.
     """
     # Check if already processing
     with _PROCESSING_LOCK:
         if document_id in _PROCESSING_DOCUMENTS:
             process_type = _PROCESSING_DOCUMENTS.get(document_id)
-            print(f"[Pipeline] Document {document_id} is already being processed ({process_type}), skipping chunking trigger")
+            print(
+                f"[Pipeline] Document {document_id} is already being processed ({process_type}), skipping chunking trigger"
+            )
             return False
         # Mark as processing chunking
         _PROCESSING_DOCUMENTS[document_id] = "chunking"
-    
+
     stored_path = document.get("stored_path")
     if not stored_path:
         with _PROCESSING_LOCK:
             _PROCESSING_DOCUMENTS.pop(document_id, None)
         return False
-    
+
     document_status = str(document.get("status") or "unknown").lower()
     # Only trigger if document is not actively being processed
     if document_status in {"uploading", "parsing", "processing"}:
         with _PROCESSING_LOCK:
             _PROCESSING_DOCUMENTS.pop(document_id, None)
         return False
-    
+
     # Check if chunks already exist
     chunk_count = await _resolve_chunk_count(document_id, document.get("chunk_count"))
     if chunk_count > 0:
         with _PROCESSING_LOCK:
             _PROCESSING_DOCUMENTS.pop(document_id, None)
         return False
-    
+
     # Trigger parsing by calling the internal API
     try:
         import httpx
         from paperreader.services.documents.minio_client import get_minio_client
-        
+
         MINIO_BUCKET = os.getenv("MINIO_BUCKET", "pdf-documents")
-        BACKEND_INTERNAL_URL = os.getenv("BACKEND_INTERNAL_URL", "http://127.0.0.1:8000")
-        
+        BACKEND_INTERNAL_URL = os.getenv(
+            "BACKEND_INTERNAL_URL", "http://127.0.0.1:8000"
+        )
+
         # Download file from MinIO
         client = get_minio_client()
         file_data = await asyncio.to_thread(
             lambda: client.get_object(MINIO_BUCKET, stored_path).read()
         )
-        
+
         filename = document.get("original_filename") or f"document-{document_id}.pdf"
-        
+
         # Call save-and-parse endpoint
         url = f"{BACKEND_INTERNAL_URL}/api/pdf/save-and-parse/"
         async with httpx.AsyncClient(timeout=240.0) as http_client:
             files = {"files": (filename, file_data, "application/pdf")}
             headers = {"X-Document-Id": document_id}
             resp = await http_client.post(url, files=files, headers=headers)
-            
+
             if resp.status_code == 200:
                 print(f"[Pipeline] ✅ Triggered chunking for document {document_id}")
                 # Update document status to parsing
@@ -1136,25 +1373,66 @@ async def _maybe_trigger_chunking(document_id: str, document: Dict[str, Any]) ->
                 # Keep processing flag - will be cleared when chunking completes
                 return True
             else:
-                print(f"[Pipeline] ⚠️ Failed to trigger chunking for document {document_id}: HTTP {resp.status_code}")
+                print(
+                    f"[Pipeline] ⚠️ Failed to trigger chunking for document {document_id}: HTTP {resp.status_code}"
+                )
                 with _PROCESSING_LOCK:
                     _PROCESSING_DOCUMENTS.pop(document_id, None)
                 return False
     except Exception as exc:
-        print(f"[Pipeline] ⚠️ Error triggering chunking for document {document_id}: {exc}")
+        print(
+            f"[Pipeline] ⚠️ Error triggering chunking for document {document_id}: {exc}"
+        )
         import traceback
+
         print(f"[Pipeline] Traceback: {traceback.format_exc()}")
         with _PROCESSING_LOCK:
             _PROCESSING_DOCUMENTS.pop(document_id, None)
         return False
 
 
+def _serialize_datetime(obj):
+    """Convert datetime objects to ISO format strings for JSON serialization."""
+    from datetime import datetime
+
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    return obj
+
+
+def _make_json_serializable(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Recursively convert datetime objects to strings for JSON serialization."""
+    result = {}
+    for key, value in data.items():
+        if isinstance(value, datetime):
+            result[key] = value.isoformat()
+        elif isinstance(value, dict):
+            result[key] = _make_json_serializable(value)
+        elif isinstance(value, list):
+            result[key] = [
+                (
+                    _make_json_serializable(item)
+                    if isinstance(item, dict)
+                    else item.isoformat() if isinstance(item, datetime) else item
+                )
+                for item in value
+            ]
+        else:
+            result[key] = value
+    return result
+
+
 async def pipeline_status(
     pdf_name: Optional[str] = None,
     document_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Get pipeline status by checking database (Elasticsearch/MongoDB).
-    
+    """Get comprehensive pipeline status for all processing tasks.
+
+    Each task is independent and can be used as soon as it completes:
+    - Main processing (parse, chunk, embed, index) → Chat available
+    - Summary generation → Summary page available
+    - Reference extraction → Reference page available
+
     Args:
         pdf_name: Optional PDF name to check
         document_id: Optional document id to check in database
@@ -1168,6 +1446,17 @@ async def pipeline_status(
             "percent": 0,
             "stage": "idle",
             "message": "No document identifier provided",
+            # Individual task statuses
+            "embedding_status": "pending",
+            "embedding_ready": False,
+            "summary_status": "pending",
+            "summary_ready": False,
+            "reference_status": "pending",
+            "reference_ready": False,
+            "skimming_status": "pending",   
+            "skimming_ready": False,   
+            "all_ready": False,
+            "available_features": [],
         }
 
     try:
@@ -1196,116 +1485,207 @@ async def pipeline_status(
                 "stage": "not_found",
                 "message": "Document not found. Please upload or select a PDF first.",
                 "document_id": document_id,
+                "embedding_status": "pending",
+                "embedding_ready": False,
+                "summary_status": "pending",
+                "summary_ready": False,
+                "reference_status": "pending",
+                "reference_ready": False,
+                "skimming_status": "pending",   
+                "skimming_ready": False,   
+                "all_ready": False,
+                "available_features": [],
             }
 
         assert resolved_document is not None  # for type checker
 
         document_id = resolved_document_id or str(resolved_document.get("_id"))
-        chunk_count = await _resolve_chunk_count(document_id, resolved_document.get("chunk_count"))
+        chunk_count = await _resolve_chunk_count(
+            document_id, resolved_document.get("chunk_count")
+        )
 
+        # Get all task statuses from document
         raw_embedding_status = resolved_document.get("embedding_status") or "pending"
         embedding_status = str(raw_embedding_status).lower()
+
+        raw_summary_status = resolved_document.get("summary_status") or "pending"
+        summary_status = str(raw_summary_status).lower()
+
+        raw_reference_status = resolved_document.get("reference_status") or "pending"
+        reference_status = str(raw_reference_status).lower()
+
+        raw_skimming_status = resolved_document.get("skimming_status") or "pending"  
+        skimming_status = str(raw_skimming_status).lower() 
+
+
         raw_document_status = resolved_document.get("status") or "unknown"
         document_status = str(raw_document_status).lower()
 
-        resume_task = _RESUME_TASKS.get(document_id)
-        resume_running = bool(resume_task and not resume_task.done())
+        # CRITICAL: Each task has independent readiness
+        # Chat/QA ready when embeddings are ready and chunks exist
+        embedding_ready = embedding_status == "ready" and chunk_count > 0
 
-        ready = embedding_status == "ready" and chunk_count > 0 and document_status in {"ready", "completed"}
+        # Summary ready when summary generation completes (independent of embedding)
+        summary_ready = summary_status == "ready"
 
+        # References ready when reference extraction completes (independent of embedding/summary)
+        reference_ready = reference_status == "ready"
+
+        # Skimming ready when skimming processing completes (independent of other tasks)   
+        skimming_ready = skimming_status == "ready"   
+
+        # All tasks ready when all four are complete 
+        all_ready = embedding_ready and summary_ready and reference_ready and skimming_ready  
+
+        # Calculate which features are currently available
+        available_features = []
+        if embedding_ready:
+            available_features.append("chat")
+        if summary_ready:
+            available_features.append("summary")
+        if reference_ready:
+            available_features.append("references")
+        if skimming_ready:  # Thêm đoạn này
+            available_features.append("skimming")
+
+        # Calculate overall progress based on all four tasks 
+        total_tasks = 4  # embedding, summary, references, skimming  
+        completed_tasks = 0
+
+        if embedding_ready:
+            completed_tasks += 1
+        if summary_ready:
+            completed_tasks += 1
+        if reference_ready:
+            completed_tasks += 1
+        if skimming_ready: 
+            completed_tasks += 1
+
+        overall_percent = int((completed_tasks / total_tasks) * 100)
+
+        # Determine stage and message based on what's ready
         building = False
-        percent = 0
         stage = "idle"
-        message = "Waiting for processing to begin"
-        resume_triggered = False
-        chunking_triggered = False
+        message = "Waiting for processing"
 
-        # Trigger chunking if document exists but has no chunks and is not actively processing
-        if chunk_count == 0 and document_status not in {"uploading", "parsing", "processing"}:
-            chunking_triggered = await _maybe_trigger_chunking(document_id, resolved_document)
-            if chunking_triggered:
-                document_status = "parsing"
-                building = True
-                percent = 25
-                stage = "chunking"
-                message = "Starting chunk generation..."
-
-        # Check if already processing embedding
-        with _PROCESSING_LOCK:
-            is_processing_embedding = _PROCESSING_DOCUMENTS.get(document_id) == "embedding"
-        
-        # Detect stuck processing states (status says processing but nothing is running)
-        is_stuck_processing = (
-            embedding_status == "processing"
-            and not is_processing_embedding
-            and not resume_running
-        )
-        
-        if chunk_count > 0 and embedding_status not in {"ready", "processing"} and not is_processing_embedding:
-            # Mark as processing embedding
-            with _PROCESSING_LOCK:
-                _PROCESSING_DOCUMENTS[document_id] = "embedding"
-            await _maybe_schedule_embedding_resume(document_id)
-            resume_running = True
-            resume_triggered = True
-            embedding_status = "processing"
-        elif is_processing_embedding:
-            # Already processing, just update status
-            resume_running = True
-            embedding_status = "processing"
-        elif is_stuck_processing:
-            print(f"[Pipeline] ⚠️ Detected stuck embedding status for {document_id}, re-triggering resume job")
-            with _PROCESSING_LOCK:
-                _PROCESSING_DOCUMENTS[document_id] = "embedding"
-            await _maybe_schedule_embedding_resume(document_id)
-            resume_running = True
-            resume_triggered = True
-            embedding_status = "processing"
-
-        if ready:
+        if all_ready:
             building = False
-            percent = 100
             stage = "ready"
-            message = f"Embeddings ready ({chunk_count} chunks indexed)"
-        elif resume_running or embedding_status == "processing":
+            message = f"✅ All features available: {', '.join(available_features)}"
+        elif embedding_ready:
+            # Chat is ready, show what else is available or processing
+            building = (
+                summary_status == "processing" or reference_status == "processing" or skimming_status == "processing"  
+            )
+            stage = "chat_ready"
+
+            processing = []
+            if summary_status == "processing":
+                processing.append("summary")
+            if reference_status == "processing":
+                processing.append("references")
+            if skimming_status == "processing":  
+                processing.append("skimming")  
+
+            if processing:
+                message = f"✅ Available: {', '.join(available_features)} | 🔄 Processing: {', '.join(processing)}"
+            else:
+                message = f"✅ Available: {', '.join(available_features)}"
+        elif any(
+            [
+                embedding_status == "processing",
+                summary_status == "processing",
+                reference_status == "processing",
+                skimming_status == "processing",  
+            ]
+        ):
             building = True
-            percent = 85
-            stage = "embedding"
-            message = f"Regenerating embeddings ({chunk_count} chunks)…"
-        elif chunk_count == 0:
-            building = document_status in {"uploading", "parsing", "processing", "pending", "queued"} or chunking_triggered
-            percent = 25 if building else 0
-            stage = "chunking" if building else "idle"
-            message = "Waiting for chunk generation" if not chunking_triggered else "Starting chunk generation..."
-        else:
-            # Chunks exist but embeddings not ready (and not currently processing)
-            building = document_status in {"uploading", "parsing", "processing", "pending", "queued"}
-            percent = 60 if building else 50
-            stage = "pending"
-            message = "Chunks available. Preparing to build embeddings…"
+            stage = "processing"
+
+            processing = []
+            if embedding_status == "processing":
+                processing.append("embedding")
+            if summary_status == "processing":
+                processing.append("summary")
+            if reference_status == "processing":
+                processing.append("references")
+
+            if available_features:
+                message = f"🔄 Processing: {', '.join(processing)} | ✅ Available: {', '.join(available_features)}"
+            else:
+                message = f"🔄 Processing: {', '.join(processing)}"
 
         response = {
-            "building": building or resume_running or embedding_status == "processing",
-            "ready": ready,
-            "percent": percent,
+            # Overall status
+            "building": building,
+            "ready": embedding_ready,
+            "all_ready": all_ready,
+            "percent": overall_percent,
             "stage": stage,
             "message": message,
+            # Main processing details
             "chunk_count": chunk_count,
             "document_id": document_id,
-            "embedding_status": embedding_status,
             "document_status": document_status,
-            "resume_running": resume_running,
-            "resume_triggered": resume_triggered,
+            # INDEPENDENT TASK READINESS
+            "embedding_status": embedding_status,
+            "embedding_ready": embedding_ready,
+            "embedding_error": resolved_document.get("embedding_error"),
+            "embedding_updated_at": resolved_document.get(
+                "embedding_updated_at"
+            ),  # datetime!
+            "summary_status": summary_status,
+            "summary_ready": summary_ready,
+            "summary_error": resolved_document.get("summary_error"),
+            "summary_updated_at": resolved_document.get(
+                "summary_updated_at"
+            ),  # datetime!
+            "reference_status": reference_status,
+            "reference_ready": reference_ready,
+            "reference_count": resolved_document.get("reference_count", 0),
+            "reference_error": resolved_document.get("reference_error"),
+            "reference_updated_at": resolved_document.get(
+                "reference_updated_at"
+            ),  # datetime!
+            "skimming_status": skimming_status,  # Thêm đoạn này
+            "skimming_ready": skimming_ready,   
+            "skimming_error": resolved_document.get("skimming_error"),   
+            "skimming_updated_at": resolved_document.get(   
+                "skimming_updated_at"   
+            ),  # datetime!   
+            # Feature availability
+            "available_features": available_features,
+            # Progress details
+            "progress": {
+                "completed": completed_tasks,
+                "total": total_tasks,
+                "percentage": overall_percent,
+            },
+            # Error tracking
+            "has_errors": bool(
+                resolved_document.get("summary_error")
+                or resolved_document.get("reference_error")
+                or resolved_document.get("embedding_error")
+                or resolved_document.get("skimming_error")  
+                or embedding_status == "error"
+                or skimming_status == "error"   
+            ),
         }
+
+        # Convert datetime objects to strings for JSON serialization
+        response = _make_json_serializable(response)
 
         print(
             "[STATUS] Pipeline status check: "
-            f"building={response['building']}, ready={response['ready']}, "
-            f"embedding_status={embedding_status}, document_status={document_status}, "
-            f"chunk_count={chunk_count}, pdf_name={pdf_name}, document_id={document_id}"
+            f"all_ready={all_ready}, "
+            f"embedding_ready={embedding_ready}, summary_ready={summary_ready}, reference_ready={reference_ready}, skimming_ready={skimming_ready}, "  # Thêm skimming_ready
+            f"available_features={available_features}, "
+            f"embedding={embedding_status}, summary={summary_status}, reference={reference_status}, skimming={skimming_status}, "  # Thêm skimming
+            f"chunk_count={chunk_count}, progress={overall_percent}%"
         )
 
         return response
+
     except Exception as e:
         print(f"[ERROR] Failed to check pipeline status: {e}")
         import traceback
@@ -1314,8 +1694,18 @@ async def pipeline_status(
         return {
             "building": False,
             "ready": False,
+            "all_ready": False,
             "percent": 0,
             "stage": "error",
             "message": f"Error checking status: {str(e)}",
-            "document_id": document_id,
+            "embedding_status": "error",
+            "embedding_ready": False,
+            "summary_status": "error",
+            "summary_ready": False,
+            "reference_status": "error",
+            "reference_ready": False,
+            "skimming_status": "error",   
+            "skimming_ready": False,   
+            "available_features": [],
+            "has_errors": True,
         }
