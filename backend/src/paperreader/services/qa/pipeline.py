@@ -1453,6 +1453,8 @@ async def pipeline_status(
             "summary_ready": False,
             "reference_status": "pending",
             "reference_ready": False,
+            "skimming_status": "pending",
+            "skimming_ready": False,
             "all_ready": False,
             "available_features": [],
         }
@@ -1489,6 +1491,8 @@ async def pipeline_status(
                 "summary_ready": False,
                 "reference_status": "pending",
                 "reference_ready": False,
+                "skimming_status": "pending",
+                "skimming_ready": False,
                 "all_ready": False,
                 "available_features": [],
             }
@@ -1510,6 +1514,9 @@ async def pipeline_status(
         raw_reference_status = resolved_document.get("reference_status") or "pending"
         reference_status = str(raw_reference_status).lower()
 
+        raw_skimming_status = resolved_document.get("skimming_status") or "pending"
+        skimming_status = str(raw_skimming_status).lower()
+
         raw_document_status = resolved_document.get("status") or "unknown"
         document_status = str(raw_document_status).lower()
 
@@ -1523,8 +1530,13 @@ async def pipeline_status(
         # References ready when reference extraction completes (independent of embedding/summary)
         reference_ready = reference_status == "ready"
 
-        # All tasks ready when all three are complete
-        all_ready = embedding_ready and summary_ready and reference_ready
+        # Skimming ready when skimming processing completes (independent of other tasks)
+        skimming_ready = skimming_status == "ready"
+
+        # All tasks ready when all four are complete
+        all_ready = (
+            embedding_ready and summary_ready and reference_ready and skimming_ready
+        )
 
         # Calculate which features are currently available
         available_features = []
@@ -1534,9 +1546,11 @@ async def pipeline_status(
             available_features.append("summary")
         if reference_ready:
             available_features.append("references")
+        if skimming_ready:  # Thêm đoạn này
+            available_features.append("skimming")
 
-        # Calculate overall progress based on all three tasks
-        total_tasks = 3  # embedding, summary, references
+        # Calculate overall progress based on all four tasks
+        total_tasks = 4  # embedding, summary, references, skimming
         completed_tasks = 0
 
         if embedding_ready:
@@ -1544,6 +1558,8 @@ async def pipeline_status(
         if summary_ready:
             completed_tasks += 1
         if reference_ready:
+            completed_tasks += 1
+        if skimming_ready:
             completed_tasks += 1
 
         overall_percent = int((completed_tasks / total_tasks) * 100)
@@ -1560,7 +1576,9 @@ async def pipeline_status(
         elif embedding_ready:
             # Chat is ready, show what else is available or processing
             building = (
-                summary_status == "processing" or reference_status == "processing"
+                summary_status == "processing"
+                or reference_status == "processing"
+                or skimming_status == "processing"
             )
             stage = "chat_ready"
 
@@ -1569,6 +1587,8 @@ async def pipeline_status(
                 processing.append("summary")
             if reference_status == "processing":
                 processing.append("references")
+            if skimming_status == "processing":
+                processing.append("skimming")
 
             if processing:
                 message = f"✅ Available: {', '.join(available_features)} | 🔄 Processing: {', '.join(processing)}"
@@ -1579,6 +1599,7 @@ async def pipeline_status(
                 embedding_status == "processing",
                 summary_status == "processing",
                 reference_status == "processing",
+                skimming_status == "processing",
             ]
         ):
             building = True
@@ -1629,6 +1650,12 @@ async def pipeline_status(
             "reference_updated_at": resolved_document.get(
                 "reference_updated_at"
             ),  # datetime!
+            "skimming_status": skimming_status,  # Thêm đoạn này
+            "skimming_ready": skimming_ready,
+            "skimming_error": resolved_document.get("skimming_error"),
+            "skimming_updated_at": resolved_document.get(
+                "skimming_updated_at"
+            ),  # datetime!
             # Feature availability
             "available_features": available_features,
             # Progress details
@@ -1642,7 +1669,9 @@ async def pipeline_status(
                 resolved_document.get("summary_error")
                 or resolved_document.get("reference_error")
                 or resolved_document.get("embedding_error")
+                or resolved_document.get("skimming_error")
                 or embedding_status == "error"
+                or skimming_status == "error"
             ),
         }
 
@@ -1652,9 +1681,9 @@ async def pipeline_status(
         print(
             "[STATUS] Pipeline status check: "
             f"all_ready={all_ready}, "
-            f"embedding_ready={embedding_ready}, summary_ready={summary_ready}, reference_ready={reference_ready}, "
+            f"embedding_ready={embedding_ready}, summary_ready={summary_ready}, reference_ready={reference_ready}, skimming_ready={skimming_ready}, "  # Thêm skimming_ready
             f"available_features={available_features}, "
-            f"embedding={embedding_status}, summary={summary_status}, reference={reference_status}, "
+            f"embedding={embedding_status}, summary={summary_status}, reference={reference_status}, skimming={skimming_status}, "  # Thêm skimming
             f"chunk_count={chunk_count}, progress={overall_percent}%"
         )
 
@@ -1678,6 +1707,8 @@ async def pipeline_status(
             "summary_ready": False,
             "reference_status": "error",
             "reference_ready": False,
+            "skimming_status": "error",
+            "skimming_ready": False,
             "available_features": [],
             "has_errors": True,
         }

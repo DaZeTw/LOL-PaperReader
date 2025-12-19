@@ -183,6 +183,118 @@ async def get_skimming_highlights_route(
         raise HTTPException(status_code=500, detail=f"Failed to get highlights: {str(e)}")
 
 
+async def _process_and_store_highlights(
+    *,
+    document_id: str,
+    preset: PresetType,
+    alpha: float,
+    ratio: float,
+    uploaded_file: UploadFile | None,
+    strict_save: bool,
+) -> tuple[str, list]:
+    """
+    Common helper to load PDF, process & highlight, then persist to MongoDB.
+
+    strict_save=True will raise HTTPException on DB save failure (used by process-and-highlight).
+    strict_save=False will log a warning and continue (used by ensure-highlights).
+    """
+    pdf_bytes, filename = await _load_pdf_for_skimming(document_id=document_id, uploaded_file=uploaded_file)
+    file_stem = Path(filename).stem
+
+    result = await process_and_highlight(
+        file_name=file_stem,
+        pdf_file=pdf_bytes,
+        alpha=alpha,
+        ratio=ratio,
+        cache_dir=None,
+    )
+    highlights = result.get("highlights", [])
+
+    if highlights:
+        try:
+            await save_skimming_highlights(
+                document_id=document_id,
+                file_name=filename,
+                preset=preset,
+                alpha=alpha,
+                ratio=ratio,
+                highlights=highlights,
+            )
+            print(f"[SkimmingAPI] Saved {len(highlights)} highlights to MongoDB for document_id={document_id}")
+        except Exception as save_exc:
+            if strict_save:
+                print(f"[SkimmingAPI] Error: Failed to save highlights to MongoDB: {save_exc}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to save highlights to database: {str(save_exc)}"
+                )
+            else:
+                print(f"[SkimmingAPI] Warning: Failed to save highlights to MongoDB: {save_exc}")
+
+    return filename, highlights
+
+
+@router.get("/ensure-highlights")
+async def ensure_skimming_highlights_route(
+    document_id: str = Query(..., description="Document ID (required)"),
+    preset: PresetType = Query("medium"),
+    alpha: Optional[float] = Query(None),
+    ratio: Optional[float] = Query(None),
+):
+    """
+    Ensure highlights exist for a document.
+
+    - If highlights are already in MongoDB, return them.
+    - Otherwise, load the PDF by document_id, process it, get highlights, and store them.
+    """
+    if alpha is None or ratio is None:
+        preset_params = get_preset_params(preset)
+        alpha = alpha if alpha is not None else preset_params["alpha"]
+        ratio = ratio if ratio is not None else preset_params["ratio"]
+
+    # Try Mongo first
+    try:
+        existing = await get_skimming_highlights_from_db(document_id=document_id, preset=preset)
+        if existing and existing.get("highlights"):
+            print(f"[SkimmingAPI] ensure-highlights: Found existing highlights for document_id={document_id}, preset={preset}")
+            return {
+                "status": "ok",
+                "from_cache": True,
+                "file_name": existing.get("file_name") or "",
+                "highlights": existing.get("highlights", []),
+                "preset": preset,
+                "alpha": existing.get("alpha", alpha),
+                "ratio": existing.get("ratio", ratio),
+            }
+    except Exception as db_exc:
+        print(f"[SkimmingAPI] ensure-highlights: Warning, failed to load existing highlights: {db_exc}")
+
+    # Not found -> process using stored PDF
+    try:
+        filename, highlights = await _process_and_store_highlights(
+            document_id=document_id,
+            preset=preset,
+            alpha=alpha,
+            ratio=ratio,
+            uploaded_file=None,
+            strict_save=False,  # best-effort save for ensure route
+        )
+        return {
+            "status": "ok",
+            "from_cache": False,
+            "file_name": filename,
+            "highlights": highlights,
+            "preset": preset,
+            "alpha": alpha,
+            "ratio": ratio,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[SkimmingAPI] ensure-highlights: Error ensuring highlights: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to ensure skimming highlights: {str(e)}")
+
+
 @router.post("/process-and-highlight")
 async def process_and_get_highlights_route(
     document_id: str = Form(..., description="Document ID (required)"),
@@ -210,57 +322,19 @@ async def process_and_get_highlights_route(
         alpha = alpha if alpha is not None else preset_params["alpha"]
         ratio = ratio if ratio is not None else preset_params["ratio"]
 
-    # If highlights already exist for this document and preset, return them immediately
     try:
-        existing = await get_skimming_highlights_from_db(document_id=document_id, preset=preset)
-        if existing and existing.get("highlights"):
-            print(f"[SkimmingAPI] Using existing highlights for document_id={document_id}, preset={preset}")
-            return {
-                "status": "ok",
-                "file_name": existing.get("file_name") or (file.filename if file else ""),
-                "highlights": existing.get("highlights", []),
-                "preset": preset,
-                "alpha": existing.get("alpha", alpha),
-                "ratio": existing.get("ratio", ratio),
-            }
-    except Exception as db_exc:
-        print(f"[SkimmingAPI] Warning: failed to load existing highlights: {db_exc}")
-
-    try:
-        pdf_bytes, filename = await _load_pdf_for_skimming(document_id=document_id, uploaded_file=file)
-        file_stem = Path(filename).stem
-
-        result = await process_and_highlight(
-            file_name=file_stem,
-            pdf_file=pdf_bytes,
+        filename, highlights = await _process_and_store_highlights(
+            document_id=document_id,
+            preset=preset,
             alpha=alpha,
             ratio=ratio,
-            cache_dir=None  # No file system cache - only use MongoDB
+            uploaded_file=file,
+            strict_save=True,
         )
-        highlights = result.get("highlights", [])
-        
-        # Save to MongoDB (required)
-        if highlights:
-            try:
-                await save_skimming_highlights(
-                    document_id=document_id,
-                    file_name=filename,
-                    preset=preset,
-                    alpha=alpha,
-                    ratio=ratio,
-                    highlights=highlights,
-                )
-                print(f"[SkimmingAPI] Saved {len(highlights)} highlights to MongoDB for document_id={document_id}")
-            except Exception as save_exc:
-                print(f"[SkimmingAPI] Error: Failed to save highlights to MongoDB: {save_exc}")
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Failed to save highlights to database: {str(save_exc)}"
-                )
         
         return {
             "status": "ok",
-            "file_name": file.filename,
+            "file_name": filename,
             "highlights": highlights,
             "preset": preset,
             "alpha": alpha,

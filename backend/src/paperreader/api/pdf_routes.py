@@ -728,6 +728,129 @@ async def _process_references(
         }
 
 
+async def _process_skimming(
+    pdf_path: Path,
+    document_id: Optional[str],
+) -> Dict[str, Any]:
+    """
+    Process skimming highlights for a PDF document.
+    This is independent of the main parsing pipeline.
+
+    Steps:
+    1. Read PDF file bytes
+    2. Call skimming service to process and get highlights
+    3. Save highlights to database
+
+    Returns:
+        Dict containing:
+        - status: "success" or "error"
+        - highlight_count: Number of highlights found
+        - elapsed: Processing time
+    """
+    print(f"[SKIMMING] 📄 Starting skimming processing for {pdf_path.name}...")
+    start_time = time.time()
+
+    try:
+        # Update document status to processing
+        if document_id:
+            await _update_document_safe(
+                document_id,
+                {
+                    "skimming_status": "processing",
+                },
+            )
+
+        # Step 1: Read PDF file bytes
+        pdf_bytes = pdf_path.read_bytes()
+        file_stem = pdf_path.stem
+
+        # Step 2: Process and get highlights (using default medium preset)
+        from paperreader.services.skimming.repository import save_skimming_highlights
+        from paperreader.services.skimming.skimming_service import (
+            get_preset_params,
+            process_and_highlight,
+        )
+
+        preset = "medium"
+        preset_params = get_preset_params(preset)
+        alpha = preset_params["alpha"]
+        ratio = preset_params["ratio"]
+
+        result = await process_and_highlight(
+            file_name=file_stem,
+            pdf_file=pdf_bytes,
+            alpha=alpha,
+            ratio=ratio,
+            cache_dir=None,  # No file system cache - only use MongoDB
+        )
+
+        highlights = result.get("highlights", [])
+
+        # Step 3: Save to database
+        if document_id and highlights:
+            await save_skimming_highlights(
+                document_id=document_id,
+                file_name=pdf_path.name,
+                preset=preset,
+                alpha=alpha,
+                ratio=ratio,
+                highlights=highlights,
+            )
+            print(
+                f"[SKIMMING] Saved {len(highlights)} highlights to database for document {document_id}"
+            )
+
+        elapsed = time.time() - start_time
+        print(
+            f"[SKIMMING] ✅ Processed skimming for {pdf_path.name} "
+            f"({len(highlights)} highlights) in {elapsed:.2f}s"
+        )
+
+        # Update document status to ready
+        if document_id:
+            await _update_document_safe(
+                document_id,
+                {
+                    "skimming_status": "ready",
+                    "skimming_updated_at": datetime.utcnow(),
+                },
+            )
+            await _notify_status_change(document_id)
+
+        return {
+            "status": "success",
+            "highlight_count": len(highlights),
+            "elapsed": elapsed,
+        }
+
+    except Exception as exc:
+        elapsed = time.time() - start_time
+        print(
+            f"[SKIMMING] ❌ Failed to process skimming for {pdf_path.name} "
+            f"(took {elapsed:.2f}s): {exc}"
+        )
+        import traceback
+
+        print(f"[SKIMMING] Traceback: {traceback.format_exc()}")
+
+        # Update document status to error
+        if document_id:
+            await _update_document_safe(
+                document_id,
+                {
+                    "skimming_status": "error",
+                    "skimming_error": str(exc),
+                },
+            )
+            await _notify_status_change(document_id)
+
+        return {
+            "status": "error",
+            "error": str(exc),
+            "elapsed": elapsed,
+        }
+
+
 async def _process_saved_pdfs(
     saved_paths: List[Path],
     *,
@@ -743,8 +866,9 @@ async def _process_saved_pdfs(
     1. Parse, chunk, embed, and index (main processing)
     2. Generate summary (independent)
     3. Extract references (independent)
+    4. Process skimming highlights (independent)
 
-    All three tasks run in parallel and don't block each other.
+    All four tasks run in parallel and don't block each other.
     """
     if not saved_paths:
         payload = {"status": "ok", "count": 0, "results": []}
@@ -804,6 +928,7 @@ async def _process_saved_pdfs(
                             "embedding_status": "processing",
                             "summary_status": "processing",
                             "reference_status": "processing",
+                            "skimming_status": "processing",
                         },
                     )
 
@@ -828,9 +953,17 @@ async def _process_saved_pdfs(
                     _process_references(pdf_path, document_id)
                 )
 
+                skimming_task = asyncio.create_task(
+                    _process_skimming(pdf_path, document_id)
+                )
+
                 # Wait for all tasks to complete (don't fail if one fails)
                 all_results = await asyncio.gather(
-                    parse_task, summary_task, reference_task, return_exceptions=True
+                    parse_task,
+                    summary_task,
+                    reference_task,
+                    skimming_task,
+                    return_exceptions=True,
                 )
 
                 # Extract results
@@ -848,6 +981,11 @@ async def _process_saved_pdfs(
                     all_results[2]
                     if not isinstance(all_results[2], Exception)
                     else {"status": "error", "error": str(all_results[2])}
+                )
+                skimming_result = (
+                    all_results[3]
+                    if not isinstance(all_results[3], Exception)
+                    else {"status": "error", "error": str(all_results[3])}
                 )
 
                 # Log results for each task
@@ -931,6 +1069,17 @@ async def _process_saved_pdfs(
                         f"{reference_result.get('error', 'Unknown error')}"
                     )
 
+                if skimming_result.get("status") == "success":
+                    print(
+                        f"[PDF] ✅ Skimming completed for {pdf_path.name} "
+                        f"({skimming_result.get('highlight_count', 0)} highlights)"
+                    )
+                else:
+                    print(
+                        f"[PDF] ⚠️ Skimming failed for {pdf_path.name}: "
+                        f"{skimming_result.get('error', 'Unknown error')}"
+                    )
+
                 print(
                     f"[PDF] ✅ COMPLETED all processing for {pdf_path.name} "
                     f"(PDF {index}/{len(saved_paths)})"
@@ -958,6 +1107,7 @@ async def _process_saved_pdfs(
                         ),
                         "summary_result": summary_result,
                         "reference_result": reference_result,
+                        "skimming_result": skimming_result,
                     }
                 )
 
@@ -1143,6 +1293,7 @@ async def stream_qa_status(
                 f"embedding={status.get('embedding_status')}, "
                 f"summary={status.get('summary_status')}, "
                 f"reference={status.get('reference_status')}, "
+                f"skimming={status.get('skimming_status')}, "
                 f"available_features={status.get('available_features')}"
             )
 
@@ -1158,9 +1309,10 @@ async def stream_qa_status(
             embedding_ready = status.get("embedding_ready", False)
             summary_ready = status.get("summary_ready", False)
             reference_ready = status.get("reference_ready", False)
+            skimming_ready = status.get("skimming_ready", False)
 
             # If any feature is already available, log it
-            if embedding_ready or summary_ready or reference_ready:
+            if embedding_ready or summary_ready or reference_ready or skimming_ready:
                 available = status.get("available_features", [])
                 print(
                     f"[SSE] 🎯 Client connected late - some features already available: {available}"
@@ -1171,7 +1323,8 @@ async def stream_qa_status(
                         f"[SSE] 🔄 Confirmed missed updates: "
                         f"reference_ready={reference_ready}, "
                         f"summary_ready={summary_ready}, "
-                        f"embedding_ready={embedding_ready}"
+                        f"embedding_ready={embedding_ready}, "
+                        f"skimming_ready={skimming_ready}"
                     )
 
                 # Check if all tasks are done (terminal states)
@@ -1181,8 +1334,9 @@ async def stream_qa_status(
                 )
                 summary_done = status.get("summary_status") in ["ready", "error"]
                 reference_done = status.get("reference_status") in ["ready", "error"]
+                skimming_done = status.get("skimming_status") in ["ready", "error"]
 
-                if embedding_done and summary_done and reference_done:
+                if embedding_done and summary_done and reference_done and skimming_done:
                     print(
                         f"[SSE] ✅ All tasks already in terminal state, closing stream immediately"
                     )
@@ -1235,6 +1389,7 @@ async def stream_qa_status(
                         f"embedding_ready={status.get('embedding_ready')}, "
                         f"summary_ready={status.get('summary_ready')}, "
                         f"reference_ready={status.get('reference_ready')}, "
+                        f"skimming_ready={status.get('skimming_ready')}, "
                         f"available={status.get('available_features')}"
                     )
 
@@ -1261,8 +1416,13 @@ async def stream_qa_status(
                         "ready",
                         "error",
                     ]
-
-                    if embedding_done and summary_done and reference_done:
+                    skimming_done = status.get("skimming_status") in ["ready", "error"]
+                    if (
+                        embedding_done
+                        and summary_done
+                        and reference_done
+                        and skimming_done
+                    ):
                         print(
                             f"[SSE] ✅ All tasks reached terminal state for {document_id}"
                         )
@@ -1280,6 +1440,10 @@ async def stream_qa_status(
                             errors.append(f"Reference: {status.get('reference_error')}")
                         if status.get("embedding_error"):
                             errors.append(f"Embedding: {status.get('embedding_error')}")
+                        if status.get("skimming_error"):  # Thêm dòng này
+                            errors.append(
+                                f"Skimming: {status.get('skimming_error')}"
+                            )  # Thêm dòng này
                         if errors:
                             print(f"[SSE] ⚠️ Task errors: {'; '.join(errors)}")
 
@@ -1308,6 +1472,7 @@ async def stream_qa_status(
                     "embedding_ready": final_status.get("embedding_ready", False),
                     "summary_ready": final_status.get("summary_ready", False),
                     "reference_ready": final_status.get("reference_ready", False),
+                    "skimming_ready": final_status.get("skimming_ready", False),
                 }
                 yield f"data: {json.dumps(timeout_msg)}\n\n"
 
