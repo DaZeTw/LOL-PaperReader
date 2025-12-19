@@ -1,74 +1,142 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, ExternalLink, Copy, BookOpen, Link, FileText, Loader2 } from "lucide-react"
+import { X, ExternalLink, Copy, BookOpen, MapPin, Calendar, Users, FileText, Loader2, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { useCitationMetadata, CitationMetadata } from "@/hooks/useCitationMetadata"
 
-interface Citation {
+interface BoundingBox {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
+
+interface Target {
+  page: number
+  x: number
+  y: number
+}
+
+interface AnnotationMetadata {
   id: string
-  type: "inline" | "reference" | "doi" | "url"
-  text: string
-  authors?: string[]
+  ref_id: string
   title?: string
-  journal?: string
+  authors?: string[]
   year?: number
+  venue?: string
   doi?: string
+  arxiv_id?: string
+  bib_box?: {
+    page: number
+    left: number
+    top: number
+    width: number
+    height: number
+  }
+}
+
+interface Annotation {
+  dest: string
+  source: BoundingBox
+  target: Target | null
+  metadata?: AnnotationMetadata
+}
+
+interface EnrichedMetadata extends AnnotationMetadata {
+  abstract?: string
   url?: string
-  page?: number
-  position?: { x: number; y: number }
-  confidence?: number
-  extractedText?: string // Full reference text from PDF extraction
-  extractionConfidence?: number
-  extractionMethod?: string
+  citationCount?: number
+  influentialCitationCount?: number
 }
 
 interface CitationPopupProps {
-  citation: Citation | null
+  annotation: Annotation | null
   isOpen: boolean
   onClose: () => void
-  onViewReference: (citation: Citation) => void
+  onViewReference?: (annotation: Annotation) => void
   onCopyText: (text: string) => void
+  position?: { x: number; y: number }
 }
 
 export function CitationPopup({
-  citation,
+  annotation,
   isOpen,
   onClose,
   onViewReference,
   onCopyText,
+  position,
 }: CitationPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null)
-  const { fetchMetadata, loading, getCachedMetadata } = useCitationMetadata()
-  const [enrichedMetadata, setEnrichedMetadata] = useState<CitationMetadata | null>(null)
+  const [enrichedMetadata, setEnrichedMetadata] = useState<EnrichedMetadata | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showFullAbstract, setShowFullAbstract] = useState(false)
 
-  // Fetch metadata when citation changes
+  // Fetch enriched metadata when popup opens
   useEffect(() => {
-    if (citation && isOpen) {
-      // Use extracted text if available, otherwise use citation text
-      const textToSearch = citation.extractedText || citation.text
+    if (!isOpen || !annotation?.metadata) {
+      setEnrichedMetadata(null)
+      setError(null)
+      setShowFullAbstract(false)
+      return
+    }
 
-      // Check if we already have metadata cached
-      const cached = getCachedMetadata(textToSearch)
-      if (cached) {
-        setEnrichedMetadata(cached)
-      } else {
-        // Fetch metadata from API
-        fetchMetadata(textToSearch, {
-          title: citation.title,
-          authors: citation.authors,
-          year: citation.year,
-        }).then((metadata) => {
-          if (metadata) {
-            setEnrichedMetadata(metadata)
-          }
+    const fetchEnrichedMetadata = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const metadata = annotation.metadata!
+        
+        console.log('[CitationPopup] Fetching enriched metadata for:', metadata.title)
+
+        const response = await fetch("/api/references/search", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: metadata.title,
+            authors: metadata.authors?.join(", "),
+            year: metadata.year?.toString(),
+            doi: metadata.doi,
+            arxivId: metadata.arxiv_id,
+          }),
         })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: response.statusText }))
+          throw new Error(errorData.error || `Failed to fetch metadata: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log('[CitationPopup] Fetched enriched metadata:', data)
+
+        setEnrichedMetadata({
+          ...metadata,
+          abstract: data.abstract,
+          url: data.url,
+          citationCount: data.citationCount,
+          influentialCitationCount: data.influentialCitationCount,
+        })
+      } catch (err) {
+        console.error('[CitationPopup] Failed to fetch enriched metadata:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load additional metadata')
+        setEnrichedMetadata(annotation.metadata || null)
+      } finally {
+        setIsLoading(false)
       }
     }
-  }, [citation, isOpen, fetchMetadata, getCachedMetadata])
+
+    if (annotation.metadata?.title) {
+      fetchEnrichedMetadata()
+    } else {
+      setEnrichedMetadata(annotation.metadata || null)
+    }
+  }, [isOpen, annotation])
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -98,245 +166,215 @@ export function CitationPopup({
     }
   }, [isOpen, onClose])
 
-  if (!isOpen || !citation) return null
+  if (!isOpen || !annotation) return null
 
-  // Merge citation data with enriched metadata
-  const displayData = {
-    title: enrichedMetadata?.title || citation.title,
-    authors: enrichedMetadata?.authors || citation.authors,
-    year: enrichedMetadata?.year || citation.year,
-    doi: enrichedMetadata?.doi || citation.doi,
-    url: enrichedMetadata?.url || citation.url,
-    abstract: enrichedMetadata?.abstract,
-    venue: enrichedMetadata?.venue,
-    extractedText: citation.extractedText,
-    extractionConfidence: citation.extractionConfidence,
-    extractionMethod: citation.extractionMethod,
-  }
-
-  // Use extracted reference text for fetching metadata if available
-  const textForMetadata = citation.extractedText || citation.text
+  const metadata = enrichedMetadata || annotation.metadata
 
   const handleCopyText = () => {
-    const textToCopy = displayData.title || citation.text
+    const textToCopy = metadata?.title || annotation.dest
     onCopyText(textToCopy)
     navigator.clipboard.writeText(textToCopy)
   }
 
-  const getTypeIcon = () => {
-    switch (citation.type) {
-      case "doi":
-        return <Link className="h-4 w-4" />
-      case "url":
-        return <ExternalLink className="h-4 w-4" />
-      default:
-        return <BookOpen className="h-4 w-4" />
+  const handleViewReference = () => {
+    if (onViewReference) {
+      onViewReference(annotation)
+    } else if (annotation.target) {
+      console.log(`Navigate to page ${annotation.target.page}`)
     }
   }
 
-  const getTypeColor = () => {
-    switch (citation.type) {
-      case "doi":
-        return "bg-blue-100 text-blue-800 border-blue-200"
-      case "url":
-        return "bg-green-100 text-green-800 border-green-200"
-      case "reference":
-        return "bg-purple-100 text-purple-800 border-purple-200"
-      default:
-        return "bg-orange-100 text-orange-800 border-orange-200"
-    }
+  const truncateText = (text: string, maxLength: number = 200) => {
+    if (!text || text.length <= maxLength) return text
+    return text.substring(0, maxLength).trim() + "..."
   }
+
+  const formatAuthors = (authors: string[]) => {
+    if (!authors || authors.length === 0) return null
+    if (authors.length <= 2) return authors.join(", ")
+    return `${authors.slice(0, 2).join(", ")} et al.`
+  }
+
+  const abstractLength = enrichedMetadata?.abstract?.length || 0
+  const shouldTruncateAbstract = abstractLength > 200
 
   return (
     <div
       ref={popupRef}
-      className="fixed z-50 w-80 rounded-lg border border-gray-200 bg-white shadow-lg animate-in fade-in-0 zoom-in-95 duration-200"
+      className="fixed z-50 w-96 rounded-lg border border-gray-200 bg-white shadow-xl animate-in fade-in-0 zoom-in-95 duration-200"
       style={{
-        left: Math.min(citation.position?.x || 0, window.innerWidth - 320),
-        top: Math.max(citation.position?.y || 0 - 10, 10),
-        transform: citation.position?.y && citation.position.y > window.innerHeight / 2
+        left: position ? Math.min(position.x, window.innerWidth - 384) : '50%',
+        top: position ? Math.max(position.y - 10, 10) : '50%',
+        transform: position && position.y > window.innerHeight / 2
           ? "translateY(-100%)"
-          : "translateY(10px)",
+          : position ? "translateY(10px)" : "translate(-50%, -50%)",
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 bg-gray-50">
+      <div className="flex items-center justify-between border-b px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="flex items-center gap-2">
-          {getTypeIcon()}
-          <span className="text-sm font-medium text-gray-800">Citation</span>
-          <Badge variant="outline" className={cn("text-xs", getTypeColor())}>
-            {citation.type}
-          </Badge>
+          <BookOpen className="h-4 w-4 text-blue-600" />
+          <span className="text-sm font-semibold text-gray-800">Reference</span>
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+          className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors"
         >
-          <X className="h-5 w-5" />
+          <X className="h-3.5 w-3.5" />
         </Button>
       </div>
 
       {/* Content */}
-      <ScrollArea className="max-h-96">
-        <div className="p-3 space-y-3">
+      <ScrollArea className="max-h-[450px]">
+        <div className="p-4 space-y-3">
           {/* Loading State */}
-          {loading && (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
-              <span className="ml-2 text-sm text-gray-600">Fetching metadata...</span>
+          {isLoading && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+              <span className="ml-2 text-sm text-gray-600">Loading...</span>
             </div>
           )}
 
-          {/* Extracted Reference Text (if available) */}
-          {displayData.extractedText && (
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-gray-600">Extracted Reference</p>
-                <Badge variant="outline" className="text-xs">
-                  {Math.round((displayData.extractionConfidence || 0) * 100)}% confidence
-                </Badge>
-              </div>
-              <p className="text-xs text-gray-800 bg-green-50 p-2 rounded leading-relaxed border border-green-200">
-                {displayData.extractedText}
-              </p>
+          {/* No Metadata */}
+          {!isLoading && !metadata && (
+            <div className="text-center py-6">
+              <p className="text-sm text-gray-600">No metadata found</p>
+              <p className="text-xs text-gray-500 mt-2 font-mono">{annotation.dest}</p>
             </div>
           )}
 
-          {/* Citation Text */}
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-gray-600">
-              {displayData.extractedText ? "Inline Citation" : "Citation Text"}
-            </p>
-            <p className="text-xs text-gray-800 bg-gray-50 p-2 rounded font-mono leading-relaxed">
-              {citation.text}
-            </p>
-          </div>
-
-          {/* Reference Details */}
-          {(displayData.title || displayData.authors || displayData.venue) && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-gray-600">Reference Details</p>
-
-              {displayData.title && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Title</p>
-                  <p className="text-sm font-medium text-gray-900 leading-tight">{displayData.title}</p>
+          {/* Metadata Content */}
+          {!isLoading && metadata && (
+            <>
+              {/* Title */}
+              {metadata.title && (
+                <div className="space-y-1.5">
+                  <h3 className="text-sm font-semibold text-gray-900 leading-snug">
+                    {metadata.title}
+                  </h3>
+                  {enrichedMetadata?.url && (
+                    <a
+                      href={enrichedMetadata.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      View Paper
+                    </a>
+                  )}
                 </div>
               )}
 
-              {displayData.authors && displayData.authors.length > 0 && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Authors</p>
-                  <p className="text-sm text-gray-800">
-                    {displayData.authors.slice(0, 3).join(", ")}
-                    {displayData.authors.length > 3 && " et al."}
+              {/* Authors */}
+              {metadata.authors && metadata.authors.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <Users className="h-3.5 w-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {formatAuthors(metadata.authors)}
                   </p>
                 </div>
               )}
 
-              {displayData.venue && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Venue</p>
-                  <p className="text-sm text-gray-800 italic">{displayData.venue}</p>
+              {/* Year, Venue & Citations - Single Line */}
+              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                {metadata.year && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3 text-gray-400" />
+                    <span>{metadata.year}</span>
+                  </div>
+                )}
+                
+                {metadata.venue && (
+                  <>
+                    <span className="text-gray-300">•</span>
+                    <div className="flex items-center gap-1">
+                      <FileText className="h-3 w-3 text-gray-400" />
+                      <span className="truncate max-w-[140px]" title={metadata.venue}>
+                        {truncateText(metadata.venue, 30)}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {enrichedMetadata?.citationCount !== undefined && (
+                  <>
+                    <span className="text-gray-300">•</span>
+                    <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-medium bg-blue-50 text-blue-700 border-blue-200">
+                      {enrichedMetadata.citationCount} cited
+                    </Badge>
+                  </>
+                )}
+
+                {enrichedMetadata?.influentialCitationCount !== undefined && enrichedMetadata.influentialCitationCount > 0 && (
+                  <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-medium bg-amber-50 text-amber-700 border-amber-200">
+                    {enrichedMetadata.influentialCitationCount} influential
+                  </Badge>
+                )}
+              </div>
+
+              {/* Abstract with View More */}
+              {enrichedMetadata?.abstract && (
+                <div className="space-y-1.5 pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+                      Abstract
+                    </p>
+                    {shouldTruncateAbstract && (
+                      <button
+                        onClick={() => setShowFullAbstract(!showFullAbstract)}
+                        className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
+                      >
+                        {showFullAbstract ? (
+                          <>
+                            Less <ChevronUp className="h-3 w-3" />
+                          </>
+                        ) : (
+                          <>
+                            More <ChevronDown className="h-3 w-3" />
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {showFullAbstract || !shouldTruncateAbstract
+                      ? enrichedMetadata.abstract
+                      : truncateText(enrichedMetadata.abstract, 200)}
+                  </p>
                 </div>
               )}
 
-              <div className="flex items-center gap-4">
-                {displayData.year && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Year</p>
-                    <p className="text-sm text-gray-800 font-medium">{displayData.year}</p>
-                  </div>
-                )}
-
-                {citation.page && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Page</p>
-                    <p className="text-sm text-gray-800 font-medium">{citation.page}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Abstract */}
-          {displayData.abstract && (
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-600">Abstract</p>
-              <p className="text-xs text-gray-800 bg-gray-50 p-2 rounded leading-relaxed">
-                {displayData.abstract}
-              </p>
-            </div>
-          )}
-
-          {/* Confidence Score */}
-          {citation.confidence && (
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-600">Detection Confidence</p>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full transition-all",
-                      citation.confidence > 0.8 ? "bg-green-500" :
-                      citation.confidence > 0.6 ? "bg-yellow-500" : "bg-red-500"
-                    )}
-                    style={{ width: `${citation.confidence * 100}%` }}
-                  />
+              {/* Identifiers */}
+              {(metadata.doi || metadata.arxiv_id) && (
+                <div className="flex flex-wrap gap-1.5 pt-2 border-t border-gray-100">
+                  {metadata.doi && (
+                    <Badge variant="outline" className="text-[10px] font-mono h-5 px-1.5 border-gray-300 text-gray-600">
+                      DOI {metadata.doi}
+                    </Badge>
+                  )}
+                  {metadata.arxiv_id && (
+                    <Badge variant="outline" className="text-[10px] font-mono h-5 px-1.5 border-orange-300 text-orange-700 bg-orange-50">
+                      {metadata.arxiv_id}
+                    </Badge>
+                  )}
                 </div>
-                <span className="text-xs text-gray-600 font-mono">
-                  {Math.round(citation.confidence * 100)}%
-                </span>
-              </div>
-            </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+                  {error}
+                </div>
+              )}
+            </>
           )}
         </div>
       </ScrollArea>
 
-      {/* Actions */}
-      <div className="flex items-center justify-between border-t border-gray-200 px-3 py-2 bg-gray-50">
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={handleCopyText} className="h-7 text-xs">
-            <Copy className="h-3 w-3 mr-1" />
-            Copy
-          </Button>
-
-          {displayData.url && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.open(displayData.url, "_blank")}
-              className="h-7 text-xs"
-            >
-              <ExternalLink className="h-3 w-3 mr-1" />
-              Link
-            </Button>
-          )}
-
-          {displayData.doi && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.open(`https://doi.org/${displayData.doi}`, "_blank")}
-              className="h-7 text-xs"
-            >
-              <FileText className="h-3 w-3 mr-1" />
-              DOI
-            </Button>
-          )}
-        </div>
-
-        <Button
-          variant="default"
-          size="sm"
-          onClick={() => onViewReference(citation)}
-          className="h-7 text-xs"
-        >
-          View Reference
-        </Button>
-      </div>
+      
     </div>
   )
 }

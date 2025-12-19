@@ -1,13 +1,13 @@
 import shutil
 import tempfile
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
-from pydantic import BaseModel
 from paperreader.models.reference import ReferenceSchema, ReferenceUpdate
-from paperreader.services.references.reference_service import ReferenceService
 from paperreader.services.references.pdf_link_resolver import resolve_pdf_link
+from paperreader.services.references.reference_service import ReferenceService
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/references", tags=["references"])
 reference_service = ReferenceService()
@@ -30,8 +30,6 @@ class PdfLinkResponse(BaseModel):
     pdf_url: Optional[str] = None
     source: Optional[str] = None
     is_open_access: bool = False
-
-
 
 
 @router.post("/extract", response_model=List[ReferenceSchema])
@@ -63,6 +61,45 @@ async def extract_references_from_pdf(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to extract references: {str(e)}"
+        )
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+@router.post("/extract-annotations", response_model=List[Dict[str, Any]])
+async def extract_and_match_annotations(
+    file: UploadFile = File(...),
+    document_id: str = Query(..., description="Document ID to match annotations with"),
+):
+    """
+    Extract citation annotations from PDF and match with reference metadata.
+
+    This endpoint:
+    1. Extracts citation link annotations from the PDF
+    2. Matches them with stored reference metadata using spatial proximity
+    3. Returns enriched annotations with full reference information
+    """
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    temp_dir = Path(tempfile.mkdtemp(prefix="ann_extract_"))
+    pdf_path = temp_dir / file.filename
+
+    try:
+        # Save uploaded PDF
+        with pdf_path.open("wb") as f:
+            shutil.copyfileobj(file.file, f)
+
+        # Extract annotations and match with references
+        enriched_annotations = await reference_service.extract_and_match_annotations(
+            pdf_path, document_id
+        )
+
+        return enriched_annotations
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to extract annotations: {str(e)}"
         )
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)

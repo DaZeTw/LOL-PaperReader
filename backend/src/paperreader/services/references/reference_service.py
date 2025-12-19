@@ -1,20 +1,24 @@
-from typing import List, Optional
-from pathlib import Path
 import asyncio
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from paperreader.services.parser.grobid_client import GrobidClient
-from paperreader.services.parser.reference_extractor import (
-    ReferenceExtractorService,
-    Reference as ExtractedReference,
-)
 from paperreader.models.reference import (
-    ReferenceSchema,
-    ReferenceCreate,
-    ReferenceUpdate,
     BoundingBoxSchema,
     CitationMentionSchema,
+    ReferenceCreate,
+    ReferenceSchema,
+    ReferenceUpdate,
 )
+from paperreader.services.parser.annotation_extractor import AnnotationExtractorService
+from paperreader.services.parser.grobid_client import GrobidClient
+from paperreader.services.parser.reference_extractor import (
+    Reference as ExtractedReference,
+)
+from paperreader.services.parser.reference_extractor import ReferenceExtractorService
 from paperreader.services.references import repository
+from paperreader.services.references.annotation_matcher_service import (
+    AnnotationMatcherService,
+)
 
 
 class ReferenceService:
@@ -22,6 +26,8 @@ class ReferenceService:
 
     def __init__(self):
         self.grobid_client = GrobidClient()
+        self.annotation_extractor = AnnotationExtractorService()
+        self.annotation_matcher = AnnotationMatcherService()
 
     def _convert_extracted_to_schema(
         self, extracted_ref: ExtractedReference, document_id: str
@@ -96,6 +102,36 @@ class ReferenceService:
         )
 
         return saved_refs
+
+    async def extract_and_match_annotations(
+        self, pdf_path: Path, document_id: str
+    ) -> List[Dict[str, Any]]:
+        """
+        Extract citation annotations and match with reference metadata.
+
+        Args:
+            pdf_path: Path to the PDF file
+            document_id: Document ID to fetch references
+
+        Returns:
+            List of enriched annotations with matched metadata
+        """
+        # Step 1: Extract raw annotations from PDF
+        annotations = await asyncio.to_thread(
+            self.annotation_extractor.extract, str(pdf_path)
+        )
+
+        # Step 2: Get references from database
+        references = await repository.get_references_by_document(
+            document_id, skip=0, limit=1000
+        )
+
+        # Step 3: Match annotations with references
+        enriched_annotations = self.annotation_matcher.match_annotations(
+            annotations, references
+        )
+
+        return enriched_annotations
 
     async def get_reference(self, reference_id: str) -> Optional[ReferenceSchema]:
         """Get a single reference by ID."""

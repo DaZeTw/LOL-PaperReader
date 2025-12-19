@@ -289,6 +289,7 @@ export function SinglePDFReader({
         }}
       >
         <PDFViewer
+          documentId={documentId}
           file={file}
           navigationTarget={navigationTarget}
           onPageChange={handlePageChange}
@@ -299,7 +300,6 @@ export function SinglePDFReader({
           activeHighlightIds={activeHighlightIds}
           highlights={highlights}
           onReferenceClick={handleReferenceClick}
-          // Pass pipeline status to PDFViewer
           // pipelineStatus={{
           //   isAllReady,
           //   isProcessing,
