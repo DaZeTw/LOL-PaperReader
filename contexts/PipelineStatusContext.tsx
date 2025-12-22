@@ -2,12 +2,12 @@
 
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react'
 
-// Updated interface to match new backend response
+// Updated interface to match new backend response with skimming
 export interface PipelineStatus {
   // Overall status
   building: boolean
   ready: boolean  // Main processing ready (chat available)
-  all_ready: boolean  // ALL tasks ready (chat + summary + references)
+  all_ready: boolean  // ALL tasks ready (chat + summary + references + skimming)
   percent: number
   stage: string
   message: string
@@ -34,8 +34,13 @@ export interface PipelineStatus {
   reference_error?: string
   reference_updated_at?: string
   
+  skimming_status?: string
+  skimming_ready?: boolean
+  skimming_error?: string
+  skimming_updated_at?: string
+  
   // Feature availability
-  available_features?: string[]  // ["chat", "summary", "references"]
+  available_features?: string[]  // ["chat", "summary", "references", "skimming"]
   
   // Progress details
   progress?: {
@@ -117,7 +122,6 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
     })
     
     // Connect to the stream
-    // Ensure this path matches your Next.js API route proxy
     const es = new EventSource(`/api/qa/status/stream?${params.toString()}`)
     connectionsRef.current[trackingKey] = es
 
@@ -144,6 +148,9 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
         if (data.reference_ready && !statusMapRef.current[trackingKey]?.reference_ready) {
           console.log(`[Pipeline] ✅ ${trackingKey} - References ready`)
         }
+        if (data.skimming_ready && !statusMapRef.current[trackingKey]?.skimming_ready) {
+          console.log(`[Pipeline] ✅ ${trackingKey} - Skimming ready`)
+        }
 
         // Close stream if ALL tasks done or critical error
         if (data.all_ready || data.stage === 'error' || data.stage === 'timeout') {
@@ -159,8 +166,9 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
         const embeddingDone = ['ready', 'error'].includes(data.embedding_status || '') || data.embedding_ready
         const summaryDone = ['ready', 'error'].includes(data.summary_status || '')
         const referenceDone = ['ready', 'error'].includes(data.reference_status || '')
+        const skimmingDone = ['ready', 'error'].includes(data.skimming_status || '')
         
-        if (embeddingDone && summaryDone && referenceDone && !data.all_ready) {
+        if (embeddingDone && summaryDone && referenceDone && skimmingDone && !data.all_ready) {
           console.log(
             `[Pipeline] 🔌 Closing stream for ${trackingKey}: all tasks in terminal state`
           )

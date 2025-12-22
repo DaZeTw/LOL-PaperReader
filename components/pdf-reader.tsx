@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { PDFViewer } from "@/components/pdf-viewer"
-import { AnnotationToolbar } from "@/components/annotation-toolbar"
 import { RightSidebar } from "@/components/right-sidebar"
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
 import { usePaperReferences } from "@/hooks/usePaperReferences"
@@ -21,9 +20,9 @@ interface SinglePDFReaderProps {
   documentId: string
   tabId: string
   isActive: boolean
-  sidebarOpen: boolean  // Controlled from parent
-  onSidebarToggle: (isOpen: boolean) => void  // Callback to parent
-  onOpenReferencePDF?: (pdfUrl: string, title: string) => void  // Callback to open reference in new tab
+  sidebarOpen: boolean
+  onSidebarToggle: (isOpen: boolean) => void
+  onOpenReferencePDF?: (pdfUrl: string, title: string) => void
 }
 
 export function SinglePDFReader({
@@ -46,15 +45,17 @@ export function SinglePDFReader({
     message,
     stage,
     
-    // Independent task readiness
+    // Independent task readiness (ALL 4 tasks)
     isChatReady,
     isSummaryReady,
     isReferencesReady,
+    isSkimmingReady,
     
     // Task statuses
     embeddingStatus,
     summaryStatus,
     referenceStatus,
+    skimmingStatus,
     
     // Available features
     availableFeatures,
@@ -72,6 +73,12 @@ export function SinglePDFReader({
     // Errors
     hasErrors,
     errors,
+    
+    // Timestamps
+    embeddingUpdatedAt,
+    summaryUpdatedAt,
+    referenceUpdatedAt,
+    skimmingUpdatedAt,
     
     // Raw status for advanced use
     raw: pipelineStatus,
@@ -98,12 +105,6 @@ export function SinglePDFReader({
   const [numPages, setNumPages] = useState<number>(0)
 
   // ============================================================================
-  // Annotation State
-  // ============================================================================
-  const [highlightColor, setHighlightColor] = useState("#fef08a")
-  const [annotationMode, setAnnotationMode] = useState<"highlight" | "erase" | null>(null)
-
-  // ============================================================================
   // Highlights State (depends on embeddings being ready)
   // ============================================================================
   const {
@@ -122,12 +123,13 @@ export function SinglePDFReader({
   
   // Skimming state
   const [skimmingEnabled, setSkimmingEnabled] = useState(false)
-  const [selectedPreset, setSelectedPreset] = useState<"light" | "medium" | "heavy">("medium")
 
   // References state (extracted references from PDF's References section)
   const { references, loading: referencesLoading, error: referencesError } = usePaperReferences(documentId)
 
+  // ============================================================================
   // Handle citation click to open reference PDF
+  // ============================================================================
   const handleReferenceClick = (citationId: string) => {
     console.log(`[SinglePDFReader:${tabId}] Citation clicked:`, citationId)
 
@@ -157,15 +159,15 @@ export function SinglePDFReader({
     // Open the reference link
     if (reference.link) {
       console.log(`[SinglePDFReader:${tabId}] Opening reference link:`, reference.link, `(type: ${reference.link_type})`)
-      
-      // Open in browser (you can customize this to open in-app)
       window.open(reference.link, "_blank", "noopener,noreferrer")
     } else {
       console.warn(`[SinglePDFReader:${tabId}] Reference #${refNumber} has no link`)
     }
   }
 
+  // ============================================================================
   // Handle enabling skimming (depends on embeddings being ready)
+  // ============================================================================
   const handleEnableSkimming = async () => {
     if (!isChatReady) {
       console.warn(`[SinglePDFReader:${tabId}] Cannot enable skimming - embeddings not ready (status: ${embeddingStatus})`)
@@ -173,39 +175,61 @@ export function SinglePDFReader({
     }
 
     try {
-      console.log(`[SinglePDFReader:${tabId}] Enabling skimming with preset: ${selectedPreset}`)
-      await enableSkimming(file, documentId, selectedPreset)
+      console.log(`[SinglePDFReader:${tabId}] Enabling skimming with default 50% density`)
+      await enableSkimming(file, documentId, "medium")  // Always use medium (50%)
       setSkimmingEnabled(true)
     } catch (error) {
       console.error(`[SinglePDFReader:${tabId}] Failed to enable skimming:`, error)
     }
   }
 
+  // ============================================================================
+  // Handle disabling skimming
+  // ============================================================================
+  const handleDisableSkimming = () => {
+    console.log(`[SinglePDFReader:${tabId}] Disabling skimming`)
+    setSkimmingEnabled(false)
+    setActiveHighlightIds(new Set())  // Clear active highlights immediately
+  }
+
+  // ============================================================================
   // Auto-activate all highlights when they are loaded
+  // ============================================================================
   useEffect(() => {
-    if (highlights.length > 0 && skimmingEnabled) {
+    if (!skimmingEnabled) {
+      // Clear highlights when skimming is disabled
+      setActiveHighlightIds(new Set())
+      console.log(`[SinglePDFReader:${tabId}] Skimming disabled, cleared active highlights`)
+    } else if (highlights.length > 0) {
+      // Activate all highlights when skimming is enabled
       const allHighlightIds = new Set(highlights.map((h) => h.id))
       setActiveHighlightIds(allHighlightIds)
       console.log(`[SinglePDFReader:${tabId}] Auto-activated ${highlights.length} highlights`)
     }
   }, [highlights.length, skimmingEnabled, tabId])
 
+  // ============================================================================
   // Reset states when file changes
+  // ============================================================================
   useEffect(() => {
     console.log(`[SinglePDFReader:${tabId}] File changed, resetting states`)
     setNavigationTarget(undefined)
     setCurrentPage(1)
-    setAnnotationMode(null)
     setActiveHighlightIds(new Set())
     setSkimmingEnabled(false)
+    setHiddenHighlightIds(new Set())
   }, [file.name, file.size, file.lastModified, tabId])
 
+  // ============================================================================
   // Handle page changes from PDF viewer
+  // ============================================================================
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
 
+  // ============================================================================
   // Handle highlight click - navigate to highlight location and toggle visibility
+  // ============================================================================
   const handleHighlightClick = (highlight: SkimmingHighlight) => {
     console.log(`[SinglePDFReader:${tabId}] Clicking highlight:`, highlight.text.substring(0, 50))
 
@@ -235,7 +259,9 @@ export function SinglePDFReader({
     setCurrentPage(page)
   }
 
+  // ============================================================================
   // Handle highlight toggle - show/hide individual highlight
+  // ============================================================================
   const handleHighlightToggle = (highlightId: number) => {
     setHiddenHighlightIds((prev) => {
       const next = new Set(prev)
@@ -248,7 +274,9 @@ export function SinglePDFReader({
     })
   }
 
+  // ============================================================================
   // Handle citation click - navigate to citation page
+  // ============================================================================
   const handleCitationClick = (page: number, text?: string) => {
     console.log(`[SinglePDFReader:${tabId}] Navigating to citation page:`, page, text?.substring(0, 50))
 
@@ -267,7 +295,9 @@ export function SinglePDFReader({
     setCurrentPage(page)
   }
 
+  // ============================================================================
   // Clear navigation target after navigation completes
+  // ============================================================================
   const handleNavigationComplete = () => {
     console.log(`[SinglePDFReader:${tabId}] Navigation completed, clearing target`)
     setNavigationTarget(undefined)
@@ -276,6 +306,7 @@ export function SinglePDFReader({
   console.log(
     `[SinglePDFReader:${tabId}] Render - file: ${file.name}, ` +
     `page: ${currentPage}, active: ${isActive}, sidebarOpen: ${sidebarOpen}, ` +
+    `skimming: ${skimmingEnabled}, highlights: ${highlights.length}, ` +
     `pipeline: ${stage} (${availableFeatures.join(', ') || 'none ready'})`
   )
 
@@ -300,19 +331,6 @@ export function SinglePDFReader({
           activeHighlightIds={activeHighlightIds}
           highlights={highlights}
           onReferenceClick={handleReferenceClick}
-          // pipelineStatus={{
-          //   isAllReady,
-          //   isProcessing,
-          //   isChatReady,
-          //   isSummaryReady,
-          //   isReferencesReady,
-          //   availableFeatures,
-          //   embeddingStatus,
-          //   summaryStatus,
-          //   referenceStatus,
-          //   message,
-          //   stage,
-          // }}
         />
       </div>
 
@@ -333,33 +351,52 @@ export function SinglePDFReader({
           onHighlightToggle={handleHighlightToggle}
           activeHighlightIds={activeHighlightIds}
           skimmingEnabled={skimmingEnabled}
-          selectedPreset={selectedPreset}
-          onPresetChange={setSelectedPreset}
           onEnableSkimming={handleEnableSkimming}
+          onDisableSkimming={handleDisableSkimming}
           isOpen={sidebarOpen}
           onToggle={() => onSidebarToggle(!sidebarOpen)}
-          // Pass pipeline status to RightSidebar
           pipelineStatus={{
+            // Overall status
             isAllReady,
             isProcessing,
             overallProgress,
+            stage,
+            message,
+            
+            // Independent task readiness (3 tasks passed to sidebar)
             isChatReady,
             isSummaryReady,
-            isReferencesReady,
-            availableFeatures,
+            isSkimmingReady,
+            
+            // Task statuses (3 tasks)
             embeddingStatus,
             summaryStatus,
-            referenceStatus,
+            skimmingStatus,
+            
+            // Available features
+            availableFeatures,
+            
+            // Metadata (chat/summary only)
             chunkCount,
-            referenceCount,
-            message,
-            stage,
+            
+            // Error tracking
             hasErrors,
             errors,
-            getTaskMessage,
+            
+            // Helper functions
+            getTaskMessage: (task: 'embedding' | 'summary' | 'skimming') => {
+              return getTaskMessage(task as any)
+            },
             getCompletedTasks,
             getProcessingTasks,
-            isFeatureAvailable,
+            isFeatureAvailable: (feature: 'chat' | 'summary' | 'skimming') => {
+              return isFeatureAvailable(feature as any)
+            },
+            
+            // Timestamps
+            embeddingUpdatedAt,
+            summaryUpdatedAt,
+            skimmingUpdatedAt,
           }}
         />
       )}

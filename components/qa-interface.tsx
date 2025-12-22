@@ -11,32 +11,53 @@ import { useQAMessages } from "@/hooks/useQAMessages"
 import { useQAActions } from "@/hooks/useQAActions"
 
 interface QAInterfaceProps {
+  tabId: string
   pdfFile: File
   documentId: string
-  tabId: string
-  onHighlight?: (text: string | null) => void
-  onCitationClick?: (page: number, text?: string) => void
-  totalPages?: number
+  onHighlight: (text: string) => void
+  onCitationClick: (page: number, text?: string) => void
+  totalPages: number
   isOpen?: boolean
   onToggle?: () => void
   isActive?: boolean
   pipelineStatus?: {
+    // Overall status
     isAllReady: boolean
     isProcessing: boolean
+    overallProgress: number
+    stage: string
+    message: string
+    
+    // Task readiness (chat only for QA)
     isChatReady: boolean
-    isSummaryReady: boolean
-    isReferencesReady: boolean
-    availableFeatures: string[]
+    isSummaryReady: boolean  // Keep for context
+    isSkimmingReady: boolean  // Keep for context
+    
+    // Task statuses
     embeddingStatus: string
     summaryStatus: string
-    referenceStatus: string
+    skimmingStatus: string
+    
+    // Available features
+    availableFeatures: string[]
+    
+    // Metadata
     chunkCount: number
-    message: string
-    stage: string
-    overallProgress: number
+    
+    // Error tracking
     hasErrors: boolean
     errors: string[]
-    getTaskMessage: (task: 'embedding' | 'summary' | 'reference') => string
+    
+    // Helper functions
+    getTaskMessage: (task: 'embedding' | 'summary' | 'skimming') => string
+    getCompletedTasks: () => string[]
+    getProcessingTasks: () => string[]
+    isFeatureAvailable: (feature: 'chat' | 'summary' | 'skimming') => boolean
+    
+    // Timestamps
+    embeddingUpdatedAt?: string
+    summaryUpdatedAt?: string
+    skimmingUpdatedAt?: string
   }
 }
 

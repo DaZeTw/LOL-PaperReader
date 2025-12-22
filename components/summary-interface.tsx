@@ -13,16 +13,43 @@ interface SummaryInterfaceProps {
   onToggle?: () => void
   isActive?: boolean
   pipelineStatus?: {
+    // Overall status
     isAllReady: boolean
     isProcessing: boolean
-    isChatReady: boolean
-    isSummaryReady: boolean
-    isReferencesReady: boolean
-    availableFeatures: string[]
-    summaryStatus: string
     overallProgress: number
+    stage: string
+    message: string
+    
+    // Task readiness (summary focused)
+    isChatReady: boolean  // Keep for context
+    isSummaryReady: boolean
+    isSkimmingReady: boolean  // Keep for context
+    
+    // Task statuses
+    embeddingStatus: string
+    summaryStatus: string
+    skimmingStatus: string
+    
+    // Available features
+    availableFeatures: string[]
+    
+    // Metadata
+    chunkCount: number
+    
+    // Error tracking
     hasErrors: boolean
     errors: string[]
+    
+    // Helper functions
+    getTaskMessage: (task: 'embedding' | 'summary' | 'skimming') => string
+    getCompletedTasks: () => string[]
+    getProcessingTasks: () => string[]
+    isFeatureAvailable: (feature: 'chat' | 'summary' | 'skimming') => boolean
+    
+    // Timestamps
+    embeddingUpdatedAt?: string
+    summaryUpdatedAt?: string
+    skimmingUpdatedAt?: string
   }
 }
 

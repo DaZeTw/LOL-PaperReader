@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { QAInterface } from "@/components/qa-interface"
 import { SummaryInterface } from "@/components/summary-interface"
-import { HighlightNotesSidebar } from "@/components/highlight-notes-sidebar"
+import { SkimmingInterface } from "@/components/skimming-interface"  // ✅ NEW IMPORT
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 
 interface RightSidebarProps {
@@ -29,35 +29,52 @@ interface RightSidebarProps {
   
   // Skimming controls
   skimmingEnabled: boolean
-  selectedPreset: "light" | "medium" | "heavy"
-  onPresetChange: (preset: "light" | "medium" | "heavy") => void
   onEnableSkimming: () => Promise<void>
-  
+  onDisableSkimming?: () => void  // Add this
   // Sidebar control
   isOpen: boolean
   onToggle: () => void
   className?: string
+  
+  // Pipeline status (3 tasks: chat, summary, skimming)
   pipelineStatus?: {
+    // Overall status
     isAllReady: boolean
     isProcessing: boolean
     overallProgress: number
+    stage: string
+    message: string
+    
+    // Independent task readiness (3 tasks)
     isChatReady: boolean
     isSummaryReady: boolean
-    isReferencesReady: boolean
-    availableFeatures: string[]
+    isSkimmingReady: boolean
+    
+    // Task statuses (3 tasks)
     embeddingStatus: string
     summaryStatus: string
-    referenceStatus: string
+    skimmingStatus: string
+    
+    // Available features
+    availableFeatures: string[]
+    
+    // Metadata
     chunkCount: number
-    referenceCount: number
-    message: string
-    stage: string
+    
+    // Error tracking
     hasErrors: boolean
     errors: string[]
-    getTaskMessage: (task: 'embedding' | 'summary' | 'reference') => string
+    
+    // Helper functions (3 tasks)
+    getTaskMessage: (task: 'embedding' | 'summary' | 'skimming') => string
     getCompletedTasks: () => string[]
     getProcessingTasks: () => string[]
-    isFeatureAvailable: (feature: 'chat' | 'summary' | 'references') => boolean
+    isFeatureAvailable: (feature: 'chat' | 'summary' | 'skimming') => boolean
+    
+    // Timestamps
+    embeddingUpdatedAt?: string
+    summaryUpdatedAt?: string
+    skimmingUpdatedAt?: string
   }
 }
 
@@ -76,9 +93,8 @@ export function RightSidebar({
   onHighlightToggle,
   activeHighlightIds,
   skimmingEnabled,
-  selectedPreset,
-  onPresetChange,
   onEnableSkimming,
+  onDisableSkimming,
   isOpen,
   onToggle,
   className,
@@ -100,13 +116,13 @@ export function RightSidebar({
       icon: BookmarkIcon,
       label: "Highlights",
       disabled: false,
-      ready: true,
+      ready: pipelineStatus?.isSkimmingReady || skimmingEnabled,
     },
     {
       id: "summary",
       icon: Sparkles,
       label: "AI Summary",
-      disabled: false,  // ✅ Changed from true
+      disabled: false,
       ready: pipelineStatus?.isSummaryReady,
     },
     {
@@ -148,77 +164,20 @@ export function RightSidebar({
       
       case "highlights":
         return (
-          <div className="flex flex-col h-full">
-            {/* Skimming Control Panel */}
-            {!skimmingEnabled && (
-              <div className="border-b p-4 bg-muted/30">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Enable Skimming</span>
-                  </div>
-                  <select
-                    value={selectedPreset}
-                    onChange={(e) => onPresetChange(e.target.value as "light" | "medium" | "heavy")}
-                    className="w-full px-3 py-2 text-sm border border-border rounded bg-background"
-                  >
-                    <option value="light">Light (30%)</option>
-                    <option value="medium">Medium (50%)</option>
-                    <option value="heavy">Heavy (70%)</option>
-                  </select>
-                  <Button
-                    onClick={onEnableSkimming}
-                    disabled={highlightsProcessing}
-                    size="sm"
-                    className="w-full gap-2"
-                  >
-                    {highlightsProcessing ? (
-                      <>
-                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        Enable Skimming
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Skimming Status */}
-            {skimmingEnabled && highlights.length > 0 && (
-              <div className="border-b p-3 bg-primary/10">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">✨</span>
-                  <span className="text-sm font-medium">
-                    {highlights.length} highlights ({selectedPreset})
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Highlights List */}
-            <div className="flex-1 overflow-auto">
-              {highlights.length === 0 ? (
-                <div className="p-4 text-sm text-muted-foreground text-center">
-                  {highlightsLoading ? "Loading highlights..." : "Enable skimming to see highlights"}
-                </div>
-              ) : (
-                <HighlightNotesSidebar
-                  highlights={highlights}
-                  visibleCategories={visibleCategories}
-                  onHighlightClick={onHighlightClick}
-                  isOpen={true}
-                  onToggle={() => {}}
-                  hiddenHighlightIds={hiddenHighlightIds}
-                  onHighlightToggle={onHighlightToggle}
-                  activeHighlightIds={activeHighlightIds}
-                />
-              )}
-            </div>
-          </div>
+          <SkimmingInterface
+            highlights={highlights}
+            highlightsLoading={highlightsLoading}
+            highlightsProcessing={highlightsProcessing}
+            visibleCategories={visibleCategories}
+            onHighlightClick={onHighlightClick}
+            hiddenHighlightIds={hiddenHighlightIds}
+            onHighlightToggle={onHighlightToggle}
+            activeHighlightIds={activeHighlightIds}
+            skimmingEnabled={skimmingEnabled}
+            onEnableSkimming={onEnableSkimming}
+            onDisableSkimming={onDisableSkimming} 
+            pipelineStatus={pipelineStatus}
+          />
         )
       
       case "summary":
@@ -287,7 +246,10 @@ export function RightSidebar({
                 title={tab.label}
               >
                 <tab.icon className="h-4 w-4" />
-                
+                {/* Ready indicator - small green dot */}
+                {tab.ready && !tab.disabled && (
+                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 ring-1 ring-background" />
+                )}
               </button>
             ))}
           </div>
@@ -308,7 +270,10 @@ export function RightSidebar({
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">{activeTabData?.label}</h2>
-            
+            {/* Ready indicator in header */}
+            {activeTabData?.ready && (
+              <span className="text-xs text-green-600 font-medium">✅</span>
+            )}
           </div>
         </div>
 
