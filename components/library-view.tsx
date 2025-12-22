@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import { Search, Filter, Grid, List } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { useReferences } from "@/hooks/useReferences"
 import { useCollections } from "@/hooks/useCollections"
 import { useDeleteReference } from "@/hooks/useDeleteReference"
 import { toast } from "sonner"
+import { useMetadata } from "@/contexts/MetadataContext"
 
 interface LibraryViewProps {
   onOpenPDF: (file: File, title: string, documentId: string) => void
@@ -21,22 +22,22 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null)
 
   // Fetch all references (not filtered by collection)
-  const { 
-    references: allReferences, 
-    isLoading: referencesLoading, 
-    error: referencesError, 
-    total: totalReferences, 
-    refetch: refetchReferences 
+  const {
+    references: allReferences,
+    isLoading: referencesLoading,
+    error: referencesError,
+    total: totalReferences,
+    refetch: refetchReferences
   } = useReferences({
     search: searchQuery // Only search, no collection filtering
   })
 
   // Fetch all collections
-  const { 
-    collections, 
-    isLoading: collectionsLoading, 
+  const {
+    collections,
+    isLoading: collectionsLoading,
     error: collectionsError,
-    refetch: refetchCollections 
+    refetch: refetchCollections
   } = useCollections()
 
   // Delete functionality
@@ -96,19 +97,58 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
     return filtered
   }, [allReferences, collections, selectedCollection])
 
+  // --- Metadata Integration Start ---
+
+  const { metadataMap, fetchMetadata } = useMetadata()
+
+  // 1. Trigger fetch for visible references
+  useEffect(() => {
+    // Only fetch if we have references to show
+    if (filteredReferences.length > 0) {
+      filteredReferences.forEach((ref: any) => {
+        const id = ref.id || ref._id
+        if (id) fetchMetadata(id)
+      })
+    }
+  }, [filteredReferences, fetchMetadata])
+
+  // 2. Merge metadata into references
+  const augmentedReferences = useMemo(() => {
+    return filteredReferences.map((ref: any) => {
+      const id = ref.id || ref._id
+      const meta = id ? metadataMap[id] : undefined
+
+      // If we have metadata, override the reference properties
+      // Otherwise keep the original ones
+      if (meta) {
+        return {
+          ...ref,
+          title: meta.title || ref.title,
+          authors: meta.authors || ref.authors,
+          year: meta.year || ref.year,
+          source: meta.source || ref.source,
+          doi: meta.doi || ref.doi
+        }
+      }
+      return ref
+    })
+  }, [filteredReferences, metadataMap])
+
+  // --- Metadata Integration End ---
+
   // Get collection display name
   const getCollectionDisplayName = useCallback((collectionId: string | null) => {
     if (!collectionId) return "All References"
-    
+
     const builtInNames: Record<string, string> = {
       "recent": "Recent",
       "favorites": "Favorites"
     }
-    
+
     if (builtInNames[collectionId]) {
       return builtInNames[collectionId]
     }
-    
+
     // Find actual collection by ID
     const collection = collections.find(c => c.id === collectionId)
     return collection ? collection.name : "Unknown Collection"
@@ -131,9 +171,9 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
   const handleDeleteReference = useCallback(async (reference: any) => {
     const refId = reference.id || reference._id
     const title = reference.title || "this document"
-    
+
     console.log('🔵 Delete reference data:', { refId, title, reference })
-    
+
     if (!refId) {
       console.error('🔴 No valid ID found for reference:', reference)
       toast.error('Cannot delete reference: Invalid ID')
@@ -148,7 +188,7 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
       console.log('🔵 Deleting reference:', refId)
       await deleteReference(refId)
       toast.success('Reference deleted successfully')
-      
+
       // Refresh data after successful delete
       refetchReferences()
       refetchCollections()
@@ -193,7 +233,7 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
               <span>•</span>
               <span>{filteredReferences.length} items</span>
             </div>
-        
+
           </div>
 
           <div className="flex items-center gap-2">
@@ -239,7 +279,7 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
         {/* Reference Table */}
         <div className="flex-1 overflow-hidden">
           <ReferenceTable
-            references={filteredReferences}
+            references={augmentedReferences}
             isLoading={referencesLoading}
             error={referencesError}
             viewMode={viewMode}

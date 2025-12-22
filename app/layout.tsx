@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/components/auth-provider"
 import { PipelineStatusProvider } from "@/contexts/PipelineStatusContext"
+import { MetadataProvider } from "@/contexts/MetadataContext"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -23,10 +24,12 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <AuthProvider>
           <PipelineStatusProvider>
-            <Suspense fallback={<div>Loading...</div>}>
-              {children}
-              <Toaster />
-            </Suspense>
+            <MetadataProvider>
+              <Suspense fallback={<div>Loading...</div>}>
+                {children}
+                <Toaster />
+              </Suspense>
+            </MetadataProvider>
           </PipelineStatusProvider>
         </AuthProvider>
         <Analytics />

@@ -25,11 +25,11 @@ interface ReferenceTableProps {
   getCurrentCollectionReferences?: (referenceId: string) => string[]
 }
 
-export function ReferenceTable({ 
+export function ReferenceTable({
   references,
   isLoading,
   error,
-  viewMode, 
+  viewMode,
   onOpenPDF,
   onDeleteReference,
   isDeleting,
@@ -37,7 +37,7 @@ export function ReferenceTable({
   getCurrentCollectionReferences
 }: ReferenceTableProps) {
   const { fetchFileBlob } = useReferenceFile()
-  
+
   // Track ongoing operations to prevent double-clicks
   const openingRef = useRef<Set<string>>(new Set())
 
@@ -65,7 +65,7 @@ export function ReferenceTable({
       toast.error('Document is missing an identifier')
       return
     }
-    
+
     // Prevent double-click execution
     if (openingRef.current.has(refId)) {
       console.log('Already opening this reference, ignoring duplicate request')
@@ -73,7 +73,7 @@ export function ReferenceTable({
     }
 
     openingRef.current.add(refId)
-    
+
     try {
       console.log('Opening reference:', { title: reference.title, id: refId, status: reference.status })
 
@@ -82,7 +82,7 @@ export function ReferenceTable({
 
       const fileName = reference.fileName || reference.original_filename || `${reference.title}.pdf`
       const { blob, mimeType } = await fetchFileBlob(refId)
-      
+
       if (!blob || blob.size === 0) {
         throw new Error('Received empty file')
       }
@@ -93,12 +93,12 @@ export function ReferenceTable({
 
       toast.dismiss(loadingToast)
       toast.success('PDF opened successfully')
-      
+
       onOpenPDF(file, reference.title, refId)
     } catch (err: unknown) {
       console.error('Failed to open PDF:', err)
       const message = err instanceof Error ? err.message : 'Failed to open PDF file'
-      
+
       // Provide more helpful error messages
       let userMessage = message
       if (message.includes('404') || message.includes('not found')) {
@@ -108,7 +108,7 @@ export function ReferenceTable({
       } else if (message.includes('502') || message.includes('storage')) {
         userMessage = 'Unable to access the PDF file. Please try again in a moment.'
       }
-      
+
       toast.error(userMessage)
     } finally {
       // Remove from opening set after a delay to prevent rapid re-clicks
@@ -254,13 +254,13 @@ export function ReferenceTable({
             const canManageCollections = Boolean(refId && getCurrentCollectionReferences)
 
             return (
-              <tr 
-                key={refId} 
+              <tr
+                key={refId}
                 className="border-b border-border hover:bg-muted/30 cursor-pointer group"
                 onClick={(e) => {
                   // Only handle click if it's not from a button/dropdown
-                  if (e.target === e.currentTarget || 
-                      (e.target as Element).closest('td:not(:last-child)')) {
+                  if (e.target === e.currentTarget ||
+                    (e.target as Element).closest('td:not(:last-child)')) {
                     handleOpenReference(ref)
                   }
                 }}

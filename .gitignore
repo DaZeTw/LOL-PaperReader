@@ -50,3 +50,16 @@ next-env.d.ts
 # Python cache
 __pycache__/
 *.py[cod]
+
+# Editor
+/.vscode
+/.yarn
+
+# local test_script
+/local_test
+
+# Debug / temp folders
+backend/src/debug_chunking/
+
+# Parser outputs (uploads, PDFs)
+backend/src/paperreader/services/parser/output/uploads/
