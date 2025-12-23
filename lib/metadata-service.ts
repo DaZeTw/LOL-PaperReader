@@ -46,8 +46,8 @@ export interface GrobidAugmentedMetadata {
 }
 
 export interface GrobidAugmentedResponse {
-    status: string;
-    metadata: GrobidAugmentedMetadata;
+    success: boolean;
+    data: GrobidAugmentedMetadata;
 }
 
 export interface ParsedMetadata {
@@ -87,11 +87,11 @@ export async function fetchPdfMetadata(file: File | Blob, apiEndpoint: string = 
 
         console.log("[MetadataService] API response:", data);
 
-        if (data.status !== "success") {
-            throw new Error(`Invalid response from API: ${data.status}`);
+        if (!data.success) {
+            throw new Error(`Invalid response from API: ${data.success}`);
         }
 
-        const metadata = data.metadata;
+        const metadata = data.data;
         const parsedMetadata: ParsedMetadata = {
             title: metadata.title,
             authors: metadata.authors,
