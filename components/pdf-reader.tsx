@@ -36,6 +36,24 @@ export function SinglePDFReader({
   onOpenReferencePDF
 }: SinglePDFReaderProps) {
   // ============================================================================
+  // PDF URL for keyword extraction
+  // ============================================================================
+  const [pdfUrl, setPdfUrl] = useState<string>('')
+
+  // Create object URL from file for keyword extraction
+  // Memoize to avoid recreating URL on every render
+  useEffect(() => {
+    const url = URL.createObjectURL(file)
+    setPdfUrl(url)
+    console.log(`[SinglePDFReader:${tabId}] Created PDF URL for keyword extraction`)
+
+    // Cleanup: revoke URL when file changes or component unmounts
+    return () => {
+      URL.revokeObjectURL(url)
+      console.log(`[SinglePDFReader:${tabId}] Revoked PDF URL`)
+    }
+  }, [file, tabId])
+  // ============================================================================
   // PIPELINE STATUS - Centralized processing state management
   // ============================================================================
   const {
@@ -198,6 +216,7 @@ export function SinglePDFReader({
     setAnnotationMode(null)
     setActiveHighlightIds(new Set())
     setSkimmingEnabled(false)
+    // Note: pdfUrl is reset via its own useEffect when file changes
   }, [file.name, file.size, file.lastModified, tabId])
 
   // Handle page changes from PDF viewer
@@ -322,6 +341,7 @@ export function SinglePDFReader({
           tabId={tabId}
           pdfFile={file}
           documentId={documentId}
+          pdfUrl={pdfUrl}
           onCitationClick={handleCitationClick}
           totalPages={numPages}
           highlights={highlights}
