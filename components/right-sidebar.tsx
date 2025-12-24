@@ -9,12 +9,20 @@ import { SummaryInterface } from "@/components/summary-interface"
 import { HighlightNotesSidebar } from "@/components/highlight-notes-sidebar"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 
+// Interface for citation bounding boxes from PyMuPDF
+interface CitationBBox {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+}
+
 interface RightSidebarProps {
   // Props for QA
   tabId: string
   pdfFile: File
   documentId: string
-  onCitationClick: (page: number, text?: string) => void
+  onCitationClick: (page: number, text?: string, bboxes?: CitationBBox[]) => void
   totalPages: number
   
   // Props for Highlights/Skimming

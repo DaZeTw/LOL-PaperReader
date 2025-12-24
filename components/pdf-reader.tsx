@@ -9,11 +9,20 @@ import { usePaperReferences } from "@/hooks/usePaperReferences"
 import { usePipelineStatus } from "@/hooks/usePipelineStatus"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 
+// Interface for citation bounding boxes from PyMuPDF
+interface CitationBBox {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+}
+
 interface NavigationTarget {
   page: number
   yPosition: number
   highlightText?: string
   highlightId?: number
+  citationBBoxes?: CitationBBox[]  // Bounding boxes for precise citation highlighting
 }
 
 interface SinglePDFReaderProps {
@@ -248,9 +257,9 @@ export function SinglePDFReader({
     })
   }
 
-  // Handle citation click - navigate to citation page
-  const handleCitationClick = (page: number, text?: string) => {
-    console.log(`[SinglePDFReader:${tabId}] Navigating to citation page:`, page, text?.substring(0, 50))
+  // Handle citation click - navigate to citation page with optional bboxes for precise highlighting
+  const handleCitationClick = (page: number, text?: string, bboxes?: CitationBBox[]) => {
+    console.log(`[SinglePDFReader:${tabId}] Navigating to citation page:`, page, text?.substring(0, 50), `bboxes: ${bboxes?.length || 0}`)
 
     // Validate page number
     if (numPages > 0 && (page < 1 || page > numPages)) {
@@ -258,10 +267,14 @@ export function SinglePDFReader({
       return
     }
 
+    // Calculate yPosition from first bbox if available
+    const yPosition = bboxes && bboxes.length > 0 ? bboxes[0].y0 : 0
+
     setNavigationTarget({
       page,
-      yPosition: 0,
+      yPosition,
       highlightText: text,
+      citationBBoxes: bboxes,
     })
 
     setCurrentPage(page)

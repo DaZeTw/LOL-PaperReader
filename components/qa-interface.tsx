@@ -10,12 +10,20 @@ import { useQASession } from "@/hooks/useQASession"
 import { useQAMessages } from "@/hooks/useQAMessages"
 import { useQAActions } from "@/hooks/useQAActions"
 
+// Interface for citation bounding boxes from PyMuPDF
+interface CitationBBox {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+}
+
 interface QAInterfaceProps {
   pdfFile: File
   documentId: string
   tabId: string
   onHighlight?: (text: string | null) => void
-  onCitationClick?: (page: number, text?: string) => void
+  onCitationClick?: (page: number, text?: string, bboxes?: CitationBBox[]) => void
   totalPages?: number
   isOpen?: boolean
   onToggle?: () => void
@@ -45,7 +53,7 @@ export function QAInterface({
   documentId,
   tabId,
   onHighlight,
-  onCitationClick: _onCitationClick,
+  onCitationClick,
   totalPages: _totalPages,
   isOpen = true,
   onToggle,
@@ -333,7 +341,24 @@ export function QAInterface({
                           <p className="font-mono text-xs font-medium text-muted-foreground">References:</p>
                           <div className="space-y-2">
                             {message.cited_sections.map((section, idx) => (
-                              <div key={idx} className="rounded-md border border-accent/30 bg-accent/5 p-2.5 text-xs">
+                              <div 
+                                key={idx} 
+                                className={cn(
+                                  "rounded-md border border-accent/30 bg-accent/5 p-2.5 text-xs",
+                                  section.page !== undefined && "cursor-pointer hover:bg-accent/10 hover:border-primary/50 transition-colors"
+                                )}
+                                onClick={() => {
+                                  if (section.page !== undefined && onCitationClick) {
+                                    console.log(`[QA] Citation clicked: page ${section.page}, bboxes: ${section.bboxes?.length || 0}`)
+                                    onCitationClick(
+                                      section.page,
+                                      section.excerpt || section.summary,
+                                      section.bboxes
+                                    )
+                                  }
+                                }}
+                                title={section.page !== undefined ? `Click to navigate to page ${section.page}` : undefined}
+                              >
                                 <div className="mb-1 flex items-start gap-2">
                                   <span className="font-mono font-medium text-primary">
                                     {section.citation_label || `c${idx + 1}`}:
@@ -348,6 +373,9 @@ export function QAInterface({
                                           {section.title}
                                           {section.page !== undefined && ` (p. ${section.page})`}
                                         </span>
+                                        {section.bboxes && section.bboxes.length > 0 && (
+                                          <span className="rounded bg-green-100 px-1 py-0.5 text-[10px] text-green-700">📍 Located</span>
+                                        )}
                                       </div>
                                     )}
                                   </div>

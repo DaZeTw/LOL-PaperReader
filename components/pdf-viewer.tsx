@@ -29,10 +29,24 @@ import "@react-pdf-viewer/highlight/lib/styles/index.css" // ✅ ADD: Highlight 
 import "@react-pdf-viewer/search/lib/styles/index.css" // ✅ ADD: Search styles
 import "@/styles/pdf-components.css"
 
+// Interface for citation bounding boxes from PyMuPDF
+interface CitationBBox {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+}
+
 interface PDFViewerProps {
   file: File
   selectedSection?: string | null
-  navigationTarget?: { page: number; yPosition: number; highlightText?: string; highlightId?: number } | undefined
+  navigationTarget?: { 
+    page: number
+    yPosition: number
+    highlightText?: string
+    highlightId?: number
+    citationBBoxes?: CitationBBox[]  // Bounding boxes for precise citation highlighting
+  } | undefined
   onPageChange?: (page: number) => void
   onSectionSelect?: (bookmark: any) => void
   onNavigationComplete?: () => void
@@ -66,6 +80,9 @@ export function PDFViewer({
   const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
     new Set(["objective", "method", "result"])
   )
+
+  // State for temporary citation highlights (cleared after 10 seconds)
+  const [citationHighlights, setCitationHighlights] = useState<SkimmingHighlight[]>([])
 
   // Citation state - now managed in viewer
   const [extractedCitations, setExtractedCitations] = useState<ExtractedCitation[]>([])
@@ -153,7 +170,8 @@ export function PDFViewer({
   ])
 
   const highlightPluginInstance = usePDFHighlightPlugin({
-    highlights: visibleHighlights,
+    // Combine visible skimming highlights with temporary citation highlights
+    highlights: [...visibleHighlights, ...citationHighlights],
     visibleCategories,
     onHighlightClick: (h) => console.log("Clicked highlight:", h.text),
   });
@@ -242,52 +260,89 @@ export function PDFViewer({
           }
         }, 600) // Longer wait for page render and highlights
       } else if (navigationTarget.highlightText) {
-        // For citation navigation: Jump to page and search for text
+        // For citation navigation: Jump to page and use bbox or search for text
         jumpToPage(navigationTarget.page - 1)
         clearHighlights()
 
-        // Wait for page to load, then highlight with multiple strategies
-        setTimeout(() => {
-          // Clean up text: normalize whitespace, remove extra formatting
-          const fullText = navigationTarget.highlightText!
-            .trim()
-            .replace(/\s+/g, ' ') // Normalize whitespace
-            .replace(/[""]/g, '"') // Normalize quotes
-            .replace(/['']/g, "'") // Normalize apostrophes
+        // Check if we have bboxes from PyMuPDF for precise highlighting
+        if (navigationTarget.citationBBoxes && navigationTarget.citationBBoxes.length > 0) {
+          console.log(`[PDFViewer] Using ${navigationTarget.citationBBoxes.length} PyMuPDF bboxes for precise highlighting`)
+          
+          // Convert bboxes to SkimmingHighlight format for display
+          const now = Date.now()
+          const highlightsFromBboxes: SkimmingHighlight[] = navigationTarget.citationBBoxes.map((bbox, idx) => ({
+            id: now + idx,  // Unique ID using timestamp
+            page: navigationTarget.page,
+            x0: bbox.x0,
+            y0: bbox.y0,
+            x1: bbox.x1,
+            y1: bbox.y1,
+            width: bbox.x1 - bbox.x0,
+            height: bbox.y1 - bbox.y0,
+            text: navigationTarget.highlightText || '',
+            label: 'result' as const,  // Use 'result' label (renders red) for citation highlights
+            confidence: 1.0,
+            // Required fields for SkimmingHighlight compatibility
+            section: 'citation',
+            score: 1.0,
+            boxes: [{ left: bbox.x0, top: bbox.y0, width: bbox.x1 - bbox.x0, height: bbox.y1 - bbox.y0, page: navigationTarget.page }],
+            block_id: `citation-${now}-${idx}`
+          }))
 
-          console.log("[PDFViewer] Attempting to highlight text:", fullText.substring(0, 100))
+          // Set the citation highlights (will be rendered as red overlays)
+          setCitationHighlights(highlightsFromBboxes)
 
-          // Strategy 1: Try highlighting first meaningful sentence (up to 150 chars)
-          const firstSentence = fullText.split(/[.!?]/)[0].trim()
-          const shortText = firstSentence.length > 150 ? firstSentence.substring(0, 150) : firstSentence
-
-          if (shortText.length > 10) {
-            console.log("[PDFViewer] Highlighting with first sentence:", shortText)
-            highlight(shortText)
-          }
-
-          // Strategy 2: If first strategy might fail, also try with first 10-15 words as backup
+          // Auto-clear highlights after 10 seconds
           setTimeout(() => {
-            const words = fullText.split(/\s+/).filter(w => w.length > 0)
-            const keyPhrase = words.slice(0, Math.min(15, words.length)).join(' ')
-
-            if (keyPhrase.length > 20 && keyPhrase !== shortText) {
-              console.log("[PDFViewer] Also trying key phrase:", keyPhrase.substring(0, 80))
-              highlight(keyPhrase)
-            }
-          }, 100)
-
-          // Strategy 3: Try even shorter phrase (first 8 words) for difficult cases
+            setCitationHighlights([])
+            console.log("[PDFViewer] Cleared citation highlights after 10 seconds")
+          }, 10000)
+        } else {
+          // Fallback: Wait for page to load, then highlight with multiple text search strategies
+          console.log("[PDFViewer] No bboxes available, falling back to text search")
+          
           setTimeout(() => {
-            const words = fullText.split(/\s+/).filter(w => w.length > 0)
-            const veryShortPhrase = words.slice(0, Math.min(8, words.length)).join(' ')
+            // Clean up text: normalize whitespace, remove extra formatting
+            const fullText = navigationTarget.highlightText!
+              .trim()
+              .replace(/\s+/g, ' ') // Normalize whitespace
+              .replace(/[""]/g, '"') // Normalize quotes
+              .replace(/['']/g, "'") // Normalize apostrophes
 
-            if (veryShortPhrase.length > 15) {
-              console.log("[PDFViewer] Also trying very short phrase:", veryShortPhrase)
-              highlight(veryShortPhrase)
+            console.log("[PDFViewer] Attempting to highlight text:", fullText.substring(0, 100))
+
+            // Strategy 1: Try highlighting first meaningful sentence (up to 150 chars)
+            const firstSentence = fullText.split(/[.!?]/)[0].trim()
+            const shortText = firstSentence.length > 150 ? firstSentence.substring(0, 150) : firstSentence
+
+            if (shortText.length > 10) {
+              console.log("[PDFViewer] Highlighting with first sentence:", shortText)
+              highlight(shortText)
             }
-          }, 200)
-        }, 500)
+
+            // Strategy 2: If first strategy might fail, also try with first 10-15 words as backup
+            setTimeout(() => {
+              const words = fullText.split(/\s+/).filter(w => w.length > 0)
+              const keyPhrase = words.slice(0, Math.min(15, words.length)).join(' ')
+
+              if (keyPhrase.length > 20 && keyPhrase !== shortText) {
+                console.log("[PDFViewer] Also trying key phrase:", keyPhrase.substring(0, 80))
+                highlight(keyPhrase)
+              }
+            }, 100)
+
+            // Strategy 3: Try even shorter phrase (first 8 words) for difficult cases
+            setTimeout(() => {
+              const words = fullText.split(/\s+/).filter(w => w.length > 0)
+              const veryShortPhrase = words.slice(0, Math.min(8, words.length)).join(' ')
+
+              if (veryShortPhrase.length > 15) {
+                console.log("[PDFViewer] Also trying very short phrase:", veryShortPhrase)
+                highlight(veryShortPhrase)
+              }
+            }, 200)
+          }, 500)
+        }
       } else if (navigationTarget.yPosition > 0) {
         // For position-based navigation: Jump to page and scroll to position
         jumpToPage(navigationTarget.page - 1)

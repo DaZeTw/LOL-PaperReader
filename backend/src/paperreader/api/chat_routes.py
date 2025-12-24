@@ -22,10 +22,14 @@ from paperreader.services.qa.generators import get_generator
 from paperreader.services.qa.embeddings import get_embedder
 from paperreader.services.qa.config import PipelineConfig
 from paperreader.services.qa.pipeline import get_pipeline
+from paperreader.services.pdf.bbox_finder import find_text_bboxes
 from paperreader.services.documents.minio_client import upload_bytes
 
 router = APIRouter()
 MINIO_CHAT_BUCKET = os.getenv("MINIO_CHAT_BUCKET", "chat-images")
+
+# Data directory for PDF uploads (same as used in pdf_routes.py)
+DATA_DIR = Path(os.getenv("DATA_DIR", "./data"))
 
 
 def _normalise_document_id_value(value: Optional[Any]) -> Optional[str]:
@@ -823,6 +827,37 @@ async def ask_question(request: ChatAskRequest):
                 else:
                     # If excerpt is short enough, use the full text
                     summary_text = excerpt
+                
+                # Try to find bounding boxes for this citation using PyMuPDF
+                citation_bboxes = []
+                bbox_score = 0.0
+                try:
+                    page_num = cit.get("page")
+                    doc_id_for_bbox = cit.get("doc_id") or ""
+                    
+                    # Resolve PDF path from doc_id
+                    # PDFs are typically stored as data/uploads/{doc_id}.pdf
+                    pdf_path = DATA_DIR / "uploads" / f"{doc_id_for_bbox}.pdf"
+                    
+                    if page_num and pdf_path.exists() and excerpt:
+                        print(f"[BBOX] Looking up bboxes for citation c{new_num} on page {page_num}...")
+                        bbox_result = find_text_bboxes(
+                            pdf_path=str(pdf_path),
+                            page_number=int(page_num),
+                            chunk_text=excerpt,
+                            threshold=0.75
+                        )
+                        if bbox_result.get("found"):
+                            citation_bboxes = bbox_result.get("bboxes", [])
+                            bbox_score = bbox_result.get("score", 0.0)
+                            print(f"[BBOX] Found {len(citation_bboxes)} bboxes for citation c{new_num} (score: {bbox_score:.2f})")
+                        else:
+                            print(f"[BBOX] No bboxes found for citation c{new_num} (score: {bbox_result.get('score', 0):.2f})")
+                    elif not pdf_path.exists():
+                        print(f"[BBOX] PDF not found at {pdf_path} for citation c{new_num}")
+                except Exception as bbox_err:
+                    print(f"[BBOX] Error finding bboxes for citation c{new_num}: {bbox_err}")
+                
                 # Build citation with all data (including images/tables for generator)
                 citation_data = {
                     "citation_number": new_num,  # Renumber sequentially
@@ -831,7 +866,9 @@ async def ask_question(request: ChatAskRequest):
                     "doc_id": cit.get("doc_id"),
                     "title": cit.get("title"),
                     "page": cit.get("page"),
-                    "excerpt": excerpt  # Keep full excerpt for reference
+                    "excerpt": excerpt,  # Keep full excerpt for reference
+                    "bboxes": citation_bboxes,  # Normalized bounding boxes for highlighting
+                    "bbox_score": bbox_score  # Match confidence score
                 }
                 # Convert ObjectIds to strings before cleaning
                 citation_data = _convert_objectids_to_strings(citation_data)
