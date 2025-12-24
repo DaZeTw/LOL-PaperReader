@@ -24,12 +24,12 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <AuthProvider>
           <PipelineStatusProvider>
-            <MetadataProvider>
-              <Suspense fallback={<div>Loading...</div>}>
-                {children}
-                <Toaster />
-              </Suspense>
-            </MetadataProvider>
+            {/* <MetadataProvider> */}
+            <Suspense fallback={<div>Loading...</div>}>
+              {children}
+              <Toaster />
+            </Suspense>
+            {/* </MetadataProvider> */}
           </PipelineStatusProvider>
         </AuthProvider>
         <Analytics />

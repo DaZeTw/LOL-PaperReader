@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { BACKEND_API_URL } from '@/lib/config'
 import { useAuth } from '@/hooks/useAuth'
+import { usePipelineStatus } from '@/hooks/usePipelineStatus'
 
 export interface Reference {
   id: string // Maps from backend _id
@@ -26,6 +27,7 @@ interface UseReferencesOptions {
   collection?: string | null
   search?: string
   enabled?: boolean
+  monitoringDocumentId?: string
 }
 
 interface UseReferencesReturn {
@@ -37,24 +39,31 @@ interface UseReferencesReturn {
 }
 
 export function useReferences(options: UseReferencesOptions = {}): UseReferencesReturn {
-  const { collection, search, enabled = true } = options
+
+
+  const { collection, search, enabled = true, monitoringDocumentId } = options
   const { user } = useAuth()
   const [references, setReferences] = useState<Reference[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [total, setTotal] = useState(0)
-  
+
   // Track if we've already fetched for this combination
   const lastFetchParams = useRef<string>('')
   const hasFetchedInitially = useRef(false)
   const isRefetching = useRef(false)
+
+  // Subscribe to pipeline status for the monitoring document
+  const { metadataUpdatedAt } = usePipelineStatus({
+    documentId: monitoringDocumentId
+  })
 
   const fetchReferences = useCallback(async (force = false) => {
     if (!user || !enabled) return
 
     // Create a cache key for current params
     const cacheKey = `${collection || ''}-${search || ''}-${user.id}`
-    
+
     // Skip if we already fetched with these exact params and it's not a forced refetch
     if (!force && lastFetchParams.current === cacheKey && hasFetchedInitially.current && !isRefetching.current) {
       console.log('🔵 Skipping duplicate fetch for:', cacheKey)
@@ -62,7 +71,7 @@ export function useReferences(options: UseReferencesOptions = {}): UseReferences
     }
 
     console.log('🔵 Fetching references for:', { collection, search, userId: user.id, force })
-    
+
     setIsLoading(true)
     setError(null)
     isRefetching.current = true
@@ -98,28 +107,31 @@ export function useReferences(options: UseReferencesOptions = {}): UseReferences
         id: doc._id || doc.id, // Single id field from backend _id
         userId: doc.user_id,
         workspaceId: doc.workspace_id,
+        authors: doc.author,
         title: doc.title,
         originalFilename: doc.original_filename,
         storedPath: doc.stored_path,
         numPages: doc.num_pages || 0,
         status: doc.status,
         source: doc.source || 'upload',
+        subject: doc.subject,
         previewImage: doc.preview_image,
         createdAt: doc.created_at,
         updatedAt: doc.updated_at,
         fileSize: doc.file_size,
         fileType: doc.file_type,
+        year: doc.year,
       }))
 
       console.log('🔵 Mapped references:', mappedReferences.length, mappedReferences)
-      
+
       setReferences(mappedReferences)
       setTotal(data.total || mappedReferences.length || 0)
-      
+
       // Update cache tracking
       lastFetchParams.current = cacheKey
       hasFetchedInitially.current = true
-      
+
     } catch (err) {
       console.error('🔴 Failed to fetch references:', err)
       setError(err instanceof Error ? err : new Error('Unknown error'))
@@ -136,6 +148,14 @@ export function useReferences(options: UseReferencesOptions = {}): UseReferences
     console.log('🔵 Refetch called')
     await fetchReferences(true)
   }, [fetchReferences])
+
+  // Watch for metadata updates
+  useEffect(() => {
+    if (metadataUpdatedAt) {
+      console.log('🔵 Metadata update detected, refetching references...', metadataUpdatedAt)
+      refetch()
+    }
+  }, [metadataUpdatedAt, refetch])
 
   // Only fetch when collection or search changes, not when fetchReferences changes
   useEffect(() => {

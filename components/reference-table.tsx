@@ -42,12 +42,31 @@ export function ReferenceTable({
   const openingRef = useRef<Set<string>>(new Set())
 
   // Helper function to safely format authors
-  const formatAuthors = (authors: string[] | undefined | null): string => {
-    if (!authors || !Array.isArray(authors) || authors.length === 0) {
+  const formatAuthors = (
+    authors: string[] | string | null | undefined
+  ): string => {
+    if (!authors) {
       return "Unknown Author"
     }
-    return authors.filter(Boolean).join(", ") || "Unknown Author"
+
+    let authorList: string[] = []
+
+    if (Array.isArray(authors)) {
+      authorList = authors
+    } else if (typeof authors === "string") {
+      authorList = authors.split(",")
+    } else {
+      return "Unknown Author"
+    }
+
+    return (
+      authorList
+        .map(a => a.trim())
+        .filter(Boolean)
+        .join(", ") || "Unknown Author"
+    )
   }
+
 
   // Helper function to safely format file size
   const formatFileSize = (fileSize: number | undefined | null): string => {

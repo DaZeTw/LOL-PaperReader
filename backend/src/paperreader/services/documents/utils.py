@@ -64,6 +64,7 @@ def format_document_for_response(document: DocumentRecord) -> Dict[str, Any]:
         "downloadUrl": download_url,
         "fileUrl": file_url,
         "metadataUrl": metadata_url,
+        "year": document.get("year"),
     }
     return response
 

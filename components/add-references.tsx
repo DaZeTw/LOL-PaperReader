@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { useCreateReference } from "@/hooks/useCreateReference"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { useMetadataTracking } from "@/contexts/MetadataTrackingContext"
 
 interface AddReferencesProps {
   onClose: () => void
@@ -27,11 +28,12 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
     doi: "",
     abstract: ""
   })
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bibInputRef = useRef<HTMLInputElement>(null)
-  
+
   const { createReference, isCreating, error, reset } = useCreateReference()
+  const { trackDocument } = useMetadataTracking()
 
   const handleFileUpload = async (files: FileList | File[]) => {
     console.log('Starting file upload for', files.length, 'files')
@@ -42,8 +44,17 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
     for (const file of fileArray) {
       try {
         console.log('Uploading file:', file.name)
-        await createReference(file)
+        const data = await createReference(file)
         console.log('Successfully uploaded:', file.name)
+        console.log('AddReferences Data:', data)
+
+        // Track the new document for metadata updates
+        if (data && (data.id || (data as any)._id)) {
+          const docId = data.id || (data as any)._id;
+          console.log('Tracking document for metadata:', docId);
+          trackDocument(docId);
+        }
+
         successCount++
       } catch (err) {
         console.error(`Failed to upload ${file.name}:`, err)
@@ -90,7 +101,7 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
       // Create a dummy PDF file for manual entry
       // In a real app, you might want to handle this differently
       const dummyPdf = new File([""], "manual-entry.pdf", { type: "application/pdf" })
-      
+
       const metadata = {
         title: manualData.title.trim(),
         authors: manualData.authors.split(',').map(a => a.trim()).filter(Boolean),
@@ -102,7 +113,7 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
 
       // For manual entry, you might want a different endpoint
       // await createReference(dummyPdf, metadata)
-      
+
       toast.info("Manual entry not fully implemented - requires file upload")
       // onReferencesAdded()
       // onClose()
@@ -121,7 +132,7 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
         <DialogHeader>
           <DialogTitle>Add References</DialogTitle>
         </DialogHeader>
-        
+
         {/* Hidden file inputs */}
         <input
           ref={fileInputRef}
@@ -144,9 +155,9 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
           <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
             <AlertCircle className="h-4 w-4 text-destructive" />
             <span className="text-sm text-destructive">{error.message}</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={reset}
               className="ml-auto h-6 w-6 p-0"
             >
@@ -154,16 +165,16 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
             </Button>
           </div>
         )}
-        
+
         <Tabs defaultValue="upload" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="upload" disabled={isCreating}>Upload Files</TabsTrigger>
             <TabsTrigger value="import" disabled={isCreating}>Import</TabsTrigger>
             <TabsTrigger value="manual" disabled={isCreating}>Manual Entry</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="upload" className="space-y-4">
-            <div 
+            <div
               className={cn(
                 "border-2 border-dashed rounded-lg p-8 text-center space-y-4 transition-colors",
                 dragOver ? "border-primary bg-primary/5" : "border-border",
@@ -197,7 +208,7 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
                   <p className="text-xs text-muted-foreground">Processing files...</p>
                 </div>
               ) : (
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                 >
@@ -207,7 +218,7 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
               )}
             </div>
           </TabsContent>
-          
+
           <TabsContent value="import" className="space-y-4">
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
@@ -222,8 +233,8 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
                   <li>• XML (.xml)</li>
                 </ul>
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full"
                 onClick={() => bibInputRef.current?.click()}
                 disabled={isCreating}
@@ -233,13 +244,13 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
               </Button>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="manual" className="space-y-4">
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="title">Title *</Label>
-                <Input 
-                  id="title" 
+                <Input
+                  id="title"
                   placeholder="Enter paper title..."
                   value={manualData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
@@ -247,8 +258,8 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="authors">Authors</Label>
-                <Input 
-                  id="authors" 
+                <Input
+                  id="authors"
                   placeholder="Enter authors (comma-separated)..."
                   value={manualData.authors}
                   onChange={(e) => handleInputChange('authors', e.target.value)}
@@ -257,9 +268,9 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="year">Year</Label>
-                  <Input 
-                    id="year" 
-                    type="number" 
+                  <Input
+                    id="year"
+                    type="number"
                     placeholder="2024"
                     value={manualData.year}
                     onChange={(e) => handleInputChange('year', e.target.value)}
@@ -267,8 +278,8 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="source">Source</Label>
-                  <Input 
-                    id="source" 
+                  <Input
+                    id="source"
                     placeholder="Journal/Conference"
                     value={manualData.source}
                     onChange={(e) => handleInputChange('source', e.target.value)}
@@ -277,8 +288,8 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="doi">DOI (optional)</Label>
-                <Input 
-                  id="doi" 
+                <Input
+                  id="doi"
                   placeholder="10.1000/xyz123"
                   value={manualData.doi}
                   onChange={(e) => handleInputChange('doi', e.target.value)}
@@ -286,7 +297,7 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="abstract">Abstract (optional)</Label>
-                <textarea 
+                <textarea
                   id="abstract"
                   className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   placeholder="Enter abstract..."
@@ -297,12 +308,12 @@ export function AddReferences({ onClose, onReferencesAdded }: AddReferencesProps
             </div>
           </TabsContent>
         </Tabs>
-        
+
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isCreating}>
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleManualSubmit}
             disabled={isCreating}
             className="min-w-[100px]"

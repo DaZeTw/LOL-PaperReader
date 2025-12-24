@@ -10,7 +10,7 @@ import { useReferences } from "@/hooks/useReferences"
 import { useCollections } from "@/hooks/useCollections"
 import { useDeleteReference } from "@/hooks/useDeleteReference"
 import { toast } from "sonner"
-import { useMetadata } from "@/contexts/MetadataContext"
+import { MetadataTrackingProvider } from "@/contexts/MetadataTrackingContext"
 
 interface LibraryViewProps {
   onOpenPDF: (file: File, title: string, documentId: string) => void
@@ -97,44 +97,44 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
     return filtered
   }, [allReferences, collections, selectedCollection])
 
-  // --- Metadata Integration Start ---
+  // // --- Metadata Integration Start ---
 
-  const { metadataMap, fetchMetadata } = useMetadata()
+  // const { metadataMap, fetchMetadata } = useMetadata()
 
-  // 1. Trigger fetch for visible references
-  useEffect(() => {
-    // Only fetch if we have references to show
-    if (filteredReferences.length > 0) {
-      filteredReferences.forEach((ref: any) => {
-        const id = ref.id || ref._id
-        if (id) fetchMetadata(id)
-      })
-    }
-  }, [filteredReferences, fetchMetadata])
+  // // 1. Trigger fetch for visible references
+  // useEffect(() => {
+  //   // Only fetch if we have references to show
+  //   if (filteredReferences.length > 0) {
+  //     filteredReferences.forEach((ref: any) => {
+  //       const id = ref.id || ref._id
+  //       if (id) fetchMetadata(id)
+  //     })
+  //   }
+  // }, [filteredReferences, fetchMetadata])
 
-  // 2. Merge metadata into references
-  const augmentedReferences = useMemo(() => {
-    return filteredReferences.map((ref: any) => {
-      const id = ref.id || ref._id
-      const meta = id ? metadataMap[id] : undefined
+  // // 2. Merge metadata into references
+  // const augmentedReferences = useMemo(() => {
+  //   return filteredReferences.map((ref: any) => {
+  //     const id = ref.id || ref._id
+  //     const meta = id ? metadataMap[id] : undefined
 
-      // If we have metadata, override the reference properties
-      // Otherwise keep the original ones
-      if (meta) {
-        return {
-          ...ref,
-          title: meta.title || ref.title,
-          authors: meta.authors || ref.authors,
-          year: meta.year || ref.year,
-          source: meta.source || ref.source,
-          doi: meta.doi || ref.doi
-        }
-      }
-      return ref
-    })
-  }, [filteredReferences, metadataMap])
+  //     // If we have metadata, override the reference properties
+  //     // Otherwise keep the original ones
+  //     if (meta) {
+  //       return {
+  //         ...ref,
+  //         title: meta.title || ref.title,
+  //         authors: meta.authors || ref.authors,
+  //         year: meta.year || ref.year,
+  //         source: meta.source || ref.source,
+  //         doi: meta.doi || ref.doi
+  //       }
+  //     }
+  //     return ref
+  //   })
+  // }, [filteredReferences, metadataMap])
 
-  // --- Metadata Integration End ---
+  // // --- Metadata Integration End ---
 
   // Get collection display name
   const getCollectionDisplayName = useCallback((collectionId: string | null) => {
@@ -166,6 +166,34 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
     console.log('🔵 handleCollectionChange called, refreshing collections...')
     refetchCollections() // Refresh collections to get updated document_ids
   }, [refetchCollections])
+
+  // Debounced refresh for metadata updates
+  // Prevents multiple rapid refetches when multiple documents finish simultaneously
+  const handleMetadataRefresh = useCallback(() => {
+    // Basic debounce implementation
+    const now = Date.now()
+    const lastRefresh = (window as any)._lastMetadataRefresh || 0
+    const timeSinceLastRefresh = now - lastRefresh
+
+    // If we refreshed recently (< 2 seconds), don't refresh again immediately
+    // but schedule one for later if not already scheduled
+    if (timeSinceLastRefresh < 2000) {
+      if (!(window as any)._refreshTimeout) {
+        console.log('⏳ Metadata refresh debounced, scheduling for later...')
+          (window as any)._refreshTimeout = setTimeout(() => {
+            console.log('🔄 Executing delayed metadata refresh...')
+            refetchReferences();
+            (window as any)._lastMetadataRefresh = Date.now();
+            (window as any)._refreshTimeout = null
+          }, 2000)
+      }
+      return
+    }
+
+    console.log('🔄 Executing metadata refresh immediately...')
+    refetchReferences();
+    (window as any)._lastMetadataRefresh = now
+  }, [refetchReferences])
 
   // Handle delete reference
   const handleDeleteReference = useCallback(async (reference: any) => {
@@ -206,91 +234,94 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
   }, [collections])
 
   return (
-    <div className="flex h-full bg-background">
-      {/* Library Manager - Left Sidebar */}
-      <div className="w-64 border-r border-border bg-muted/30">
-        <LibraryManager
-          selectedCollection={selectedCollection}
-          onCollectionChange={setSelectedCollection}
-          onReferencesAdded={handleReferencesAdded}
-          onCollectionUpdate={refetchCollections}
-          collections={collections}
-          collectionsLoading={collectionsLoading}
-          collectionsError={collectionsError}
-          totalReferences={totalReferences}
-        />
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Toolbar */}
-        <div className="flex items-center justify-between border-b border-border p-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">
-              {getCollectionDisplayName(selectedCollection)}
-            </h2>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <span>•</span>
-              <span>{filteredReferences.length} items</span>
-            </div>
-
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search references..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-80 pl-9"
-              />
-            </div>
-
-            {/* View Toggle */}
-            <div className="flex items-center rounded-md border border-border">
-              <Button
-                variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('table')}
-                className="rounded-r-none border-r border-border"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="rounded-l-none"
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Filter */}
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
-          </div>
-        </div>
-
-        {/* Reference Table */}
-        <div className="flex-1 overflow-hidden">
-          <ReferenceTable
-            references={augmentedReferences}
-            isLoading={referencesLoading}
-            error={referencesError}
-            viewMode={viewMode}
-            onOpenPDF={onOpenPDF}
-            onDeleteReference={handleDeleteReference}
-            onCollectionChange={handleCollectionChange}
-            getCurrentCollectionReferences={getCurrentCollectionReferences}
-            isDeleting={isDeleting}
+    <MetadataTrackingProvider onMetadataChange={handleMetadataRefresh}>
+      <div className="flex h-full bg-background">
+        {/* Library Manager - Left Sidebar */}
+        <div className="w-64 border-r border-border bg-muted/30">
+          <LibraryManager
+            selectedCollection={selectedCollection}
+            onCollectionChange={setSelectedCollection}
+            onReferencesAdded={handleReferencesAdded}
+            onCollectionUpdate={refetchCollections}
+            collections={collections}
+            collectionsLoading={collectionsLoading}
+            collectionsError={collectionsError}
+            totalReferences={totalReferences}
           />
         </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Toolbar */}
+          <div className="flex items-center justify-between border-b border-border p-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold">
+                {getCollectionDisplayName(selectedCollection)}
+              </h2>
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <span>•</span>
+                <span>{filteredReferences.length} items</span>
+              </div>
+
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search references..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-80 pl-9"
+                />
+              </div>
+
+              {/* View Toggle */}
+              <div className="flex items-center rounded-md border border-border">
+                <Button
+                  variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className="rounded-r-none border-r border-border"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-l-none"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Filter */}
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filter
+              </Button>
+            </div>
+          </div>
+
+          {/* Reference Table */}
+          <div className="flex-1 overflow-hidden">
+            <ReferenceTable
+              // references={augmentedReferences}
+              references={filteredReferences}
+              isLoading={referencesLoading}
+              error={referencesError}
+              viewMode={viewMode}
+              onOpenPDF={onOpenPDF}
+              onDeleteReference={handleDeleteReference}
+              onCollectionChange={handleCollectionChange}
+              getCurrentCollectionReferences={getCurrentCollectionReferences}
+              isDeleting={isDeleting}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </MetadataTrackingProvider>
   )
 }

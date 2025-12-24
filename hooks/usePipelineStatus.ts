@@ -16,7 +16,7 @@ interface UsePipelineStatusProps {
  * 2. Summary generation → Summary page ready
  * 3. Reference extraction → References page ready
  * 4. Skimming highlights → Skimming/Highlights ready
- * 
+ * 5. Metadata extraction → Metadata page ready
  * Each feature becomes available as soon as its task completes!
  */
 export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
@@ -26,9 +26,9 @@ export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
   const { trackingKey, apiParams } = useMemo(() => {
     if (!documentId) return { trackingKey: null, apiParams: null }
 
-    return { 
-      trackingKey: documentId, 
-      apiParams: { document_id: documentId } 
+    return {
+      trackingKey: documentId,
+      apiParams: { document_id: documentId }
     }
   }, [documentId])
 
@@ -53,48 +53,51 @@ export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
         // Backward compatible (main processing)
         isPipelineReady: false,
         isProcessing: false,
-        
+
         // Independent task readiness
         isChatReady: false,
         isSummaryReady: false,
         isReferencesReady: false,
         isSkimmingReady: false,
-        
+        isMetadataReady: false,
+
         // Overall completion
         isAllReady: false,
-        
+
         // Available features
         availableFeatures: [] as string[],
-        
+
         // Task statuses
         embeddingStatus: 'pending' as string,
         summaryStatus: 'pending' as string,
         referenceStatus: 'pending' as string,
         skimmingStatus: 'pending' as string,
-        
+        metadataStatus: 'pending' as string,
+
         // Progress
         overallProgress: 0,
         completedTasks: 0,
-        totalTasks: 4,
-        
+        totalTasks: 5,
+
         // Error tracking
         hasErrors: false,
         errors: [] as string[],
-        
+
         // Metadata
         chunkCount: 0,
         referenceCount: 0,
-        
+
         // Timestamps
         embeddingUpdatedAt: undefined as string | undefined,
         summaryUpdatedAt: undefined as string | undefined,
         referenceUpdatedAt: undefined as string | undefined,
         skimmingUpdatedAt: undefined as string | undefined,
-        
+        metadataUpdatedAt: undefined as string | undefined,
+
         // Stage & message
         stage: 'idle' as string,
         message: '' as string,
-        
+
         // Raw status
         raw: null as PipelineStatus | null,
       }
@@ -106,53 +109,57 @@ export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
     if (status.summary_error) errors.push(`Summary: ${status.summary_error}`)
     if (status.reference_error) errors.push(`References: ${status.reference_error}`)
     if (status.skimming_error) errors.push(`Skimming: ${status.skimming_error}`)
+    if (status.metadata_error) errors.push(`Metadata: ${status.metadata_error}`)
 
     return {
       // Backward compatible (main processing)
       isPipelineReady: status.ready || false,  // Chat ready
       isProcessing: status.building || false,
-      
+
       // Independent task readiness (key feature!)
       isChatReady: status.embedding_ready || false,
       isSummaryReady: status.summary_ready || false,
       isReferencesReady: status.reference_ready || false,
       isSkimmingReady: status.skimming_ready || false,
-      
+      isMetadataReady: status.metadata_ready || false,
+
       // Overall completion
       isAllReady: status.all_ready || false,
-      
+
       // Available features
       availableFeatures: status.available_features || [],
-      
+
       // Task statuses
       embeddingStatus: status.embedding_status || 'pending',
       summaryStatus: status.summary_status || 'pending',
       referenceStatus: status.reference_status || 'pending',
       skimmingStatus: status.skimming_status || 'pending',
-      
+      metadataStatus: status.metadata_status || 'pending',
+
       // Progress
       overallProgress: status.percent || 0,
       completedTasks: status.progress?.completed || 0,
-      totalTasks: status.progress?.total || 4,
-      
+      totalTasks: status.progress?.total || 5,
+
       // Error tracking
       hasErrors: status.has_errors || false,
       errors,
-      
+
       // Metadata
       chunkCount: status.chunk_count || 0,
       referenceCount: status.reference_count || 0,
-      
+
       // Timestamps
       embeddingUpdatedAt: status.embedding_updated_at,
       summaryUpdatedAt: status.summary_updated_at,
       referenceUpdatedAt: status.reference_updated_at,
       skimmingUpdatedAt: status.skimming_updated_at,
-      
+      metadataUpdatedAt: status.metadata_updated_at,
+
       // Stage & message
       stage: status.stage || 'idle',
       message: status.message || '',
-      
+
       // Raw status for advanced use
       raw: status,
     }
@@ -163,37 +170,39 @@ export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
     /**
      * Check if a specific feature is available
      */
-    isFeatureAvailable: (feature: 'chat' | 'summary' | 'references' | 'skimming'): boolean => {
+    isFeatureAvailable: (feature: 'chat' | 'summary' | 'references' | 'skimming' | 'metadata'): boolean => {
       return derivedStatus.availableFeatures.includes(feature)
     },
-    
+
     /**
      * Get human-readable status message for a specific task
      */
-    getTaskMessage: (task: 'embedding' | 'summary' | 'reference' | 'skimming'): string => {
+    getTaskMessage: (task: 'embedding' | 'summary' | 'reference' | 'skimming' | 'metadata'): string => {
       const statusMap = {
         embedding: derivedStatus.embeddingStatus,
         summary: derivedStatus.summaryStatus,
         reference: derivedStatus.referenceStatus,
         skimming: derivedStatus.skimmingStatus,
+        metadata: derivedStatus.metadataStatus,
       }
-      
+
       const errorMap = {
         embedding: status?.embedding_error,
         summary: status?.summary_error,
         reference: status?.reference_error,
         skimming: status?.skimming_error,
+        metadata: status?.metadata_error,
       }
-      
+
       const taskStatus = statusMap[task]
       const taskError = errorMap[task]
-      
+
       if (taskStatus === 'ready') return '✅ Ready'
       if (taskStatus === 'error') return `❌ Error: ${taskError || 'Unknown error'}`
       if (taskStatus === 'processing') return '🔄 Processing...'
       return '⏳ Pending'
     },
-    
+
     /**
      * Check if any task is still processing
      */
@@ -202,10 +211,11 @@ export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
         derivedStatus.embeddingStatus === 'processing' ||
         derivedStatus.summaryStatus === 'processing' ||
         derivedStatus.referenceStatus === 'processing' ||
-        derivedStatus.skimmingStatus === 'processing'
+        derivedStatus.skimmingStatus === 'processing' ||
+        derivedStatus.metadataStatus === 'processing'
       )
     },
-    
+
     /**
      * Get list of tasks still processing
      */
@@ -215,9 +225,10 @@ export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
       if (derivedStatus.summaryStatus === 'processing') tasks.push('summary')
       if (derivedStatus.referenceStatus === 'processing') tasks.push('reference')
       if (derivedStatus.skimmingStatus === 'processing') tasks.push('skimming')
+      if (derivedStatus.metadataStatus === 'processing') tasks.push('metadata')
       return tasks
     },
-    
+
     /**
      * Get list of completed tasks
      */
@@ -227,9 +238,10 @@ export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
       if (derivedStatus.isSummaryReady) tasks.push('summary')
       if (derivedStatus.isReferencesReady) tasks.push('references')
       if (derivedStatus.isSkimmingReady) tasks.push('skimming')
+      if (derivedStatus.isMetadataReady) tasks.push('metadata')
       return tasks
     },
-    
+
     /**
      * Get progress percentage for a specific task
      */
@@ -239,8 +251,9 @@ export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
         summary: derivedStatus.summaryStatus,
         reference: derivedStatus.referenceStatus,
         skimming: derivedStatus.skimmingStatus,
+        metadata: derivedStatus.metadataStatus,
       }
-      
+
       const taskStatus = statusMap[task]
       if (taskStatus === 'ready') return 100
       if (taskStatus === 'error') return 0
@@ -252,10 +265,10 @@ export function usePipelineStatus({ documentId }: UsePipelineStatusProps = {}) {
   return {
     // Backward compatible - just spread derivedStatus
     ...derivedStatus,
-    
+
     // Legacy alias for backward compatibility
     pipelineStatus: status || {},
-    
+
     // Helper functions
     ...helpers,
   }
@@ -274,8 +287,8 @@ export function useChatReady(documentId?: string | null) {
  */
 export function useSummaryReady(documentId?: string | null) {
   const { isSummaryReady, summaryStatus, getTaskMessage } = usePipelineStatus({ documentId })
-  return { 
-    isSummaryReady, 
+  return {
+    isSummaryReady,
     summaryStatus,
     summaryMessage: getTaskMessage('summary'),
   }
@@ -286,8 +299,8 @@ export function useSummaryReady(documentId?: string | null) {
  */
 export function useReferencesReady(documentId?: string | null) {
   const { isReferencesReady, referenceStatus, referenceCount, getTaskMessage } = usePipelineStatus({ documentId })
-  return { 
-    isReferencesReady, 
+  return {
+    isReferencesReady,
     referenceStatus,
     referenceCount,
     referenceMessage: getTaskMessage('reference'),
@@ -299,9 +312,21 @@ export function useReferencesReady(documentId?: string | null) {
  */
 export function useSkimmingReady(documentId?: string | null) {
   const { isSkimmingReady, skimmingStatus, getTaskMessage } = usePipelineStatus({ documentId })
-  return { 
-    isSkimmingReady, 
+  return {
+    isSkimmingReady,
     skimmingStatus,
     skimmingMessage: getTaskMessage('skimming'),
+  }
+}
+
+/**
+ * Hook for metadata page to check if metadata is ready
+ */
+export function useMetadataReady(documentId?: string | null) {
+  const { isMetadataReady, metadataStatus, getTaskMessage } = usePipelineStatus({ documentId })
+  return {
+    isMetadataReady,
+    metadataStatus,
+    metadataMessage: getTaskMessage('metadata'),
   }
 }

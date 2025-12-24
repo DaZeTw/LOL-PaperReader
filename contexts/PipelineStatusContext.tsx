@@ -11,44 +11,49 @@ export interface PipelineStatus {
   percent: number
   stage: string
   message: string
-  
+
   // Main processing details
   chunk_count?: number
   document_id?: string
   document_status?: string
-  
+
   // INDEPENDENT TASK READINESS
   embedding_status?: string
   embedding_ready?: boolean
   embedding_error?: string
   embedding_updated_at?: string
-  
+
   summary_status?: string
   summary_ready?: boolean
   summary_error?: string
   summary_updated_at?: string
-  
+
   reference_status?: string
   reference_ready?: boolean
   reference_count?: number
   reference_error?: string
   reference_updated_at?: string
-  
+
   skimming_status?: string
   skimming_ready?: boolean
   skimming_error?: string
   skimming_updated_at?: string
-  
+
+  metadata_status?: string
+  metadata_ready?: boolean
+  metadata_error?: string
+  metadata_updated_at?: string
+
   // Feature availability
-  available_features?: string[]  // ["chat", "summary", "references", "skimming"]
-  
+  available_features?: string[]  // ["chat", "summary", "references", "skimming", "metadata"]
+
   // Progress details
   progress?: {
     completed: number
     total: number
     percentage: number
   }
-  
+
   // Error tracking
   has_errors?: boolean
   error?: string
@@ -72,7 +77,7 @@ const PipelineStatusContext = createContext<PipelineStatusContextType | undefine
 
 export function PipelineStatusProvider({ children }: { children: React.ReactNode }) {
   const [statusMap, setStatusMap] = useState<Record<string, PipelineStatus>>({})
-  
+
   // Ref to track status logic without triggering re-renders inside callbacks
   const statusMapRef = useRef<Record<string, PipelineStatus>>({})
 
@@ -82,14 +87,14 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
   // Helper to update state and ref simultaneously
   const updateStatus = useCallback((key: string, data: Partial<PipelineStatus>) => {
     setStatusMap(prev => {
-      const updated = { 
-        ...prev[key], 
-        ...data, 
-        lastUpdated: Date.now() 
+      const updated = {
+        ...prev[key],
+        ...data,
+        lastUpdated: Date.now()
       } as PipelineStatus
-      
+
       statusMapRef.current = { ...statusMapRef.current, [key]: updated }
-      
+
       return { ...prev, [key]: updated }
     })
   }, [])
@@ -114,13 +119,13 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
     }
 
     console.log(`[Pipeline] 📡 Opening SSE stream for ${trackingKey}`, apiParams)
-    
+
     // Construct Query Params
     const params = new URLSearchParams()
     Object.entries(apiParams).forEach(([key, value]) => {
       if (value) params.append(key, value)
     })
-    
+
     // Connect to the stream
     const es = new EventSource(`/api/qa/status/stream?${params.toString()}`)
     connectionsRef.current[trackingKey] = es
@@ -151,24 +156,28 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
         if (data.skimming_ready && !statusMapRef.current[trackingKey]?.skimming_ready) {
           console.log(`[Pipeline] ✅ ${trackingKey} - Skimming ready`)
         }
+        if (data.metadata_ready && !statusMapRef.current[trackingKey]?.metadata_ready) {
+          console.log(`[Pipeline] ✅ ${trackingKey} - Metadata ready`)
+        }
 
         // Close stream if ALL tasks done or critical error
         if (data.all_ready || data.stage === 'error' || data.stage === 'timeout') {
-          const reason = data.all_ready 
-            ? `all tasks complete (${data.available_features?.join(', ')})` 
+          const reason = data.all_ready
+            ? `all tasks complete (${data.available_features?.join(', ')})`
             : data.stage
           console.log(`[Pipeline] 🔌 Closing stream for ${trackingKey}: ${reason}`)
           es.close()
           delete connectionsRef.current[trackingKey]
         }
-        
+
         // Also close if all tasks reached terminal state (ready or error)
         const embeddingDone = ['ready', 'error'].includes(data.embedding_status || '') || data.embedding_ready
         const summaryDone = ['ready', 'error'].includes(data.summary_status || '')
         const referenceDone = ['ready', 'error'].includes(data.reference_status || '')
         const skimmingDone = ['ready', 'error'].includes(data.skimming_status || '')
-        
-        if (embeddingDone && summaryDone && referenceDone && skimmingDone && !data.all_ready) {
+        const metadataDone = ['ready', 'error'].includes(data.metadata_status || '')
+
+        if (embeddingDone && summaryDone && referenceDone && skimmingDone && metadataDone && !data.all_ready) {
           console.log(
             `[Pipeline] 🔌 Closing stream for ${trackingKey}: all tasks in terminal state`
           )

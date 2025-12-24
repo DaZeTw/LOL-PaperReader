@@ -1,10 +1,10 @@
 {
-  "question": "What methodology was used?",
+  "question": "What is the main finding?",
   "hits": [
     {
       "index": 0,
-      "score": 0.76587963,
-      "text": "4.2 Localization Method Similarly to the selection method, we adopted an approach that leverages heuristics and existing pretrained machine learning mod- els instead of training a new model due to mismatch between available datasets and our new task. We ran each selected citance through our localization method to localize them on the reference paper. Fig.",
+      "score": 0.72377473,
+      "text": "Following the experimental de- sign from Ye et al. ( 2023 ), we choose to inference 3 times and report the Krippendorff’s alpha value. As shown in Table 14 , the results indicate that train- ing on feedback data only slightly improves consis- tency. On the other hand, we find that the LMs with a large number of parameters achieve high consis- tency. This indicates the importance of selecting a large LM as the base model when training an evalu- ator LM. Notably, P ROMETHEUS -2-8 X 7B obtains the highest correlation among open evaluator LMs. Moreover, to evaluate consistency in pairwise ranking settings (Table 15 ), we measure transitivity ( i.e. , a higher score for response B over A, and for C over B, results in a higher score for C over A). As shown in Table 15 , the P ROMETHEUS 2",
       "metadata": {
-        "chunk_id": "78dc9c4a423a2064de6a5329cd68c5cfc7da7d91",
+        "chunk_id": "4efa36e7c5623069f01c3c2a841f501630214e32",
         "doc_id": 
