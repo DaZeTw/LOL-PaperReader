@@ -97,44 +97,6 @@ export function LibraryView({ onOpenPDF }: LibraryViewProps) {
     return filtered
   }, [allReferences, collections, selectedCollection])
 
-  // // --- Metadata Integration Start ---
-
-  // const { metadataMap, fetchMetadata } = useMetadata()
-
-  // // 1. Trigger fetch for visible references
-  // useEffect(() => {
-  //   // Only fetch if we have references to show
-  //   if (filteredReferences.length > 0) {
-  //     filteredReferences.forEach((ref: any) => {
-  //       const id = ref.id || ref._id
-  //       if (id) fetchMetadata(id)
-  //     })
-  //   }
-  // }, [filteredReferences, fetchMetadata])
-
-  // // 2. Merge metadata into references
-  // const augmentedReferences = useMemo(() => {
-  //   return filteredReferences.map((ref: any) => {
-  //     const id = ref.id || ref._id
-  //     const meta = id ? metadataMap[id] : undefined
-
-  //     // If we have metadata, override the reference properties
-  //     // Otherwise keep the original ones
-  //     if (meta) {
-  //       return {
-  //         ...ref,
-  //         title: meta.title || ref.title,
-  //         authors: meta.authors || ref.authors,
-  //         year: meta.year || ref.year,
-  //         source: meta.source || ref.source,
-  //         doi: meta.doi || ref.doi
-  //       }
-  //     }
-  //     return ref
-  //   })
-  // }, [filteredReferences, metadataMap])
-
-  // // --- Metadata Integration End ---
 
   // Get collection display name
   const getCollectionDisplayName = useCallback((collectionId: string | null) => {
