@@ -166,14 +166,9 @@ export function SinglePDFReader({
   }
 
   // ============================================================================
-  // Handle enabling skimming (depends on embeddings being ready)
+  // Handle enabling skimming (independent of embeddings)
   // ============================================================================
   const handleEnableSkimming = async () => {
-    if (!isChatReady) {
-      console.warn(`[SinglePDFReader:${tabId}] Cannot enable skimming - embeddings not ready (status: ${embeddingStatus})`)
-      return
-    }
-
     try {
       console.log(`[SinglePDFReader:${tabId}] Enabling skimming with default 50% density`)
       await enableSkimming(file, documentId, "medium")  // Always use medium (50%)

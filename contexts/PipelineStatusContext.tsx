@@ -53,6 +53,9 @@ export interface PipelineStatus {
   has_errors?: boolean
   error?: string
   lastUpdated?: number
+  
+  // Optional: for heartbeat messages
+  type?: string
 }
 
 // Define params to match your backend query arguments
@@ -76,8 +79,11 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
   // Ref to track status logic without triggering re-renders inside callbacks
   const statusMapRef = useRef<Record<string, PipelineStatus>>({})
 
-  const connectionsRef = useRef<Record<string, EventSource>>({})
+  const connectionsRef = useRef<Record<string, WebSocket>>({})
   const subscribersRef = useRef<Record<string, number>>({})
+  const reconnectTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  const reconnectAttemptsRef = useRef<Record<string, number>>({})
+  const apiParamsRef = useRef<Record<string, ApiParams>>({})
 
   // Helper to update state and ref simultaneously
   const updateStatus = useCallback((key: string, data: Partial<PipelineStatus>) => {
@@ -94,40 +100,59 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
     })
   }, [])
 
-  // STABLE subscribe function
-  const subscribeToStatus = useCallback((trackingKey: string, apiParams: ApiParams) => {
-    if (!trackingKey) return
+  // Helper function to create WebSocket connection
+  const connectWebSocket = useCallback((trackingKey: string, documentId: string) => {
+    // Get backend URL (use NEXT_PUBLIC_BACKEND_URL or fallback)
+    const backendUrl = typeof window !== 'undefined' 
+      ? (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000')
+      : 'http://127.0.0.1:8000'
+    // Convert http/https to ws/wss for WebSocket
+    // URL structure: ws://backend:8000/ws/status?document_id=xxx
+    const wsUrl = backendUrl
+      .replace(/^http:/, 'ws:')
+      .replace(/^https:/, 'wss:')
+      + `/ws/status?document_id=${encodeURIComponent(documentId)}`
+    
+    console.log(`[Pipeline] 🔌 Connecting to WebSocket: ${wsUrl}`)
+    
+    // Connect to WebSocket
+    const ws = new WebSocket(wsUrl)
+    connectionsRef.current[trackingKey] = ws
 
-    // Increment subscriber count (Reference Counting)
-    subscribersRef.current[trackingKey] = (subscribersRef.current[trackingKey] || 0) + 1
-
-    // If connection exists, do nothing
-    if (connectionsRef.current[trackingKey]) {
-      console.log(`[Pipeline] Stream already exists for ${trackingKey}`)
-      return
+    ws.onopen = () => {
+      console.log(`[Pipeline] ✅ WebSocket connected for ${trackingKey}`)
+      // Reset reconnect attempts on successful connection
+      reconnectAttemptsRef.current[trackingKey] = 0
     }
 
-    // If already all tasks ready locally, don't open new stream
-    if (statusMapRef.current[trackingKey]?.all_ready) {
-      console.log(`[Pipeline] ${trackingKey} is already complete (all_ready). Skipping stream.`)
-      return
-    }
-
-    console.log(`[Pipeline] 📡 Opening SSE stream for ${trackingKey}`, apiParams)
-    
-    // Construct Query Params
-    const params = new URLSearchParams()
-    Object.entries(apiParams).forEach(([key, value]) => {
-      if (value) params.append(key, value)
-    })
-    
-    // Connect to the stream
-    const es = new EventSource(`/api/qa/status/stream?${params.toString()}`)
-    connectionsRef.current[trackingKey] = es
-
-    es.onmessage = (event) => {
+    ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data) as PipelineStatus
+        const rawData = JSON.parse(event.data)
+        
+        // Handle chat status messages
+        if (rawData.type === 'chat') {
+          // Emit custom event for chat status
+          const chatEvent = new CustomEvent('chat-status', {
+            detail: {
+              session_id: rawData.session_id,
+              status: rawData.status,
+              document_id: rawData.document_id,
+            }
+          })
+          window.dispatchEvent(chatEvent)
+          console.log(
+            `[Pipeline] 💬 Chat status received for ${trackingKey}: ` +
+            `session=${rawData.session_id}, status=${rawData.status}`
+          )
+          return
+        }
+        
+        // Skip heartbeat messages
+        if (rawData.type === 'heartbeat') {
+          return
+        }
+        
+        const data = rawData as PipelineStatus
         updateStatus(trackingKey, data)
 
         // Log feature availability changes
@@ -152,13 +177,13 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
           console.log(`[Pipeline] ✅ ${trackingKey} - Skimming ready`)
         }
 
-        // Close stream if ALL tasks done or critical error
+        // Close connection if ALL tasks done or critical error
         if (data.all_ready || data.stage === 'error' || data.stage === 'timeout') {
           const reason = data.all_ready 
             ? `all tasks complete (${data.available_features?.join(', ')})` 
             : data.stage
-          console.log(`[Pipeline] 🔌 Closing stream for ${trackingKey}: ${reason}`)
-          es.close()
+          console.log(`[Pipeline] 🔌 Closing WebSocket for ${trackingKey}: ${reason}`)
+          ws.close(1000, reason)
           delete connectionsRef.current[trackingKey]
         }
         
@@ -170,25 +195,122 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
         
         if (embeddingDone && summaryDone && referenceDone && skimmingDone && !data.all_ready) {
           console.log(
-            `[Pipeline] 🔌 Closing stream for ${trackingKey}: all tasks in terminal state`
+            `[Pipeline] 🔌 Closing WebSocket for ${trackingKey}: all tasks in terminal state`
           )
-          es.close()
+          ws.close(1000, 'All tasks in terminal state')
           delete connectionsRef.current[trackingKey]
         }
       } catch (err) {
-        console.error('[Pipeline] ❌ Error parsing SSE:', err)
+        console.error('[Pipeline] ❌ Error parsing WebSocket message:', err)
       }
     }
 
-    es.onerror = (err) => {
-      // Don't log normal closures as errors
-      if (es.readyState !== EventSource.CLOSED) {
-        console.error('[Pipeline] ❌ Stream error:', err)
+    ws.onerror = (err) => {
+      // WebSocket error events don't provide much detail
+      // The actual error will be available in onclose event
+      // Only log if there's meaningful information
+      const errorInfo = err instanceof Error ? err.message : 
+                       (err && typeof err === 'object' && Object.keys(err).length > 0) ? err : null
+      if (errorInfo) {
+        console.warn(`[Pipeline] ⚠️ WebSocket error for ${trackingKey}:`, errorInfo)
+      } else {
+        // Silent - error details will be in onclose event
+        console.debug(`[Pipeline] WebSocket error event for ${trackingKey} (details in onclose)`)
       }
-      es.close()
+    }
+
+    ws.onclose = (event) => {
+      console.log(
+        `[Pipeline] 🔌 WebSocket closed for ${trackingKey} ` +
+        `(code: ${event.code}, reason: ${event.reason || 'none'})`
+      )
       delete connectionsRef.current[trackingKey]
+      
+      // Auto-reconnect logic
+      // Only reconnect if:
+      // 1. There are still subscribers
+      // 2. Not a normal closure (code 1000)
+      // 3. Not already all_ready
+      // 4. Not manually closed (check by reason)
+      const hasSubscribers = (subscribersRef.current[trackingKey] || 0) > 0
+      const isNormalClose = event.code === 1000
+      const isManualClose = event.reason === 'No subscribers' || event.reason === 'Component unmounting'
+      const isAllReady = statusMapRef.current[trackingKey]?.all_ready
+      
+      if (hasSubscribers && !isNormalClose && !isManualClose && !isAllReady) {
+        const attempts = (reconnectAttemptsRef.current[trackingKey] || 0) + 1
+        reconnectAttemptsRef.current[trackingKey] = attempts
+        
+        // Get documentId from stored apiParams
+        const storedParams = apiParamsRef.current[trackingKey]
+        const reconnectDocumentId = storedParams?.document_id || documentId
+        
+        if (!reconnectDocumentId) {
+          console.error(`[Pipeline] ❌ Cannot reconnect: missing document_id for ${trackingKey}`)
+          return
+        }
+        
+        // Exponential backoff: 1s, 2s, 4s, 8s, max 30s
+        const delay = Math.min(1000 * Math.pow(2, attempts - 1), 30000)
+        
+        console.log(
+          `[Pipeline] 🔄 Scheduling reconnect for ${trackingKey} ` +
+          `(attempt ${attempts}, delay ${delay}ms)`
+        )
+        
+        reconnectTimeoutsRef.current[trackingKey] = setTimeout(() => {
+          if (subscribersRef.current[trackingKey] > 0 && !statusMapRef.current[trackingKey]?.all_ready) {
+            console.log(`[Pipeline] 🔄 Reconnecting WebSocket for ${trackingKey}...`)
+            connectWebSocket(trackingKey, reconnectDocumentId)
+          }
+        }, delay)
+      }
     }
   }, [updateStatus])
+
+  // STABLE subscribe function
+  const subscribeToStatus = useCallback((trackingKey: string, apiParams: ApiParams) => {
+    if (!trackingKey) return
+
+    // Increment subscriber count (Reference Counting)
+    subscribersRef.current[trackingKey] = (subscribersRef.current[trackingKey] || 0) + 1
+
+    // If connection exists, do nothing
+    if (connectionsRef.current[trackingKey]) {
+      console.log(`[Pipeline] Stream already exists for ${trackingKey}`)
+      return
+    }
+
+    // If already all tasks ready locally, don't open new stream
+    if (statusMapRef.current[trackingKey]?.all_ready) {
+      console.log(`[Pipeline] ${trackingKey} is already complete (all_ready). Skipping stream.`)
+      return
+    }
+
+    console.log(`[Pipeline] 📡 Opening WebSocket connection for ${trackingKey}`, apiParams)
+    
+    // Store apiParams for reconnection
+    apiParamsRef.current[trackingKey] = apiParams
+    
+    // Get document_id from apiParams
+    const documentId = apiParams.document_id
+    if (!documentId) {
+      console.error(`[Pipeline] ❌ Missing document_id for ${trackingKey}`)
+      return
+    }
+    
+    // Clear any existing reconnect timeout
+    if (reconnectTimeoutsRef.current[trackingKey]) {
+      clearTimeout(reconnectTimeoutsRef.current[trackingKey])
+      delete reconnectTimeoutsRef.current[trackingKey]
+    }
+    
+    // Reset reconnect attempts on manual connect
+    reconnectAttemptsRef.current[trackingKey] = 0
+    
+    // Connect WebSocket
+    connectWebSocket(trackingKey, documentId)
+  }, [connectWebSocket])
 
   const unsubscribeFromStatus = useCallback((trackingKey: string) => {
     if (!trackingKey) return
@@ -199,12 +321,21 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
 
     // Only close connection if NO ONE is listening anymore
     if (subscribersRef.current[trackingKey] === 0) {
-      const es = connectionsRef.current[trackingKey]
-      if (es) {
-        console.log(`[Pipeline] 🔌 No subscribers left for ${trackingKey}, closing stream.`)
-        es.close()
+      const ws = connectionsRef.current[trackingKey]
+      if (ws) {
+        console.log(`[Pipeline] 🔌 No subscribers left for ${trackingKey}, closing WebSocket.`)
+        // Close with code 1000 (normal closure) to prevent auto-reconnect
+        ws.close(1000, 'No subscribers')
         delete connectionsRef.current[trackingKey]
       }
+      // Clear reconnect timeout
+      if (reconnectTimeoutsRef.current[trackingKey]) {
+        clearTimeout(reconnectTimeoutsRef.current[trackingKey])
+        delete reconnectTimeoutsRef.current[trackingKey]
+      }
+      // Clean up refs
+      delete reconnectAttemptsRef.current[trackingKey]
+      delete apiParamsRef.current[trackingKey]
     }
   }, [])
 
@@ -218,7 +349,16 @@ export function PipelineStatusProvider({ children }: { children: React.ReactNode
   // Cleanup all connections on global unmount
   useEffect(() => {
     return () => {
-      Object.values(connectionsRef.current).forEach(es => es.close())
+      // Close all WebSocket connections
+      Object.values(connectionsRef.current).forEach(ws => {
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          ws.close(1000, 'Component unmounting')
+        }
+      })
+      // Clear all reconnect timeouts
+      Object.values(reconnectTimeoutsRef.current).forEach(timeout => {
+        clearTimeout(timeout)
+      })
     }
   }, [])
 

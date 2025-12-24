@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from paperreader.api import pdf_routes  # main backend routes
 from paperreader.api import reference_routes
+from paperreader.api import websocket_routes  # WebSocket routes
 
 # Import routers
 from paperreader.api.auth_routes import router as auth_router  # Auth routes
@@ -87,6 +88,7 @@ def create_app() -> FastAPI:
     # Routers
     # ------------------------
     app.include_router(auth_router)
+    app.include_router(websocket_routes.router, tags=["WebSocket"])  # WebSocket at root level
     app.include_router(pdf_routes.router, prefix="/api/pdf", tags=["PDF"])
     app.include_router(
         pdf_proxy_router, tags=["PDF Proxy"]

@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, File, Header, HTTPException, Query, UploadFile
+from fastapi import APIRouter, File, Header, HTTPException, Query, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, StreamingResponse
 from paperreader.api.summary_routes import (
     _extract_sections_from_pdf,
@@ -51,6 +51,7 @@ from paperreader.services.qa.pipeline import (
     set_cancel_flag,
 )
 from paperreader.services.references import parse_references, update_reference_link
+from paperreader.services.websocket.task_events import notify_task_status
 
 router = APIRouter()
 
@@ -70,10 +71,6 @@ _PARSING_LOCK = threading.Lock()  # Lock for _PARSING_FILES dict
 # Simple in-memory job registry to track asynchronous PDF processing jobs
 _PDF_JOBS: Dict[str, Dict[str, Any]] = {}
 _PDF_JOBS_LOCK = threading.Lock()
-
-_STATUS_EVENTS: Dict[str, asyncio.Event] = {}
-_STATUS_EVENTS_LOCK = asyncio.Lock()
-_LAST_STATUS_CHANGE: Dict[str, float] = {}
 
 
 def _register_pdf_job(meta: Dict[str, Any]) -> str:
@@ -126,26 +123,6 @@ def _resolve_document_id(
     return None
 
 
-async def _notify_status_change(document_id: str):
-    """Notify all SSE listeners that document status changed."""
-    if not document_id:
-        return
-
-    async with _STATUS_EVENTS_LOCK:
-        # Record timestamp of this change
-        _LAST_STATUS_CHANGE[document_id] = time.time()
-
-        # Fire event if any listeners exist
-        if document_id in _STATUS_EVENTS:
-            _STATUS_EVENTS[document_id].set()
-            print(f"[EVENT] Notified status change for document {document_id}")
-            # Give event loop a chance to process the notification
-            await asyncio.sleep(0)
-            _STATUS_EVENTS[document_id].clear()
-        else:
-            print(
-                f"[EVENT] Recorded status change for document {document_id} (no active listeners)"
-            )
 
 
 async def _parse_and_chunk_pdf(
@@ -479,8 +456,18 @@ async def _parse_and_chunk_pdf(
                 "status": "ready",
             },
         )
-        # Notify SSE listeners
-        await _notify_status_change(document_id)
+        # Notify via status aggregator (internal architecture)
+        print(f"[WebSocket] 📤 [PDF] Notifying embedding task status for document {document_id}")
+        await notify_task_status(
+            document_id=document_id,
+            task_name="embedding",
+            status_data={
+                "status": "ready",
+                "embedding_ready": True,
+                "updated_at": datetime.utcnow().isoformat(),
+            },
+        )
+        print(f"[WebSocket] ✅ [PDF] Notified embedding task status for document {document_id}")
 
     return {
         "chunks": chunks,
@@ -586,7 +573,18 @@ async def _process_summary(
                     "summary_updated_at": datetime.utcnow(),
                 },
             )
-            await _notify_status_change(document_id)
+            # Notify via status aggregator (internal architecture)
+            print(f"[WebSocket] 📤 [SUMMARY] Notifying summary task status for document {document_id}")
+            await notify_task_status(
+                document_id=document_id,
+                task_name="summary",
+                status_data={
+                    "status": "ready",
+                    "summary_ready": True,
+                    "updated_at": datetime.utcnow().isoformat(),
+                },
+            )
+            print(f"[WebSocket] ✅ [SUMMARY] Notified summary task status for document {document_id}")
 
         return {
             "status": "success",
@@ -614,7 +612,17 @@ async def _process_summary(
                     "summary_error": str(exc),
                 },
             )
-            await _notify_status_change(document_id)
+            # Notify via status aggregator (internal architecture)
+            await notify_task_status(
+                document_id=document_id,
+                task_name="summary",
+                status_data={
+                    "status": "error",
+                    "error": str(exc),
+                    "updated_at": datetime.utcnow().isoformat(),
+                },
+            )
+            print(f"[SUMMARY] ❌ Notified summary task error for {document_id}")
 
         return {
             "status": "error",
@@ -692,7 +700,19 @@ async def _process_references(
                     "reference_updated_at": datetime.utcnow(),
                 },
             )
-            await _notify_status_change(document_id)
+            # Notify via status aggregator (internal architecture)
+            print(f"[WebSocket] 📤 [REFERENCE] Notifying reference task status for document {document_id}")
+            await notify_task_status(
+                document_id=document_id,
+                task_name="reference",
+                status_data={
+                    "status": "ready",
+                    "reference_ready": True,
+                    "reference_count": reference_count,
+                    "updated_at": datetime.utcnow().isoformat(),
+                },
+            )
+            print(f"[WebSocket] ✅ [REFERENCE] Notified reference task status for document {document_id}")
 
         return {
             "status": "success",
@@ -719,7 +739,17 @@ async def _process_references(
                     "reference_error": str(exc),
                 },
             )
-            await _notify_status_change(document_id)
+            # Notify via status aggregator (internal architecture)
+            await notify_task_status(
+                document_id=document_id,
+                task_name="reference",
+                status_data={
+                    "status": "error",
+                    "error": str(exc),
+                    "updated_at": datetime.utcnow().isoformat(),
+                },
+            )
+            print(f"[REFERENCE] ❌ Notified reference task error for {document_id}")
 
         return {
             "status": "error",
@@ -815,7 +845,18 @@ async def _process_skimming(
                     "skimming_updated_at": datetime.utcnow(),
                 },
             )
-            await _notify_status_change(document_id)
+            # Notify via status aggregator (internal architecture)
+            print(f"[WebSocket] 📤 [SKIMMING] Notifying skimming task status for document {document_id}")
+            await notify_task_status(
+                document_id=document_id,
+                task_name="skimming",
+                status_data={
+                    "status": "ready",
+                    "skimming_ready": True,
+                    "updated_at": datetime.utcnow().isoformat(),
+                },
+            )
+            print(f"[WebSocket] ✅ [SKIMMING] Notified skimming task status for document {document_id}")
 
         return {
             "status": "success",
@@ -842,7 +883,17 @@ async def _process_skimming(
                     "skimming_error": str(exc),
                 },
             )
-            await _notify_status_change(document_id)
+            # Notify via status aggregator (internal architecture)
+            await notify_task_status(
+                document_id=document_id,
+                task_name="skimming",
+                status_data={
+                    "status": "error",
+                    "error": str(exc),
+                    "updated_at": datetime.utcnow().isoformat(),
+                },
+            )
+            print(f"[SKIMMING] ❌ Notified skimming task error for {document_id}")
 
         return {
             "status": "error",
@@ -1242,264 +1293,6 @@ async def qa_status(
 
         print(f"[STATUS] Traceback: {traceback.format_exc()}")
         return {"building": False, "ready": False, "error": str(e)}
-
-
-@router.get("/status/stream")
-async def stream_qa_status(
-    pdf_name: Optional[str] = Query(None, description="PDF name to check status for"),
-    document_key: Optional[str] = Query(
-        None, description="Document key to check status for"
-    ),
-    document_id: Optional[str] = Query(
-        None, description="Document ID to check status for"
-    ),
-):
-    """
-    Event-driven status streaming via SSE - NO POLLING, NO REPLICA SETS NEEDED!
-
-    Handles late connections by checking if any changes occurred before client connected.
-    """
-    if not document_id:
-        raise HTTPException(400, "document_id is required for event-driven streaming")
-
-    async def event_generator():
-        connection_time = time.time()
-
-        # Register event listener for this document
-        async with _STATUS_EVENTS_LOCK:
-            if document_id not in _STATUS_EVENTS:
-                _STATUS_EVENTS[document_id] = asyncio.Event()
-            event = _STATUS_EVENTS[document_id]
-
-            # Check if any changes happened BEFORE client connected
-            last_change_time = _LAST_STATUS_CHANGE.get(document_id, 0)
-            missed_changes = last_change_time > 0 and last_change_time < connection_time
-
-        print(f"[SSE] 📡 Event-driven client connected for document {document_id}")
-
-        if missed_changes:
-            print(
-                f"[SSE] ⚠️ Client connected {connection_time - last_change_time:.1f}s "
-                f"AFTER last status change - checking for missed updates"
-            )
-
-        try:
-            # Send initial status immediately
-            status = await pipeline_status(document_id=document_id)
-            yield f"data: {json.dumps(status)}\n\n"
-
-            print(
-                f"[SSE] Initial status: "
-                f"embedding={status.get('embedding_status')}, "
-                f"summary={status.get('summary_status')}, "
-                f"reference={status.get('reference_status')}, "
-                f"skimming={status.get('skimming_status')}, "
-                f"available_features={status.get('available_features')}"
-            )
-
-            # Check if already complete
-            if status.get("all_ready"):
-                print(f"[SSE] ✅ All tasks already complete for {document_id}")
-                # Cleanup timestamp
-                async with _STATUS_EVENTS_LOCK:
-                    _LAST_STATUS_CHANGE.pop(document_id, None)
-                return
-
-            # Check if any tasks completed before client connected (catch-up mechanism)
-            embedding_ready = status.get("embedding_ready", False)
-            summary_ready = status.get("summary_ready", False)
-            reference_ready = status.get("reference_ready", False)
-            skimming_ready = status.get("skimming_ready", False)
-
-            # If any feature is already available, log it
-            if embedding_ready or summary_ready or reference_ready or skimming_ready:
-                available = status.get("available_features", [])
-                print(
-                    f"[SSE] 🎯 Client connected late - some features already available: {available}"
-                )
-
-                if missed_changes:
-                    print(
-                        f"[SSE] 🔄 Confirmed missed updates: "
-                        f"reference_ready={reference_ready}, "
-                        f"summary_ready={summary_ready}, "
-                        f"embedding_ready={embedding_ready}, "
-                        f"skimming_ready={skimming_ready}"
-                    )
-
-                # Check if all tasks are done (terminal states)
-                embedding_done = (
-                    status.get("embedding_status") in ["ready", "error"]
-                    or embedding_ready
-                )
-                summary_done = status.get("summary_status") in ["ready", "error"]
-                reference_done = status.get("reference_status") in ["ready", "error"]
-                skimming_done = status.get("skimming_status") in ["ready", "error"]
-
-                if embedding_done and summary_done and reference_done and skimming_done:
-                    print(
-                        f"[SSE] ✅ All tasks already in terminal state, closing stream immediately"
-                    )
-                    print(f"[SSE] Final available features: {available}")
-
-                    # Cleanup timestamp
-                    async with _STATUS_EVENTS_LOCK:
-                        _LAST_STATUS_CHANGE.pop(document_id, None)
-
-                    # Send one final update with terminal state
-                    final_msg = {
-                        **status,
-                        "message": f"✅ All processing complete. Available: {', '.join(available)}",
-                    }
-                    yield f"data: {json.dumps(final_msg)}\n\n"
-                    return
-
-            # Event-driven waiting - NO POLLING!
-            max_wait_time = 600  # 10 minutes total
-            start_time = time.time()
-            heartbeat_interval = 30  # Heartbeat every 30s to keep connection alive
-            last_heartbeat = start_time
-
-            while time.time() - start_time < max_wait_time:
-                current_time = time.time()
-                time_remaining = max_wait_time - (current_time - start_time)
-
-                # Calculate next timeout (for heartbeat or remaining time)
-                next_timeout = min(
-                    heartbeat_interval - (current_time - last_heartbeat), time_remaining
-                )
-
-                if next_timeout <= 0:
-                    # Send heartbeat
-                    yield f": heartbeat\n\n"
-                    last_heartbeat = current_time
-                    continue
-
-                try:
-                    # Wait for event notification (NO POLLING - blocks until notified!)
-                    await asyncio.wait_for(event.wait(), timeout=next_timeout)
-
-                    # Event fired! Status changed, get new status
-                    print(f"[SSE] 🔔 Event fired for {document_id} - status changed!")
-                    status = await pipeline_status(document_id=document_id)
-                    yield f"data: {json.dumps(status)}\n\n"
-
-                    print(
-                        f"[SSE] Updated: "
-                        f"embedding_ready={status.get('embedding_ready')}, "
-                        f"summary_ready={status.get('summary_ready')}, "
-                        f"reference_ready={status.get('reference_ready')}, "
-                        f"skimming_ready={status.get('skimming_ready')}, "
-                        f"available={status.get('available_features')}"
-                    )
-
-                    # Stop if all done
-                    if status.get("all_ready"):
-                        print(f"[SSE] ✅ All tasks complete for {document_id}")
-                        # Cleanup timestamp
-                        async with _STATUS_EVENTS_LOCK:
-                            _LAST_STATUS_CHANGE.pop(document_id, None)
-                        break
-
-                    # Stop on critical error
-                    if status.get("stage") == "error":
-                        print(f"[SSE] ❌ Critical error for {document_id}")
-                        break
-
-                    # Check if all tasks reached terminal state
-                    embedding_done = status.get("embedding_status") in [
-                        "ready",
-                        "error",
-                    ] or status.get("embedding_ready")
-                    summary_done = status.get("summary_status") in ["ready", "error"]
-                    reference_done = status.get("reference_status") in [
-                        "ready",
-                        "error",
-                    ]
-                    skimming_done = status.get("skimming_status") in ["ready", "error"]
-                    if (
-                        embedding_done
-                        and summary_done
-                        and reference_done
-                        and skimming_done
-                    ):
-                        print(
-                            f"[SSE] ✅ All tasks reached terminal state for {document_id}"
-                        )
-
-                        # Log final state
-                        available = status.get("available_features", [])
-                        if available:
-                            print(f"[SSE] ✅ Final available features: {available}")
-
-                        # Log any errors
-                        errors = []
-                        if status.get("summary_error"):
-                            errors.append(f"Summary: {status.get('summary_error')}")
-                        if status.get("reference_error"):
-                            errors.append(f"Reference: {status.get('reference_error')}")
-                        if status.get("embedding_error"):
-                            errors.append(f"Embedding: {status.get('embedding_error')}")
-                        if status.get("skimming_error"):  # Thêm dòng này
-                            errors.append(
-                                f"Skimming: {status.get('skimming_error')}"
-                            )  # Thêm dòng này
-                        if errors:
-                            print(f"[SSE] ⚠️ Task errors: {'; '.join(errors)}")
-
-                        # Cleanup timestamp
-                        async with _STATUS_EVENTS_LOCK:
-                            _LAST_STATUS_CHANGE.pop(document_id, None)
-
-                        break
-
-                except asyncio.TimeoutError:
-                    # Timeout - send heartbeat
-                    yield f": heartbeat\n\n"
-                    last_heartbeat = current_time
-                    continue
-
-            # Max wait time reached
-            if time.time() - start_time >= max_wait_time:
-                print(f"[SSE] ⏱️ Timeout for {document_id}")
-                final_status = await pipeline_status(document_id=document_id)
-                available = final_status.get("available_features", [])
-
-                timeout_msg = {
-                    "stage": "timeout",
-                    "message": f"Stream timeout. Available: {', '.join(available)}",
-                    "available_features": available,
-                    "embedding_ready": final_status.get("embedding_ready", False),
-                    "summary_ready": final_status.get("summary_ready", False),
-                    "reference_ready": final_status.get("reference_ready", False),
-                    "skimming_ready": final_status.get("skimming_ready", False),
-                }
-                yield f"data: {json.dumps(timeout_msg)}\n\n"
-
-        except Exception as e:
-            print(f"[SSE] ❌ Error for {document_id}: {e}")
-            import traceback
-
-            print(f"[SSE] Traceback: {traceback.format_exc()}")
-
-            error_msg = {
-                "error": str(e),
-                "stage": "error",
-                "ready": False,
-                "all_ready": False,
-            }
-            yield f"data: {json.dumps(error_msg)}\n\n"
-
-        finally:
-            # Cleanup event when client disconnects
-            async with _STATUS_EVENTS_LOCK:
-                if document_id in _STATUS_EVENTS:
-                    del _STATUS_EVENTS[document_id]
-                    print(
-                        f"[SSE] 🔌 Disconnected and cleaned up event for {document_id}"
-                    )
-
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @router.get("/references")

@@ -3,8 +3,8 @@
   "hits": [
     {
       "index": 0,
-      "score": 0.76587963,
-      "text": "4.2 Localization Method Similarly to the selection method, we adopted an approach that leverages heuristics and existing pretrained machine learning mod- els instead of training a new model due to mismatch between available datasets and our new task. We ran each selected citance through our localization method to localize them on the reference paper. Fig.",
+      "score": 0.74185294,
+      "text": "1.2 Contribution Our main contributions are threefold. First, we design a methodol- ogy to systematically collect the supply chain information of LLMs. In this paper, we mainly study the most popular AI platform, i.e., Hugging Face, but the same strategy applies to other platforms. In particular, we use the APIs from the AI platform to collect the metadata about the hosted models and datasets.",
       "metadata": {
-        "chunk_id": "78dc9c4a423a2064de6a5329cd68c5cfc7da7d91",
+        "chunk_id": "30255534c81b5efd6c421216dc5b7ba8a3726233",
         "doc_id": 

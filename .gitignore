@@ -50,3 +50,4 @@ next-env.d.ts
 # Python cache
 __pycache__/
 *.py[cod]
+docker-compose.yml
