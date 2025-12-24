@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, ExternalLink, Copy, BookOpen, MapPin, Calendar, Users, FileText, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { X, ExternalLink, Copy, BookOpen, MapPin, Calendar, Users, FileText, Loader2, ChevronDown, ChevronUp, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-
+import { useWorkspace } from "@/contexts/WorkspaceContext"
 interface BoundingBox {
   x1: number
   y1: number
@@ -50,6 +50,7 @@ interface EnrichedMetadata extends AnnotationMetadata {
   url?: string
   citationCount?: number
   influentialCitationCount?: number
+  openAccessPdf?: string
 }
 
 interface CitationPopupProps {
@@ -74,6 +75,68 @@ export function CitationPopup({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showFullAbstract, setShowFullAbstract] = useState(false)
+  const [isOpeningPaper, setIsOpeningPaper] = useState(false)
+  const [hasValidPdf, setHasValidPdf] = useState(false)
+  const [isValidatingPdf, setIsValidatingPdf] = useState(false)
+
+  // Get workspace context to open papers
+  const { openReferencePDF } = useWorkspace()
+
+  const normalizeToPdfUrl = (url: string): string => {
+    if (!url) return "";
+    
+    let normalized = url.trim();
+  
+    // Convert ArXiv abstract links to PDF links
+    // https://arxiv.org/abs/2307.09288 -> https://arxiv.org/pdf/2307.09288.pdf
+    if (normalized.includes("arxiv.org/abs/")) {
+      normalized = normalized.replace("arxiv.org/abs/", "arxiv.org/pdf/") + ".pdf";
+    }
+  
+    // Convert OpenReview forum links to PDF links
+    if (normalized.includes("openreview.net/forum?id=")) {
+      normalized = normalized.replace("openreview.net/forum?id=", "openreview.net/pdf?id=");
+    }
+  
+    return normalized;
+  };
+
+  const validatePdfUrl = async (url: string): Promise<boolean> => {
+    try {
+      console.log('[CitationPopup] Validating PDF URL:', url)
+      
+      // Check common direct PDF URL patterns
+      const directPdfPatterns = [
+        /arxiv\.org\/pdf\//i,              // arxiv.org/pdf/... (with trailing content)
+        /arxiv\.org\/pdf$/i,               // arxiv.org/pdf (exact match)
+        /\.pdf$/i,                         // ends with .pdf
+        /\.pdf\?/i,                        // .pdf with query params
+        /\/pdf\//i,                        // contains /pdf/ path
+        /openreview\.net\/pdf/i,           // openreview.net/pdf
+        /semanticscholar\.org.*\.pdf$/i,   // semantic scholar PDFs
+        /proceedings\..*\.pdf$/i,          // conference proceedings
+        /arxiv\.org\/pdf\/[\d.]+/i,        // arxiv.org/pdf/1234.5678 (specific pattern)
+      ]
+
+      const isDirectPdfUrl = directPdfPatterns.some(pattern => {
+        const matches = pattern.test(url)
+        console.log(`[CitationPopup] Testing pattern ${pattern}: ${matches}`)
+        return matches
+      })
+      
+      if (!isDirectPdfUrl) {
+        console.log('[CitationPopup] URL does not match direct PDF patterns')
+        return false
+      }
+
+      console.log('[CitationPopup] URL matches direct PDF pattern ✓')
+
+      return true
+    } catch (error) {
+      console.error('[CitationPopup] PDF validation failed:', error)
+      return false
+    }
+  }
 
   // Fetch enriched metadata when popup opens
   useEffect(() => {
@@ -81,6 +144,7 @@ export function CitationPopup({
       setEnrichedMetadata(null)
       setError(null)
       setShowFullAbstract(false)
+      setHasValidPdf(false)
       return
     }
 
@@ -115,13 +179,34 @@ export function CitationPopup({
         const data = await response.json()
         console.log('[CitationPopup] Fetched enriched metadata:', data)
 
-        setEnrichedMetadata({
+        let rawUrl = "";
+        if (typeof data.openAccessPdf === 'string') {
+          rawUrl = data.openAccessPdf;
+        } else if (data.openAccessPdf?.url) {
+          rawUrl = data.openAccessPdf.url;
+        } else if (data.url) {
+          rawUrl = data.url;
+        }
+        const normalizedUrl = normalizeToPdfUrl(rawUrl);
+        const enriched = {
           ...metadata,
           abstract: data.abstract,
-          url: data.url,
+          url: data.url, // Keep the landing page URL for external links
           citationCount: data.citationCount,
           influentialCitationCount: data.influentialCitationCount,
-        })
+          openAccessPdf: normalizedUrl, // Use the normalized direct PDF URL here
+        };
+
+        setEnrichedMetadata(enriched)
+
+        // Validate PDF URL if present
+        if (data.openAccessPdf) {
+          setIsValidatingPdf(true)
+          const isValid = await validatePdfUrl(normalizedUrl)
+          setHasValidPdf(isValid)
+          setIsValidatingPdf(false)
+          console.log('[CitationPopup] PDF validation result:', isValid)
+        }
       } catch (err) {
         console.error('[CitationPopup] Failed to fetch enriched metadata:', err)
         setError(err instanceof Error ? err.message : 'Failed to load additional metadata')
@@ -181,6 +266,37 @@ export function CitationPopup({
       onViewReference(annotation)
     } else if (annotation.target) {
       console.log(`Navigate to page ${annotation.target.page}`)
+    }
+  }
+
+  // Handle opening paper in PDF viewer (only if valid PDF)
+  const handleOpenPaper = async () => {
+    if (!enrichedMetadata?.openAccessPdf || !metadata?.title || !hasValidPdf) {
+      console.warn('[CitationPopup] Cannot open paper - invalid or missing PDF URL')
+      return
+    }
+
+    setIsOpeningPaper(true)
+    try {
+      console.log('[CitationPopup] Opening paper in preview mode:', {
+        url: enrichedMetadata.openAccessPdf,
+        title: metadata.title
+      })
+
+      await openReferencePDF(enrichedMetadata.openAccessPdf, metadata.title)
+      onClose()
+    } catch (error) {
+      console.error('[CitationPopup] Failed to open paper:', error)
+      setError('Failed to open paper')
+    } finally {
+      setIsOpeningPaper(false)
+    }
+  }
+
+  // Handle opening external link (fallback when no valid PDF)
+  const handleOpenExternalLink = () => {
+    if (enrichedMetadata?.url) {
+      window.open(enrichedMetadata.url, "_blank", "noopener,noreferrer")
     }
   }
 
@@ -254,17 +370,7 @@ export function CitationPopup({
                   <h3 className="text-sm font-semibold text-gray-900 leading-snug">
                     {metadata.title}
                   </h3>
-                  {enrichedMetadata?.url && (
-                    <a
-                      href={enrichedMetadata.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                    >
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      View Paper
-                    </a>
-                  )}
+                  
                 </div>
               )}
 
@@ -374,7 +480,72 @@ export function CitationPopup({
         </div>
       </ScrollArea>
 
-      
+      {/* Footer Actions */}
+      <div className="border-t border-gray-100 p-3 bg-gray-50 rounded-b-lg">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left side actions */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopyText}
+              className="h-8 px-3 text-xs hover:bg-gray-200"
+            >
+              <Copy className="h-3.5 w-3.5 mr-1.5" />
+              Copy
+            </Button>
+            
+            {annotation.target && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleViewReference}
+                className="h-8 px-3 text-xs hover:bg-gray-200"
+              >
+                <MapPin className="h-3.5 w-3.5 mr-1.5" />
+                Bibliography
+              </Button>
+            )}
+          </div>
+
+          {/* Right side - Conditional button based on PDF validity */}
+          <div className="flex items-center gap-2">
+            {hasValidPdf ? (
+              // Mode 1: Valid PDF - Open in PDF Viewer
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleOpenPaper}
+                disabled={isOpeningPaper}
+                className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isOpeningPaper ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                    Opening...
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3.5 w-3.5 mr-1.5" />
+                    View Paper
+                  </>
+                )}
+              </Button>
+            ) : enrichedMetadata?.url ? (
+              // Mode 2: No valid PDF - Open external link
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleOpenExternalLink}
+                className="h-8 px-3 text-xs bg-gray-600 hover:bg-gray-700 text-white"
+              >
+                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                View Paper
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

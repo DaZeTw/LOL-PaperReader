@@ -6,7 +6,7 @@ import { FileText, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LibraryView } from "@/components/library-view"
 import { SinglePDFReader } from "@/components/pdf-reader"
-
+import { WorkspaceProvider } from "@/contexts/WorkspaceContext"
 interface PDFTab {
   id: string
   file: File
@@ -14,6 +14,7 @@ interface PDFTab {
   fileName: string
   documentId: string
   sidebarOpen?: boolean  // Add sidebar state per tab
+  isInLibrary?: boolean  // Track if document is in library
 }
 
 // Generate stable IDs using a counter
@@ -64,7 +65,7 @@ export function WorkspaceManager({
       login()
       return
     }
-
+  
     console.log("[Workspace Manager] Opening PDF:", { title, fileName: file.name, fileSize: file.size })
     
     // Enhanced duplicate detection
@@ -82,7 +83,8 @@ export function WorkspaceManager({
       title,
       fileName: file.name,
       documentId,
-      sidebarOpen: false  // Initialize sidebar state
+      sidebarOpen: false,  // Initialize sidebar state
+      isInLibrary: true    // PDFs opened from library are in library mode
     }
     
     setOpenTabs((prev: PDFTab[]) => [...prev, newTab])
@@ -182,6 +184,25 @@ export function WorkspaceManager({
     )
   }, [])
 
+  const handleUpdateTabMode = useCallback((
+    tabId: string, 
+    mode: 'library' | 'preview', 
+    documentId?: string
+  ) => {
+    console.log('[Workspace Manager] Updating tab mode:', { tabId, mode, documentId })
+    setOpenTabs((prev) =>
+      prev.map((tab) =>
+        tab.id === tabId 
+          ? { 
+              ...tab, 
+              isInLibrary: mode === 'library',
+              documentId: documentId || tab.documentId 
+            } 
+          : tab
+      )
+    )
+  }, [])
+
   const activeTab = openTabs.find((tab: PDFTab) => tab.id === activeTabId)
   const showTabBar = openTabs.length > 0
 
@@ -200,72 +221,78 @@ export function WorkspaceManager({
   })
 
   return (
-    <div className={cn("flex flex-col h-full", className)}>
-      {/* Tab Bar - Only shown when PDF tabs are open */}
-      {showTabBar && (
-        <div className="flex items-center gap-1 border-b border-border bg-muted/30 px-2 py-1">
-          <div className="flex flex-1 items-center gap-1 overflow-x-auto">
-            {openTabs.map((tab: PDFTab) => (
-              <div
-                key={tab.id}
-                onClick={() => handleSwitchTab(tab.id)}
-                className={cn(
-                  "group flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors cursor-pointer",
-                  activeTabId === tab.id
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-                title={`${tab.title} (${tab.fileName})`}
-              >
-                <FileText className="h-3.5 w-3.5 shrink-0" />
-                <span className="max-w-[150px] truncate font-mono text-xs">
-                  {tab.title}
-                </span>
-                <button
-                  onClick={(e: MouseEvent<HTMLButtonElement>) => handleCloseTab(tab.id, e)}
-                  className="rounded p-0.5 opacity-0 transition-opacity hover:bg-muted-foreground/20 group-hover:opacity-100"
+    <WorkspaceProvider 
+    onOpenReferencePDF={handleOpenReferencePDF}
+    onUpdateTabMode={handleUpdateTabMode}
+    >
+      <div className={cn("flex flex-col h-full", className)}>
+        {/* Tab Bar - Only shown when PDF tabs are open */}
+        {showTabBar && (
+          <div className="flex items-center gap-1 border-b border-border bg-muted/30 px-2 py-1">
+            <div className="flex flex-1 items-center gap-1 overflow-x-auto">
+              {openTabs.map((tab: PDFTab) => (
+                <div
+                  key={tab.id}
+                  onClick={() => handleSwitchTab(tab.id)}
+                  className={cn(
+                    "group flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors cursor-pointer",
+                    activeTabId === tab.id
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                  title={`${tab.title} (${tab.fileName})`}
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
+                  <FileText className="h-3.5 w-3.5 shrink-0" />
+                  <span className="max-w-[150px] truncate font-mono text-xs">
+                    {tab.title}
+                  </span>
+                  <button
+                    onClick={(e: MouseEvent<HTMLButtonElement>) => handleCloseTab(tab.id, e)}
+                    className="rounded p-0.5 opacity-0 transition-opacity hover:bg-muted-foreground/20 group-hover:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-hidden relative">
-        {/* Library View - Always mounted, shown/hidden with CSS */}
-        <div 
-          className={cn(
-            "absolute inset-0 z-10",
-            currentView === 'library' ? "block" : "hidden"
-          )}
-        >
-          <LibraryView onOpenPDF={handleOpenPDF} />
-        </div>
-        
-        {/* PDF Readers - All tabs always mounted, shown/hidden with CSS */}
-        {openTabs.map((tab: PDFTab) => (
-          <div
-            key={tab.id}
+        {/* Content Area */}
+        <div className="flex-1 overflow-hidden relative">
+          {/* Library View - Always mounted, shown/hidden with CSS */}
+          <div 
             className={cn(
               "absolute inset-0 z-10",
-              currentView === 'pdf' && activeTabId === tab.id ? "block" : "hidden"
+              currentView === 'library' ? "block" : "hidden"
             )}
           >
-            <SinglePDFReader 
-              file={tab.file}
-              documentId={tab.documentId}
-              tabId={tab.id}
-              isActive={activeTabId === tab.id}
-              sidebarOpen={tab.sidebarOpen ?? false}
-              onSidebarToggle={(isOpen) => handleSidebarToggle(tab.id, isOpen)}
-              onOpenReferencePDF={handleOpenReferencePDF}
-            />
+            <LibraryView onOpenPDF={handleOpenPDF} />
           </div>
-        ))}
+          
+          {/* PDF Readers - All tabs always mounted, shown/hidden with CSS */}
+          {openTabs.map((tab: PDFTab) => (
+            <div
+              key={tab.id}
+              className={cn(
+                "absolute inset-0 z-10",
+                currentView === 'pdf' && activeTabId === tab.id ? "block" : "hidden"
+              )}
+            >
+              <SinglePDFReader 
+                file={tab.file}
+                documentId={tab.documentId}
+                tabId={tab.id}
+                isActive={activeTabId === tab.id}
+                sidebarOpen={tab.sidebarOpen ?? false}
+                onSidebarToggle={(isOpen) => handleSidebarToggle(tab.id, isOpen)}
+                onOpenReferencePDF={handleOpenReferencePDF}
+                mode={tab.isInLibrary ? 'library' : 'preview'}  // Add mode based on tab state
+              />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </WorkspaceProvider>
   )
 }

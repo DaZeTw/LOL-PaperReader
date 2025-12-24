@@ -6,6 +6,7 @@ interface UsePipelineStatusProps {
   // Kept for backward compatibility but documentId is prioritized
   pdfFile?: File | null
   tabId?: string
+  enabled?: boolean
 }
 
 /**

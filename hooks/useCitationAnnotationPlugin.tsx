@@ -47,7 +47,7 @@ interface PageAnnotations {
 
 interface UseCitationAnnotationPluginProps {
   annotationsRef: React.MutableRefObject<PageAnnotations[]>
-  onAnnotationClick: (annotation: Annotation, event: MouseEvent) => void
+  onAnnotationClick?: (annotation: Annotation, event: MouseEvent) => void  // Made optional
 }
 
 export const useCitationAnnotationPlugin = ({
@@ -55,31 +55,33 @@ export const useCitationAnnotationPlugin = ({
   onAnnotationClick,
 }: UseCitationAnnotationPluginProps): Plugin => {
   
-  console.log('[CitationAnnotationPlugin] Initialized')
+  console.log('[CitationAnnotationPlugin] Initialized', { interactive: !!onAnnotationClick })
 
   return {
     onAnnotationLayerRender: (e: PluginOnAnnotationLayerRender) => {
       const { pageIndex, container, annotations: pdfAnnotations } = e
       const currentPage = pageIndex + 1
 
-      // ✅ Prevent default PDF link annotations from jumping
-      pdfAnnotations
-        .filter((annotation) => annotation.annotationType === AnnotationType.Link)
-        .forEach((annotation) => {
-          // Find all link elements in the annotation layer
-          const linkElements = container.querySelectorAll('.rpv-core__annotation--link')
-          linkElements.forEach((linkEle) => {
-            const anchorEle = linkEle.querySelector('a')
-            if (anchorEle) {
-              // ✅ Prevent default click behavior
-              anchorEle.addEventListener('click', (event) => {
-                event.preventDefault()
-                event.stopPropagation()
-                console.log('[CitationPlugin] Prevented default link jump')
-              }, { capture: true })
-            }
+      // ✅ Prevent default PDF link annotations from jumping (only if interactive)
+      if (onAnnotationClick) {
+        pdfAnnotations
+          .filter((annotation) => annotation.annotationType === AnnotationType.Link)
+          .forEach((annotation) => {
+            // Find all link elements in the annotation layer
+            const linkElements = container.querySelectorAll('.rpv-core__annotation--link')
+            linkElements.forEach((linkEle) => {
+              const anchorEle = linkEle.querySelector('a')
+              if (anchorEle) {
+                // ✅ Prevent default click behavior
+                anchorEle.addEventListener('click', (event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  console.log('[CitationPlugin] Prevented default link jump')
+                }, { capture: true })
+              }
+            })
           })
-        })
+      }
 
       // Get current annotations from ref
       const annotations = annotationsRef.current
@@ -144,7 +146,7 @@ export const useCitationAnnotationPlugin = ({
           const hasMetadata = !!metadata
           const color = hasMetadata ? '59, 130, 246' : '156, 163, 175'
 
-          // Apply styles
+          // Apply styles - conditional interactivity
           Object.assign(citationBox.style, {
             position: 'absolute',
             left: `${left}px`,
@@ -154,41 +156,47 @@ export const useCitationAnnotationPlugin = ({
             backgroundColor: `rgba(${color}, 0.15)`,
             border: `1.5px solid rgba(${color}, 0.5)`,
             borderRadius: '3px',
-            cursor: 'pointer',
+            cursor: onAnnotationClick ? 'pointer' : 'default',  // Conditional cursor
             zIndex: '100',
             transition: 'all 0.15s ease',
-            pointerEvents: 'auto',
+            pointerEvents: onAnnotationClick ? 'auto' : 'none',  // Conditional interaction
             boxSizing: 'border-box',
           })
 
-          // Hover effects
-          citationBox.addEventListener('mouseenter', () => {
-            citationBox.style.backgroundColor = `rgba(${color}, 0.3)`
-            citationBox.style.borderColor = `rgba(${color}, 0.7)`
-            citationBox.style.borderWidth = '2px'
-            citationBox.style.boxShadow = `0 2px 8px rgba(${color}, 0.3)`
-          })
+          // Hover effects (only if interactive)
+          if (onAnnotationClick) {
+            citationBox.addEventListener('mouseenter', () => {
+              citationBox.style.backgroundColor = `rgba(${color}, 0.3)`
+              citationBox.style.borderColor = `rgba(${color}, 0.7)`
+              citationBox.style.borderWidth = '2px'
+              citationBox.style.boxShadow = `0 2px 8px rgba(${color}, 0.3)`
+            })
 
-          citationBox.addEventListener('mouseleave', () => {
-            citationBox.style.backgroundColor = `rgba(${color}, 0.15)`
-            citationBox.style.borderColor = `rgba(${color}, 0.5)`
-            citationBox.style.borderWidth = '1.5px'
-            citationBox.style.boxShadow = 'none'
-          })
+            citationBox.addEventListener('mouseleave', () => {
+              citationBox.style.backgroundColor = `rgba(${color}, 0.15)`
+              citationBox.style.borderColor = `rgba(${color}, 0.5)`
+              citationBox.style.borderWidth = '1.5px'
+              citationBox.style.boxShadow = 'none'
+            })
 
-          // ✅ Handle click with preventDefault
-          citationBox.addEventListener('click', (event: Event) => {
-            const mouseEvent = event as MouseEvent
-            mouseEvent.preventDefault()
-            mouseEvent.stopPropagation()
-            console.log(`[CitationPlugin] Clicked: ${annotation.dest}`, metadata)
-            onAnnotationClick(annotation, mouseEvent)
-          }, { capture: true }) // ✅ Use capture phase to intercept before other handlers
+            // ✅ Handle click with preventDefault (only if handler provided)
+            citationBox.addEventListener('click', (event: Event) => {
+              const mouseEvent = event as MouseEvent
+              mouseEvent.preventDefault()
+              mouseEvent.stopPropagation()
+              console.log(`[CitationPlugin] Clicked: ${annotation.dest}`, metadata)
+              onAnnotationClick(annotation, mouseEvent)
+            }, { capture: true }) // ✅ Use capture phase to intercept before other handlers
+          }
 
-          // Tooltip
-          citationBox.title = metadata?.title 
-            ? `${metadata.title}\nClick for details` 
-            : `Citation: ${annotation.dest}\nClick for info`
+          // Tooltip (always show, but different text based on mode)
+          citationBox.title = onAnnotationClick
+            ? (metadata?.title 
+                ? `${metadata.title}\nClick for details` 
+                : `Citation: ${annotation.dest}\nClick for info`)
+            : (metadata?.title 
+                ? `${metadata.title}` 
+                : `Citation: ${annotation.dest}`)
 
           // Append to page container
           pageContainer.appendChild(citationBox)
