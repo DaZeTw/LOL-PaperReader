@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Viewer, Worker } from "@react-pdf-viewer/core"
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
@@ -13,15 +13,17 @@ import type { Annotation } from "@/hooks/useAnnotations"
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
 import { usePDFHighlightPlugin } from "@/hooks/usePDFHighlightPlugin"
 import { useAnnotation } from "@/hooks/useAnnotation"
+import { useTextSelectionPopup } from "@/hooks/useTextSelectionPopup" // ✅ ADD: Import text selection popup hook
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 import { CitationPopup } from "@/components/citation-popup"
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Highlighter, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Highlighter, Trash2, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { PDFSidebar } from "./pdf-sidebar"
 import { SkimmingView } from "./skimming-view"
 import { SkimmingControls } from "./skimming-controls"
 import { useToast } from "@/hooks/use-toast"
+import { KeywordPopup } from "@/components/keyword-popup" // ✅ ADD: Import KeywordPopup component
 
 import "@react-pdf-viewer/core/lib/styles/index.css"
 import "@react-pdf-viewer/page-navigation/lib/styles/index.css"
@@ -109,6 +111,19 @@ export function PDFViewer({
     annotationPluginInstance, 
     clearAllAnnotations 
   } = useAnnotation()
+
+  // ✅ ADD: Text selection popup hook for keyword definitions
+  const {
+    popupState,
+    handleTextSelection,
+    handleNodeClick,
+    closePopup,
+    isEnabled: popupEnabled,
+    setEnabled: setPopupEnabled
+  } = useTextSelectionPopup()
+
+  // Ref for PDF container to attach selection listener
+  const pdfContainerRef = useRef<HTMLDivElement>(null)
 
   const currentPageRef = useRef(1)
   const pageLabelRef = useRef<HTMLSpanElement>(null)
@@ -276,19 +291,7 @@ export function PDFViewer({
     }
   }, [navigationTarget, jumpToPage, onPageChange, onNavigationComplete, highlight, clearHighlights, enableInteractions])
 
-  const handlePageChangeInternal = (e: any) => {
-    const newPage = e.currentPage + 1
-    currentPageRef.current = newPage
-    
-    requestAnimationFrame(() => {
-      if (pageLabelRef.current) {
-        pageLabelRef.current.textContent = String(newPage)
-      }
-    })
-
-    onPageChange?.(newPage)
-  }
-
+ 
   const handleZoomIn = () => {
     const newScale = Math.min(2, zoomRef.current + 0.1)
     zoomRef.current = newScale
@@ -307,6 +310,21 @@ export function PDFViewer({
       if (zoomLabelRef.current)
         zoomLabelRef.current.textContent = `${Math.round(newScale * 100)}%`
     })
+  }
+
+  const handlePageChangeInternal = (e: any) => {
+    const newPage = e.currentPage + 1
+    currentPageRef.current = newPage
+
+    // Update UI
+    requestAnimationFrame(() => {
+      if (pageLabelRef.current) {
+        pageLabelRef.current.textContent = String(newPage)
+      }
+    })
+
+    // Notify parent
+    onPageChange?.(newPage)
   }
 
   return (
@@ -446,102 +464,115 @@ export function PDFViewer({
               )}
             </div>
 
-            {/* Zoom Controls */}
-            {viewMode === "reading" && (
-              <div className="flex items-center gap-2">
-                {enableInteractions && annotationCount === 0 && (
-                  <div className="text-xs text-muted-foreground mr-2">
-                    Select text to highlight
-                  </div>
-                )}
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleZoomOut}
-                  disabled={zoomRef.current <= 0.5}
-                  className="h-7 w-7"
-                >
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
-                <span
-                  ref={zoomLabelRef}
-                  className="min-w-[3rem] text-center font-mono text-sm text-muted-foreground"
-                >
-                  100%
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleZoomIn}
-                  disabled={zoomRef.current >= 2}
-                  className="h-7 w-7"
-                >
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
-                  <Maximize2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
+          {/* Zoom Controls - Only in reading mode */}
+          {viewMode === "reading" && (
+            <div className="flex items-center gap-2">
+              {/* ✅ ADD: Helper text for keyword lookup and annotations */}
+              {annotationCount === 0 && (
+                <div className="text-xs text-muted-foreground mr-2 flex items-center gap-2">
+                  <BookOpen className="h-3 w-3" />
+                  <span>Select text for definition</span>
+                </div>
+              )}
 
-          {/* Content */}
-          <div className="flex-1 overflow-hidden bg-muted/30">
-            {viewMode === "reading" ? (
-              <div className="h-full p-4">
-                {pdfUrl && (
-                  <div className="h-full mx-auto max-w-4xl">
-                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-                      <div className="bg-white shadow-lg rounded-lg overflow-hidden h-full">
-                        <Viewer
-                          fileUrl={pdfUrl}
-                          plugins={plugins}
-                          onDocumentLoad={(e) => {
-                            setNumPages(e.doc.numPages)
-                            currentPageRef.current = 1
-                            zoomRef.current = 1
-                            if (pageLabelRef.current) pageLabelRef.current.textContent = "1"
-                            if (zoomLabelRef.current) zoomLabelRef.current.textContent = "100%"
-                            onDocumentLoad?.(e.doc.numPages)
-                            e.doc.getOutline().then((outline) => {
-                              if (outline) setBookmarks(outline)
-                            })
-                          }}
-                          onPageChange={handlePageChangeInternal}
-                        />
-                      </div>
-                    </Worker>
-                  </div>
-                )}
-              </div>
-            ) : (
-              enableInteractions && (
-                <SkimmingView
-                  file={file}
-                  numPages={numPages}
-                  onNavigateToPage={(page) => {
-                    pendingPageNavigation.current = page
-                  }}
-                  onExitSkimming={() => setViewMode("reading")}
-                />
-              )
-            )}
-          </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleZoomOut}
+                disabled={zoomRef.current <= 0.5}
+                className="h-7 w-7"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+
+              <span
+                ref={zoomLabelRef}
+                className="min-w-[3rem] text-center font-mono text-sm text-muted-foreground"
+              >
+                100%
+              </span>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleZoomIn}
+                disabled={zoomRef.current >= 2}
+                className="h-7 w-7"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Content Area - Conditional Rendering */}
+        <div className="flex-1 overflow-hidden bg-muted/30">
+          {viewMode === "reading" ? (
+            <div
+              ref={pdfContainerRef}
+              className="h-full p-4"
+              onMouseUp={(e) => handleTextSelection(e.nativeEvent)}
+            >
+              {pdfUrl && (
+                <div className="h-full mx-auto max-w-4xl">
+                  <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                    <div className="bg-white shadow-lg rounded-lg overflow-hidden h-full">
+                      <Viewer
+                        fileUrl={pdfUrl}
+                        plugins={plugins}
+                        onDocumentLoad={(e) => {
+                          setNumPages(e.doc.numPages)
+                          currentPageRef.current = 1
+                          zoomRef.current = 1
+                          if (pageLabelRef.current) pageLabelRef.current.textContent = "1"
+                          if (zoomLabelRef.current) zoomLabelRef.current.textContent = "100%"
+
+                          // Notify parent of page count
+                          onDocumentLoad?.(e.doc.numPages)
+
+                          // Extract bookmarks for skimming mode
+                          e.doc.getOutline().then((outline) => {
+                            if (outline) {
+                              setBookmarks(outline)
+                            }
+                          })
+                        }}
+                        onPageChange={handlePageChangeInternal}
+                      />
+                    </div>
+                  </Worker>
+                </div>
+              )}
+            </div>
+          ) : (
+            <SkimmingView
+              file={file}
+              numPages={numPages}
+              onNavigateToPage={handleNavigateToPage}
+              onExitSkimming={() => setViewMode("reading")}
+            />
+          )}
         </div>
       </div>
 
-      {/* Citation Popup - Only in library mode */}
-      {enableInteractions && (
-        <CitationPopup
-          annotation={selectedAnnotation}
-          isOpen={!!selectedAnnotation}
-          onClose={() => setSelectedAnnotation(null)}
-          onCopyText={handleCopyText}
-          onViewReference={handleViewReference}
-          position={popupPosition}
-        />
-      )}
-    </>
-  )
-}
+      {/* ✅ ADD: Keyword Definition Popup */}
+      <KeywordPopup
+        isOpen={popupState.isOpen}
+        keyword={popupState.keyword}
+        context={popupState.context}
+        concept={popupState.concept}
+        siblings={popupState.siblings}
+        descendants={popupState.descendants}
+        loading={popupState.loading}
+        error={popupState.error}
+        onClose={closePopup}
+        onNodeClick={handleNodeClick}
+        position={popupState.position}
+      />
+    </div>
+  </>
+  )}

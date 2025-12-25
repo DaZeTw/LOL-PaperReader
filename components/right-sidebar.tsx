@@ -1,13 +1,18 @@
 "use client"
 
-import { useState } from "react"
-import { ChevronRight, MessageSquare, BookmarkIcon, Sparkles, FileText, Settings } from "lucide-react"
+import { useState, useCallback } from "react"
+import { ChevronRight, MessageSquare, BookmarkIcon, Sparkles, FileText, Settings, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { QAInterface } from "@/components/qa-interface"
 import { SummaryInterface } from "@/components/summary-interface"
-import { SkimmingInterface } from "@/components/skimming-interface"  // ✅ NEW IMPORT
+import { SkimmingInterface } from "@/components/skimming-interface"
+import { KeywordPanel } from "@/components/keyword-panel"
+import { KeywordPopup } from "@/components/keyword-popup"
+import { useTaxonomyAPI } from "@/hooks/useTaxonomyAPI"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
+import type { ExtractedKeyword } from "@/lib/keyword-extractor"
+import type { ConceptData, RelatedConcept } from "@/hooks/useTaxonomyAPI"
 
 interface RightSidebarProps {
   // Props for QA
@@ -16,6 +21,9 @@ interface RightSidebarProps {
   documentId: string
   onCitationClick: (page: number, text?: string) => void
   totalPages: number
+  
+  // Props for Keywords
+  pdfUrl?: string
   
   // Props for Highlights/Skimming
   highlights: SkimmingHighlight[]
@@ -30,7 +38,8 @@ interface RightSidebarProps {
   // Skimming controls
   skimmingEnabled: boolean
   onEnableSkimming: () => Promise<void>
-  onDisableSkimming?: () => void  // Add this
+  onDisableSkimming?: () => void
+  
   // Sidebar control
   isOpen: boolean
   onToggle: () => void
@@ -84,6 +93,7 @@ export function RightSidebar({
   documentId,
   onCitationClick,
   totalPages,
+  pdfUrl,
   highlights,
   highlightsLoading,
   highlightsProcessing,
@@ -101,6 +111,75 @@ export function RightSidebar({
   pipelineStatus,
 }: RightSidebarProps) {
   const [activeTab, setActiveTab] = useState("qa")
+  
+  // Keyword popup state
+  const [popupOpen, setPopupOpen] = useState(false)
+  const [selectedKeyword, setSelectedKeyword] = useState<ExtractedKeyword | null>(null)
+  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 })
+  const [popupConcept, setPopupConcept] = useState<ConceptData | null>(null)
+  const [popupSiblings, setPopupSiblings] = useState<RelatedConcept[]>([])
+  const [popupDescendants, setPopupDescendants] = useState<RelatedConcept[]>([])
+  
+  // Taxonomy API hook
+  const { fetchKeywordData, fetchConceptById, loading: taxonomyLoading, error: taxonomyError } = useTaxonomyAPI()
+
+  // Handle keyword click from KeywordPanel
+  const handleKeywordClick = useCallback(async (keyword: ExtractedKeyword, event: React.MouseEvent) => {
+    // Calculate popup position based on click location
+    const rect = (event.target as HTMLElement).getBoundingClientRect()
+    const popupWidth = 420
+    const popupHeight = 500
+    
+    // Position popup to the left of the sidebar if there's not enough space
+    let left = rect.left - popupWidth - 10
+    if (left < 10) {
+      left = rect.right + 10
+    }
+    
+    // Ensure popup doesn't go off screen vertically
+    let top = rect.top
+    if (top + popupHeight > window.innerHeight) {
+      top = window.innerHeight - popupHeight - 20
+    }
+    if (top < 10) {
+      top = 10
+    }
+    
+    setPopupPosition({ top, left })
+    setSelectedKeyword(keyword)
+    setPopupOpen(true)
+    
+    // Fetch taxonomy data for the keyword
+    const data = await fetchKeywordData(keyword.keyword)
+    setPopupConcept(data.concept)
+    setPopupSiblings(data.siblings)
+    setPopupDescendants(data.descendants)
+  }, [fetchKeywordData])
+
+  // Handle node click in the knowledge graph
+  const handleNodeClick = useCallback(async (nodeId: string, nodeName: string) => {
+    // Fetch data for the clicked concept
+    const data = await fetchConceptById(nodeId)
+    if (data.concept) {
+      setSelectedKeyword({
+        keyword: data.concept.name,
+        count: selectedKeyword?.count || 0,
+        category: data.concept.category || 'Other'
+      })
+      setPopupConcept(data.concept)
+      setPopupSiblings(data.siblings)
+      setPopupDescendants(data.descendants)
+    }
+  }, [fetchConceptById, selectedKeyword?.count])
+
+  // Handle popup close
+  const handlePopupClose = useCallback(() => {
+    setPopupOpen(false)
+    setSelectedKeyword(null)
+    setPopupConcept(null)
+    setPopupSiblings([])
+    setPopupDescendants([])
+  }, [])
 
   // Define tabs with status indicators
   const tabs = [
@@ -117,6 +196,13 @@ export function RightSidebar({
       label: "Highlights",
       disabled: false,
       ready: pipelineStatus?.isSkimmingReady || skimmingEnabled,
+    },
+    {
+      id: "keywords",
+      icon: Tag,
+      label: "Keywords",
+      disabled: false,
+      ready: true,
     },
     {
       id: "summary",
@@ -175,8 +261,17 @@ export function RightSidebar({
             activeHighlightIds={activeHighlightIds}
             skimmingEnabled={skimmingEnabled}
             onEnableSkimming={onEnableSkimming}
-            onDisableSkimming={onDisableSkimming} 
+            onDisableSkimming={onDisableSkimming}
             pipelineStatus={pipelineStatus}
+          />
+        )
+      
+      case "keywords":
+        return (
+          <KeywordPanel
+            pdfUrl={pdfUrl || ''}
+            documentId={documentId}
+            onKeywordClick={handleKeywordClick}
           />
         )
       
@@ -289,6 +384,21 @@ export function RightSidebar({
           text-orientation: mixed;
         }
       `}</style>
+
+      {/* Keyword Popup Portal */}
+      <KeywordPopup
+        isOpen={popupOpen}
+        keyword={selectedKeyword?.keyword || ''}
+        context={selectedKeyword ? `Appears ${selectedKeyword.count} time${selectedKeyword.count !== 1 ? 's' : ''} in this document` : ''}
+        concept={popupConcept}
+        siblings={popupSiblings}
+        descendants={popupDescendants}
+        loading={taxonomyLoading}
+        error={taxonomyError}
+        onClose={handlePopupClose}
+        onNodeClick={handleNodeClick}
+        position={popupPosition}
+      />
     </>
   )
 }

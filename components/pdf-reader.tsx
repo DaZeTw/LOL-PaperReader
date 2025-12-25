@@ -40,6 +40,24 @@ export function SinglePDFReader({
   mode = 'library',  // Default to library mode
 }: SinglePDFReaderProps) {
   // ============================================================================
+  // PDF URL for keyword extraction
+  // ============================================================================
+  const [pdfUrl, setPdfUrl] = useState<string>('')
+
+  // Create object URL from file for keyword extraction
+  // Memoize to avoid recreating URL on every render
+  useEffect(() => {
+    const url = URL.createObjectURL(file)
+    setPdfUrl(url)
+    console.log(`[SinglePDFReader:${tabId}] Created PDF URL for keyword extraction`)
+
+    // Cleanup: revoke URL when file changes or component unmounts
+    return () => {
+      URL.revokeObjectURL(url)
+      console.log(`[SinglePDFReader:${tabId}] Revoked PDF URL`)
+    }
+  }, [file, tabId])
+  // ============================================================================
   // PIPELINE STATUS - Only fetch if in library mode
   // ============================================================================
   const shouldFetchPipeline = mode === 'library'

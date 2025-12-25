@@ -1,0 +1,434 @@
+/**
+ * Keyword Explorer Component Styles
+ * 
+ * These styles support the keyword extraction and exploration features
+ * including the KeywordPanel, KeywordPopup, and MiniGraph components.
+ * 
+ * Designed to work with the existing light/dark theme system.
+ */
+
+/* ===== Keyword Color Variables ===== */
+:root {
+  /* Primary keyword colors */
+  --keyword-primary: #6366f1;
+  --keyword-primary-hover: #4f46e5;
+  
+  /* Relationship type colors */
+  --keyword-sibling: #3b82f6;
+  --keyword-descendant: #10b981;
+  --keyword-ambiguous: #f59e0b;
+  
+  /* Highlight colors */
+  --keyword-highlight-bg: #fef08a;
+  --keyword-highlight-selected: #fde047;
+  
+  /* Graph colors */
+  --keyword-graph-bg: #f9fafb;
+  --keyword-graph-border: #e5e7eb;
+}
+
+.dark {
+  /* Adjusted colors for dark mode */
+  --keyword-primary: #818cf8;
+  --keyword-primary-hover: #6366f1;
+  
+  --keyword-sibling: #60a5fa;
+  --keyword-descendant: #34d399;
+  --keyword-ambiguous: #fbbf24;
+  
+  --keyword-highlight-bg: rgba(254, 240, 138, 0.3);
+  --keyword-highlight-selected: rgba(253, 224, 71, 0.4);
+  
+  --keyword-graph-bg: rgba(30, 30, 30, 0.5);
+  --keyword-graph-border: rgba(75, 85, 99, 0.5);
+}
+
+/* ===== Keyword Popup Animations ===== */
+@keyframes keyword-popup-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes keyword-popup-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.keyword-popup-enter {
+  animation: keyword-popup-slide-in 0.2s ease-out forwards;
+}
+
+.keyword-popup-exit {
+  animation: keyword-popup-fade-out 0.15s ease-in forwards;
+}
+
+/* ===== Keyword Chip Styles ===== */
+.keyword-chip {
+  transition: all 0.2s ease;
+}
+
+.keyword-chip:hover {
+  transform: translateY(-1px);
+}
+
+.keyword-chip:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Category-specific chip gradients for enhanced visual appeal */
+.keyword-chip-ml {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  border-color: #d8b4fe;
+}
+
+.keyword-chip-ml:hover {
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+  border-color: #9333ea;
+  color: white;
+}
+
+.keyword-chip-neural {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #93c5fd;
+}
+
+.keyword-chip-neural:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-color: #2563eb;
+  color: white;
+}
+
+.keyword-chip-nlp {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border-color: #86efac;
+}
+
+.keyword-chip-nlp:hover {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  border-color: #16a34a;
+  color: white;
+}
+
+.keyword-chip-cv {
+  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+  border-color: #fdba74;
+}
+
+.keyword-chip-cv:hover {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border-color: #ea580c;
+  color: white;
+}
+
+.keyword-chip-ai {
+  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+  border-color: #f9a8d4;
+}
+
+.keyword-chip-ai:hover {
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+  border-color: #db2777;
+  color: white;
+}
+
+/* Dark mode chip adjustments */
+.dark .keyword-chip-ml {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.dark .keyword-chip-neural {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.dark .keyword-chip-nlp {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.2) 100%);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.dark .keyword-chip-cv {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(234, 88, 12, 0.2) 100%);
+  border-color: rgba(249, 115, 22, 0.4);
+}
+
+.dark .keyword-chip-ai {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(219, 39, 119, 0.2) 100%);
+  border-color: rgba(236, 72, 153, 0.4);
+}
+
+/* ===== Related Keyword Tags ===== */
+.keyword-tag {
+  transition: all 0.2s ease;
+}
+
+.keyword-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.keyword-tag:active {
+  transform: translateY(0);
+}
+
+.keyword-tag-sibling {
+  background-color: #dbeafe;
+  color: var(--keyword-sibling);
+  border-color: #bfdbfe;
+}
+
+.keyword-tag-sibling:hover {
+  background-color: var(--keyword-sibling);
+  color: white;
+  border-color: var(--keyword-sibling);
+}
+
+.keyword-tag-descendant {
+  background-color: #d1fae5;
+  color: var(--keyword-descendant);
+  border-color: #a7f3d0;
+}
+
+.keyword-tag-descendant:hover {
+  background-color: var(--keyword-descendant);
+  color: white;
+  border-color: var(--keyword-descendant);
+}
+
+.keyword-tag-ambiguous {
+  background-color: #fef3c7;
+  color: var(--keyword-ambiguous);
+  border-color: #fde68a;
+}
+
+.keyword-tag-ambiguous:hover {
+  background-color: var(--keyword-ambiguous);
+  color: white;
+  border-color: var(--keyword-ambiguous);
+}
+
+/* Dark mode tag adjustments */
+.dark .keyword-tag-sibling {
+  background-color: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.dark .keyword-tag-descendant {
+  background-color: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.dark .keyword-tag-ambiguous {
+  background-color: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* ===== Mini Graph Container ===== */
+.mini-graph-container {
+  background-color: var(--keyword-graph-bg);
+  border: 1px solid var(--keyword-graph-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.mini-graph-legend {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  background-color: var(--background);
+  border-bottom: 1px solid var(--keyword-graph-border);
+}
+
+.mini-graph-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--muted-foreground);
+}
+
+.mini-graph-legend-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+}
+
+.mini-graph-legend-dot.central {
+  background-color: var(--keyword-primary);
+}
+
+.mini-graph-legend-dot.sibling {
+  background-color: var(--keyword-sibling);
+}
+
+.mini-graph-legend-dot.descendant {
+  background-color: var(--keyword-descendant);
+}
+
+.mini-graph-legend-dot.ambiguous {
+  background-color: var(--keyword-ambiguous);
+}
+
+.mini-graph-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+/* ===== Keyword Panel Scrollbar ===== */
+.keyword-panel-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.keyword-panel-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.keyword-panel-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 3px;
+}
+
+.keyword-panel-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
+}
+
+/* Firefox scrollbar */
+.keyword-panel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ===== Keyword Popup Scrollbar ===== */
+.keyword-popup-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.keyword-popup-scroll::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 3px;
+}
+
+.keyword-popup-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 3px;
+}
+
+.keyword-popup-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
+}
+
+/* Firefox scrollbar */
+.keyword-popup-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--muted);
+}
+
+/* ===== Loading Spinner ===== */
+@keyframes keyword-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.keyword-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--border);
+  border-top-color: var(--keyword-primary);
+  border-radius: 50%;
+  animation: keyword-spin 0.8s linear infinite;
+}
+
+/* ===== Keyword Highlight (for PDF text) ===== */
+.keyword-highlight {
+  background-color: var(--keyword-highlight-bg);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.keyword-highlight:hover {
+  background-color: var(--keyword-highlight-selected);
+  box-shadow: 0 2px 8px rgba(254, 240, 138, 0.6);
+}
+
+.keyword-highlight.selected {
+  background-color: var(--keyword-highlight-selected);
+  box-shadow: 0 0 0 2px var(--keyword-primary);
+}
+
+.keyword-highlight:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+}
+
+/* ===== Context Text Styling ===== */
+.keyword-context-text {
+  margin: 0;
+  padding: 0.875rem;
+  background-color: var(--muted);
+  border-radius: 0.5rem;
+  font-style: italic;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  border-left: 3px solid var(--keyword-primary);
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
+  .keyword-chip {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .keyword-tag {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  .mini-graph-legend {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* ===== Focus States for Accessibility ===== */
+.keyword-chip:focus-visible,
+.keyword-tag:focus-visible {
+  outline: 2px solid var(--keyword-primary);
+  outline-offset: 2px;
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .keyword-chip,
+  .keyword-tag,
+  .keyword-highlight,
+  .keyword-popup-enter,
+  .keyword-popup-exit {
+    transition: none;
+    animation: none;
+  }
+  
+  .keyword-spinner {
+    animation-duration: 1.5s;
+  }
+}

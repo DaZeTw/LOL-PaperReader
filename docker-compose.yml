@@ -10,7 +10,7 @@ services:
       - .env
     environment:
       NODE_ENV: development
-      BACKEND_URL: http://python-backend:8010
+      BACKEND_URL: http://python-backend:8000
       NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8010}
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"

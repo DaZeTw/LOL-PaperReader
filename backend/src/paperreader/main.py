@@ -27,6 +27,9 @@ from paperreader.api.skimming_routes import (
 from paperreader.api.summary_routes import (
     router as summary_router,  # Paper summarization routes
 )
+from paperreader.api.taxonomy_routes import (
+    router as taxonomy_router,  # Taxonomy/keyword concept routes
+)
 from paperreader.database.mongodb import mongodb
 from paperreader.database.postgres import close_postgres_pool, init_postgres_pool
 from paperreader.services.qa.embeddings import get_embedder
@@ -95,6 +98,7 @@ def create_app() -> FastAPI:
     app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
     app.include_router(skimming_router, prefix="/api/skimming", tags=["Skimming"])
     app.include_router(summary_router, prefix="/api/summary", tags=["Summary"])
+    app.include_router(taxonomy_router)  # Taxonomy routes (already has /api/taxonomy prefix)
     app.include_router(reference_routes.router, prefix="/api")
     app.include_router(documents_router)
     app.include_router(collections_router)
@@ -126,6 +130,8 @@ def create_app() -> FastAPI:
             print(f"[STARTUP] Traceback: {traceback.format_exc()}")
 
         # Preload Visualized_BGE embedder model in background (non-blocking)
+        # NOTE: Warmup disabled because it blocks the event loop during model loading
+        # Models will be loaded lazily on first use instead
         import asyncio
 
         async def do_warmup():
@@ -152,7 +158,9 @@ def create_app() -> FastAPI:
 
                 print(f"[STARTUP] (bg) Traceback: {traceback.format_exc()}")
 
-        asyncio.create_task(do_warmup())
+        # DISABLED: Warmup blocks the event loop and prevents server from responding
+        # asyncio.create_task(do_warmup())
+        print("[STARTUP] Embedder warmup disabled - models will load on first use")
 
     @app.on_event("shutdown")
     async def shutdown_event():
