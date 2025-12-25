@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     }
 
     try {
-        const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
+        const backendUrl = process.env.BACKEND_URL || 'http://localhost:8010'
 
         // Build proxy URL with optional title for Semantic Scholar fallback
         let proxyUrl = `${backendUrl}/api/pdf/proxy?url=${encodeURIComponent(pdfUrl)}`

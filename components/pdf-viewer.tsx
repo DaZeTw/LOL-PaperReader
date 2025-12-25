@@ -46,6 +46,7 @@ interface PDFViewerProps {
   activeHighlightIds?: Set<number>
   highlights?: SkimmingHighlight[]
   onReferenceClick?: (citationId: string) => void
+  enableInteractions?: boolean  // New: Control whether interactions are enabled
 }
 
 export function PDFViewer({
@@ -62,6 +63,7 @@ export function PDFViewer({
   activeHighlightIds = new Set(),
   highlights = [],
   onReferenceClick,
+  enableInteractions = true,  // Default to true for library mode
 }: PDFViewerProps) {
   const { toast } = useToast()
   const [pdfUrl, setPdfUrl] = useState<string>("")
@@ -73,12 +75,16 @@ export function PDFViewer({
     new Set(["objective", "method", "result"])
   )
 
-  // Citation popup state
+  // Citation popup state (only for library mode)
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
 
-  // Use annotations hook
-  const { annotations, isLoading: annotationsLoading, extractAnnotations } = useAnnotations()
+  // Use annotations hook (only for library mode)
+  const { 
+    annotations, 
+    isLoading: annotationsLoading, 
+    extractAnnotations 
+  } = useAnnotations()
   
   // Store annotations in a ref so plugin can access latest value
   const annotationsRef = useRef<PageAnnotations[]>([])
@@ -96,7 +102,7 @@ export function PDFViewer({
     result: highlights.filter((h) => h.label === "result").length,
   }
 
-  // User annotation hook
+  // User annotation hook (only for library mode)
   const { 
     annotations: userAnnotations, 
     annotationCount, 
@@ -117,68 +123,82 @@ export function PDFViewer({
   const bookmarkPluginInstance = useRef(bookmarkPlugin()).current
   const searchPluginInstance = useRef(searchPlugin({ keyword: "" })).current
 
-  // Citation annotation plugin - uses ref to access latest annotations
+  // Citation annotation plugin - only enabled in library mode with interactions
   const citationAnnotationPluginInstance = useCitationAnnotationPlugin({
     annotationsRef: annotationsRef,
-    onAnnotationClick: (annotation, event) => {
+    onAnnotationClick: enableInteractions ? (annotation, event) => {
       setSelectedAnnotation(annotation)
       setPopupPosition({ x: event.clientX, y: event.clientY })
-    },
+    } : undefined,
   })
 
-  // Highlight plugin
-  const visibleHighlights = highlights.filter(
-    (h) => activeHighlightIds.has(h.id) && !hiddenHighlightIds.has(h.id)
-  )
+  // Highlight plugin - only show highlights in library mode
+  const visibleHighlights = enableInteractions 
+    ? highlights.filter((h) => activeHighlightIds.has(h.id) && !hiddenHighlightIds.has(h.id))
+    : []
 
   const highlightPluginInstance = usePDFHighlightPlugin({
     highlights: visibleHighlights,
     visibleCategories,
-    onHighlightClick: (h) => console.log("Clicked highlight:", h.text),
+    onHighlightClick: enableInteractions 
+      ? (h) => console.log("Clicked highlight:", h.text)
+      : undefined,
   })
 
-  // Build plugins array
-  const plugins = [
-    pageNavigationPluginInstance,
-    zoomPluginInstance,
-    thumbnailPluginInstance,
-    bookmarkPluginInstance,
-    searchPluginInstance,
-    citationAnnotationPluginInstance,
-    highlightPluginInstance,
-    annotationPluginInstance
-  ]
+  // Build plugins array - conditional based on mode
+  const plugins = enableInteractions 
+    ? [
+        pageNavigationPluginInstance,
+        zoomPluginInstance,
+        thumbnailPluginInstance,
+        bookmarkPluginInstance,
+        searchPluginInstance,
+        citationAnnotationPluginInstance,
+        highlightPluginInstance,
+        annotationPluginInstance
+      ]
+    : [
+        pageNavigationPluginInstance,
+        zoomPluginInstance,
+        thumbnailPluginInstance,
+        bookmarkPluginInstance,
+        searchPluginInstance,
+      ]
 
   const { jumpToNextPage, jumpToPreviousPage, jumpToPage } = pageNavigationPluginInstance
   const { zoomTo } = zoomPluginInstance
   const { highlight, clearHighlights } = searchPluginInstance
 
-  // Extract annotations when file loads
+  // Extract annotations when file loads (only in library mode)
   useEffect(() => {
     if (file && documentId) {
       const url = URL.createObjectURL(file)
       setPdfUrl(url)
 
-      // Extract citation annotations
-      extractAnnotations(file, documentId)
-        .then(() => {
-          console.log("[PDFViewer] Successfully extracted annotations")
-        })
-        .catch((error) => {
-          console.error("[PDFViewer] Failed to extract annotations:", error)
-          toast({
-            title: "Failed to load citations",
-            description: error.message,
-            variant: "destructive",
+      // Only extract citations in library mode
+      if (enableInteractions) {
+        extractAnnotations(file, documentId)
+          .then(() => {
+            console.log("[PDFViewer] Successfully extracted annotations")
           })
-        })
+          .catch((error) => {
+            console.error("[PDFViewer] Failed to extract annotations:", error)
+            toast({
+              title: "Failed to load citations",
+              description: error.message,
+              variant: "destructive",
+            })
+          })
+      }
 
       return () => URL.revokeObjectURL(url)
     }
-  }, [file, documentId])
+  }, [file, documentId, enableInteractions])
 
-  // Handle citation popup actions
+  // Handle citation popup actions (only in library mode)
   const handleCopyText = (text: string) => {
+    if (!enableInteractions) return
+    
     navigator.clipboard.writeText(text)
     toast({
       title: "Copied to clipboard",
@@ -187,6 +207,8 @@ export function PDFViewer({
   }
 
   const handleViewReference = (annotation: Annotation) => {
+    if (!enableInteractions) return
+    
     if (annotation.target) {
       jumpToPage(annotation.target.page - 1)
       setSelectedAnnotation(null)
@@ -223,7 +245,7 @@ export function PDFViewer({
 
       onPageChange?.(navigationTarget.page)
 
-      if (navigationTarget.highlightId !== undefined) {
+      if (navigationTarget.highlightId !== undefined && enableInteractions) {
         jumpToPage(navigationTarget.page - 1)
         setTimeout(() => {
           const highlightElement = document.querySelector(`[data-highlight-id="${navigationTarget.highlightId}"]`) as HTMLElement
@@ -231,7 +253,7 @@ export function PDFViewer({
             highlightElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
           }
         }, 600)
-      } else if (navigationTarget.highlightText) {
+      } else if (navigationTarget.highlightText && enableInteractions) {
         jumpToPage(navigationTarget.page - 1)
         clearHighlights()
         setTimeout(() => {
@@ -243,14 +265,16 @@ export function PDFViewer({
         }, 500)
       } else {
         jumpToPage(navigationTarget.page - 1)
-        clearHighlights()
+        if (enableInteractions) {
+          clearHighlights()
+        }
       }
 
       setTimeout(() => {
         onNavigationComplete?.()
       }, 100)
     }
-  }, [navigationTarget, jumpToPage, onPageChange, onNavigationComplete, highlight, clearHighlights])
+  }, [navigationTarget, jumpToPage, onPageChange, onNavigationComplete, highlight, clearHighlights, enableInteractions])
 
   const handlePageChangeInternal = (e: any) => {
     const newPage = e.currentPage + 1
@@ -288,8 +312,8 @@ export function PDFViewer({
   return (
     <>
       <div className="pdf-viewer-container flex flex-1 h-full bg-muted/30 min-h-0">
-        {/* Sidebar */}
-        {viewMode === "reading" && (
+        {/* Sidebar - Only in library mode */}
+        {viewMode === "reading" && enableInteractions && (
           <div
             className={cn(
               "pdf-sidebar-container relative bg-background border-r border-border transition-all duration-300 ease-in-out flex-shrink-0",
@@ -311,8 +335,8 @@ export function PDFViewer({
 
         {/* Main viewer */}
         <div className="flex flex-1 flex-col min-w-0 min-h-0">
-          {/* Skimming Controls */}
-          {viewMode === "reading" && highlights.length > 0 && (
+          {/* Skimming Controls - Only in library mode */}
+          {viewMode === "reading" && enableInteractions && highlights.length > 0 && (
             <SkimmingControls
               visibleCategories={visibleCategories}
               onToggleCategory={(category) => {
@@ -336,15 +360,22 @@ export function PDFViewer({
             <div className="flex items-center gap-2">
               {viewMode === "reading" && (
                 <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="h-7 w-7"
-                  >
-                    <Sidebar className="h-4 w-4" />
-                  </Button>
-                  <div className="w-px h-4 bg-border mx-1" />
+                  {/* Sidebar toggle - Only in library mode */}
+                  {enableInteractions && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="h-7 w-7"
+                      >
+                        <Sidebar className="h-4 w-4" />
+                      </Button>
+                      <div className="w-px h-4 bg-border mx-1" />
+                    </>
+                  )}
+                  
+                  {/* Page navigation */}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -372,8 +403,8 @@ export function PDFViewer({
                 </>
               )}
 
-              {/* Citations loading indicator */}
-              {annotationsLoading && (
+              {/* Citations loading indicator - Only in library mode */}
+              {enableInteractions && annotationsLoading && (
                 <>
                   <div className="w-px h-4 bg-border mx-1" />
                   <div className="text-xs text-muted-foreground">
@@ -382,9 +413,8 @@ export function PDFViewer({
                 </>
               )}
 
-             
-              {/* User annotations */}
-              {annotationCount > 0 && (
+              {/* User annotations - Only in library mode */}
+              {enableInteractions && annotationCount > 0 && (
                 <>
                   <div className="w-px h-4 bg-border mx-1" />
                   <div className="flex items-center gap-2">
@@ -404,12 +434,22 @@ export function PDFViewer({
                   </div>
                 </>
               )}
+
+              {/* Preview mode indicator */}
+              {!enableInteractions && (
+                <>
+                  <div className="w-px h-4 bg-border mx-1" />
+                  <div className="text-xs text-muted-foreground">
+                    Preview Mode - Import to enable features
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Zoom Controls */}
             {viewMode === "reading" && (
               <div className="flex items-center gap-2">
-                {annotationCount === 0 && (
+                {enableInteractions && annotationCount === 0 && (
                   <div className="text-xs text-muted-foreground mr-2">
                     Select text to highlight
                   </div>
@@ -476,28 +516,32 @@ export function PDFViewer({
                 )}
               </div>
             ) : (
-              <SkimmingView
-                file={file}
-                numPages={numPages}
-                onNavigateToPage={(page) => {
-                  pendingPageNavigation.current = page
-                }}
-                onExitSkimming={() => setViewMode("reading")}
-              />
+              enableInteractions && (
+                <SkimmingView
+                  file={file}
+                  numPages={numPages}
+                  onNavigateToPage={(page) => {
+                    pendingPageNavigation.current = page
+                  }}
+                  onExitSkimming={() => setViewMode("reading")}
+                />
+              )
             )}
           </div>
         </div>
       </div>
 
-      {/* Citation Popup */}
-      <CitationPopup
-        annotation={selectedAnnotation}
-        isOpen={!!selectedAnnotation}
-        onClose={() => setSelectedAnnotation(null)}
-        onCopyText={handleCopyText}
-        onViewReference={handleViewReference}
-        position={popupPosition}
-      />
+      {/* Citation Popup - Only in library mode */}
+      {enableInteractions && (
+        <CitationPopup
+          annotation={selectedAnnotation}
+          isOpen={!!selectedAnnotation}
+          onClose={() => setSelectedAnnotation(null)}
+          onCopyText={handleCopyText}
+          onViewReference={handleViewReference}
+          position={popupPosition}
+        />
+      )}
     </>
   )
 }
