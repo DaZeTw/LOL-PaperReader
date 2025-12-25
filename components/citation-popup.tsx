@@ -51,6 +51,7 @@ interface EnrichedMetadata extends AnnotationMetadata {
   citationCount?: number
   influentialCitationCount?: number
   openAccessPdf?: string
+  useFallback?: boolean
 }
 
 interface CitationPopupProps {
@@ -60,6 +61,7 @@ interface CitationPopupProps {
   onViewReference?: (annotation: Annotation) => void
   onCopyText: (text: string) => void
   position?: { x: number; y: number }
+  citationCache?: { set: (key: string, value: any) => void, get: (key: string) => any }
 }
 
 export function CitationPopup({
@@ -69,6 +71,7 @@ export function CitationPopup({
   onViewReference,
   onCopyText,
   position,
+  citationCache
 }: CitationPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null)
   const [enrichedMetadata, setEnrichedMetadata] = useState<EnrichedMetadata | null>(null)
@@ -84,27 +87,27 @@ export function CitationPopup({
 
   const normalizeToPdfUrl = (url: string): string => {
     if (!url) return "";
-    
+
     let normalized = url.trim();
-  
+
     // Convert ArXiv abstract links to PDF links
     // https://arxiv.org/abs/2307.09288 -> https://arxiv.org/pdf/2307.09288.pdf
     if (normalized.includes("arxiv.org/abs/")) {
       normalized = normalized.replace("arxiv.org/abs/", "arxiv.org/pdf/") + ".pdf";
     }
-  
+
     // Convert OpenReview forum links to PDF links
     if (normalized.includes("openreview.net/forum?id=")) {
       normalized = normalized.replace("openreview.net/forum?id=", "openreview.net/pdf?id=");
     }
-  
+
     return normalized;
   };
 
   const validatePdfUrl = async (url: string): Promise<boolean> => {
     try {
       console.log('[CitationPopup] Validating PDF URL:', url)
-      
+
       // Check common direct PDF URL patterns
       const directPdfPatterns = [
         /arxiv\.org\/pdf\//i,              // arxiv.org/pdf/... (with trailing content)
@@ -123,7 +126,7 @@ export function CitationPopup({
         console.log(`[CitationPopup] Testing pattern ${pattern}: ${matches}`)
         return matches
       })
-      
+
       if (!isDirectPdfUrl) {
         console.log('[CitationPopup] URL does not match direct PDF patterns')
         return false
@@ -154,8 +157,18 @@ export function CitationPopup({
 
       try {
         const metadata = annotation.metadata!
-        
+
         console.log('[CitationPopup] Fetching enriched metadata for:', metadata.title)
+        console.log('[CitationPopup] Metadata:', metadata)
+
+        // check cache before fetching
+        const cachedMetadata = citationCache?.get(metadata.ref_id)
+        if (cachedMetadata && !cachedMetadata.useFallback) {
+          console.log('[CitationPopup] Using cached metadata')
+          setEnrichedMetadata(cachedMetadata)
+          setIsLoading(false)
+          return
+        }
 
         const response = await fetch("/api/references/search", {
           method: "POST",
@@ -184,21 +197,30 @@ export function CitationPopup({
           rawUrl = data.openAccessPdf;
         } else if (data.openAccessPdf?.url) {
           rawUrl = data.openAccessPdf.url;
-        } else if (data.url) {
+        } else if (!data.fallback && data.url) {
           rawUrl = data.url;
         }
+
+        // check if fallback = true, but metadata.doi is not empty -> instead of using google scholar search for VIEW PAPER, we use doi link instead
+        let doiURL = "";
+        if (data.fallback && metadata.doi) {
+          doiURL = `https://doi.org/${metadata.doi}`;
+        }
+
         const normalizedUrl = normalizeToPdfUrl(rawUrl);
+        console.log('[CitationPopup] Normalized URL:', normalizedUrl)
         const enriched = {
           ...metadata,
           abstract: data.abstract,
-          url: data.url, // Keep the landing page URL for external links
+          url: doiURL.trim() || data.url, // Keep the landing page URL for external links
           citationCount: data.citationCount,
           influentialCitationCount: data.influentialCitationCount,
           openAccessPdf: normalizedUrl, // Use the normalized direct PDF URL here
+          useFallback: data.fallback || false,
         };
 
         setEnrichedMetadata(enriched)
-
+        citationCache?.set(metadata.ref_id, enriched)
         // Validate PDF URL if present
         if (data.openAccessPdf) {
           setIsValidatingPdf(true)
@@ -370,7 +392,7 @@ export function CitationPopup({
                   <h3 className="text-sm font-semibold text-gray-900 leading-snug">
                     {metadata.title}
                   </h3>
-                  
+
                 </div>
               )}
 
@@ -392,7 +414,7 @@ export function CitationPopup({
                     <span>{metadata.year}</span>
                   </div>
                 )}
-                
+
                 {metadata.venue && (
                   <>
                     <span className="text-gray-300">•</span>
@@ -494,7 +516,7 @@ export function CitationPopup({
               <Copy className="h-3.5 w-3.5 mr-1.5" />
               Copy
             </Button>
-            
+
             {annotation.target && (
               <Button
                 variant="ghost"
