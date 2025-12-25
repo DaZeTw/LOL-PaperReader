@@ -77,20 +77,31 @@ export function PDFViewer({
     new Set(["objective", "method", "result"])
   )
 
-  // Citation popup state
+  // useRef to cache citation detail
+  const citationCacheDict = useRef<Map<string, any>>(new Map())
+  const setCitationCacheDict = (key: string, value: any) => {
+    citationCacheDict.current.set(key, value)
+  }
+  const getCitationCacheDict = (key: string) => {
+    return citationCacheDict.current.get(key)
+  }
+
+
+  // Citation popup state (only for library mode)
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
 
-  // Annotations hook
-  const { 
-    annotations, 
-    isLoading: annotationsLoading, 
-    extractAnnotations 
+  // Use annotations hook (only for library mode)
+  const {
+    annotations,
+    isLoading: annotationsLoading,
+    extractAnnotations
   } = useAnnotations()
-  
-  // Store annotations in a ref
+
+  // Store annotations in a ref so plugin can access latest value
   const annotationsRef = useRef<PageAnnotations[]>([])
-  
+
+  // Update ref when annotations change
   useEffect(() => {
     annotationsRef.current = annotations
   }, [annotations])
@@ -102,12 +113,12 @@ export function PDFViewer({
     result: highlights.filter((h) => h.label === "result").length,
   }
 
-  // User annotation hook
-  const { 
-    annotations: userAnnotations, 
-    annotationCount, 
-    annotationPluginInstance, 
-    clearAllAnnotations 
+  // User annotation hook (only for library mode)
+  const {
+    annotations: userAnnotations,
+    annotationCount,
+    annotationPluginInstance,
+    clearAllAnnotations
   } = useAnnotation()
 
   // Text selection popup hook
@@ -143,38 +154,38 @@ export function PDFViewer({
     } : undefined,
   })
 
-  // Highlight plugin
-  const visibleHighlights = enableInteractions 
+  // Highlight plugin - only show highlights in library mode
+  const visibleHighlights = enableInteractions
     ? highlights.filter((h) => activeHighlightIds.has(h.id) && !hiddenHighlightIds.has(h.id))
     : []
 
   const highlightPluginInstance = usePDFHighlightPlugin({
     highlights: visibleHighlights,
     visibleCategories,
-    onHighlightClick: enableInteractions 
+    onHighlightClick: enableInteractions
       ? (h) => console.log("Clicked highlight:", h.text)
       : undefined,
   })
 
-  // Build plugins array
-  const plugins = enableInteractions 
+  // Build plugins array - conditional based on mode
+  const plugins = enableInteractions
     ? [
-        pageNavigationPluginInstance,
-        zoomPluginInstance,
-        thumbnailPluginInstance,
-        bookmarkPluginInstance,
-        searchPluginInstance,
-        citationAnnotationPluginInstance,
-        highlightPluginInstance,
-        annotationPluginInstance
-      ]
+      pageNavigationPluginInstance,
+      zoomPluginInstance,
+      thumbnailPluginInstance,
+      bookmarkPluginInstance,
+      searchPluginInstance,
+      citationAnnotationPluginInstance,
+      highlightPluginInstance,
+      annotationPluginInstance
+    ]
     : [
-        pageNavigationPluginInstance,
-        zoomPluginInstance,
-        thumbnailPluginInstance,
-        bookmarkPluginInstance,
-        searchPluginInstance,
-      ]
+      pageNavigationPluginInstance,
+      zoomPluginInstance,
+      thumbnailPluginInstance,
+      bookmarkPluginInstance,
+      searchPluginInstance,
+    ]
 
   const { jumpToNextPage, jumpToPreviousPage, jumpToPage } = pageNavigationPluginInstance
   const { zoomTo } = zoomPluginInstance
@@ -211,7 +222,7 @@ export function PDFViewer({
   // Handle citation popup actions
   const handleCopyText = useCallback((text: string) => {
     if (!enableInteractions) return
-    
+
     navigator.clipboard.writeText(text)
     toast({
       title: "Copied to clipboard",
@@ -221,7 +232,7 @@ export function PDFViewer({
 
   const handleViewReference = useCallback((annotation: Annotation) => {
     if (!enableInteractions) return
-    
+
     if (annotation.target) {
       jumpToPage(annotation.target.page - 1)
       setSelectedAnnotation(null)
@@ -292,7 +303,7 @@ export function PDFViewer({
   const handlePageChangeInternal = (e: any) => {
     const newPage = e.currentPage + 1
     currentPageRef.current = newPage
-    
+
     requestAnimationFrame(() => {
       if (pageLabelRef.current) {
         pageLabelRef.current.textContent = String(newPage)
@@ -391,7 +402,7 @@ export function PDFViewer({
                       <div className="w-px h-4 bg-border mx-1" />
                     </>
                   )}
-                  
+
                   {/* Page navigation */}
                   <Button
                     variant="ghost"
@@ -472,7 +483,7 @@ export function PDFViewer({
                     <span>Select text for definition</span>
                   </div>
                 )}
-                
+
                 <Button
                   variant="ghost"
                   size="icon"
@@ -560,6 +571,10 @@ export function PDFViewer({
           onCopyText={handleCopyText}
           onViewReference={handleViewReference}
           position={popupPosition}
+          citationCache={{
+            set: setCitationCacheDict,
+            get: getCitationCacheDict
+          }}
         />
       )}
 
