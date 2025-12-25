@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { BACKEND_API_URL } from '@/lib/config'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -17,7 +17,7 @@ export function useReferenceFile(): UseReferenceFileReturn {
   const [isDownloading, setIsDownloading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
-  const getFileUrl = (documentId: string): string => {
+  const getFileUrl = useCallback((documentId: string): string => {
     if (!documentId) {
       console.warn('[useReferenceFile] Document ID is undefined')
       return ''
@@ -29,9 +29,9 @@ export function useReferenceFile(): UseReferenceFileReturn {
     const userId = user.dbId ? String(user.dbId) : user.id
     const baseUrl = `${BACKEND_API_URL.replace(/\/$/, '')}/api/documents/${documentId}/file`
     return `${baseUrl}?userId=${encodeURIComponent(userId)}`
-  }
+  }, [user])
 
-  const fetchFileBlob = async (documentId: string): Promise<{ blob: Blob; mimeType: string | null }> => {
+  const fetchFileBlob = useCallback(async (documentId: string): Promise<{ blob: Blob; mimeType: string | null }> => {
     if (!user) {
       login()
       throw new Error('Authentication required')
@@ -50,7 +50,7 @@ export function useReferenceFile(): UseReferenceFileReturn {
 
     try {
       console.log('[useReferenceFile] Fetching file:', { documentId, url, userId })
-      
+
       const response = await fetch(url, {
         headers: {
           'X-User-Id': userId,
@@ -88,9 +88,9 @@ export function useReferenceFile(): UseReferenceFileReturn {
       setError(error)
       throw error
     }
-  }
+  }, [user, getFileUrl, login])
 
-  const downloadFile = async (documentId: string, fileName?: string): Promise<void> => {
+  const downloadFile = useCallback(async (documentId: string, fileName?: string): Promise<void> => {
     if (!user) {
       login()
       throw new Error('Authentication required')
@@ -111,21 +111,21 @@ export function useReferenceFile(): UseReferenceFileReturn {
         },
         credentials: 'include',
       })
-      
+
       if (!response.ok) {
         throw new Error(`Download failed: ${response.statusText}`)
       }
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
-      
+
       const link = document.createElement('a')
       link.href = url
       link.download = fileName || `document-${documentId}.pdf`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       window.URL.revokeObjectURL(url)
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error')
@@ -134,7 +134,7 @@ export function useReferenceFile(): UseReferenceFileReturn {
     } finally {
       setIsDownloading(false)
     }
-  }
+  }, [user, getFileUrl, login])
 
   return {
     getFileUrl,

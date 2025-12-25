@@ -850,6 +850,134 @@ async def _process_skimming(
             "elapsed": elapsed,
         }
 
+#Under development
+async def _process_metadata(
+    pdf_path: Path,
+    document_id: Optional[str],
+) -> Dict[str, Any]:
+    """
+    Process metadata for a PDF document.
+    This is independent of the main parsing pipeline.
+
+    Steps:
+    1. Read PDF file bytes
+    2. Call metadata service to process and get metadata
+    3. Save metadata to database
+
+    Returns:
+        Dict containing:
+        - status: "success" or "error"
+        - metadata: Metadata dictionary
+        - elapsed: Processing time
+    
+    Currently is placeholder (print hello)
+    """
+    print(f"[METADATA] 📄 Starting metadata processing for {pdf_path.name}...")
+    start_time = time.time()
+    try:
+        # Update document status to processing
+        if document_id:
+            await _update_document_safe(
+                document_id,
+                {
+                    "metadata_status": "processing",
+                },
+            )
+
+        # Step 1: Read PDF file bytes
+        pdf_bytes = pdf_path.read_bytes()
+        file_stem = pdf_path.stem
+
+        # Step 2: Actual domain logic but placeholder for now
+        # TODO: create paperreader.services.metadata.metadata_service and import process_metadata (done)
+        # TODO: check
+
+        from paperreader.services.metadata.metadata_service import process_metadata,save_metadata
+        from paperreader.services.parser.pdf_parser_pymupdf import get_metadata_from_pdf_with_pymupdf
+        pymupdf_metadata = get_metadata_from_pdf_with_pymupdf(pdf_path)
+        metadata = await process_metadata(pdf_bytes, file_stem)
+        
+        # Merge keywords from PyMuPDF if not present or empty
+        if not metadata.get("keywords"):
+             metadata["keywords"] = pymupdf_metadata.get("keywords", "")
+
+        # Fallback for Year if missing
+        if not metadata.get("year"):
+            creation_date = pymupdf_metadata.get("creation_date", "")
+            if creation_date and str(creation_date).startswith("D:"):
+                # Parse format D:YYYYMMDD...
+                try:
+                    metadata["year"] = creation_date[2:6]
+                except IndexError:
+                    pass
+            elif creation_date:
+                 # Try taking first 4 chars if it looks like a year
+                 metadata["year"] = str(creation_date)[:4]
+        
+
+        # Step 3: Save to database
+        if document_id:
+            # await save_metadata(
+            #     document_id=document_id,
+            #     metadata=metadata
+            # )
+            await _update_document_safe(
+                document_id,
+                metadata
+            )
+            print(
+                f"[METADATA] Saved metadata to database for document {document_id}"
+            )
+
+        elapsed = time.time() - start_time
+        print(
+            f"[METADATA] ✅ Processed metadata for {pdf_path.name} "
+            f"in {elapsed:.2f}s"
+        )
+        # Update document status to ready
+        if document_id:
+            await _update_document_safe(
+                document_id,
+                {
+                    "metadata_status": "ready",
+                    "metadata_updated_at": datetime.utcnow(),
+                },
+            )
+            await _notify_status_change(document_id)
+
+        return {
+            "status": "success",
+            "elapsed": elapsed,
+        }
+
+    except Exception as exc:
+        elapsed = time.time() - start_time
+        print(
+            f"[METADATA] ❌ Failed to process metadata for {pdf_path.name} "
+            f"(took {elapsed:.2f}s): {exc}"
+        )
+        import traceback
+
+        print(f"[METADATA] Traceback: {traceback.format_exc()}")
+
+        # Update document status to error
+        if document_id:
+            await _update_document_safe(
+                document_id,
+                {
+                    "metadata_status": "error",
+                    "metadata_error": str(exc),
+                },
+            )
+            await _notify_status_change(document_id)
+
+        return {
+            "status": "error",
+            "error": str(exc),
+            "elapsed": elapsed,
+        }
+
+
 
 async def _process_saved_pdfs(
     saved_paths: List[Path],
@@ -867,8 +995,9 @@ async def _process_saved_pdfs(
     2. Generate summary (independent)
     3. Extract references (independent)
     4. Process skimming highlights (independent)
+    5. Updated process metadata (independent)
 
-    All four tasks run in parallel and don't block each other.
+    All five tasks run in parallel and don't block each other.
     """
     if not saved_paths:
         payload = {"status": "ok", "count": 0, "results": []}
@@ -929,6 +1058,7 @@ async def _process_saved_pdfs(
                             "summary_status": "processing",
                             "reference_status": "processing",
                             "skimming_status": "processing",
+                            "metadata_status": "processing",
                         },
                     )
 
@@ -956,13 +1086,16 @@ async def _process_saved_pdfs(
                 skimming_task = asyncio.create_task(
                     _process_skimming(pdf_path, document_id)
                 )
-
+                metadata_task = asyncio.create_task(
+                    _process_metadata(pdf_path, document_id)
+                )
                 # Wait for all tasks to complete (don't fail if one fails)
                 all_results = await asyncio.gather(
                     parse_task,
                     summary_task,
                     reference_task,
                     skimming_task,
+                    metadata_task,
                     return_exceptions=True,
                 )
 
@@ -986,6 +1119,11 @@ async def _process_saved_pdfs(
                     all_results[3]
                     if not isinstance(all_results[3], Exception)
                     else {"status": "error", "error": str(all_results[3])}
+                )
+                metadata_result = (
+                    all_results[4]
+                    if not isinstance(all_results[4], Exception)
+                    else {"status": "error", "error": str(all_results[4])}
                 )
 
                 # Log results for each task
@@ -1028,12 +1166,13 @@ async def _process_saved_pdfs(
                             document_id,
                             {
                                 "status": "ready",
-                                "num_pages": total_pages,
-                                "total_pages": total_pages,
-                                "title": resolved_title,
-                                "author": metadata.get("author") or "",
-                                "subject": metadata.get("subject") or "",
-                                "keywords": keywords_list,
+                                # "num_pages": total_pages,
+                                # "total_pages": total_pages,
+                                # these 3 field will be handle by metadata module
+                                # "title": resolved_title,
+                                # "author": metadata.get("author") or "",
+                                # "subject": metadata.get("subject") or "",
+                                # "keywords": keywords_list,
                                 "chunk_count": len(chunks),
                                 "metadata": metadata,
                             },
@@ -1080,6 +1219,14 @@ async def _process_saved_pdfs(
                         f"{skimming_result.get('error', 'Unknown error')}"
                     )
 
+                if metadata_result.get("status") == "success":
+                    print(f"[PDF] ✅ Metadata processed for {pdf_path.name}")
+                else:
+                    print(
+                        f"[PDF] ⚠️ Metadata failed for {pdf_path.name}: "
+                        f"{metadata_result.get('error', 'Unknown error')}"
+                    )
+
                 print(
                     f"[PDF] ✅ COMPLETED all processing for {pdf_path.name} "
                     f"(PDF {index}/{len(saved_paths)})"
@@ -1108,6 +1255,7 @@ async def _process_saved_pdfs(
                         "summary_result": summary_result,
                         "reference_result": reference_result,
                         "skimming_result": skimming_result,
+                        "metadata_result": metadata_result,
                     }
                 )
 

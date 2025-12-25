@@ -1455,6 +1455,8 @@ async def pipeline_status(
             "reference_ready": False,
             "skimming_status": "pending",
             "skimming_ready": False,
+            "metadata_status": "pending",
+            "metadata_ready": False,
             "all_ready": False,
             "available_features": [],
         }
@@ -1493,6 +1495,8 @@ async def pipeline_status(
                 "reference_ready": False,
                 "skimming_status": "pending",
                 "skimming_ready": False,
+                "metadata_status": "pending",
+                "metadata_ready": False,
                 "all_ready": False,
                 "available_features": [],
             }
@@ -1520,6 +1524,9 @@ async def pipeline_status(
         raw_document_status = resolved_document.get("status") or "unknown"
         document_status = str(raw_document_status).lower()
 
+        raw_metadata_status = resolved_document.get("metadata_status") or "pending"
+        metadata_status = str(raw_metadata_status).lower()
+
         # CRITICAL: Each task has independent readiness
         # Chat/QA ready when embeddings are ready and chunks exist
         embedding_ready = embedding_status == "ready" and chunk_count > 0
@@ -1533,9 +1540,12 @@ async def pipeline_status(
         # Skimming ready when skimming processing completes (independent of other tasks)
         skimming_ready = skimming_status == "ready"
 
+        # Metadata ready when metadata processing completes (independent of other tasks)
+        metadata_ready = metadata_status == "ready"
+
         # All tasks ready when all four are complete
         all_ready = (
-            embedding_ready and summary_ready and reference_ready and skimming_ready
+            embedding_ready and summary_ready and reference_ready and skimming_ready and metadata_ready
         )
 
         # Calculate which features are currently available
@@ -1548,9 +1558,11 @@ async def pipeline_status(
             available_features.append("references")
         if skimming_ready:  # Thêm đoạn này
             available_features.append("skimming")
+        if metadata_ready:  # Thêm đoạn này
+            available_features.append("metadata")
 
         # Calculate overall progress based on all four tasks
-        total_tasks = 4  # embedding, summary, references, skimming
+        total_tasks = 5  # embedding, summary, references, skimming, metadata
         completed_tasks = 0
 
         if embedding_ready:
@@ -1560,6 +1572,8 @@ async def pipeline_status(
         if reference_ready:
             completed_tasks += 1
         if skimming_ready:
+            completed_tasks += 1
+        if metadata_ready:
             completed_tasks += 1
 
         overall_percent = int((completed_tasks / total_tasks) * 100)
@@ -1579,6 +1593,7 @@ async def pipeline_status(
                 summary_status == "processing"
                 or reference_status == "processing"
                 or skimming_status == "processing"
+                or metadata_status == "processing"
             )
             stage = "chat_ready"
 
@@ -1589,6 +1604,8 @@ async def pipeline_status(
                 processing.append("references")
             if skimming_status == "processing":
                 processing.append("skimming")
+            if metadata_status == "processing":
+                processing.append("metadata")
 
             if processing:
                 message = f"✅ Available: {', '.join(available_features)} | 🔄 Processing: {', '.join(processing)}"
@@ -1655,6 +1672,12 @@ async def pipeline_status(
             "skimming_error": resolved_document.get("skimming_error"),
             "skimming_updated_at": resolved_document.get(
                 "skimming_updated_at"
+            ),  # datetime!
+            "metadata_status": metadata_status,
+            "metadata_ready": metadata_ready,
+            "metadata_error": resolved_document.get("metadata_error"),
+            "metadata_updated_at": resolved_document.get(
+                "metadata_updated_at"
             ),  # datetime!
             # Feature availability
             "available_features": available_features,

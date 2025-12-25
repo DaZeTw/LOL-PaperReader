@@ -484,6 +484,24 @@ def _merge_to_markdown(
 
     return "\n".join(markdown_lines).strip()
 
+def get_metadata_from_pdf_with_pymupdf(input_pdf_path: Path) -> Dict[str, Any]:
+    if not HAS_PYMUPDF:
+        raise RuntimeError("PyMuPDF not installed. Install with: pip install pymupdf")
+
+    doc = fitz.open(input_pdf_path)
+    metadata = {
+        "filename": input_pdf_path.name,
+        "title": doc.metadata.get("title") or input_pdf_path.stem,
+        "author": doc.metadata.get("author") or "",
+        "subject": doc.metadata.get("subject") or "",
+        "keywords": doc.metadata.get("keywords") or "",
+        "creator": doc.metadata.get("creator") or "",
+        "producer": doc.metadata.get("producer") or "",
+        "creation_date": doc.metadata.get("creationDate") or "",
+    }
+
+    doc.close()
+    return metadata
 
 def parse_pdf_with_pymupdf(input_pdf_path: Path, output_dir: Path) -> Dict[str, Any]:
     """
