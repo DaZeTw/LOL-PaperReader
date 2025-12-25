@@ -130,6 +130,8 @@ def create_app() -> FastAPI:
             print(f"[STARTUP] Traceback: {traceback.format_exc()}")
 
         # Preload Visualized_BGE embedder model in background (non-blocking)
+        # NOTE: Warmup disabled because it blocks the event loop during model loading
+        # Models will be loaded lazily on first use instead
         import asyncio
 
         async def do_warmup():
@@ -156,7 +158,9 @@ def create_app() -> FastAPI:
 
                 print(f"[STARTUP] (bg) Traceback: {traceback.format_exc()}")
 
-        asyncio.create_task(do_warmup())
+        # DISABLED: Warmup blocks the event loop and prevents server from responding
+        # asyncio.create_task(do_warmup())
+        print("[STARTUP] Embedder warmup disabled - models will load on first use")
 
     @app.on_event("shutdown")
     async def shutdown_event():

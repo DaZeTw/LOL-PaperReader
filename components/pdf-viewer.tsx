@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Viewer, Worker } from "@react-pdf-viewer/core"
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
@@ -12,13 +12,15 @@ import { useExtractCitations, type ExtractedCitation } from "@/hooks/useExtractC
 import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
 import { usePDFHighlightPlugin } from "@/hooks/usePDFHighlightPlugin"
 import { useAnnotation } from "@/hooks/useAnnotation" // ✅ ADD: Import annotation hook
+import { useTextSelectionPopup } from "@/hooks/useTextSelectionPopup" // ✅ ADD: Import text selection popup hook
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Eye, FileText, Highlighter, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Eye, FileText, Highlighter, Trash2, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { PDFSidebar } from "./pdf-sidebar"
 import { SkimmingView } from "./skimming-view"
 import { SkimmingControls } from "./skimming-controls"
+import { KeywordPopup } from "@/components/keyword-popup" // ✅ ADD: Import KeywordPopup component
 
 import "@react-pdf-viewer/core/lib/styles/index.css"
 import "@react-pdf-viewer/page-navigation/lib/styles/index.css"
@@ -83,12 +85,25 @@ export function PDFViewer({
   }
 
   // ✅ ADD: Annotation hook for user text highlighting
-  const { 
-    annotations, 
-    annotationCount, 
-    annotationPluginInstance, 
-    clearAllAnnotations 
+  const {
+    annotations,
+    annotationCount,
+    annotationPluginInstance,
+    clearAllAnnotations
   } = useAnnotation()
+
+  // ✅ ADD: Text selection popup hook for keyword definitions
+  const {
+    popupState,
+    handleTextSelection,
+    handleNodeClick,
+    closePopup,
+    isEnabled: popupEnabled,
+    setEnabled: setPopupEnabled
+  } = useTextSelectionPopup()
+
+  // Ref for PDF container to attach selection listener
+  const pdfContainerRef = useRef<HTMLDivElement>(null)
 
   const currentPageRef = useRef(1)
   const pageLabelRef = useRef<HTMLSpanElement>(null)
@@ -378,7 +393,7 @@ export function PDFViewer({
   const handlePageChangeInternal = (e: any) => {
     const newPage = e.currentPage + 1
     currentPageRef.current = newPage
-    
+
     // Update UI
     requestAnimationFrame(() => {
       if (pageLabelRef.current) {
@@ -495,7 +510,7 @@ export function PDFViewer({
             )}
 
             {/* View Mode Toggle */}
-           
+
 
             {/* ✅ ADD: User Annotations Info - Show when there are annotations */}
             {annotationCount > 0 && (
@@ -523,13 +538,14 @@ export function PDFViewer({
           {/* Zoom Controls - Only in reading mode */}
           {viewMode === "reading" && (
             <div className="flex items-center gap-2">
-              {/* ✅ ADD: Helper text for annotations */}
+              {/* ✅ ADD: Helper text for keyword lookup and annotations */}
               {annotationCount === 0 && (
-                <div className="text-xs text-muted-foreground mr-2">
-                  Select text to highlight
+                <div className="text-xs text-muted-foreground mr-2 flex items-center gap-2">
+                  <BookOpen className="h-3 w-3" />
+                  <span>Select text for definition</span>
                 </div>
               )}
-              
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -567,7 +583,11 @@ export function PDFViewer({
         {/* Content Area - Conditional Rendering */}
         <div className="flex-1 overflow-hidden bg-muted/30">
           {viewMode === "reading" ? (
-            <div className="h-full p-4">
+            <div
+              ref={pdfContainerRef}
+              className="h-full p-4"
+              onMouseUp={(e) => handleTextSelection(e.nativeEvent)}
+            >
               {pdfUrl && (
                 <div className="h-full mx-auto max-w-4xl">
                   <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
@@ -609,6 +629,21 @@ export function PDFViewer({
           )}
         </div>
       </div>
+
+      {/* ✅ ADD: Keyword Definition Popup */}
+      <KeywordPopup
+        isOpen={popupState.isOpen}
+        keyword={popupState.keyword}
+        context={popupState.context}
+        concept={popupState.concept}
+        siblings={popupState.siblings}
+        descendants={popupState.descendants}
+        loading={popupState.loading}
+        error={popupState.error}
+        onClose={closePopup}
+        onNodeClick={handleNodeClick}
+        position={popupState.position}
+      />
     </div>
   );
 }

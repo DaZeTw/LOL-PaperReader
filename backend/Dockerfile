@@ -37,7 +37,7 @@ RUN pip install --no-cache-dir \
 
 # ---- 4. Heavy ML libs (separate layer to preserve cache) ----
 # Use precompiled wheels (avoid source builds)
-RUN pip install --no-cache-dir torch==2.2.2+cpu torchvision==0.17.2+cpu \
+RUN pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 \
     --index-url https://download.pytorch.org/whl/cpu
 
 RUN pip install --no-cache-dir --force-reinstall "numpy<2.0.0"

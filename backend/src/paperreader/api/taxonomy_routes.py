@@ -72,13 +72,16 @@ async def search_concepts(
             data = res.json()
             
             # Transform response to match frontend expectations
+            # External API returns {"query": ..., "items": [...]}
+            raw_items = data.get("items", []) if isinstance(data, dict) else data
             items = [
                 ConceptSearchItem(
                     id=str(item.get("id", "")),
                     name=item.get("name", ""),
                     score=item.get("score", 0.0)
                 )
-                for item in data
+                for item in raw_items
+                if isinstance(item, dict)
             ]
             return SearchResponse(items=items)
         except httpx.HTTPStatusError as e:
@@ -127,9 +130,12 @@ async def get_siblings(
             res.raise_for_status()
             data = res.json()
             
+            # External API may return {"siblings": [...]} or just [...]
+            raw_items = data.get("siblings", data) if isinstance(data, dict) else data
             siblings = [
                 RelatedConcept(id=str(item.get("id", "")), name=item.get("name", ""))
-                for item in data
+                for item in raw_items
+                if isinstance(item, dict)
             ]
             return SiblingsResponse(siblings=siblings)
         except httpx.HTTPStatusError as e:
@@ -155,9 +161,12 @@ async def get_descendants(
             res.raise_for_status()
             data = res.json()
             
+            # External API may return {"descendants": [...]} or just [...]
+            raw_items = data.get("descendants", data) if isinstance(data, dict) else data
             descendants = [
                 RelatedConcept(id=str(item.get("id", "")), name=item.get("name", ""))
-                for item in data
+                for item in raw_items
+                if isinstance(item, dict)
             ]
             return DescendantsResponse(descendants=descendants)
         except httpx.HTTPStatusError as e:
