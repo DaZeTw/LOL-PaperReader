@@ -4,6 +4,7 @@ import logging
 from typing import Optional, Tuple
 from dataclasses import dataclass
 import httpx
+from paperreader.config.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +177,12 @@ async def get_semantic_scholar_pdf_link(
             # Try DOI lookup first (more precise)
             if doi:
                 url = f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}?fields=openAccessPdf,isOpenAccess,title"
-                response = await client.get(url)
+                
+                headers = {}
+                if settings.SEMANTIC_SCHOLAR_KEY:
+                    headers["x-api-key"] = settings.SEMANTIC_SCHOLAR_KEY
+
+                response = await client.get(url, headers=headers)
                 if response.status_code == 200:
                     paper_data = response.json()
 
@@ -188,7 +194,12 @@ async def get_semantic_scholar_pdf_link(
                     query = f"{title} {authors[0]}"
 
                 url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={query}&limit=1&fields=openAccessPdf,isOpenAccess,title"
-                response = await client.get(url)
+                
+                headers = {}
+                if settings.SEMANTIC_SCHOLAR_KEY:
+                    headers["x-api-key"] = settings.SEMANTIC_SCHOLAR_KEY
+
+                response = await client.get(url, headers=headers)
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("data") and len(data["data"]) > 0:
