@@ -26,7 +26,7 @@ interface SinglePDFReaderProps {
   sidebarOpen: boolean
   onSidebarToggle: (isOpen: boolean) => void
   onOpenReferencePDF?: (pdfUrl: string, title: string) => void
-  mode?: PDFMode  // New prop to determine which sidebar to show
+  mode?: PDFMode
 }
 
 export function SinglePDFReader({
@@ -37,79 +37,60 @@ export function SinglePDFReader({
   sidebarOpen,
   onSidebarToggle,
   onOpenReferencePDF,
-  mode = 'library',  // Default to library mode
+  mode = 'library',
 }: SinglePDFReaderProps) {
   // ============================================================================
   // PDF URL for keyword extraction
   // ============================================================================
   const [pdfUrl, setPdfUrl] = useState<string>('')
 
-  // Create object URL from file for keyword extraction
-  // Memoize to avoid recreating URL on every render
   useEffect(() => {
     const url = URL.createObjectURL(file)
     setPdfUrl(url)
     console.log(`[SinglePDFReader:${tabId}] Created PDF URL for keyword extraction`)
 
-    // Cleanup: revoke URL when file changes or component unmounts
     return () => {
       URL.revokeObjectURL(url)
       console.log(`[SinglePDFReader:${tabId}] Revoked PDF URL`)
     }
   }, [file, tabId])
+
   // ============================================================================
   // PIPELINE STATUS - Only fetch if in library mode
   // ============================================================================
   const shouldFetchPipeline = mode === 'library'
   
   const {
-    // Overall status
     isAllReady,
     isProcessing,
     overallProgress,
     message,
     stage,
-    
-    // Independent task readiness (ALL 4 tasks)
     isChatReady,
     isSummaryReady,
     isReferencesReady,
     isSkimmingReady,
-    
-    // Task statuses
     embeddingStatus,
     summaryStatus,
     referenceStatus,
     skimmingStatus,
-    
-    // Available features
     availableFeatures,
-    
-    // Helper functions
     isFeatureAvailable,
     getTaskMessage,
     getCompletedTasks,
     getProcessingTasks,
-    
-    // Metadata
     chunkCount,
     referenceCount,
-    
-    // Errors
     hasErrors,
     errors,
-    
-    // Timestamps
     embeddingUpdatedAt,
     summaryUpdatedAt,
     referenceUpdatedAt,
     skimmingUpdatedAt,
-    
-    // Raw status for advanced use
     raw: pipelineStatus,
   } = usePipelineStatus({ 
     documentId,
-    enabled: shouldFetchPipeline  // Only poll in library mode
+    enabled: shouldFetchPipeline
   })
 
   // ============================================================================
@@ -129,14 +110,11 @@ export function SinglePDFReader({
     enableSkimming,
   } = useSkimmingHighlights()
   
-  // Highlights display state
   const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
     new Set(["objective", "method", "result"])
   )
   const [hiddenHighlightIds, setHiddenHighlightIds] = useState<Set<number>>(new Set())
   const [activeHighlightIds, setActiveHighlightIds] = useState<Set<number>>(new Set())
-  
-  // Skimming state
   const [skimmingEnabled, setSkimmingEnabled] = useState(false)
 
   // ============================================================================
@@ -159,9 +137,6 @@ export function SinglePDFReader({
     }
   }
 
-  // ============================================================================
-  // Handle disabling skimming
-  // ============================================================================
   const handleDisableSkimming = () => {
     console.log(`[SinglePDFReader:${tabId}] Disabling skimming`)
     setSkimmingEnabled(false)
@@ -235,9 +210,6 @@ export function SinglePDFReader({
     setCurrentPage(page)
   }
 
-  // ============================================================================
-  // Handle highlight toggle
-  // ============================================================================
   const handleHighlightToggle = (highlightId: number) => {
     setHiddenHighlightIds((prev) => {
       const next = new Set(prev)
@@ -251,7 +223,8 @@ export function SinglePDFReader({
   }
 
   // ============================================================================
-  // Handle citation click - navigate to citation page
+  // Handle citation click from QA - navigate to citation page
+  // This is for QA citations, NOT reference popup citations
   // ============================================================================
   const handleCitationClick = (page: number, text?: string) => {
     console.log(`[SinglePDFReader:${tabId}] Navigating to citation page:`, page, text?.substring(0, 50))
@@ -270,9 +243,6 @@ export function SinglePDFReader({
     setCurrentPage(page)
   }
 
-  // ============================================================================
-  // Clear navigation target after navigation completes
-  // ============================================================================
   const handleNavigationComplete = () => {
     console.log(`[SinglePDFReader:${tabId}] Navigation completed, clearing target`)
     setNavigationTarget(undefined)
@@ -304,7 +274,7 @@ export function SinglePDFReader({
           hiddenHighlightIds={mode === 'library' ? hiddenHighlightIds : new Set()}
           activeHighlightIds={mode === 'library' ? activeHighlightIds : new Set()}
           highlights={mode === 'library' ? highlights : []}
-          enableInteractions={mode === 'library'}  // New prop to disable interactions in preview
+          enableInteractions={mode === 'library'}
         />
       </div>
 
@@ -328,6 +298,7 @@ export function SinglePDFReader({
               documentId={documentId}
               onCitationClick={handleCitationClick}
               totalPages={numPages}
+              pdfUrl={pdfUrl}
               highlights={highlights}
               highlightsLoading={highlightsLoading}
               highlightsProcessing={highlightsProcessing}

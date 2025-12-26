@@ -1,6 +1,7 @@
 #chat_routes.py
 from __future__ import annotations
 import base64
+import logging
 import mimetypes
 import os
 import uuid
@@ -9,6 +10,8 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, UploadFile, File, Query
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from paperreader.services.chat.chat_service import chat_service
 from paperreader.services.chat import repository as chat_repository
@@ -23,6 +26,7 @@ from paperreader.services.qa.embeddings import get_embedder
 from paperreader.services.qa.config import PipelineConfig
 from paperreader.services.qa.pipeline import get_pipeline
 from paperreader.services.documents.minio_client import upload_bytes
+from paperreader.services.websocket.status_manager import get_status_manager
 
 router = APIRouter()
 MINIO_CHAT_BUCKET = os.getenv("MINIO_CHAT_BUCKET", "chat-images")
@@ -886,7 +890,23 @@ async def ask_question(request: ChatAskRequest):
             msg_count = len(saved_session.messages) if saved_session.messages else 0
             print(f"[DEBUG] ✅ Message saved successfully! Session now has {msg_count} messages")
             
-            # Message saved successfully (in-memory storage)
+            # Send WebSocket notification for chat status
+            try:
+                ws_manager = get_status_manager()
+                await ws_manager.broadcast_chat_status(
+                    document_id=document_id,
+                    session_id=request.session_id,
+                    status="answer_ready"
+                )
+                logger.info(
+                    f"[Chat] 📤 Sent WebSocket chat status notification for "
+                    f"document {document_id}, session {request.session_id}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"[Chat] ⚠️ Failed to send WebSocket chat status notification: {e}"
+                )
+                # Don't fail the request if WebSocket notification fails
         else:
             print(f"[ERROR] ❌ Failed to save assistant message - saved_session is None")
         
@@ -1288,6 +1308,24 @@ async def ask_with_upload(
             }
         )
         await chat_service.add_message(session_id, assistant_message)
+        
+        # Send WebSocket notification for chat status
+        try:
+            ws_manager = get_status_manager()
+            await ws_manager.broadcast_chat_status(
+                document_id=document_id,
+                session_id=session_id,
+                status="answer_ready"
+            )
+            logger.info(
+                f"[Chat] 📤 Sent WebSocket chat status notification for "
+                f"document {document_id}, session {session_id}"
+            )
+        except Exception as e:
+            logger.warning(
+                f"[Chat] ⚠️ Failed to send WebSocket chat status notification: {e}"
+            )
+            # Don't fail the request if WebSocket notification fails
         
         # No more embedding - just save to chat history
         

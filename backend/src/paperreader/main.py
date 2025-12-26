@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from paperreader.api import pdf_routes  # main backend routes
+from paperreader.api import websocket_routes  # WebSocket routes
 from paperreader.api import reference_routes
 
 # Import routers
@@ -90,6 +91,9 @@ def create_app() -> FastAPI:
     # Routers
     # ------------------------
     app.include_router(auth_router)
+    app.include_router(
+        websocket_routes.router, tags=["WebSocket"]
+    )  # WebSocket at root level
     app.include_router(pdf_routes.router, prefix="/api/pdf", tags=["PDF"])
     app.include_router(
         pdf_proxy_router, tags=["PDF Proxy"]
@@ -98,7 +102,9 @@ def create_app() -> FastAPI:
     app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
     app.include_router(skimming_router, prefix="/api/skimming", tags=["Skimming"])
     app.include_router(summary_router, prefix="/api/summary", tags=["Summary"])
-    app.include_router(taxonomy_router)  # Taxonomy routes (already has /api/taxonomy prefix)
+    app.include_router(
+        taxonomy_router
+    )  # Taxonomy routes (already has /api/taxonomy prefix)
     app.include_router(reference_routes.router, prefix="/api")
     app.include_router(documents_router)
     app.include_router(collections_router)
@@ -127,6 +133,7 @@ def create_app() -> FastAPI:
         except Exception as e:
             print(f"[STARTUP] Warning: Failed to create skimming indexes: {e}")
             import traceback
+
             print(f"[STARTUP] Traceback: {traceback.format_exc()}")
 
         # Preload Visualized_BGE embedder model in background (non-blocking)

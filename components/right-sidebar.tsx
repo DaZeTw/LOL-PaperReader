@@ -365,10 +365,6 @@ export function RightSidebar({
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">{activeTabData?.label}</h2>
-            {/* Ready indicator in header */}
-            {activeTabData?.ready && (
-              <span className="text-xs text-green-600 font-medium">✅</span>
-            )}
           </div>
         </div>
 

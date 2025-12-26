@@ -1,10 +1,10 @@
 {
-  "question": "What is the main finding?",
+  "question": "So how should I use? Use stronger model or use retriever? ",
   "hits": [
     {
       "index": 0,
-      "score": 0.72377473,
-      "text": "Following the experimental de- sign from Ye et al. ( 2023 ), we choose to inference 3 times and report the Krippendorff’s alpha value. As shown in Table 14 , the results indicate that train- ing on feedback data only slightly improves consis- tency. On the other hand, we find that the LMs with a large number of parameters achieve high consis- tency. This indicates the importance of selecting a large LM as the base model when training an evalu- ator LM. Notably, P ROMETHEUS -2-8 X 7B obtains the highest correlation among open evaluator LMs. Moreover, to evaluate consistency in pairwise ranking settings (Table 15 ), we measure transitivity ( i.e. , a higher score for response B over A, and for C over B, results in a higher score for C over A). As shown in Table 15 , the P ROMETHEUS 2",
+      "score": 0.7997687,
+      "text": "In contrast, the larger instruction tuned LLMs like Llama2-70B has much stronger zero-shot capability to incorporate retrieved evidence. This observation is becoming more clear when one compares the gain of retrieval-augmentation between GPT-43B and Llama2-70B, where Llama2-70B enjoys larger benefit of incorporating context through retrieval. 4.2 C OMPARING TO O PEN AI MODELS To further understand how good is our best model, i.e., augmenting Llama2-70B-32k with retrieval, we also compare it to GPT-3.5-turbo(4k), GPT-3.5-turbo-16k and Davinci-003 on those seven datasets. 6 We found that Llama2-70B-32k-ret achieves better results than GPT-3.5-turbo-16k in terms of the average accuracy over seven datasets, while better than Davinci-003 (w/ 175B parameters) on the average over 4 tasks. This indicates Llama2-70B-32k with retrieval is a strong model for these long context tasks, and our conclusion is built on the state-of-the-art results. We also report the retrieval augmented results for GPT3.5-turbo on MSQ, HQA and MFQA. For GPT3.5-turbo-4k, retrieval significantly improves the performance (avg from 37.08 to 41.15). For GPT3.5-turbo-16k, the average scores for retrieval (43.27) and non-retrieval (43.60) scores are close to each other which are both lower than our Llam2-70B-32k-ret results (44.51). Note that GPT3.5- turbo-16k is a blackbox API, we don’t know how it is implemented, the model size as well as any preprocessing steps. 6 For QMSum (QM), Qasper (QASP), NarrativeQA (NQA), QuALITY (QLTY), we used the test set from the ZeroSCROLLS leaderboard as the organizers have prepared the scores of GPT-3.5-turbo (4k) and Davinci-003 there. 8",
       "metadata": {
-        "chunk_id": "4efa36e7c5623069f01c3c2a841f501630214e32",
+        "chunk_id": "3bce08863728376bdda3c4225ac7f63c67f94a9b",
         "doc_id": 

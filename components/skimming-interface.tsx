@@ -50,19 +50,12 @@ export function SkimmingInterface({
   pipelineStatus,
 }: SkimmingInterfaceProps) {
   
-  // Skimming requires embeddings to be ready
-  const canEnableSkimming = pipelineStatus?.isChatReady && pipelineStatus?.embeddingStatus === 'ready'
+  // Skimming is independent - only needs PDF file, not embeddings
+  const canEnableSkimming = true // Always available, independent of embeddings
   const isProcessingSkimming = highlightsProcessing || pipelineStatus?.skimmingStatus === 'processing'
-  const isProcessingEmbeddings = pipelineStatus?.embeddingStatus === 'processing'
   
   // Determine what message to show
   const getStatusMessage = () => {
-    if (isProcessingEmbeddings) {
-      return "Waiting for document processing to complete..."
-    }
-    if (!pipelineStatus?.isChatReady) {
-      return "Document embeddings are required before skimming"
-    }
     if (isProcessingSkimming) {
       return "Generating highlights..."
     }
@@ -99,12 +92,6 @@ export function SkimmingInterface({
             <div className="flex items-center gap-2">
               {canEnableSkimming && !isProcessingSkimming && !skimmingEnabled && (
                 <span className="text-xs text-green-600 dark:text-green-400 font-medium">✅ Ready</span>
-              )}
-              {isProcessingEmbeddings && (
-                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-1">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Processing...
-                </span>
               )}
               {skimmingEnabled && !isProcessingSkimming && (
                 <span className="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
@@ -150,18 +137,14 @@ export function SkimmingInterface({
           {/* Status message - Only show when not enabled */}
           {statusMessage && !skimmingEnabled && (
             <div className="flex items-start gap-2 p-2 rounded-md bg-muted/50">
-              {isProcessingEmbeddings ? (
-                <Loader2 className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5 animate-spin" />
-              ) : (
-                <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-              )}
+              <Loader2 className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5 animate-spin" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">
                   {statusMessage}
                 </p>
-                {pipelineStatus?.embeddingStatus && (
+                {pipelineStatus?.skimmingStatus && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Status: <span className="font-medium capitalize">{pipelineStatus.embeddingStatus}</span>
+                    Status: <span className="font-medium capitalize">{pipelineStatus.skimmingStatus}</span>
                   </p>
                 )}
               </div>
