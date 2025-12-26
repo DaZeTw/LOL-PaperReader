@@ -12,6 +12,8 @@ router = APIRouter(prefix="/api/pdf")
 # Semantic Scholar API base URL
 S2_API_BASE = "https://api.semanticscholar.org/graph/v1"
 
+from paperreader.config.settings import settings
+
 
 def convert_arxiv_to_pdf_url(url: str) -> str:
     """
@@ -77,7 +79,12 @@ async def get_pdf_url_from_semantic_scholar(
                 url = f"{S2_API_BASE}/paper/search?query={quote_plus(identifier)}&fields=title,openAccessPdf,isOpenAccess&limit=1"
 
             print(f"[PDF Proxy] Querying Semantic Scholar: {url}")
-            response = await client.get(url)
+            
+            headers = {}
+            if settings.SEMANTIC_SCHOLAR_KEY:
+                headers["x-api-key"] = settings.SEMANTIC_SCHOLAR_KEY
+                
+            response = await client.get(url, headers=headers)
 
             if response.status_code != 200:
                 print(f"[PDF Proxy] Semantic Scholar returned {response.status_code}")

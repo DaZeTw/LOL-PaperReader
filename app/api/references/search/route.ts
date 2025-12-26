@@ -46,11 +46,17 @@ async function fetchFromSemanticScholarById(id: string, idType: 'DOI' | 'ARXIV')
   try {
     const prefix = idType === 'DOI' ? 'DOI:' : 'ARXIV:';
     const cleanId = idType === 'ARXIV' ? cleanArxivId(id) : id;
-    
+
+    const headers: Record<string, string> = { "Accept": "application/json" };
+    const apiKey = process.env.SEMANTIC_SCHOLAR_KEY;
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+    }
+
     // Requesting 'openAccessPdf' field now
     const response = await fetch(
       `https://api.semanticscholar.org/graph/v1/paper/${prefix}${encodeURIComponent(cleanId)}?fields=url,externalIds,title,authors,year,abstract,venue,citationCount,openAccessPdf`,
-      { headers: { "Accept": "application/json" } }
+      { headers }
     );
 
     if (!response.ok) return null;
@@ -71,7 +77,7 @@ async function fetchFromSemanticScholarById(id: string, idType: 'DOI' | 'ARXIV')
       citationCount: paper.citationCount,
       externalIds: paper.externalIds,
       // Pass the raw open access info just in case
-      openAccessPdf: paper.openAccessPdf 
+      openAccessPdf: paper.openAccessPdf
     };
   } catch (error) {
     console.error(`[SemanticScholar ${idType}] Error:`, error);
@@ -146,11 +152,17 @@ export async function POST(request: NextRequest) {
     // 3. Search by Title
     if (title && !result) {
       try {
+        const headers: Record<string, string> = { "Accept": "application/json" };
+        const apiKey = process.env.SEMANTIC_SCHOLAR_KEY;
+        if (apiKey) {
+          headers["x-api-key"] = apiKey;
+        }
+
         const query = encodeURIComponent(title);
         // Added 'openAccessPdf' to fields here too
         const searchResponse = await fetch(
           `https://api.semanticscholar.org/graph/v1/paper/search?query=${query}&limit=10&fields=url,externalIds,title,authors,year,abstract,venue,citationCount,openAccessPdf`,
-          { headers: { "Accept": "application/json" } }
+          { headers }
         );
 
         if (searchResponse.ok) {
@@ -167,17 +179,17 @@ export async function POST(request: NextRequest) {
               else if (paper.title.toLowerCase().includes(title.toLowerCase())) score += 50;
               if (inputYear && paper.year === inputYear) score += 50;
               if (inputAuthors && paper.authors) {
-                 const paperAuthors = paper.authors.map((a: any) => a.name.toLowerCase()).join(" ");
-                 if (inputAuthors.split(",")[0].trim().length > 3 && paperAuthors.includes(inputAuthors.split(",")[0].trim().toLowerCase())) {
-                   score += 30;
-                 }
+                const paperAuthors = paper.authors.map((a: any) => a.name.toLowerCase()).join(" ");
+                if (inputAuthors.split(",")[0].trim().length > 3 && paperAuthors.includes(inputAuthors.split(",")[0].trim().toLowerCase())) {
+                  score += 30;
+                }
               }
               if (score > bestScore) {
                 bestScore = score;
                 bestMatch = paper;
               }
             }
-            
+
             const selectedPaper = (bestScore > 20) ? bestMatch : data.data[0];
             const authorsList = selectedPaper.authors?.map((a: any) => a.name).slice(0, 5) || [];
 
@@ -204,12 +216,12 @@ export async function POST(request: NextRequest) {
 
     // 4. Fallback Logic (Generic)
     if (!result) {
-        const fallbackQuery = title || (arxivId ? cleanArxivId(arxivId) : "");
-        return NextResponse.json({
-            url: `https://scholar.google.com/scholar?q=${encodeURIComponent(fallbackQuery)}`,
-            fallback: true,
-            title: title || "Unknown Title"
-        });
+      const fallbackQuery = title || (arxivId ? cleanArxivId(arxivId) : "");
+      return NextResponse.json({
+        url: `https://scholar.google.com/scholar?q=${encodeURIComponent(fallbackQuery)}`,
+        fallback: true,
+        title: title || "Unknown Title"
+      });
     }
 
     // Final Processing
@@ -222,7 +234,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (pdfId) trackReferenceRetrieval(pdfId, title || result.title, result, strategyUsed);
-    
+
     return NextResponse.json(result);
 
   } catch (error) {
