@@ -123,10 +123,6 @@ export function SinglePDFReader({
   const handleEnableSkimming = async () => {
     if (mode !== 'library') return
 
-    if (!isChatReady) {
-      console.warn(`[SinglePDFReader:${tabId}] Cannot enable skimming - embeddings not ready (status: ${embeddingStatus})`)
-      return
-    }
 
     try {
       console.log(`[SinglePDFReader:${tabId}] Enabling skimming with default 50% density`)
@@ -254,6 +250,15 @@ export function SinglePDFReader({
     `skimming: ${skimmingEnabled}, highlights: ${highlights.length}`
   )
 
+  const getValidReferenceStatus = (): 'idle' | 'processing' | 'ready' | 'error' | undefined => {
+    if (mode !== 'library') return undefined
+    
+    const validStatuses = ['idle', 'processing', 'ready', 'error']
+    return validStatuses.includes(referenceStatus || '') 
+      ? (referenceStatus as 'idle' | 'processing' | 'ready' | 'error')
+      : 'idle'
+  }
+
   return (
     <div className="relative flex h-full overflow-hidden">
       {/* Main PDF Viewer - resizes when sidebar opens */}
@@ -275,6 +280,8 @@ export function SinglePDFReader({
           activeHighlightIds={mode === 'library' ? activeHighlightIds : new Set()}
           highlights={mode === 'library' ? highlights : []}
           enableInteractions={mode === 'library'}
+          referenceStatus={getValidReferenceStatus()}
+          referenceCount={mode === 'library' ? referenceCount : 0}
         />
       </div>
 

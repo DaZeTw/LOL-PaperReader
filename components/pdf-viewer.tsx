@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Viewer, Worker } from "@react-pdf-viewer/core"
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
@@ -49,6 +49,8 @@ interface PDFViewerProps {
   highlights?: SkimmingHighlight[]
   onReferenceClick?: (citationId: string) => void
   enableInteractions?: boolean
+  referenceStatus?: 'idle' | 'processing' | 'ready' | 'error'
+  referenceCount?: number
 }
 
 export function PDFViewer({
@@ -66,6 +68,8 @@ export function PDFViewer({
   highlights = [],
   onReferenceClick,
   enableInteractions = true,
+  referenceStatus = 'idle',
+  referenceCount = 0,
 }: PDFViewerProps) {
   const { toast } = useToast()
   const [pdfUrl, setPdfUrl] = useState<string>("")
@@ -104,6 +108,10 @@ export function PDFViewer({
   // Update ref when annotations change
   useEffect(() => {
     annotationsRef.current = annotations
+    console.log('[PDFViewer] Annotations updated in ref:', {
+      pageCount: annotations.length,
+      totalAnnotations: annotations.reduce((sum, page) => sum + page.annotations.length, 0)
+    })
   }, [annotations])
 
   // Highlight counts
@@ -145,14 +153,17 @@ export function PDFViewer({
   const bookmarkPluginInstance = useRef(bookmarkPlugin()).current
   const searchPluginInstance = useRef(searchPlugin({ keyword: "" })).current
 
-  // Citation annotation plugin
-  const citationAnnotationPluginInstance = useCitationAnnotationPlugin({
-    annotationsRef: annotationsRef,
-    onAnnotationClick: enableInteractions ? (annotation, event) => {
-      setSelectedAnnotation(annotation)
-      setPopupPosition({ x: event.clientX, y: event.clientY })
-    } : undefined,
-  })
+  // ✅ FIXED: Recreate citation plugin when annotations change
+  const citationAnnotationPluginInstance = useMemo(() => {
+    console.log('[PDFViewer] Creating citation plugin with', annotations.length, 'pages of annotations')
+    return useCitationAnnotationPlugin({
+      annotationsRef: annotationsRef,
+      onAnnotationClick: enableInteractions ? (annotation, event) => {
+        setSelectedAnnotation(annotation)
+        setPopupPosition({ x: event.clientX, y: event.clientY })
+      } : undefined,
+    })
+  }, [annotations.length, enableInteractions]) // ✅ Recreate when annotations are loaded
 
   // Highlight plugin - only show highlights in library mode
   const visibleHighlights = enableInteractions
@@ -167,25 +178,37 @@ export function PDFViewer({
       : undefined,
   })
 
-  // Build plugins array - conditional based on mode
-  const plugins = enableInteractions
-    ? [
-      pageNavigationPluginInstance,
-      zoomPluginInstance,
-      thumbnailPluginInstance,
-      bookmarkPluginInstance,
-      searchPluginInstance,
-      citationAnnotationPluginInstance,
-      highlightPluginInstance,
-      annotationPluginInstance
-    ]
-    : [
+  // ✅ FIXED: Rebuild plugins array when citation plugin changes
+  const plugins = useMemo(() => {
+    const basePlugins = [
       pageNavigationPluginInstance,
       zoomPluginInstance,
       thumbnailPluginInstance,
       bookmarkPluginInstance,
       searchPluginInstance,
     ]
+
+    if (enableInteractions) {
+      return [
+        ...basePlugins,
+        citationAnnotationPluginInstance,
+        highlightPluginInstance,
+        annotationPluginInstance
+      ]
+    }
+
+    return basePlugins
+  }, [
+    enableInteractions,
+    citationAnnotationPluginInstance,
+    highlightPluginInstance,
+    annotationPluginInstance,
+    pageNavigationPluginInstance,
+    zoomPluginInstance,
+    thumbnailPluginInstance,
+    bookmarkPluginInstance,
+    searchPluginInstance,
+  ])
 
   const { jumpToNextPage, jumpToPreviousPage, jumpToPage } = pageNavigationPluginInstance
   const { zoomTo } = zoomPluginInstance
@@ -197,8 +220,9 @@ export function PDFViewer({
       const url = URL.createObjectURL(file)
       setPdfUrl(url)
 
-      // Only extract citations in library mode
-      if (enableInteractions) {
+      // Only extract citations in library mode AND when references are ready
+      if (enableInteractions && referenceStatus === 'ready') {
+        console.log('[PDFViewer] References ready, extracting annotations...')
         extractAnnotations(file, documentId)
           .then(() => {
             console.log("[PDFViewer] Successfully extracted annotations")
@@ -211,13 +235,14 @@ export function PDFViewer({
               variant: "destructive",
             })
           })
+      } else if (enableInteractions && referenceStatus !== 'ready') {
+        console.log(`[PDFViewer] Skipping citation extraction - reference status: ${referenceStatus}`)
       }
 
       return () => URL.revokeObjectURL(url)
     }
-    // ✅ FIXED: Only depend on file, documentId, and enableInteractions
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, documentId, enableInteractions])
+  }, [file, documentId, enableInteractions, referenceStatus])
 
   // Handle citation popup actions
   const handleCopyText = useCallback((text: string) => {
@@ -432,33 +457,58 @@ export function PDFViewer({
               )}
 
               {/* Citations loading indicator - Only in library mode */}
+              {enableInteractions && (
+                <>
+                  {referenceStatus === 'processing' && (
+                    <>
+                      <div className="w-px h-4 bg-border mx-1" />
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
+                        <span>Processing references...</span>
+                      </div>
+                    </>
+                  )}
+                  
+                  {referenceStatus === 'ready' && referenceCount > 0 && (
+                    <>
+                      <div className="w-px h-4 bg-border mx-1" />
+                      <div className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-md flex items-center gap-1">
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>{referenceCount} citation{referenceCount !== 1 ? 's' : ''}</span>
+                      </div>
+                    </>
+                  )}
+
+                  {referenceStatus === 'error' && (
+                    <>
+                      <div className="w-px h-4 bg-border mx-1" />
+                      <div className="text-xs text-red-600">
+                        Failed to load citations
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* Citations loading indicator - Updated */}
               {enableInteractions && annotationsLoading && (
                 <>
                   <div className="w-px h-4 bg-border mx-1" />
-                  <div className="text-xs text-muted-foreground">
-                    Loading citations...
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
+                    <span>Extracting citations...</span>
                   </div>
                 </>
               )}
 
-              {/* User annotations - Only in library mode */}
-              {enableInteractions && annotationCount > 0 && (
+              {/* ✅ Show annotations count when ready */}
+              {enableInteractions && !annotationsLoading && annotations.length > 0 && (
                 <>
                   <div className="w-px h-4 bg-border mx-1" />
-                  <div className="flex items-center gap-2">
-                    <div className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-md flex items-center gap-1">
-                      <Highlighter className="h-3 w-3" />
-                      <span>{annotationCount} highlight{annotationCount !== 1 ? 's' : ''}</span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearAllAnnotations}
-                      className="h-7 px-2 text-xs text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      Clear
-                    </Button>
+                  <div className="text-xs text-green-600 font-medium">
+                    {annotations.reduce((sum, page) => sum + page.annotations.length, 0)} clickable citations
                   </div>
                 </>
               )}
