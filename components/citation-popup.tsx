@@ -166,6 +166,16 @@ export function CitationPopup({
         if (cachedMetadata && !cachedMetadata.useFallback) {
           console.log('[CitationPopup] Using cached metadata')
           setEnrichedMetadata(cachedMetadata)
+
+          // FIX: Validate PDF again for cached data logic
+          if (cachedMetadata.openAccessPdf) {
+            setIsValidatingPdf(true)
+            const isValid = await validatePdfUrl(cachedMetadata.openAccessPdf)
+            setHasValidPdf(isValid)
+            setIsValidatingPdf(false)
+          } else {
+            setHasValidPdf(false)
+          }
           setIsLoading(false)
           return
         }
@@ -205,6 +215,9 @@ export function CitationPopup({
         let doiURL = "";
         if (data.fallback && metadata.doi) {
           doiURL = `https://doi.org/${metadata.doi}`;
+        }
+        if (data.fallback && metadata.arxiv_id) {
+          doiURL = `https://arxiv.org/pdf/${metadata.arxiv_id.match(/:(.+)$/)?.[1]}`;
         }
 
         const normalizedUrl = normalizeToPdfUrl(rawUrl);
@@ -317,6 +330,7 @@ export function CitationPopup({
 
   // Handle opening external link (fallback when no valid PDF)
   const handleOpenExternalLink = () => {
+    console.log('[CitationPopup] Opening external link:', enrichedMetadata)
     if (enrichedMetadata?.url) {
       window.open(enrichedMetadata.url, "_blank", "noopener,noreferrer")
     }
