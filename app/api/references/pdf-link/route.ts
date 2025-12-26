@@ -116,13 +116,18 @@ async function fetchSemanticScholarPdf(
     authors?: string[]
 ): Promise<{ pdfUrl: string; source: string; isOpenAccess: boolean } | null> {
     try {
-        let paperData = null;
+        const headers: Record<string, string> = { "Accept": "application/json" };
+        const apiKey = process.env.SEMANTIC_SCHOLAR_KEY;
+        if (apiKey) {
+            headers["x-api-key"] = apiKey;
+        }
 
+        let paperData = null;
         // Try DOI lookup first
         if (doi) {
             const response = await fetch(
                 `https://api.semanticscholar.org/graph/v1/paper/DOI:${encodeURIComponent(doi)}?fields=openAccessPdf,isOpenAccess`,
-                { headers: { "Accept": "application/json" } }
+                { headers }
             );
             if (response.ok) {
                 paperData = await response.json();
@@ -138,7 +143,7 @@ async function fetchSemanticScholarPdf(
 
             const response = await fetch(
                 `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=1&fields=openAccessPdf,isOpenAccess`,
-                { headers: { "Accept": "application/json" } }
+                { headers }
             );
             if (response.ok) {
                 const data = await response.json();

@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # MongoDB removed - no database settings needed for now
-    pass
+    SEMANTIC_SCHOLAR_KEY: str | None = None
 
     class Config:
         env_file = ".env"
