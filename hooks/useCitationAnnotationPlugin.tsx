@@ -1,7 +1,15 @@
 "use client"
 
-import { Plugin, PluginOnAnnotationLayerRender, AnnotationType } from '@react-pdf-viewer/core'
+import { useContext } from 'react'
+import { 
+  Plugin, 
+  PluginOnAnnotationLayerRender, 
+  AnnotationType, 
+  PluginRenderPageLayer
+} from '@react-pdf-viewer/core'
+import { CitationContext } from '@/components/pdf-viewer'
 
+// --- Types (Preserved) ---
 interface BoundingBox {
   x1: number
   y1: number
@@ -46,164 +54,143 @@ interface PageAnnotations {
 }
 
 interface UseCitationAnnotationPluginProps {
-  annotationsRef: React.MutableRefObject<PageAnnotations[]>
-  onAnnotationClick?: (annotation: Annotation, event: MouseEvent) => void  // Made optional
+  // We keep this prop for API compatibility, but the rendering now 
+  // primarily uses the Context to avoid stale ref issues.
+  annotationsRef?: React.MutableRefObject<PageAnnotations[]>
+  onAnnotationClick?: (annotation: Annotation, event: React.MouseEvent) => void
 }
 
+// --- 1. The React Component Layer ---
+// This component renders ON TOP of the PDF canvas.
+// It automatically re-renders when CitationContext updates.
+const CitationPageLayer = ({ 
+  renderProps, 
+  onAnnotationClick 
+}: { 
+  renderProps: PluginRenderPageLayer, 
+  onAnnotationClick?: (annotation: Annotation, event: React.MouseEvent) => void 
+}) => {
+  const { annotations } = useContext(CitationContext)
+  const currentPage = renderProps.pageIndex + 1
+
+  // Find data for this specific page
+  const pageData = annotations.find((p) => p.page === currentPage)
+
+  if (!pageData || pageData.annotations.length === 0) {
+    return null
+  }
+
+  return (
+    <>
+      {pageData.annotations.map((annotation, idx) => {
+        const { source, metadata } = annotation
+        const hasMetadata = !!metadata
+        const baseColor = hasMetadata ? '59, 130, 246' : '156, 163, 175'
+
+        return (
+          <div
+            key={`${currentPage}-${idx}-${annotation.dest}`}
+            className="citation-annotation-box"
+            title={
+              onAnnotationClick
+                ? (metadata?.title ? `${metadata.title}\nClick for details` : `Citation: ${annotation.dest}\nClick for info`)
+                : (metadata?.title ? `${metadata.title}` : `Citation: ${annotation.dest}`)
+            }
+            onClick={(e) => {
+              if (onAnnotationClick) {
+                e.preventDefault()
+                e.stopPropagation()
+                onAnnotationClick(annotation, e)
+              }
+            }}
+            style={{
+              position: 'absolute',
+              // Use Percentages for responsive positioning
+              left: `${source.x1 * 100}%`,
+              top: `${source.y1 * 100}%`,
+              width: `${(source.x2 - source.x1) * 100}%`,
+              height: `${(source.y2 - source.y1) * 100}%`,
+              
+              // Styles
+              backgroundColor: `rgba(${baseColor}, 0.15)`,
+              border: `1.5px solid rgba(${baseColor}, 0.5)`,
+              borderRadius: '3px',
+              cursor: onAnnotationClick ? 'pointer' : 'default',
+              zIndex: 100, // Sit on top of native links
+              pointerEvents: onAnnotationClick ? 'auto' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+            // Hover effects via React events
+            onMouseEnter={(e) => {
+              if (!onAnnotationClick) return
+              const target = e.currentTarget
+              target.style.backgroundColor = `rgba(${baseColor}, 0.3)`
+              target.style.borderColor = `rgba(${baseColor}, 0.7)`
+              target.style.borderWidth = '2px'
+              target.style.boxShadow = `0 2px 8px rgba(${baseColor}, 0.3)`
+            }}
+            onMouseLeave={(e) => {
+              if (!onAnnotationClick) return
+              const target = e.currentTarget
+              target.style.backgroundColor = `rgba(${baseColor}, 0.15)`
+              target.style.borderColor = `rgba(${baseColor}, 0.5)`
+              target.style.borderWidth = '1.5px'
+              target.style.boxShadow = 'none'
+            }}
+          />
+        )
+      })}
+    </>
+  )
+}
+
+// --- 2. The Plugin Factory ---
 export const useCitationAnnotationPlugin = ({
   annotationsRef,
   onAnnotationClick,
 }: UseCitationAnnotationPluginProps): Plugin => {
   
-  console.log('[CitationAnnotationPlugin] Initialized', { interactive: !!onAnnotationClick })
-
   return {
+    // A. Render Custom Layer (The colored boxes)
+    // This is the new "Reactive" way using our Component
+    renderPageLayer: (renderProps: PluginRenderPageLayer) => (
+      <CitationPageLayer 
+        renderProps={renderProps} 
+        onAnnotationClick={onAnnotationClick} 
+      />
+    ),
+
+    // B. Native Link Handling (The "Hack")
+    // We keep this to disable the native invisible links so they don't hijack clicks
     onAnnotationLayerRender: (e: PluginOnAnnotationLayerRender) => {
-      const { pageIndex, container, annotations: pdfAnnotations } = e
-      const currentPage = pageIndex + 1
+      // Only run this if we are in interactive mode
+      if (!onAnnotationClick) return
 
-      // ✅ Prevent default PDF link annotations from jumping (only if interactive)
-      if (onAnnotationClick) {
-        pdfAnnotations
-          .filter((annotation) => annotation.annotationType === AnnotationType.Link)
-          .forEach((annotation) => {
-            // Find all link elements in the annotation layer
-            const linkElements = container.querySelectorAll('.rpv-core__annotation--link')
-            linkElements.forEach((linkEle) => {
-              const anchorEle = linkEle.querySelector('a')
-              if (anchorEle) {
-                // ✅ Prevent default click behavior
-                anchorEle.addEventListener('click', (event) => {
-                  event.preventDefault()
-                  event.stopPropagation()
-                  console.log('[CitationPlugin] Prevented default link jump')
-                }, { capture: true })
-              }
-            })
+      const { annotations: pdfAnnotations, container } = e
+
+      // Find all native link annotations
+      const linkAnnotations = pdfAnnotations.filter(
+        (annotation) => annotation.annotationType === AnnotationType.Link
+      )
+
+      if (linkAnnotations.length > 0) {
+        // We need to wait slightly for the DOM elements to be created by the core library
+        setTimeout(() => {
+          const linkElements = container.querySelectorAll('.rpv-core__annotation--link')
+          
+          linkElements.forEach((linkEle) => {
+            const anchorEle = linkEle.querySelector('a')
+            if (anchorEle) {
+              // Clone the node to strip existing event listeners or capture click
+              anchorEle.addEventListener('click', (event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                console.log('[CitationPlugin] Prevented default link jump')
+              }, { capture: true })
+            }
           })
+        }, 0)
       }
-
-      // Get current annotations from ref
-      const annotations = annotationsRef.current
-      
-      // Find our extracted citation data for this page
-      const pageData = annotations.find((p) => p.page === currentPage)
-      if (!pageData || pageData.annotations.length === 0) {
-        return
-      }
-
-      console.log(`[CitationPlugin] Page ${currentPage}: ${pageData.annotations.length} citations to render`)
-
-      // Wait for annotation layer to be ready
-      setTimeout(() => {
-        const annotationLayer = container as HTMLElement
-        if (!annotationLayer) {
-          console.log('[CitationPlugin] No annotation layer found')
-          return
-        }
-
-        // Find the page container
-        const pageContainer = annotationLayer.closest('.rpv-core__page-layer') as HTMLElement
-        if (!pageContainer) {
-          console.log('[CitationPlugin] No page container found')
-          return
-        }
-
-        // Get the canvas to calculate dimensions
-        const canvas = pageContainer.querySelector('canvas')
-        if (!canvas) {
-          console.log('[CitationPlugin] No canvas found')
-          return
-        }
-
-        const pageWidth = canvas.clientWidth
-        const pageHeight = canvas.clientHeight
-
-        console.log(`[CitationPlugin] Page ${currentPage} dimensions: ${pageWidth}x${pageHeight}`)
-
-        // Remove old citation boxes from this specific page
-        pageContainer.querySelectorAll('.citation-annotation-box').forEach(el => el.remove())
-
-        // Create overlays for each citation annotation
-        pageData.annotations.forEach((annotation, idx) => {
-          const { source, metadata } = annotation
-
-          // Convert normalized coordinates to pixels
-          const left = source.x1 * pageWidth
-          const top = source.y1 * pageHeight
-          const width = (source.x2 - source.x1) * pageWidth
-          const height = (source.y2 - source.y1) * pageHeight
-
-          console.log(`[Citation ${idx}] ${annotation.dest}: (${left.toFixed(1)}, ${top.toFixed(1)}) ${width.toFixed(1)}x${height.toFixed(1)}`)
-
-          // Create the citation box
-          const citationBox = document.createElement('div')
-          citationBox.className = 'citation-annotation-box'
-          citationBox.setAttribute('data-dest', annotation.dest)
-          citationBox.setAttribute('data-page', String(currentPage))
-
-          // Color based on metadata availability
-          const hasMetadata = !!metadata
-          const color = hasMetadata ? '59, 130, 246' : '156, 163, 175'
-
-          // Apply styles - conditional interactivity
-          Object.assign(citationBox.style, {
-            position: 'absolute',
-            left: `${left}px`,
-            top: `${top}px`,
-            width: `${width}px`,
-            height: `${height}px`,
-            backgroundColor: `rgba(${color}, 0.15)`,
-            border: `1.5px solid rgba(${color}, 0.5)`,
-            borderRadius: '3px',
-            cursor: onAnnotationClick ? 'pointer' : 'default',  // Conditional cursor
-            zIndex: '100',
-            transition: 'all 0.15s ease',
-            pointerEvents: onAnnotationClick ? 'auto' : 'none',  // Conditional interaction
-            boxSizing: 'border-box',
-          })
-
-          // Hover effects (only if interactive)
-          if (onAnnotationClick) {
-            citationBox.addEventListener('mouseenter', () => {
-              citationBox.style.backgroundColor = `rgba(${color}, 0.3)`
-              citationBox.style.borderColor = `rgba(${color}, 0.7)`
-              citationBox.style.borderWidth = '2px'
-              citationBox.style.boxShadow = `0 2px 8px rgba(${color}, 0.3)`
-            })
-
-            citationBox.addEventListener('mouseleave', () => {
-              citationBox.style.backgroundColor = `rgba(${color}, 0.15)`
-              citationBox.style.borderColor = `rgba(${color}, 0.5)`
-              citationBox.style.borderWidth = '1.5px'
-              citationBox.style.boxShadow = 'none'
-            })
-
-            // ✅ Handle click with preventDefault (only if handler provided)
-            citationBox.addEventListener('click', (event: Event) => {
-              const mouseEvent = event as MouseEvent
-              mouseEvent.preventDefault()
-              mouseEvent.stopPropagation()
-              console.log(`[CitationPlugin] Clicked: ${annotation.dest}`, metadata)
-              onAnnotationClick(annotation, mouseEvent)
-            }, { capture: true }) // ✅ Use capture phase to intercept before other handlers
-          }
-
-          // Tooltip (always show, but different text based on mode)
-          citationBox.title = onAnnotationClick
-            ? (metadata?.title 
-                ? `${metadata.title}\nClick for details` 
-                : `Citation: ${annotation.dest}\nClick for info`)
-            : (metadata?.title 
-                ? `${metadata.title}` 
-                : `Citation: ${annotation.dest}`)
-
-          // Append to page container
-          pageContainer.appendChild(citationBox)
-        })
-
-        console.log(`✅ [CitationPlugin] Rendered ${pageData.annotations.length} citation boxes on page ${currentPage}`)
-      }, 150)
     },
   }
 }

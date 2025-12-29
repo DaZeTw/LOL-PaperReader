@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext } from "react"
 import { Viewer, Worker } from "@react-pdf-viewer/core"
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
@@ -10,14 +10,13 @@ import { searchPlugin } from "@react-pdf-viewer/search"
 import { useAnnotations, type PageAnnotations } from "@/hooks/useAnnotations"
 import { useCitationAnnotationPlugin } from "@/hooks/useCitationAnnotationPlugin"
 import type { Annotation } from "@/hooks/useAnnotations"
-import { useSkimmingHighlights } from "@/hooks/useSkimmingHighlights"
 import { usePDFHighlightPlugin } from "@/hooks/usePDFHighlightPlugin"
 import { useAnnotation } from "@/hooks/useAnnotation"
 import { useTextSelectionPopup } from "@/hooks/useTextSelectionPopup"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 import { CitationPopup } from "@/components/citation-popup"
 import { KeywordPopup } from "@/components/keyword-popup"
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, Highlighter, Trash2, BookOpen } from "lucide-react"
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2, Sidebar, BookOpen, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { PDFSidebar } from "./pdf-sidebar"
@@ -33,6 +32,36 @@ import "@react-pdf-viewer/bookmark/lib/styles/index.css"
 import "@react-pdf-viewer/highlight/lib/styles/index.css"
 import "@react-pdf-viewer/search/lib/styles/index.css"
 import "@/styles/pdf-components.css"
+
+// --- 1. CONTEXT DEFINITION ---
+export const CitationContext = createContext<{
+  annotations: PageAnnotations[];
+  isLoading: boolean;
+}>({
+  annotations: [],
+  isLoading: false,
+});
+
+// --- 2. INNER VIEWER (FIREWALL) ---
+const InnerViewer = React.memo(({ 
+  fileUrl, 
+  plugins, 
+  onDocumentLoad, 
+  onPageChange 
+}: any) => {
+  return (
+    <Viewer
+      fileUrl={fileUrl}
+      plugins={plugins}
+      onDocumentLoad={onDocumentLoad}
+      onPageChange={onPageChange}
+    />
+  )
+}, (prev, next) => {
+  return prev.fileUrl === next.fileUrl && prev.plugins === next.plugins;
+});
+
+InnerViewer.displayName = 'InnerViewer';
 
 interface PDFViewerProps {
   file: File
@@ -81,7 +110,7 @@ export function PDFViewer({
     new Set(["objective", "method", "result"])
   )
 
-  // useRef to cache citation detail
+  // Cache for citation details
   const citationCacheDict = useRef<Map<string, any>>(new Map())
   const setCitationCacheDict = (key: string, value: any) => {
     citationCacheDict.current.set(key, value)
@@ -90,53 +119,33 @@ export function PDFViewer({
     return citationCacheDict.current.get(key)
   }
 
-
-  // Citation popup state (only for library mode)
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
 
-  // Use annotations hook (only for library mode)
-  const {
-    annotations,
-    isLoading: annotationsLoading,
-    extractAnnotations
+  // Data Loading
+  const { 
+    annotations, 
+    isLoading: annotationsLoading, 
+    extractAnnotations 
   } = useAnnotations()
-
-  // Store annotations in a ref so plugin can access latest value
+  
+  // Refs for stability
   const annotationsRef = useRef<PageAnnotations[]>([])
-
-  // Update ref when annotations change
   useEffect(() => {
     annotationsRef.current = annotations
-    console.log('[PDFViewer] Annotations updated in ref:', {
-      pageCount: annotations.length,
-      totalAnnotations: annotations.reduce((sum, page) => sum + page.annotations.length, 0)
-    })
   }, [annotations])
 
-  // Highlight counts
-  const highlightCounts = {
-    objective: highlights.filter((h) => h.label === "objective").length,
-    method: highlights.filter((h) => h.label === "method").length,
-    result: highlights.filter((h) => h.label === "result").length,
-  }
-
-  // User annotation hook (only for library mode)
-  const {
-    annotations: userAnnotations,
-    annotationCount,
-    annotationPluginInstance,
-    clearAllAnnotations
+  const { 
+    annotations: userAnnotations, 
+    annotationCount, 
+    annotationPluginInstance, 
   } = useAnnotation()
 
-  // Text selection popup hook
   const {
     popupState,
     handleTextSelection,
     handleNodeClick,
     closePopup,
-    isEnabled: popupEnabled,
-    setEnabled: setPopupEnabled
   } = useTextSelectionPopup()
 
   const pdfContainerRef = useRef<HTMLDivElement>(null)
@@ -146,39 +155,51 @@ export function PDFViewer({
   const zoomLabelRef = useRef<HTMLSpanElement>(null)
   const pendingPageNavigation = useRef<number | null>(null)
 
-  // Plugin instances (static)
+  // --- PLUGINS ---
   const pageNavigationPluginInstance = useRef(pageNavigationPlugin()).current
   const zoomPluginInstance = useRef(zoomPlugin()).current
   const thumbnailPluginInstance = useRef(thumbnailPlugin()).current
   const bookmarkPluginInstance = useRef(bookmarkPlugin()).current
   const searchPluginInstance = useRef(searchPlugin({ keyword: "" })).current
 
-  // ✅ FIXED: Recreate citation plugin when annotations change
+  // 1. Citation Plugin (Stable)
   const citationAnnotationPluginInstance = useMemo(() => {
-    console.log('[PDFViewer] Creating citation plugin with', annotations.length, 'pages of annotations')
     return useCitationAnnotationPlugin({
-      annotationsRef: annotationsRef,
+      annotationsRef: annotationsRef, 
       onAnnotationClick: enableInteractions ? (annotation, event) => {
         setSelectedAnnotation(annotation)
         setPopupPosition({ x: event.clientX, y: event.clientY })
       } : undefined,
     })
-  }, [annotations.length, enableInteractions]) // ✅ Recreate when annotations are loaded
+  }, [enableInteractions]) 
 
-  // Highlight plugin - only show highlights in library mode
-  const visibleHighlights = enableInteractions
-    ? highlights.filter((h) => activeHighlightIds.has(h.id) && !hiddenHighlightIds.has(h.id))
-    : []
+  // 2. Highlight Plugin (Corrected Stabilization Pattern)
+  
+  // A. Prepare Data
+  const visibleHighlights = useMemo(() => {
+    return enableInteractions 
+      ? highlights.filter((h) => activeHighlightIds.has(h.id) && !hiddenHighlightIds.has(h.id))
+      : []
+  }, [enableInteractions, highlights, activeHighlightIds, hiddenHighlightIds]);
 
-  const highlightPluginInstance = usePDFHighlightPlugin({
+  // B. Call Hook Top-Level (✅ CORRECT: Not inside useMemo)
+  // This always returns a fresh object on every render
+  const rawHighlightPluginInstance = usePDFHighlightPlugin({
     highlights: visibleHighlights,
     visibleCategories,
-    onHighlightClick: enableInteractions
-      ? (h) => console.log("Clicked highlight:", h.text)
-      : undefined,
+    onHighlightClick: enableInteractions ? (h) => console.log("Clicked highlight:", h.text) : undefined,
   })
 
-  // ✅ FIXED: Rebuild plugins array when citation plugin changes
+  // C. Stabilize Instance
+  // We use useMemo to cache the result. 
+  // We intentionally omit 'rawHighlightPluginInstance' from deps so we only update 
+  // when the DATA (visibleHighlights) changes.
+  const highlightPluginInstance = useMemo(() => {
+    return rawHighlightPluginInstance;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableInteractions, visibleHighlights]) 
+
+  // 3. Master Plugins Array (Frozen)
   const plugins = useMemo(() => {
     const basePlugins = [
       pageNavigationPluginInstance,
@@ -214,19 +235,14 @@ export function PDFViewer({
   const { zoomTo } = zoomPluginInstance
   const { highlight, clearHighlights } = searchPluginInstance
 
-  // Extract annotations when file loads - FIXED: Minimal dependencies
+  // Extract annotations on load
   useEffect(() => {
     if (file && documentId) {
       const url = URL.createObjectURL(file)
       setPdfUrl(url)
 
-      // Only extract citations in library mode AND when references are ready
       if (enableInteractions && referenceStatus === 'ready') {
-        console.log('[PDFViewer] References ready, extracting annotations...')
         extractAnnotations(file, documentId)
-          .then(() => {
-            console.log("[PDFViewer] Successfully extracted annotations")
-          })
           .catch((error) => {
             console.error("[PDFViewer] Failed to extract annotations:", error)
             toast({
@@ -235,19 +251,14 @@ export function PDFViewer({
               variant: "destructive",
             })
           })
-      } else if (enableInteractions && referenceStatus !== 'ready') {
-        console.log(`[PDFViewer] Skipping citation extraction - reference status: ${referenceStatus}`)
       }
-
       return () => URL.revokeObjectURL(url)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, documentId, enableInteractions, referenceStatus])
+  }, [file, documentId, enableInteractions, referenceStatus]) 
 
-  // Handle citation popup actions
+  // --- HANDLERS ---
   const handleCopyText = useCallback((text: string) => {
     if (!enableInteractions) return
-
     navigator.clipboard.writeText(text)
     toast({
       title: "Copied to clipboard",
@@ -257,94 +268,51 @@ export function PDFViewer({
 
   const handleViewReference = useCallback((annotation: Annotation) => {
     if (!enableInteractions) return
-
     if (annotation.target) {
       jumpToPage(annotation.target.page - 1)
       setSelectedAnnotation(null)
-
       setTimeout(() => {
         const pageElements = document.querySelectorAll('.rpv-core__page-layer')
         const targetPageElement = pageElements[annotation.target!.page - 1] as HTMLElement
-
         if (targetPageElement) {
           const pageRect = targetPageElement.getBoundingClientRect()
           const scrollTop = targetPageElement.offsetTop + (annotation.target!.y * pageRect.height)
-
           const viewerContainer = document.querySelector('.rpv-core__inner-pages')
           if (viewerContainer) {
-            viewerContainer.scrollTo({
-              top: scrollTop - 100,
-              behavior: 'smooth'
-            })
+            viewerContainer.scrollTo({ top: scrollTop - 100, behavior: 'smooth' })
           }
         }
       }, 400)
     }
   }, [enableInteractions, jumpToPage])
 
-  // Handle navigation target changes
-  useEffect(() => {
-    if (navigationTarget) {
-      console.log("[PDFViewer] Navigating to page:", navigationTarget.page)
-      currentPageRef.current = navigationTarget.page
-
-      if (pageLabelRef.current) {
-        pageLabelRef.current.textContent = String(navigationTarget.page)
-      }
-
-      onPageChange?.(navigationTarget.page)
-
-      if (navigationTarget.highlightId !== undefined && enableInteractions) {
-        jumpToPage(navigationTarget.page - 1)
-        setTimeout(() => {
-          const highlightElement = document.querySelector(`[data-highlight-id="${navigationTarget.highlightId}"]`) as HTMLElement
-          if (highlightElement) {
-            highlightElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          }
-        }, 600)
-      } else if (navigationTarget.highlightText && enableInteractions) {
-        jumpToPage(navigationTarget.page - 1)
-        clearHighlights()
-        setTimeout(() => {
-          const text = navigationTarget.highlightText!.trim().replace(/\s+/g, ' ')
-          const shortText = text.split(/[.!?]/)[0].trim()
-          if (shortText.length > 10) {
-            highlight(shortText)
-          }
-        }, 500)
-      } else {
-        jumpToPage(navigationTarget.page - 1)
-        if (enableInteractions) {
-          clearHighlights()
-        }
-      }
-
-      setTimeout(() => {
-        onNavigationComplete?.()
-      }, 100)
-    }
-  }, [navigationTarget, jumpToPage, onPageChange, onNavigationComplete, highlight, clearHighlights, enableInteractions])
-
-  const handlePageChangeInternal = (e: any) => {
+  const handlePageChangeInternal = useCallback((e: any) => {
     const newPage = e.currentPage + 1
     currentPageRef.current = newPage
-
     requestAnimationFrame(() => {
-      if (pageLabelRef.current) {
-        pageLabelRef.current.textContent = String(newPage)
-      }
+      if (pageLabelRef.current) pageLabelRef.current.textContent = String(newPage)
     })
-
     onPageChange?.(newPage)
-  }
+  }, [onPageChange])
+
+  const handleDocumentLoadInternal = useCallback((e: any) => {
+    setNumPages(e.doc.numPages)
+    currentPageRef.current = 1
+    zoomRef.current = 1
+    if (pageLabelRef.current) pageLabelRef.current.textContent = "1"
+    if (zoomLabelRef.current) zoomLabelRef.current.textContent = "100%"
+    onDocumentLoad?.(e.doc.numPages)
+    e.doc.getOutline().then((outline: any) => {
+      if (outline) setBookmarks(outline)
+    })
+  }, [onDocumentLoad])
 
   const handleZoomIn = () => {
     const newScale = Math.min(2, zoomRef.current + 0.1)
     zoomRef.current = newScale
     zoomTo(newScale)
     requestAnimationFrame(() => {
-      if (zoomLabelRef.current)
-        zoomLabelRef.current.textContent = `${Math.round(newScale * 100)}%`
+      if (zoomLabelRef.current) zoomLabelRef.current.textContent = `${Math.round(newScale * 100)}%`
     })
   }
 
@@ -353,26 +321,48 @@ export function PDFViewer({
     zoomRef.current = newScale
     zoomTo(newScale)
     requestAnimationFrame(() => {
-      if (zoomLabelRef.current)
-        zoomLabelRef.current.textContent = `${Math.round(newScale * 100)}%`
+      if (zoomLabelRef.current) zoomLabelRef.current.textContent = `${Math.round(newScale * 100)}%`
     })
   }
-
+  
   const handleNavigateToPage = useCallback((page: number) => {
     pendingPageNavigation.current = page
   }, [])
 
+  // Navigation Logic
+  useEffect(() => {
+    if (navigationTarget) {
+      currentPageRef.current = navigationTarget.page
+      if (pageLabelRef.current) pageLabelRef.current.textContent = String(navigationTarget.page)
+      onPageChange?.(navigationTarget.page)
+
+      if (navigationTarget.highlightId !== undefined && enableInteractions) {
+        jumpToPage(navigationTarget.page - 1)
+        setTimeout(() => {
+          const el = document.querySelector(`[data-highlight-id="${navigationTarget.highlightId}"]`)
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 600)
+      } else if (navigationTarget.highlightText && enableInteractions) {
+        jumpToPage(navigationTarget.page - 1)
+        clearHighlights()
+        setTimeout(() => {
+          const text = navigationTarget.highlightText!.trim().replace(/\s+/g, ' ').split(/[.!?]/)[0].trim()
+          if (text.length > 10) highlight(text)
+        }, 500)
+      } else {
+        jumpToPage(navigationTarget.page - 1)
+        if (enableInteractions) clearHighlights()
+      }
+      setTimeout(() => onNavigationComplete?.(), 100)
+    }
+  }, [navigationTarget, jumpToPage, onPageChange, onNavigationComplete, highlight, clearHighlights, enableInteractions])
+
   return (
-    <>
+    <CitationContext.Provider value={{ annotations, isLoading: annotationsLoading }}>
       <div className="pdf-viewer-container flex flex-1 h-full bg-muted/30 min-h-0">
-        {/* Sidebar - Only in library mode */}
+        {/* Sidebar */}
         {viewMode === "reading" && enableInteractions && (
-          <div
-            className={cn(
-              "pdf-sidebar-container relative bg-background border-r border-border transition-all duration-300 ease-in-out flex-shrink-0",
-              sidebarOpen ? "w-80" : "w-0 overflow-hidden"
-            )}
-          >
+          <div className={cn("pdf-sidebar-container relative bg-background border-r border-border transition-all duration-300 ease-in-out flex-shrink-0", sidebarOpen ? "w-80" : "w-0 overflow-hidden")}>
             {sidebarOpen && (
               <PDFSidebar
                 pdfUrl={pdfUrl}
@@ -386,25 +376,20 @@ export function PDFViewer({
           </div>
         )}
 
-        {/* Main viewer */}
         <div className="flex flex-1 flex-col min-w-0 min-h-0">
-          {/* Skimming Controls - Only in library mode */}
+          {/* Controls */}
           {viewMode === "reading" && enableInteractions && highlights.length > 0 && (
             <SkimmingControls
               visibleCategories={visibleCategories}
-              onToggleCategory={(category) => {
-                setVisibleCategories((prev) => {
-                  const next = new Set(prev)
-                  next.has(category) ? next.delete(category) : next.add(category)
-                  return next
-                })
+              onToggleCategory={(category) => setVisibleCategories((prev) => {
+                const next = new Set(prev); next.has(category) ? next.delete(category) : next.add(category); return next;
+              })}
+              onToggleAll={() => setVisibleCategories((prev) => prev.size === 3 ? new Set() : new Set(["objective", "method", "result"]))}
+              highlightCounts={{
+                objective: highlights.filter((h) => h.label === "objective").length,
+                method: highlights.filter((h) => h.label === "method").length,
+                result: highlights.filter((h) => h.label === "result").length,
               }}
-              onToggleAll={() => {
-                setVisibleCategories((prev) =>
-                  prev.size === 3 ? new Set() : new Set(["objective", "method", "result"])
-                )
-              }}
-              highlightCounts={highlightCounts}
             />
           )}
 
@@ -413,184 +398,73 @@ export function PDFViewer({
             <div className="flex items-center gap-2">
               {viewMode === "reading" && (
                 <>
-                  {/* Sidebar toggle - Only in library mode */}
                   {enableInteractions && (
                     <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="h-7 w-7"
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)} className="h-7 w-7">
                         <Sidebar className="h-4 w-4" />
                       </Button>
                       <div className="w-px h-4 bg-border mx-1" />
                     </>
                   )}
-
-                  {/* Page navigation */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      if (currentPageRef.current > 1) jumpToPreviousPage()
-                    }}
-                    className="h-7 w-7"
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => currentPageRef.current > 1 && jumpToPreviousPage()} className="h-7 w-7">
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <span className="font-mono text-sm text-foreground">
-                    <span ref={pageLabelRef}>1</span>{" "}
-                    <span className="text-muted-foreground">/ {numPages || "?"}</span>
+                    <span ref={pageLabelRef}>1</span> <span className="text-muted-foreground">/ {numPages || "?"}</span>
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      if (currentPageRef.current < numPages) jumpToNextPage()
-                    }}
-                    className="h-7 w-7"
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => currentPageRef.current < numPages && jumpToNextPage()} className="h-7 w-7">
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </>
               )}
-
-              {/* Citations loading indicator - Only in library mode */}
+              
+              {/* STATUS INDICATORS */}
               {enableInteractions && (
-                <>
-                  {referenceStatus === 'processing' && (
-                    <>
-                      <div className="w-px h-4 bg-border mx-1" />
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
-                        <span>Processing references...</span>
-                      </div>
-                    </>
-                  )}
-                  
-                  {referenceStatus === 'ready' && referenceCount > 0 && (
-                    <>
-                      <div className="w-px h-4 bg-border mx-1" />
-                      <div className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-md flex items-center gap-1">
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span>{referenceCount} citation{referenceCount !== 1 ? 's' : ''}</span>
-                      </div>
-                    </>
-                  )}
-
-                  {referenceStatus === 'error' && (
-                    <>
-                      <div className="w-px h-4 bg-border mx-1" />
-                      <div className="text-xs text-red-600">
-                        Failed to load citations
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* Citations loading indicator - Updated */}
-              {enableInteractions && annotationsLoading && (
-                <>
-                  <div className="w-px h-4 bg-border mx-1" />
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
-                    <span>Extracting citations...</span>
-                  </div>
-                </>
-              )}
-
-              {/* ✅ Show annotations count when ready */}
-              {enableInteractions && !annotationsLoading && annotations.length > 0 && (
-                <>
-                  <div className="w-px h-4 bg-border mx-1" />
-                  <div className="text-xs text-green-600 font-medium">
-                    {annotations.reduce((sum, page) => sum + page.annotations.length, 0)} clickable citations
-                  </div>
-                </>
-              )}
-
-              {/* Preview mode indicator */}
-              {!enableInteractions && (
-                <>
-                  <div className="w-px h-4 bg-border mx-1" />
-                  <div className="text-xs text-muted-foreground">
-                    Preview Mode - Import to enable features
-                  </div>
-                </>
+                <div className="flex items-center gap-2 ml-4 px-2 py-1 bg-muted/40 rounded-md">
+                   {referenceStatus === 'processing' && (
+                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                       <Loader2 className="h-3 w-3 animate-spin" />
+                       <span>Processing...</span>
+                     </div>
+                   )}
+                   {annotationsLoading && referenceStatus === 'ready' && (
+                     <div className="flex items-center gap-2 text-xs text-blue-600 font-medium">
+                       <Loader2 className="h-3 w-3 animate-spin" />
+                       <span>Fetching Citations...</span>
+                     </div>
+                   )}
+                   {!annotationsLoading && annotations.length > 0 && (
+                     <div className="flex items-center gap-2 text-xs text-green-600 font-medium">
+                       <span>{annotations.reduce((sum, p) => sum + p.annotations.length, 0)} Citations</span>
+                     </div>
+                   )}
+                </div>
               )}
             </div>
-
-            {/* Zoom Controls - Only in reading mode */}
+            
+            {/* Zoom Controls */}
             {viewMode === "reading" && (
               <div className="flex items-center gap-2">
-                {enableInteractions && annotationCount === 0 && (
-                  <div className="text-xs text-muted-foreground mr-2 flex items-center gap-2">
-                    <BookOpen className="h-3 w-3" />
-                    <span>Select text for definition</span>
-                  </div>
-                )}
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleZoomOut}
-                  disabled={zoomRef.current <= 0.5}
-                  className="h-7 w-7"
-                >
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
-                <span
-                  ref={zoomLabelRef}
-                  className="min-w-[3rem] text-center font-mono text-sm text-muted-foreground"
-                >
-                  100%
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleZoomIn}
-                  disabled={zoomRef.current >= 2}
-                  className="h-7 w-7"
-                >
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
-                  <Maximize2 className="h-4 w-4" />
-                </Button>
+                <Button variant="ghost" size="icon" onClick={handleZoomOut} disabled={zoomRef.current <= 0.5} className="h-7 w-7"><ZoomOut className="h-4 w-4" /></Button>
+                <span ref={zoomLabelRef} className="min-w-[3rem] text-center font-mono text-sm text-muted-foreground">100%</span>
+                <Button variant="ghost" size="icon" onClick={handleZoomIn} disabled={zoomRef.current >= 2} className="h-7 w-7"><ZoomIn className="h-4 w-4" /></Button>
               </div>
             )}
           </div>
 
-          {/* Content */}
+          {/* Main Content */}
           <div className="flex-1 overflow-hidden bg-muted/30">
             {viewMode === "reading" ? (
-              <div
-                ref={pdfContainerRef}
-                className="h-full p-4"
-                onMouseUp={enableInteractions ? (e) => handleTextSelection(e.nativeEvent) : undefined}
-              >
+              <div ref={pdfContainerRef} className="h-full p-4" onMouseUp={enableInteractions ? (e) => handleTextSelection(e.nativeEvent) : undefined}>
                 {pdfUrl && (
                   <div className="h-full mx-auto max-w-4xl">
                     <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                       <div className="bg-white shadow-lg rounded-lg overflow-hidden h-full">
-                        <Viewer
+                        {/* ⚡️ USING INNER VIEWER (FIREWALL) */}
+                        <InnerViewer 
                           fileUrl={pdfUrl}
                           plugins={plugins}
-                          onDocumentLoad={(e) => {
-                            setNumPages(e.doc.numPages)
-                            currentPageRef.current = 1
-                            zoomRef.current = 1
-                            if (pageLabelRef.current) pageLabelRef.current.textContent = "1"
-                            if (zoomLabelRef.current) zoomLabelRef.current.textContent = "100%"
-                            onDocumentLoad?.(e.doc.numPages)
-                            e.doc.getOutline().then((outline) => {
-                              if (outline) setBookmarks(outline)
-                            })
-                          }}
+                          onDocumentLoad={handleDocumentLoadInternal}
                           onPageChange={handlePageChangeInternal}
                         />
                       </div>
@@ -599,51 +473,30 @@ export function PDFViewer({
                 )}
               </div>
             ) : (
-              enableInteractions && (
-                <SkimmingView
-                  file={file}
-                  numPages={numPages}
-                  onNavigateToPage={handleNavigateToPage}
-                  onExitSkimming={() => setViewMode("reading")}
-                />
-              )
+              enableInteractions && <SkimmingView file={file} numPages={numPages} onNavigateToPage={handleNavigateToPage} onExitSkimming={() => setViewMode("reading")} />
             )}
           </div>
         </div>
       </div>
 
-      {/* Citation Popup - Only in library mode */}
+      {/* Popups */}
       {enableInteractions && (
-        <CitationPopup
-          annotation={selectedAnnotation}
-          isOpen={!!selectedAnnotation}
-          onClose={() => setSelectedAnnotation(null)}
-          onCopyText={handleCopyText}
-          onViewReference={handleViewReference}
-          position={popupPosition}
-          citationCache={{
-            set: setCitationCacheDict,
-            get: getCitationCacheDict
-          }}
-        />
+        <>
+          <CitationPopup 
+            annotation={selectedAnnotation} 
+            isOpen={!!selectedAnnotation} 
+            onClose={() => setSelectedAnnotation(null)} 
+            onCopyText={handleCopyText} 
+            onViewReference={handleViewReference} 
+            position={popupPosition}
+            citationCache={{
+              set: setCitationCacheDict,
+              get: getCitationCacheDict
+            }}
+          />
+          <KeywordPopup isOpen={popupState.isOpen} keyword={popupState.keyword} context={popupState.context} concept={popupState.concept} siblings={popupState.siblings} descendants={popupState.descendants} loading={popupState.loading} error={popupState.error} onClose={closePopup} onNodeClick={handleNodeClick} position={popupState.position} />
+        </>
       )}
-
-      {/* Keyword Definition Popup */}
-      {enableInteractions && (
-        <KeywordPopup
-          isOpen={popupState.isOpen}
-          keyword={popupState.keyword}
-          context={popupState.context}
-          concept={popupState.concept}
-          siblings={popupState.siblings}
-          descendants={popupState.descendants}
-          loading={popupState.loading}
-          error={popupState.error}
-          onClose={closePopup}
-          onNodeClick={handleNodeClick}
-          position={popupState.position}
-        />
-      )}
-    </>
+    </CitationContext.Provider>
   )
 }

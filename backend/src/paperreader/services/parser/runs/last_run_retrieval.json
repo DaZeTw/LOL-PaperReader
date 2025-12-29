@@ -1,10 +1,10 @@
 {
-  "question": "So how should I use? Use stronger model or use retriever? ",
+  "question": "What is the main finding?",
   "hits": [
     {
       "index": 0,
-      "score": 0.7997687,
-      "text": "In contrast, the larger instruction tuned LLMs like Llama2-70B has much stronger zero-shot capability to incorporate retrieved evidence. This observation is becoming more clear when one compares the gain of retrieval-augmentation between GPT-43B and Llama2-70B, where Llama2-70B enjoys larger benefit of incorporating context through retrieval. 4.2 C OMPARING TO O PEN AI MODELS To further understand how good is our best model, i.e., augmenting Llama2-70B-32k with retrieval, we also compare it to GPT-3.5-turbo(4k), GPT-3.5-turbo-16k and Davinci-003 on those seven datasets. 6 We found that Llama2-70B-32k-ret achieves better results than GPT-3.5-turbo-16k in terms of the average accuracy over seven datasets, while better than Davinci-003 (w/ 175B parameters) on the average over 4 tasks. This indicates Llama2-70B-32k with retrieval is a strong model for these long context tasks, and our conclusion is built on the state-of-the-art results. We also report the retrieval augmented results for GPT3.5-turbo on MSQ, HQA and MFQA. For GPT3.5-turbo-4k, retrieval significantly improves the performance (avg from 37.08 to 41.15). For GPT3.5-turbo-16k, the average scores for retrieval (43.27) and non-retrieval (43.60) scores are close to each other which are both lower than our Llam2-70B-32k-ret results (44.51). Note that GPT3.5- turbo-16k is a blackbox API, we don’t know how it is implemented, the model size as well as any preprocessing steps. 6 For QMSum (QM), Qasper (QASP), NarrativeQA (NQA), QuALITY (QLTY), we used the test set from the ZeroSCROLLS leaderboard as the organizers have prepared the scores of GPT-3.5-turbo (4k) and Davinci-003 there. 8",
+      "score": 0.7560914,
+      "text": "Our method substantially 2",
       "metadata": {
-        "chunk_id": "3bce08863728376bdda3c4225ac7f63c67f94a9b",
+        "chunk_id": "ab4b546cd02b0292ae636ad8df829f2f94886989",
         "doc_id": 
