@@ -131,6 +131,15 @@ export function useQAActions({
 
     if (!question.trim()) return
 
+    // Set loading state IMMEDIATELY for instant UI feedback
+    setIsLoading(true)
+    pendingQuestionRef.current = question // Track pending question
+    
+    // Set thinking flag in localStorage immediately
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(thinkingFlagKey, 'true')
+    }
+
     let currentSessionId = sessionId
 
     // Ensure we have a valid session before asking a question
@@ -157,6 +166,12 @@ export function useQAActions({
     try {
       await ensureValidSession()
     } catch (error: any) {
+      // Clear loading state on error
+      setIsLoading(false)
+      pendingQuestionRef.current = null
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(thinkingFlagKey)
+      }
       toast({
         title: "Failed to start chat",
         description: error?.message || "Please try again",
@@ -166,6 +181,11 @@ export function useQAActions({
     }
 
     if (!currentSessionId) {
+      setIsLoading(false)
+      pendingQuestionRef.current = null
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(thinkingFlagKey)
+      }
       toast({
         title: "Failed to start chat",
         description: "Could not initialize chat session. Please try again.",
@@ -174,14 +194,8 @@ export function useQAActions({
       return
     }
 
-    setIsLoading(true)
-    pendingQuestionRef.current = question // Track pending question
-    currentSessionIdRef.current = currentSessionId // Update current session ref
-    
-    // Set thinking flag in localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(thinkingFlagKey, 'true')
-    }
+    // Update current session ref
+    currentSessionIdRef.current = currentSessionId
 
     try {
       const response = await fetch("/api/chat/ask", {
