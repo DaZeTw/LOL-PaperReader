@@ -14,16 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import (
-    APIRouter,
-    File,
-    Header,
-    HTTPException,
-    Query,
-    UploadFile,
-    WebSocket,
-    WebSocketDisconnect,
-)
+from fastapi import APIRouter, File, Header, HTTPException, Query, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, StreamingResponse
 from paperreader.api.summary_routes import (
     _extract_sections_from_pdf,
@@ -130,6 +121,8 @@ def _resolve_document_id(
         if key in mapping:
             return mapping[key]
     return None
+
+
 
 
 async def _parse_and_chunk_pdf(
@@ -464,9 +457,7 @@ async def _parse_and_chunk_pdf(
             },
         )
         # Notify via status aggregator (internal architecture)
-        print(
-            f"[WebSocket] 📤 [PDF] Notifying embedding task status for document {document_id}"
-        )
+        print(f"[WebSocket] 📤 [PDF] Notifying embedding task status for document {document_id}")
         await notify_task_status(
             document_id=document_id,
             task_name="embedding",
@@ -476,9 +467,7 @@ async def _parse_and_chunk_pdf(
                 "updated_at": datetime.utcnow().isoformat(),
             },
         )
-        print(
-            f"[WebSocket] ✅ [PDF] Notified embedding task status for document {document_id}"
-        )
+        print(f"[WebSocket] ✅ [PDF] Notified embedding task status for document {document_id}")
 
     return {
         "chunks": chunks,
@@ -582,12 +571,12 @@ async def _process_summary(
                 {
                     "summary_status": "ready",
                     "summary_updated_at": datetime.utcnow(),
+                    # Clear any previous error if summary was successfully generated
+                    "summary_error": None,
                 },
             )
             # Notify via status aggregator (internal architecture)
-            print(
-                f"[WebSocket] 📤 [SUMMARY] Notifying summary task status for document {document_id}"
-            )
+            print(f"[WebSocket] 📤 [SUMMARY] Notifying summary task status for document {document_id}")
             await notify_task_status(
                 document_id=document_id,
                 task_name="summary",
@@ -597,9 +586,7 @@ async def _process_summary(
                     "updated_at": datetime.utcnow().isoformat(),
                 },
             )
-            print(
-                f"[WebSocket] ✅ [SUMMARY] Notified summary task status for document {document_id}"
-            )
+            print(f"[WebSocket] ✅ [SUMMARY] Notified summary task status for document {document_id}")
 
         return {
             "status": "success",
@@ -608,11 +595,107 @@ async def _process_summary(
             "elapsed": elapsed,
         }
 
-    except Exception as exc:
+    except HTTPException as http_exc:
+        # HTTPException from _fill_summary_template or other validation errors
         elapsed = time.time() - start_time
+        error_msg = str(http_exc.detail)
+        
+        # Check if it's a retry warning that we should only log
+        is_retry_warning = (
+            "retries" in error_msg.lower() or 
+            "retry" in error_msg.lower()
+        )
+        
+        if is_retry_warning:
+            # Log warning but don't save as error
+            # Note: If _fill_summary_template recovered a valid result from retry warning,
+            # it would have returned it instead of raising exception.
+            # So if we get here, it means the retry actually failed.
+            # But we'll still only log warning, not save as error, to avoid showing
+            # retry warnings in UI when summary generation eventually succeeds.
+            print(
+                f"[SUMMARY] ⚠️ Retry warning in summary generation for {pdf_path.name} "
+                f"(took {elapsed:.2f}s): {error_msg}"
+            )
+            import traceback
+            print(f"[SUMMARY] Traceback: {traceback.format_exc()}")
+            # Don't update status to error for retry warnings - just log
+            # Re-raise to let caller handle, but don't save as error
+            raise  # Re-raise to let caller handle
+        
+        # Real error, save it
         print(
             f"[SUMMARY] ❌ Failed to generate summary for {pdf_path.name} "
-            f"(took {elapsed:.2f}s): {exc}"
+            f"(took {elapsed:.2f}s): {error_msg}"
+        )
+        
+        if document_id:
+            await _update_document_safe(
+                document_id,
+                {
+                    "summary_status": "error",
+                    "summary_error": error_msg,
+                },
+            )
+            await notify_task_status(
+                document_id=document_id,
+                task_name="summary",
+                status_data={
+                    "status": "error",
+                    "error": error_msg,
+                    "updated_at": datetime.utcnow().isoformat(),
+                },
+            )
+            print(f"[SUMMARY] ❌ Notified summary task error for {document_id}")
+        
+        raise  # Re-raise HTTPException
+        
+    except Exception as exc:
+        elapsed = time.time() - start_time
+        error_msg = str(exc)
+        
+        # Check if it's a retry warning
+        is_retry_warning = (
+            "retries" in error_msg.lower() or 
+            "retry" in error_msg.lower() or
+            ("validation" in error_msg.lower() and "retries" in error_msg.lower())
+        )
+        
+        if is_retry_warning:
+            # Log warning but don't save as error
+            # Note: If _fill_summary_template recovered a valid result from retry warning,
+            # it would have returned it instead of raising exception.
+            # So if we get here, it means the retry actually failed.
+            # But we'll still only log warning, not save as error, to avoid showing
+            # retry warnings in UI when summary generation eventually succeeds.
+            print(
+                f"[SUMMARY] ⚠️ Retry warning in summary generation for {pdf_path.name} "
+                f"(took {elapsed:.2f}s): {error_msg}"
+            )
+            import traceback
+            print(f"[SUMMARY] Traceback: {traceback.format_exc()}")
+            # Don't update status to error for retry warnings - just log
+            # Return error status but don't save error message to summary_error
+            # This prevents retry warnings from showing in UI
+            if document_id:
+                await _update_document_safe(
+                    document_id,
+                    {
+                        "summary_status": "error",
+                        # Don't save retry warning as summary_error
+                        "summary_error": None,
+                    },
+                )
+            return {
+                "status": "error",
+                "error": error_msg,
+                "elapsed": elapsed,
+            }
+        
+        # Real error
+        print(
+            f"[SUMMARY] ❌ Failed to generate summary for {pdf_path.name} "
+            f"(took {elapsed:.2f}s): {error_msg}"
         )
         import traceback
 
@@ -624,7 +707,7 @@ async def _process_summary(
                 document_id,
                 {
                     "summary_status": "error",
-                    "summary_error": str(exc),
+                    "summary_error": error_msg,
                 },
             )
             # Notify via status aggregator (internal architecture)
@@ -633,7 +716,7 @@ async def _process_summary(
                 task_name="summary",
                 status_data={
                     "status": "error",
-                    "error": str(exc),
+                    "error": error_msg,
                     "updated_at": datetime.utcnow().isoformat(),
                 },
             )
@@ -641,7 +724,7 @@ async def _process_summary(
 
         return {
             "status": "error",
-            "error": str(exc),
+            "error": error_msg,
             "elapsed": elapsed,
         }
 
@@ -716,9 +799,7 @@ async def _process_references(
                 },
             )
             # Notify via status aggregator (internal architecture)
-            print(
-                f"[WebSocket] 📤 [REFERENCE] Notifying reference task status for document {document_id}"
-            )
+            print(f"[WebSocket] 📤 [REFERENCE] Notifying reference task status for document {document_id}")
             await notify_task_status(
                 document_id=document_id,
                 task_name="reference",
@@ -729,9 +810,7 @@ async def _process_references(
                     "updated_at": datetime.utcnow().isoformat(),
                 },
             )
-            print(
-                f"[WebSocket] ✅ [REFERENCE] Notified reference task status for document {document_id}"
-            )
+            print(f"[WebSocket] ✅ [REFERENCE] Notified reference task status for document {document_id}")
 
         return {
             "status": "success",
@@ -865,9 +944,7 @@ async def _process_skimming(
                 },
             )
             # Notify via status aggregator (internal architecture)
-            print(
-                f"[WebSocket] 📤 [SKIMMING] Notifying skimming task status for document {document_id}"
-            )
+            print(f"[WebSocket] 📤 [SKIMMING] Notifying skimming task status for document {document_id}")
             await notify_task_status(
                 document_id=document_id,
                 task_name="skimming",
@@ -877,9 +954,7 @@ async def _process_skimming(
                     "updated_at": datetime.utcnow().isoformat(),
                 },
             )
-            print(
-                f"[WebSocket] ✅ [SKIMMING] Notified skimming task status for document {document_id}"
-            )
+            print(f"[WebSocket] ✅ [SKIMMING] Notified skimming task status for document {document_id}")
 
         return {
             "status": "success",
@@ -925,159 +1000,6 @@ async def _process_skimming(
         }
 
 
-# Under development
-async def _process_metadata(
-    pdf_path: Path,
-    document_id: Optional[str],
-) -> Dict[str, Any]:
-    """
-    Process metadata for a PDF document.
-    This is independent of the main parsing pipeline.
-
-    Steps:
-    1. Read PDF file bytes
-    2. Call metadata service to process and get metadata
-    3. Save metadata to database
-
-    Returns:
-        Dict containing:
-        - status: "success" or "error"
-        - metadata: Metadata dictionary
-        - elapsed: Processing time
-
-    Currently is placeholder (print hello)
-    """
-    print(f"[METADATA] 📄 Starting metadata processing for {pdf_path.name}...")
-    start_time = time.time()
-    try:
-        # Update document status to processing
-        if document_id:
-            await _update_document_safe(
-                document_id,
-                {
-                    "metadata_status": "processing",
-                },
-            )
-
-        # Step 1: Read PDF file bytes
-        pdf_bytes = pdf_path.read_bytes()
-        file_stem = pdf_path.stem
-
-        # Step 2: Actual domain logic but placeholder for now
-        # TODO: create paperreader.services.metadata.metadata_service and import process_metadata (done)
-        # TODO: check
-
-        from paperreader.services.metadata.metadata_service import (
-            process_metadata,
-            save_metadata,
-        )
-        from paperreader.services.parser.pdf_parser_pymupdf import (
-            get_metadata_from_pdf_with_pymupdf,
-        )
-
-        pymupdf_metadata = get_metadata_from_pdf_with_pymupdf(pdf_path)
-        metadata = await process_metadata(pdf_bytes, file_stem)
-
-        # Merge keywords from PyMuPDF if not present or empty
-        if not metadata.get("keywords"):
-            metadata["keywords"] = pymupdf_metadata.get("keywords", "")
-
-        # Fallback for Year if missing
-        if not metadata.get("year"):
-            creation_date = pymupdf_metadata.get("creation_date", "")
-            if creation_date and str(creation_date).startswith("D:"):
-                # Parse format D:YYYYMMDD...
-                try:
-                    metadata["year"] = creation_date[2:6]
-                except IndexError:
-                    pass
-            elif creation_date:
-                # Try taking first 4 chars if it looks like a year
-                metadata["year"] = str(creation_date)[:4]
-
-        # Step 3: Save to database
-        if document_id:
-            # await save_metadata(
-            #     document_id=document_id,
-            #     metadata=metadata
-            # )
-            await _update_document_safe(document_id, metadata)
-            print(f"[METADATA] Saved metadata to database for document {document_id}")
-
-        elapsed = time.time() - start_time
-        print(
-            f"[METADATA] ✅ Processed metadata for {pdf_path.name} "
-            f"in {elapsed:.2f}s"
-        )
-        # Update document status to ready
-        if document_id:
-            await _update_document_safe(
-                document_id,
-                {
-                    "metadata_status": "ready",
-                    "metadata_updated_at": datetime.utcnow(),
-                },
-            )
-            # ✅ REPLACED: Use notify_task_status instead of _notify_status_change
-            print(
-                f"[WebSocket] 📤 [METADATA] Notifying metadata task status for document {document_id}"
-            )
-            await notify_task_status(
-                document_id=document_id,
-                task_name="metadata",
-                status_data={
-                    "status": "ready",
-                    "metadata_ready": True,
-                    "updated_at": datetime.utcnow().isoformat(),
-                },
-            )
-            print(
-                f"[WebSocket] ✅ [METADATA] Notified metadata task status for document {document_id}"
-            )
-
-        return {
-            "status": "success",
-            "elapsed": elapsed,
-        }
-
-    except Exception as exc:
-        elapsed = time.time() - start_time
-        print(
-            f"[METADATA] ❌ Failed to process metadata for {pdf_path.name} "
-            f"(took {elapsed:.2f}s): {exc}"
-        )
-        import traceback
-
-        print(f"[METADATA] Traceback: {traceback.format_exc()}")
-
-        # Update document status to error
-        if document_id:
-            await _update_document_safe(
-                document_id,
-                {
-                    "metadata_status": "error",
-                    "metadata_error": str(exc),
-                },
-            )
-            # ✅ REPLACED: Use notify_task_status instead of _notify_status_change
-            await notify_task_status(
-                document_id=document_id,
-                task_name="metadata",
-                status_data={
-                    "status": "error",
-                    "error": str(exc),
-                    "updated_at": datetime.utcnow().isoformat(),
-                },
-            )
-            print(f"[METADATA] ❌ Notified metadata task error for {document_id}")
-
-        return {
-            "status": "error",
-            "error": str(exc),
-            "elapsed": elapsed,
-        }
-
-
 async def _process_saved_pdfs(
     saved_paths: List[Path],
     *,
@@ -1094,9 +1016,8 @@ async def _process_saved_pdfs(
     2. Generate summary (independent)
     3. Extract references (independent)
     4. Process skimming highlights (independent)
-    5. Updated process metadata (independent)
 
-    All five tasks run in parallel and don't block each other.
+    All four tasks run in parallel and don't block each other.
     """
     if not saved_paths:
         payload = {"status": "ok", "count": 0, "results": []}
@@ -1157,7 +1078,6 @@ async def _process_saved_pdfs(
                             "summary_status": "processing",
                             "reference_status": "processing",
                             "skimming_status": "processing",
-                            "metadata_status": "processing",
                         },
                     )
 
@@ -1185,16 +1105,13 @@ async def _process_saved_pdfs(
                 skimming_task = asyncio.create_task(
                     _process_skimming(pdf_path, document_id)
                 )
-                metadata_task = asyncio.create_task(
-                    _process_metadata(pdf_path, document_id)
-                )
+
                 # Wait for all tasks to complete (don't fail if one fails)
                 all_results = await asyncio.gather(
                     parse_task,
                     summary_task,
                     reference_task,
                     skimming_task,
-                    metadata_task,
                     return_exceptions=True,
                 )
 
@@ -1218,11 +1135,6 @@ async def _process_saved_pdfs(
                     all_results[3]
                     if not isinstance(all_results[3], Exception)
                     else {"status": "error", "error": str(all_results[3])}
-                )
-                metadata_result = (
-                    all_results[4]
-                    if not isinstance(all_results[4], Exception)
-                    else {"status": "error", "error": str(all_results[4])}
                 )
 
                 # Log results for each task
@@ -1265,13 +1177,12 @@ async def _process_saved_pdfs(
                             document_id,
                             {
                                 "status": "ready",
-                                # "num_pages": total_pages,
-                                # "total_pages": total_pages,
-                                # these 3 field will be handle by metadata module
-                                # "title": resolved_title,
-                                # "author": metadata.get("author") or "",
-                                # "subject": metadata.get("subject") or "",
-                                # "keywords": keywords_list,
+                                "num_pages": total_pages,
+                                "total_pages": total_pages,
+                                "title": resolved_title,
+                                "author": metadata.get("author") or "",
+                                "subject": metadata.get("subject") or "",
+                                "keywords": keywords_list,
                                 "chunk_count": len(chunks),
                                 "metadata": metadata,
                             },
@@ -1318,14 +1229,6 @@ async def _process_saved_pdfs(
                         f"{skimming_result.get('error', 'Unknown error')}"
                     )
 
-                if metadata_result.get("status") == "success":
-                    print(f"[PDF] ✅ Metadata processed for {pdf_path.name}")
-                else:
-                    print(
-                        f"[PDF] ⚠️ Metadata failed for {pdf_path.name}: "
-                        f"{metadata_result.get('error', 'Unknown error')}"
-                    )
-
                 print(
                     f"[PDF] ✅ COMPLETED all processing for {pdf_path.name} "
                     f"(PDF {index}/{len(saved_paths)})"
@@ -1354,7 +1257,6 @@ async def _process_saved_pdfs(
                         "summary_result": summary_result,
                         "reference_result": reference_result,
                         "skimming_result": skimming_result,
-                        "metadata_result": metadata_result,
                     }
                 )
 

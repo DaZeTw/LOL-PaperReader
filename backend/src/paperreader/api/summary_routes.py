@@ -137,7 +137,7 @@ async def _select_important_sections(section_names: List[str]) -> List[str]:
     )
 
     agent = Agent(
-        model="gpt-4o",
+        model="gpt-4.1",
         system_prompt=SELECT_IMPORTANT_SECTIONS_SYSTEM_PROMPT,
         output_type=ImportantSectionsResponse,
         retries=0,
@@ -158,7 +158,7 @@ async def _create_summary_template_from_sections(important_sections: List[str]) 
     )
 
     agent = Agent(
-        model="gpt-4o-mini",
+        model="gpt-4.1",
         system_prompt=SUMMARY_TEMPLATE_SYSTEM_PROMPT,
         output_type=str,
         retries=0,
@@ -273,10 +273,10 @@ async def _fill_summary_template(
 
     # System prompt matching FINAL_FILL_PROMPT_TEMPLATE
     agent = Agent(
-        model="gpt-4o",
+        model="gpt-4.1",
         system_prompt=FINAL_SUMMARY_SYSTEM_PROMPT,
         output_type=FinalSummary,
-        retries=2,  # Disable retries to fail fast and see raw response
+        retries=5,  
     )
 
     # Quick wrapper to run agent and print raw output before Pydantic validation
