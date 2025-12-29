@@ -166,8 +166,8 @@ def create_app() -> FastAPI:
                 print(f"[STARTUP] (bg) Traceback: {traceback.format_exc()}")
 
         # DISABLED: Warmup blocks the event loop and prevents server from responding
-        # asyncio.create_task(do_warmup())
-        print("[STARTUP] Embedder warmup disabled - models will load on first use")
+        asyncio.create_task(do_warmup())
+        #print("[STARTUP] Embedder warmup disabled - models will load on first use")
 
     @app.on_event("shutdown")
     async def shutdown_event():

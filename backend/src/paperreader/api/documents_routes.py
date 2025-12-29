@@ -17,8 +17,6 @@ from pydantic import BaseModel
 
 from paperreader.api.dependencies import require_user_id
 from paperreader.services.documents.minio_client import (
-    delete_object,
-    delete_objects_by_prefix,
     get_presigned_url,
     upload_bytes,
 )
@@ -32,14 +30,12 @@ from paperreader.services.documents.repository import (
     get_documents_by_ids,
     get_documents_by_user_id,
     get_or_create_workspace,
+    remove_all_document_data,
     remove_documents_from_workspace,
     to_object_id,
     update_document,
     update_document_status,
 )
-from paperreader.services.documents.chunk_repository import delete_document_chunks
-from paperreader.services.qa.elasticsearch_client import delete_document_chunks as delete_elasticsearch_chunks
-from paperreader.services.chat import repository as chat_repository
 from paperreader.services.documents.utils import format_document_for_response
 
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
@@ -203,54 +199,19 @@ async def delete_documents(
     if not documents:
         return {"deletedCount": 0}
 
+    # Remove all related data for each document
     for doc in documents:
-        stored_path = doc.get("stored_path")
-        if stored_path:
-            try:
-                await delete_object(MINIO_BUCKET, stored_path)
-            except Exception as exc:
-                print(f"[Documents] Failed to delete {stored_path} from MinIO: {exc}")
-        
-        # Delete associated images and tables from MinIO
-        # Path pattern: {user_id}/document/{document_id}/...
         doc_id = doc.get("_id")
-        if doc_id:
-            document_id_str = str(doc_id)
-            asset_prefix = f"{user_id}/document/{document_id_str}/"
+        if doc_id and isinstance(doc_id, ObjectId):
+            stored_path = doc.get("stored_path")
             try:
-                deleted_count = await delete_objects_by_prefix(MINIO_BUCKET, asset_prefix)
-                if deleted_count > 0:
-                    print(f"[Documents] Deleted {deleted_count} associated files (images/tables) for document {document_id_str}")
-            except Exception as exc:
-                print(f"[Documents] Failed to delete associated files for document {document_id_str}: {exc}")
-            
-            # Delete chunks from MongoDB
-            try:
-                chunks_deleted = await delete_document_chunks(
-                    document_id=document_id_str
-                )
-                if chunks_deleted > 0:
-                    print(f"[Documents] ✅ Deleted {chunks_deleted} chunks from MongoDB for document {document_id_str}")
-            except Exception as exc:
-                print(f"[Documents] ⚠️ Failed to delete chunks from MongoDB for document {document_id_str}: {exc}")
-            
-            # Delete embeddings from Elasticsearch
-            try:
-                await delete_elasticsearch_chunks(
-                    document_id=document_id_str
+                await remove_all_document_data(
+                    document_id=doc_id,
+                    user_id=user_id,
+                    stored_path=stored_path
                 )
             except Exception as exc:
-                print(f"[Documents] ⚠️ Failed to delete embeddings from Elasticsearch: {exc}")
-            
-            # Delete chat sessions and messages related to this document
-            try:
-                sessions_deleted = await chat_repository.delete_sessions_by_document(
-                    document_id=document_id_str
-                )
-                if sessions_deleted > 0:
-                    print(f"[Documents] ✅ Deleted {sessions_deleted} chat sessions and messages for document {document_id_str}")
-            except Exception as exc:
-                print(f"[Documents] ⚠️ Failed to delete chat sessions for document {document_id_str}: {exc}")
+                print(f"[Documents] ⚠️ Error removing data for document {doc_id}: {exc}")
 
     workspace_groups = {}
     for doc in documents:
