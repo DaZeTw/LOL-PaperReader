@@ -60,6 +60,35 @@ export interface UseTaxonomyAPIReturn {
 
 const API_BASE = `${BACKEND_API_URL}/api/taxonomy`
 
+// Log the API base URL on module load to help debug connection issues
+if (typeof window !== 'undefined') {
+  console.log(`[TaxonomyAPI] Using backend URL: ${BACKEND_API_URL}`)
+  console.log(`[TaxonomyAPI] API base: ${API_BASE}`)
+}
+
+/**
+ * Helper to safely parse JSON response and provide better error messages
+ */
+async function parseJsonResponse(res: Response, operation: string): Promise<unknown> {
+  const contentType = res.headers.get('content-type') || ''
+
+  if (!contentType.includes('application/json')) {
+    const text = await res.text()
+    console.error(`[TaxonomyAPI] ${operation} returned non-JSON response:`, {
+      status: res.status,
+      contentType,
+      body: text.substring(0, 200)
+    })
+    throw new Error(
+      `${operation} failed: Server returned HTML instead of JSON. ` +
+      `This usually means the backend server is not running at ${API_BASE}. ` +
+      `Status: ${res.status}`
+    )
+  }
+
+  return res.json()
+}
+
 /**
  * Search for a concept by name
  * @param query - The keyword to search for
@@ -67,15 +96,23 @@ const API_BASE = `${BACKEND_API_URL}/api/taxonomy`
  * @returns Array of matching concepts
  */
 async function searchConcept(query: string, limit: number = 5): Promise<ConceptSearchItem[]> {
-  const res = await fetch(
-    `${API_BASE}/search?query=${encodeURIComponent(query)}&limit=${limit}`
-  )
-  
+  const url = `${API_BASE}/search?query=${encodeURIComponent(query)}&limit=${limit}`
+  console.log(`[TaxonomyAPI] Searching: ${url}`)
+
+  const res = await fetch(url)
+
   if (!res.ok) {
+    const contentType = res.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) {
+      throw new Error(
+        `Search failed: Backend returned status ${res.status}. ` +
+        `Make sure the backend server is running at ${API_BASE}`
+      )
+    }
     throw new Error(`Search failed: ${res.status}`)
   }
-  
-  const data = await res.json()
+
+  const data = await parseJsonResponse(res, 'Search') as { items?: ConceptSearchItem[] }
   return data.items || []
 }
 
@@ -85,16 +122,24 @@ async function searchConcept(query: string, limit: number = 5): Promise<ConceptS
  * @returns Concept details
  */
 async function getConcept(id: string): Promise<ConceptData | null> {
-  const res = await fetch(`${API_BASE}/concepts/${id}`)
-  
+  const url = `${API_BASE}/concepts/${id}`
+  const res = await fetch(url)
+
   if (!res.ok) {
     if (res.status === 404) {
       return null
     }
+    const contentType = res.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) {
+      throw new Error(
+        `Concept fetch failed: Backend returned status ${res.status}. ` +
+        `Make sure the backend server is running at ${API_BASE}`
+      )
+    }
     throw new Error(`Concept fetch failed: ${res.status}`)
   }
-  
-  return await res.json()
+
+  return await parseJsonResponse(res, 'Concept fetch') as ConceptData
 }
 
 /**
@@ -104,13 +149,21 @@ async function getConcept(id: string): Promise<ConceptData | null> {
  * @returns Array of sibling concepts
  */
 async function getSiblings(id: string, limit: number = 10): Promise<RelatedConcept[]> {
-  const res = await fetch(`${API_BASE}/concepts/${id}/siblings?limit=${limit}`)
-  
+  const url = `${API_BASE}/concepts/${id}/siblings?limit=${limit}`
+  const res = await fetch(url)
+
   if (!res.ok) {
+    const contentType = res.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) {
+      throw new Error(
+        `Siblings fetch failed: Backend returned status ${res.status}. ` +
+        `Make sure the backend server is running at ${API_BASE}`
+      )
+    }
     throw new Error(`Siblings fetch failed: ${res.status}`)
   }
-  
-  const data = await res.json()
+
+  const data = await parseJsonResponse(res, 'Siblings fetch') as { siblings?: RelatedConcept[] }
   return data.siblings || []
 }
 
@@ -121,13 +174,21 @@ async function getSiblings(id: string, limit: number = 10): Promise<RelatedConce
  * @returns Array of descendant concepts
  */
 async function getDescendants(id: string, maxNodes: number = 10): Promise<RelatedConcept[]> {
-  const res = await fetch(`${API_BASE}/concepts/${id}/descendants?max_nodes=${maxNodes}`)
-  
+  const url = `${API_BASE}/concepts/${id}/descendants?max_nodes=${maxNodes}`
+  const res = await fetch(url)
+
   if (!res.ok) {
+    const contentType = res.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) {
+      throw new Error(
+        `Descendants fetch failed: Backend returned status ${res.status}. ` +
+        `Make sure the backend server is running at ${API_BASE}`
+      )
+    }
     throw new Error(`Descendants fetch failed: ${res.status}`)
   }
-  
-  const data = await res.json()
+
+  const data = await parseJsonResponse(res, 'Descendants fetch') as { descendants?: RelatedConcept[] }
   return data.descendants || []
 }
 
