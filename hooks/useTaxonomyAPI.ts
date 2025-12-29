@@ -66,6 +66,12 @@ if (typeof window !== 'undefined') {
   console.log(`[TaxonomyAPI] API base: ${API_BASE}`)
 }
 
+// Default headers for all requests (ngrok-skip-browser-warning bypasses ngrok interstitial page)
+const DEFAULT_HEADERS: HeadersInit = {
+  'ngrok-skip-browser-warning': 'true',
+  'Accept': 'application/json',
+}
+
 /**
  * Helper to safely parse JSON response and provide better error messages
  */
@@ -99,7 +105,7 @@ async function searchConcept(query: string, limit: number = 5): Promise<ConceptS
   const url = `${API_BASE}/search?query=${encodeURIComponent(query)}&limit=${limit}`
   console.log(`[TaxonomyAPI] Searching: ${url}`)
 
-  const res = await fetch(url)
+  const res = await fetch(url, { headers: DEFAULT_HEADERS })
 
   if (!res.ok) {
     const contentType = res.headers.get('content-type') || ''
@@ -123,7 +129,7 @@ async function searchConcept(query: string, limit: number = 5): Promise<ConceptS
  */
 async function getConcept(id: string): Promise<ConceptData | null> {
   const url = `${API_BASE}/concepts/${id}`
-  const res = await fetch(url)
+  const res = await fetch(url, { headers: DEFAULT_HEADERS })
 
   if (!res.ok) {
     if (res.status === 404) {
@@ -150,7 +156,7 @@ async function getConcept(id: string): Promise<ConceptData | null> {
  */
 async function getSiblings(id: string, limit: number = 10): Promise<RelatedConcept[]> {
   const url = `${API_BASE}/concepts/${id}/siblings?limit=${limit}`
-  const res = await fetch(url)
+  const res = await fetch(url, { headers: DEFAULT_HEADERS })
 
   if (!res.ok) {
     const contentType = res.headers.get('content-type') || ''
@@ -175,7 +181,7 @@ async function getSiblings(id: string, limit: number = 10): Promise<RelatedConce
  */
 async function getDescendants(id: string, maxNodes: number = 10): Promise<RelatedConcept[]> {
   const url = `${API_BASE}/concepts/${id}/descendants?max_nodes=${maxNodes}`
-  const res = await fetch(url)
+  const res = await fetch(url, { headers: DEFAULT_HEADERS })
 
   if (!res.ok) {
     const contentType = res.headers.get('content-type') || ''
