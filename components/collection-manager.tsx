@@ -4,9 +4,10 @@ import { useState, ReactNode } from "react"
 import { Plus, Minus, FolderPlus, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useCollections } from "@/hooks/useCollections"
-import { useAddToCollection } from "@/hooks/useAddToCollection"
-import { useRemoveFromCollection } from "@/hooks/useRemoveFromCollection"
+// import { useCollections } from "@/hooks/useCollections"
+// import { useAddToCollection } from "@/hooks/useAddToCollection"
+// import { useRemoveFromCollection } from "@/hooks/useRemoveFromCollection"
+import { useCollectionsContext } from "@/contexts/CollectionsContext"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import {
@@ -34,10 +35,24 @@ export function CollectionManager({
 }: CollectionManagerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  
-  const { collections, isLoading } = useCollections()
-  const { addToCollection, isAdding } = useAddToCollection()
-  const { removeFromCollection, isRemoving } = useRemoveFromCollection()
+
+  // const { collections, isLoading } = useCollectionsContext()
+  // const { addToCollection, isAdding } = useAddToCollection()
+  // const { removeFromCollection, isRemoving } = useRemoveFromCollection()
+
+  const {
+    collections,
+    isLoading,
+    addToCollection,
+    removeFromCollection,
+    isAdding,
+    isRemoving,
+    addError,
+    removeError,
+    resetAddError,
+    resetRemoveError
+  } = useCollectionsContext()
+
 
   const handleAddToCollection = async (collectionId: string, collectionName: string) => {
     try {
@@ -118,14 +133,14 @@ export function CollectionManager({
                 // Use collection.id as primary key, fallback to index if needed
                 const key = collection.id || `collection-${index}`
                 const inCollection = isInCollection(collection.id)
-                
+
                 return (
                   <div
                     key={key} // Fixed: Use the computed key
                     className={cn(
                       "flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors",
-                      inCollection 
-                        ? "bg-primary/10 border-primary/20" 
+                      inCollection
+                        ? "bg-primary/10 border-primary/20"
                         : "hover:bg-accent border-border"
                     )}
                     onClick={() => {
@@ -187,8 +202,8 @@ export function CollectionManager({
 
           {/* Actions */}
           <div className="flex justify-end pt-2 border-t">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsOpen(false)}
               size="sm"
             >

@@ -5,9 +5,10 @@ import { Folder, Clock, Star, Tag, Plus, MoreHorizontal, Trash2, Edit } from "lu
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AddReferences } from "@/components/add-references"
-import { Collection } from "@/hooks/useCollections"
-import { useCreateCollection } from "@/hooks/useCreateCollection"
-import { useDeleteCollection } from "@/hooks/useDeleteCollection"
+// import { Collection } from "@/hooks/useCollections"
+// import { useCreateCollection } from "@/hooks/useCreateCollection"
+// import { useDeleteCollection } from "@/hooks/useDeleteCollection"
+import { Collection, useCollectionsContext } from '@/contexts/CollectionsContext'
 import { FileText } from "lucide-react"
 import {
   Dialog,
@@ -35,8 +36,8 @@ interface LibraryManagerProps {
   totalReferences: number
 }
 
-export function LibraryManager({ 
-  selectedCollection, 
+export function LibraryManager({
+  selectedCollection,
   onCollectionChange,
   onReferencesAdded,
   onCollectionUpdate,
@@ -51,8 +52,12 @@ export function LibraryManager({
   const [newCollectionDescription, setNewCollectionDescription] = useState("")
 
   // Collection management hooks
-  const { createCollection, isCreating } = useCreateCollection()
-  const { deleteCollection, isDeleting } = useDeleteCollection()
+  // const { createCollection, isCreating } = useCreateCollection()
+  // const { deleteCollection, isDeleting } = useDeleteCollection()
+
+  const { createCollection, isCreating, createError,
+    deleteCollection, isDeleting, deleteError,
+  } = useCollectionsContext()
 
   // Handle references added
   const handleReferencesAdded = useCallback(() => {
@@ -71,7 +76,7 @@ export function LibraryManager({
         description: newCollectionDescription.trim()
       })
       toast.success('Collection created successfully')
-      
+
       setNewCollectionName("")
       setNewCollectionDescription("")
       setShowCreateCollection(false)
@@ -97,11 +102,11 @@ export function LibraryManager({
     try {
       await deleteCollection(collectionId)
       toast.success('Collection deleted successfully')
-      
+
       if (selectedCollection === collectionId) {
         onCollectionChange(null)
       }
-      
+
       onCollectionUpdate()
     } catch (error) {
       console.error('🔴 Failed to delete collection:', error)
@@ -116,7 +121,7 @@ export function LibraryManager({
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-lg">Library</h2>
         </div>
-        
+
         {/* Add References Button - Prominent */}
         <Button
           onClick={() => setShowAddReferences(true)}
@@ -196,7 +201,7 @@ export function LibraryManager({
           ) : (
             collections.map((collection) => {
               const isSelected = selectedCollection === collection.id
-              
+
               return (
                 <div key={collection.id} className="group relative">
                   <Button
@@ -247,7 +252,7 @@ export function LibraryManager({
 
       {/* Add References Modal */}
       {showAddReferences && (
-        <AddReferences 
+        <AddReferences
           onClose={() => setShowAddReferences(false)}
           onReferencesAdded={handleReferencesAdded}
         />
@@ -259,7 +264,7 @@ export function LibraryManager({
           <DialogHeader>
             <DialogTitle>Create New Collection</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Name</label>
@@ -274,7 +279,7 @@ export function LibraryManager({
                 }}
               />
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Description (optional)</label>
               <Input
@@ -286,13 +291,13 @@ export function LibraryManager({
           </div>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowCreateCollection(false)}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleCreateCollection}
               disabled={!newCollectionName.trim() || isCreating}
             >

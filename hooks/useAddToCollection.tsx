@@ -1,5 +1,8 @@
 "use client"
-
+/**
+ * THIS CONTEXT IS DEPRECATED
+ * USE CollectionsContext INSTEAD contexts\CollectionsContext.tsx
+ */
 import { useState } from 'react'
 import { BACKEND_API_URL } from '@/lib/config'
 import { useAuth } from '@/hooks/useAuth'
@@ -44,7 +47,7 @@ export function useAddToCollection(): UseAddToCollectionReturn {
 
         if (!response.ok) {
           let errorMessage = `Failed to add document to collection: ${response.statusText}`
-          
+
           try {
             const errorData = await response.json()
             if (errorData.detail) {
@@ -53,7 +56,7 @@ export function useAddToCollection(): UseAddToCollectionReturn {
           } catch (parseError) {
             console.warn('Could not parse error response:', parseError)
           }
-          
+
           throw new Error(errorMessage)
         }
 

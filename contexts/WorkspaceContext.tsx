@@ -3,7 +3,9 @@
 import { createContext, useContext, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { BACKEND_API_URL } from '@/lib/config'
+import { useMetadataTracking } from '@/contexts/MetadataTrackingContext'
 
+// Context definition
 interface WorkspaceContextType {
   openReferencePDF: (pdfUrl: string, title: string) => Promise<void>
   importToLibrary: (tabId: string, file: File, title: string) => Promise<string | null>
@@ -12,23 +14,25 @@ interface WorkspaceContextType {
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined)
 
+// Provider logic
 interface WorkspaceProviderProps {
   children: React.ReactNode
   onOpenReferencePDF: (pdfUrl: string, title: string) => Promise<void>
   onUpdateTabMode?: (tabId: string, mode: 'library' | 'preview', documentId?: string) => void
 }
 
-export function WorkspaceProvider({ 
-  children, 
+export function WorkspaceProvider({
+  children,
   onOpenReferencePDF,
-  onUpdateTabMode 
+  onUpdateTabMode
 }: WorkspaceProviderProps) {
   const { user } = useAuth()
+  const { trackDocument } = useMetadataTracking()
 
   // Import a PDF to the library (upload to backend)
   const importToLibrary = useCallback(async (
-    tabId: string, 
-    file: File, 
+    tabId: string,
+    file: File,
     title: string
   ): Promise<string | null> => {
     if (!user) {
@@ -43,7 +47,7 @@ export function WorkspaceProvider({
       formData.append('file', file)
       formData.append('title', title)
       formData.append('source', 'reference') // Mark as imported from reference
-      
+
       const baseUrl = `${BACKEND_API_URL.replace(/\/$/, '')}/api/documents`
       const userId = user.dbId ? String(user.dbId) : user.id
 
@@ -72,6 +76,11 @@ export function WorkspaceProvider({
       const data = await response.json()
       const documentId = data.document?._id || data.document?.id || data.id
 
+      if (documentId) {
+        console.log('📡 Starting metadata tracking for:', documentId)
+        trackDocument(documentId)
+      }
+
       if (!documentId) {
         console.error('❌ No document ID in response:', data)
         throw new Error('No document ID returned from upload')
@@ -99,8 +108,8 @@ export function WorkspaceProvider({
   }, [onUpdateTabMode])
 
   return (
-    <WorkspaceContext.Provider 
-      value={{ 
+    <WorkspaceContext.Provider
+      value={{
         openReferencePDF: onOpenReferencePDF,
         importToLibrary,
         updateTabMode
@@ -111,6 +120,7 @@ export function WorkspaceProvider({
   )
 }
 
+// Custom hook for accessing context
 export function useWorkspace() {
   const context = useContext(WorkspaceContext)
   if (!context) {
