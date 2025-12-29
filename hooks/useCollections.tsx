@@ -1,5 +1,9 @@
 "use client"
 
+/**
+ * THIS CONTEXT IS DEPRECATED
+ * USE CollectionsContext INSTEAD contexts\CollectionsContext.tsx
+ */
 import { useState, useEffect, useCallback } from 'react'
 import { BACKEND_API_URL } from '@/lib/config'
 import { useAuth } from '@/hooks/useAuth'
@@ -51,7 +55,7 @@ export function useCollections(): UseCollectionsReturn {
 
       const data = await response.json()
       console.log('Raw collections response:', data) // Add this debug line
-      
+
       // Map the response to ensure proper ID field
       const mappedCollections = (data.collections || []).map((collection: any) => ({
         id: collection._id || collection.id, // Handle both _id and id
@@ -62,7 +66,7 @@ export function useCollections(): UseCollectionsReturn {
         updatedAt: collection.updated_at || collection.updatedAt,
         documentIds: collection.document_ids || collection.documentIds || []
       }))
-      
+
       console.log('Mapped collections:', mappedCollections) // Add this debug line
       setCollections(mappedCollections)
     } catch (err) {

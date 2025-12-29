@@ -1,5 +1,8 @@
 "use client"
-
+/**
+ * THIS CONTEXT IS DEPRECATED
+ * USE CollectionsContext INSTEAD contexts\CollectionsContext.tsx
+ */
 import { useState } from 'react'
 import { BACKEND_API_URL } from '@/lib/config'
 import { useAuth } from '@/hooks/useAuth'
@@ -41,7 +44,7 @@ export function useRemoveFromCollection(): UseRemoveFromCollectionReturn {
 
         if (!response.ok) {
           let errorMessage = `Failed to remove document from collection: ${response.statusText}`
-          
+
           try {
             const errorData = await response.json()
             if (errorData.detail) {
@@ -50,7 +53,7 @@ export function useRemoveFromCollection(): UseRemoveFromCollectionReturn {
           } catch (parseError) {
             console.warn('Could not parse error response:', parseError)
           }
-          
+
           throw new Error(errorMessage)
         }
 

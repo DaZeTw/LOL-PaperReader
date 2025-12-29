@@ -7,9 +7,11 @@ import { Input } from "@/components/ui/input"
 import { LibraryManager } from "@/components/library-manager"
 import { ReferenceTable } from "@/components/reference-table"
 import { useReferences } from "@/hooks/useReferences"
-import { useCollections } from "@/hooks/useCollections"
+// import { useCollections } from "@/hooks/useCollections"
+import { Collection, useCollectionsContext } from '@/contexts/CollectionsContext'
 import { useDeleteReference } from "@/hooks/useDeleteReference"
 import { toast } from "sonner"
+import { useCollections } from "@/hooks/useCollections"
 // import { MetadataTrackingProvider } from "@/contexts/MetadataTrackingContext"
 
 interface LibraryViewProps {
@@ -42,13 +44,14 @@ export const LibraryView = forwardRef<
   })
 
   // Fetch all collections
-  const {
-    collections,
-    isLoading: collectionsLoading,
-    error: collectionsError,
-    refetch: refetchCollections
-  } = useCollections()
+  // const {
+  //   collections,
+  //   isLoading: collectionsLoading,
+  //   error: collectionsError,
+  //   refetch: refetchCollections
+  // } = useCollections()
 
+  const { collections, isLoading: collectionsLoading, error: collectionsError, refetch: refetchCollections } = useCollectionsContext()
   // Delete functionality
   const { deleteReference, isDeleting } = useDeleteReference()
 

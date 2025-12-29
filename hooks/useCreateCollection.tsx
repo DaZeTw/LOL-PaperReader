@@ -1,5 +1,8 @@
 "use client"
-
+/**
+ * THIS CONTEXT IS DEPRECATED
+ * USE CollectionsContext INSTEAD contexts\CollectionsContext.tsx
+ */
 import { useState } from 'react'
 import { BACKEND_API_URL } from '@/lib/config'
 import { useAuth } from '@/hooks/useAuth'
