@@ -83,7 +83,7 @@ export function WorkspaceManager({
       title,
       fileName: file.name,
       documentId,
-      sidebarOpen: false,  // Initialize sidebar state
+      sidebarOpen: true,  // Initialize sidebar state
       isInLibrary: true    // PDFs opened from library are in library mode
     }
     
