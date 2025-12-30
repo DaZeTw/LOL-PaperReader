@@ -1,9 +1,9 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from "react"
-import { Search, AlertCircle, RefreshCw, ExternalLink, Info, ChevronDown, ChevronUp, Zap } from "lucide-react"
+import { Search, AlertCircle, RefreshCw, ExternalLink, Info, ChevronDown, ChevronUp, Zap, Sparkles, List } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useKeywordExtraction } from "@/hooks/useKeywordExtraction"
+import { useKeywordExtraction, type RefinedConcept } from "@/hooks/useKeywordExtraction"
 import type { ExtractedKeyword } from "@/lib/keyword-extractor"
 
 /**
@@ -15,9 +15,11 @@ interface KeywordPanelProps {
   /** Document ID for tracking */
   documentId: string
   /** Callback when a keyword chip is clicked */
-  onKeywordClick?: (keyword: ExtractedKeyword, event: React.MouseEvent) => void
+  onKeywordClick?: (keyword: ExtractedKeyword | RefinedConcept, event: React.MouseEvent) => void
   /** Additional CSS classes */
   className?: string
+  /** Show refined concepts by default (default: true) */
+  defaultShowRefined?: boolean
 }
 
 /**
@@ -113,6 +115,20 @@ function truncateText(text: string, maxLength: number): string {
 }
 
 /**
+ * Unified display item for both keywords and refined concepts
+ */
+interface DisplayItem {
+  keyword: string
+  count: number
+  category: string
+  url?: string
+  shortDefinition?: string
+  isOntologyAligned: boolean
+  score?: number
+}
+
+
+/**
  * KeywordPanel - displays all keywords extracted from a PDF
  * 
  * Features:
@@ -137,11 +153,13 @@ export function KeywordPanel({
   pdfUrl,
   documentId,
   onKeywordClick,
-  className
+  className,
+  defaultShowRefined = true
 }: KeywordPanelProps) {
-  const { keywords, loading, error, stats, extractKeywords, reset } = useKeywordExtraction()
+  const { keywords, refinedConcepts, loading, error, stats, extractKeywords, reset } = useKeywordExtraction()
   const [expandedKeyword, setExpandedKeyword] = useState<string | null>(null)
   const [showAllCategories, setShowAllCategories] = useState(false)
+  const [showRefined, setShowRefined] = useState(defaultShowRefined)
 
   // Extract keywords when PDF URL changes
   useEffect(() => {
@@ -155,20 +173,40 @@ export function KeywordPanel({
     reset()
   }, [documentId, reset])
 
+  // Get display items based on mode
+  const displayItems: DisplayItem[] = useMemo(() => {
+    if (showRefined && refinedConcepts.length > 0) {
+      return refinedConcepts.map(c => ({
+        keyword: c.concept,
+        count: c.frequency,
+        category: c.category,
+        url: c.url,
+        shortDefinition: c.shortDefinition,
+        isOntologyAligned: c.isOntologyAligned,
+        score: c.score,
+      }))
+    }
+    return keywords.map(kw => ({
+      ...kw,
+      isOntologyAligned: !!kw.url,
+      score: undefined as number | undefined,
+    }))
+  }, [showRefined, refinedConcepts, keywords])
+
   // Group keywords by category
   const groupedKeywords = useMemo(() => {
-    return keywords.reduce((acc, kw) => {
+    return displayItems.reduce<Record<string, DisplayItem[]>>((acc, kw) => {
       const category = kw.category || 'Other'
       if (!acc[category]) acc[category] = []
       acc[category].push(kw)
       return acc
-    }, {} as Record<string, ExtractedKeyword[]>)
-  }, [keywords])
+    }, {})
+  }, [displayItems])
 
   // Sort categories by keyword count
   const sortedCategories = useMemo(() => {
     return Object.entries(groupedKeywords)
-      .sort(([, a], [, b]) => b.length - a.length)
+      .sort(([, a], [, b]) => (b as DisplayItem[]).length - (a as DisplayItem[]).length)
       .map(([category]) => category)
   }, [groupedKeywords])
 

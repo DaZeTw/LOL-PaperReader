@@ -3,7 +3,9 @@ import {
   extractKeywordsFromPDF,
   ExtractedKeyword,
   ExtractionResult,
+  ExtractionOptions,
 } from '@/lib/keyword-extractor'
+import type { RefinedConcept, RefinerOptions } from '@/lib/concept-refiner'
 
 /**
  * Statistics about the keyword extraction
@@ -22,11 +24,14 @@ export interface ExtractionStats {
  * Return type for the useKeywordExtraction hook
  */
 export interface UseKeywordExtractionReturn {
+  /** Raw extracted keywords */
   keywords: ExtractedKeyword[]
+  /** Refined academic concepts (post-processed) */
+  refinedConcepts: RefinedConcept[]
   loading: boolean
   error: string | null
   stats: ExtractionStats
-  extractKeywords: (pdfUrl: string) => Promise<void>
+  extractKeywords: (pdfUrl: string, options?: ExtractionOptions) => Promise<void>
   reset: () => void
 }
 
@@ -42,18 +47,20 @@ const initialStats: ExtractionStats = {
  * React hook for managing keyword extraction state.
  * 
  * Uses Trie-based term matching with draft concepts from Concepedia
- * for efficient, accurate keyword recognition.
+ * for efficient, accurate keyword recognition, followed by concept
+ * refinement for high-precision academic concept extraction.
  * 
  * Provides functionality to:
  * - Extract keywords from a PDF document using Trie-based matching
+ * - Refine keywords into academic concepts with scoring and ranking
  * - Track loading and error states
  * - Reset state when switching documents
  * 
- * @returns Object containing keywords, loading state, error, stats, and control functions
+ * @returns Object containing keywords, refinedConcepts, loading state, error, stats, and control functions
  * 
  * @example
  * ```tsx
- * const { keywords, loading, error, stats, extractKeywords, reset } = useKeywordExtraction()
+ * const { keywords, refinedConcepts, loading, error, stats, extractKeywords, reset } = useKeywordExtraction()
  * 
  * // Extract keywords when PDF loads
  * useEffect(() => {
@@ -62,14 +69,13 @@ const initialStats: ExtractionStats = {
  *   }
  * }, [pdfUrl, extractKeywords])
  * 
- * // Reset when switching documents
- * useEffect(() => {
- *   reset()
- * }, [documentId, reset])
+ * // Use refinedConcepts for display (high-precision academic terms)
+ * // Use keywords for full list (all matched terms)
  * ```
  */
 export function useKeywordExtraction(): UseKeywordExtractionReturn {
   const [keywords, setKeywords] = useState<ExtractedKeyword[]>([])
+  const [refinedConcepts, setRefinedConcepts] = useState<RefinedConcept[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [stats, setStats] = useState<ExtractionStats>(initialStats)
@@ -77,16 +83,21 @@ export function useKeywordExtraction(): UseKeywordExtractionReturn {
   /**
    * Extract keywords from a PDF document
    * @param pdfUrl - URL or path to the PDF file
+   * @param options - Extraction options (refinement settings, etc.)
    */
-  const extractKeywords = useCallback(async (pdfUrl: string) => {
+  const extractKeywords = useCallback(async (
+    pdfUrl: string,
+    options: ExtractionOptions = {}
+  ) => {
     setLoading(true)
     setError(null)
 
     try {
       console.log('[useKeywordExtraction] Starting extraction for:', pdfUrl)
-      const result: ExtractionResult = await extractKeywordsFromPDF(pdfUrl)
+      const result: ExtractionResult = await extractKeywordsFromPDF(pdfUrl, options)
 
       setKeywords(result.keywords)
+      setRefinedConcepts(result.refinedConcepts || [])
       setStats({
         total: result.totalKeywords,
         numPages: result.numPages,
@@ -97,6 +108,12 @@ export function useKeywordExtraction(): UseKeywordExtractionReturn {
         `[useKeywordExtraction] Extracted ${result.keywords.length} unique keywords ` +
         `(${result.totalKeywords} total occurrences) from ${result.numPages} pages`
       )
+
+      if (result.refinedConcepts) {
+        console.log(
+          `[useKeywordExtraction] Refined to ${result.refinedConcepts.length} academic concepts`
+        )
+      }
 
       if (result.matcherStats) {
         console.log(
@@ -109,6 +126,7 @@ export function useKeywordExtraction(): UseKeywordExtractionReturn {
       console.error('[useKeywordExtraction] Error extracting keywords:', err)
       setError(errorMessage)
       setKeywords([])
+      setRefinedConcepts([])
       setStats(initialStats)
     } finally {
       setLoading(false)
@@ -121,6 +139,7 @@ export function useKeywordExtraction(): UseKeywordExtractionReturn {
    */
   const reset = useCallback(() => {
     setKeywords([])
+    setRefinedConcepts([])
     setLoading(false)
     setError(null)
     setStats(initialStats)
@@ -128,6 +147,7 @@ export function useKeywordExtraction(): UseKeywordExtractionReturn {
 
   return {
     keywords,
+    refinedConcepts,
     loading,
     error,
     stats,
@@ -135,3 +155,6 @@ export function useKeywordExtraction(): UseKeywordExtractionReturn {
     reset,
   }
 }
+
+// Re-export types for convenience
+export type { RefinedConcept, RefinerOptions }

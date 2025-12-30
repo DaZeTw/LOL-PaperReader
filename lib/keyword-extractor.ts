@@ -7,6 +7,7 @@ import {
   type MatchedTerm,
   type AggregatedMatch
 } from './trie-term-matcher';
+import { refineConcepts, type RefinedConcept, type RefinerOptions } from './concept-refiner';
 
 // Configure PDF.js worker
 if (typeof window !== 'undefined') {
@@ -29,6 +30,8 @@ export interface ExtractedKeyword {
  */
 export interface ExtractionResult {
   keywords: ExtractedKeyword[]
+  /** Refined academic concepts (post-processed from keywords) */
+  refinedConcepts?: RefinedConcept[]
   totalKeywords: number
   numPages: number
   matcherStats?: {
@@ -237,10 +240,28 @@ export async function extractTextFromPDF(pdfUrl: string): Promise<TextExtraction
 }
 
 /**
+ * Options for keyword extraction
+ */
+export interface ExtractionOptions {
+  /** Apply concept refinement to keywords (default: true) */
+  refine?: boolean;
+  /** Options for the concept refiner */
+  refinerOptions?: Partial<RefinerOptions>;
+}
+
+/**
  * Extract keywords from a PDF file using Trie-based matching
  * Falls back to legacy method if draft terms are unavailable
+ * 
+ * @param pdfUrl - URL or path to the PDF file
+ * @param options - Extraction options including refinement settings
  */
-export async function extractKeywordsFromPDF(pdfUrl: string): Promise<ExtractionResult> {
+export async function extractKeywordsFromPDF(
+  pdfUrl: string,
+  options: ExtractionOptions = {}
+): Promise<ExtractionResult> {
+  const { refine = true, refinerOptions = {} } = options;
+
   console.log('[KeywordExtractor] Starting keyword extraction for:', pdfUrl);
 
   // Extract text from PDF
@@ -268,8 +289,16 @@ export async function extractKeywordsFromPDF(pdfUrl: string): Promise<Extraction
     const stats = matcher.getStats();
     console.log(`[KeywordExtractor] Found ${keywords.length} unique keywords (${aggregated.reduce((sum, m) => sum + m.count, 0)} total)`);
 
+    // Apply concept refinement if enabled
+    const refinedConcepts = refine ? refineConcepts(keywords, refinerOptions) : undefined;
+
+    if (refine) {
+      console.log(`[KeywordExtractor] Refined to ${refinedConcepts?.length || 0} academic concepts`);
+    }
+
     return {
       keywords,
+      refinedConcepts,
       numPages,
       totalKeywords: aggregated.reduce((sum, m) => sum + m.count, 0),
       matcherStats: stats
@@ -279,13 +308,18 @@ export async function extractKeywordsFromPDF(pdfUrl: string): Promise<Extraction
     console.log('[KeywordExtractor] Using fallback keyword matching');
     const keywords = findKeywordsFallback(fullText);
 
+    // Apply refinement to fallback keywords if enabled
+    const refinedConcepts = refine ? refineConcepts(keywords, refinerOptions) : undefined;
+
     return {
       keywords,
+      refinedConcepts,
       numPages,
       totalKeywords: keywords.reduce((sum, k) => sum + k.count, 0)
     };
   }
 }
+
 
 /**
  * Re-export types for convenience
