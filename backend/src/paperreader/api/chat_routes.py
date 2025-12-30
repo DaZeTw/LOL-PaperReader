@@ -27,6 +27,8 @@ from paperreader.services.qa.config import PipelineConfig
 from paperreader.services.qa.pipeline import get_pipeline
 from paperreader.services.documents.minio_client import upload_bytes
 from paperreader.services.websocket.status_manager import get_status_manager
+from bson import ObjectId
+from paperreader.services.documents import repository as documents_repository
 
 router = APIRouter()
 MINIO_CHAT_BUCKET = os.getenv("MINIO_CHAT_BUCKET", "chat-images")
@@ -70,6 +72,69 @@ def _convert_objectids_to_strings(obj: Any) -> Any:
     elif isinstance(obj, tuple):
         return tuple(_convert_objectids_to_strings(item) for item in obj)
     return obj
+
+
+async def _get_document_metadata_info(session_metadata: Optional[Dict[str, Any]], debug_prefix: str = "") -> str:
+    """
+    Get document metadata info string to add to system prompt.
+    
+    Args:
+        session_metadata: Session metadata dict containing document_id
+        debug_prefix: Optional prefix for debug messages
+        
+    Returns:
+        String containing formatted document metadata info, or empty string if not available
+    """
+    document_metadata_info = ""
+    try:
+        document_id = None
+        if session_metadata:
+            document_id = session_metadata.get("document_id")
+        
+        if document_id:
+            try:
+                # Try to convert to ObjectId
+                doc_object_id = ObjectId(document_id) if not isinstance(document_id, ObjectId) else document_id
+                document = await documents_repository.get_document_by_id(doc_object_id)
+                
+                if document:
+                    title = document.get("title", "").strip()
+                    author = document.get("author", "").strip()
+                    subject = document.get("subject", "").strip()
+                    source = document.get("source", "").strip()
+                    
+                    # Build metadata string
+                    metadata_parts = []
+                    if title:
+                        metadata_parts.append(f"Title: {title}")
+                    if author:
+                        metadata_parts.append(f"Author(s): {author}")
+                    if subject:
+                        metadata_parts.append(f"Subject/Field: {subject}")
+                    if source:
+                        metadata_parts.append(f"Source/Publisher: {source}")
+                    
+                    if metadata_parts:
+                        document_metadata_info = (
+                            "\n\nDOCUMENT METADATA:"
+                            "\nThe following information is about the CURRENT document you are answering questions about:"
+                            "\n" + "\n".join(metadata_parts) +
+                            "\n\nIMPORTANT: When answering questions about the document's title, authors, subject, or source, "
+                            "you MUST use the information above. Do NOT confuse this document with references or citations "
+                            "mentioned in the document content. The metadata above refers to THIS document, not other papers."
+                        )
+                        prefix_msg = f" ({debug_prefix})" if debug_prefix else ""
+                        print(f"[DEBUG] ✅ Added document metadata to prompt{prefix_msg}: title={title[:50] if title else 'N/A'}, author={author[:50] if author else 'N/A'}")
+            except Exception as e:
+                prefix_msg = f" ({debug_prefix})" if debug_prefix else ""
+                print(f"[DEBUG] ⚠️ Failed to load document metadata{prefix_msg}: {e}")
+                # Continue without metadata if there's an error
+    except Exception as e:
+        prefix_msg = f" ({debug_prefix})" if debug_prefix else ""
+        print(f"[DEBUG] ⚠️ Error getting document metadata{prefix_msg}: {e}")
+        # Continue without metadata if there's an error
+    
+    return document_metadata_info
 
 
 def _clean_citation_for_ui(citation: Dict[str, Any]) -> Dict[str, Any]:
@@ -319,6 +384,9 @@ async def ask_question(request: ChatAskRequest):
             print(f"[LOG] ✅ Found existing session: {request.session_id}")
             print(f"[LOG] Session has {len(session.messages) if session.messages else 0} existing messages")
         
+        # Get document metadata to add to prompt
+        document_metadata_info = await _get_document_metadata_info(session.metadata)
+        
         # Get recent chat history for context (last 10 messages for better context)
         # CRITICAL: Verify we're using the correct session_id
         print(f"[DEBUG] ===== RETRIEVING CHAT HISTORY =====")
@@ -352,6 +420,7 @@ async def ask_question(request: ChatAskRequest):
         # STRONGER PROMPT for chat history usage
         system_prompt = (
             "You are a helpful assistant that answers questions using chat history, images, and document context."
+            + document_metadata_info +  # Add document metadata here
             "\n\nCRITICAL: You MUST use the chat history provided below to answer questions about previous conversations."
             "\nWhen the user asks questions about previous messages or conversation history, you MUST review the chat history "
             "and provide a clear summary of ALL previous questions and answers."
@@ -952,6 +1021,9 @@ async def ask_with_upload(
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
         
+        # Get document metadata to add to prompt
+        document_metadata_info = await _get_document_metadata_info(session.metadata, debug_prefix="ask-with-upload")
+        
         # Convert uploaded images to base64 data URLs for OpenAI, but save file paths to database
         user_images_base64 = []
         user_images_paths = []
@@ -1008,6 +1080,7 @@ async def ask_with_upload(
         # STRONGER PROMPT for chat history usage (same as /ask endpoint)
         system_prompt = (
             "You are a helpful assistant that answers questions using chat history, images, and document context."
+            + document_metadata_info +  # Add document metadata here
             "\n\nCRITICAL: You MUST use the chat history provided below to answer questions about previous conversations."
             "\nWhen the user asks 'What did I ask before?', 'What were my previous questions?', 'What did we discuss?', "
             "or similar questions, you MUST review the chat history and provide a clear summary of ALL previous questions and answers."

@@ -139,3 +139,163 @@ async def delete_all_documents_for_user(user_id: str) -> int:
     return result.deleted_count or 0
 
 
+async def remove_all_document_data(document_id: ObjectId, user_id: str, stored_path: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Remove all data related to a document across all databases and collections.
+    
+    This function deletes:
+    - MinIO files (PDF and associated assets)
+    - MongoDB chunks
+    - Elasticsearch embeddings
+    - Chat sessions and messages
+    - References
+    - Summaries
+    - Skimming highlights
+    - Document from collections
+    
+    Args:
+        document_id: The document ObjectId
+        user_id: The user ID who owns the document
+        stored_path: Optional stored path in MinIO (if not provided, will be fetched from document)
+    
+    Returns:
+        Dictionary with deletion results and counts
+    """
+    import os
+    from paperreader.services.documents.minio_client import delete_object, delete_objects_by_prefix
+    
+    MINIO_BUCKET = os.getenv("MINIO_BUCKET", "pdf-documents")
+    from paperreader.services.documents.chunk_repository import delete_document_chunks
+    from paperreader.services.qa.elasticsearch_client import delete_document_chunks as delete_elasticsearch_chunks
+    from paperreader.services.chat import repository as chat_repository
+    from paperreader.services.references.reference_service import ReferenceService
+    from paperreader.services.documents.summary_repository import delete_summary_by_document
+    from paperreader.services.skimming.repository import delete_skimming_highlights
+    
+    document_id_str = str(document_id)
+    results = {
+        "minio_files": 0,
+        "chunks": 0,
+        "chat_sessions": 0,
+        "references": 0,
+        "summaries": 0,
+        "skimming_highlights": 0,
+        "collections_updated": 0,
+        "errors": []
+    }
+    
+    # Get stored_path from document if not provided
+    if not stored_path:
+        doc = await get_document_by_id(document_id)
+        if doc:
+            stored_path = doc.get("stored_path")
+    
+    # 1. Delete PDF file from MinIO
+    if stored_path:
+        try:
+            await delete_object(MINIO_BUCKET, stored_path)
+            results["minio_files"] += 1
+            print(f"[Documents] ✅ Deleted PDF file {stored_path} from MinIO")
+        except Exception as exc:
+            error_msg = f"Failed to delete {stored_path} from MinIO: {exc}"
+            results["errors"].append(error_msg)
+            print(f"[Documents] ⚠️ {error_msg}")
+    
+    # 2. Delete associated images and tables from MinIO
+    asset_prefix = f"{user_id}/document/{document_id_str}/"
+    try:
+        deleted_count = await delete_objects_by_prefix(MINIO_BUCKET, asset_prefix)
+        results["minio_files"] += deleted_count
+        if deleted_count > 0:
+            print(f"[Documents] ✅ Deleted {deleted_count} associated files (images/tables) for document {document_id_str}")
+    except Exception as exc:
+        error_msg = f"Failed to delete associated files for document {document_id_str}: {exc}"
+        results["errors"].append(error_msg)
+        print(f"[Documents] ⚠️ {error_msg}")
+    
+    # 3. Delete chunks from MongoDB
+    try:
+        chunks_deleted = await delete_document_chunks(document_id=document_id_str)
+        results["chunks"] = chunks_deleted
+        if chunks_deleted > 0:
+            print(f"[Documents] ✅ Deleted {chunks_deleted} chunks from MongoDB for document {document_id_str}")
+    except Exception as exc:
+        error_msg = f"Failed to delete chunks from MongoDB for document {document_id_str}: {exc}"
+        results["errors"].append(error_msg)
+        print(f"[Documents] ⚠️ {error_msg}")
+    
+    # 4. Delete embeddings from Elasticsearch
+    try:
+        await delete_elasticsearch_chunks(document_id=document_id_str)
+        print(f"[Documents] ✅ Deleted embeddings from Elasticsearch for document {document_id_str}")
+    except Exception as exc:
+        error_msg = f"Failed to delete embeddings from Elasticsearch: {exc}"
+        results["errors"].append(error_msg)
+        print(f"[Documents] ⚠️ {error_msg}")
+    
+    # 5. Delete chat sessions and messages
+    try:
+        sessions_deleted = await chat_repository.delete_sessions_by_document(document_id=document_id_str)
+        results["chat_sessions"] = sessions_deleted
+        if sessions_deleted > 0:
+            print(f"[Documents] ✅ Deleted {sessions_deleted} chat sessions and messages for document {document_id_str}")
+    except Exception as exc:
+        error_msg = f"Failed to delete chat sessions for document {document_id_str}: {exc}"
+        results["errors"].append(error_msg)
+        print(f"[Documents] ⚠️ {error_msg}")
+    
+    # 6. Delete references
+    try:
+        reference_service = ReferenceService()
+        references_deleted = await reference_service.delete_document_references(document_id=document_id_str)
+        results["references"] = references_deleted
+        if references_deleted > 0:
+            print(f"[Documents] ✅ Deleted {references_deleted} references for document {document_id_str}")
+    except Exception as exc:
+        error_msg = f"Failed to delete references for document {document_id_str}: {exc}"
+        results["errors"].append(error_msg)
+        print(f"[Documents] ⚠️ {error_msg}")
+    
+    # 7. Delete summaries
+    try:
+        summary_deleted = await delete_summary_by_document(document_id=document_id)
+        if summary_deleted:
+            results["summaries"] = 1
+            print(f"[Documents] ✅ Deleted summary for document {document_id_str}")
+    except Exception as exc:
+        error_msg = f"Failed to delete summary for document {document_id_str}: {exc}"
+        results["errors"].append(error_msg)
+        print(f"[Documents] ⚠️ {error_msg}")
+    
+    # 8. Delete skimming highlights
+    try:
+        highlights_deleted = await delete_skimming_highlights(document_id=document_id_str)
+        results["skimming_highlights"] = highlights_deleted
+        if highlights_deleted > 0:
+            print(f"[Documents] ✅ Deleted {highlights_deleted} skimming highlight records for document {document_id_str}")
+    except Exception as exc:
+        error_msg = f"Failed to delete skimming highlights for document {document_id_str}: {exc}"
+        results["errors"].append(error_msg)
+        print(f"[Documents] ⚠️ {error_msg}")
+    
+    # 9. Remove document from all collections
+    try:
+        db = mongodb.database
+        result = await db["collections"].update_many(
+            {"user_id": user_id, "document_ids": document_id},
+            {
+                "$pull": {"document_ids": document_id},
+                "$set": {"updated_at": datetime.utcnow()}
+            }
+        )
+        results["collections_updated"] = result.modified_count
+        if result.modified_count > 0:
+            print(f"[Documents] ✅ Removed document from {result.modified_count} collections")
+    except Exception as exc:
+        error_msg = f"Failed to remove document from collections: {exc}"
+        results["errors"].append(error_msg)
+        print(f"[Documents] ⚠️ {error_msg}")
+    
+    return results
+
+
