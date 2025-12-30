@@ -252,4 +252,4 @@ Feature flow | services/ | hooks/ | Orchestrates logic
 
 ---
 
-Following these rules keeps the codebase organized, scalable, and easy to reason about.
+Following these rules keeps the codebase organized, scalable, and easy to reason about..
