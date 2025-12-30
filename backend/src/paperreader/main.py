@@ -31,6 +31,9 @@ from paperreader.api.summary_routes import (
 from paperreader.api.taxonomy_routes import (
     router as taxonomy_router,  # Taxonomy/keyword concept routes
 )
+from paperreader.api.keywords_routes import (
+    router as keywords_router,  # KeyBERT keyword extraction routes
+)
 from paperreader.database.mongodb import mongodb
 from paperreader.database.postgres import close_postgres_pool, init_postgres_pool
 from paperreader.services.qa.embeddings import get_embedder
@@ -105,6 +108,9 @@ def create_app() -> FastAPI:
     app.include_router(
         taxonomy_router
     )  # Taxonomy routes (already has /api/taxonomy prefix)
+    app.include_router(
+        keywords_router
+    )  # KeyBERT keyword extraction (already has /api/keywords prefix)
     app.include_router(reference_routes.router, prefix="/api")
     app.include_router(documents_router)
     app.include_router(collections_router)

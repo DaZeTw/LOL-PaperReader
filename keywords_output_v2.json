@@ -1,0 +1,186 @@
+{
+  "pdf": "public/1703.02162v1.pdf",
+  "keywords": [
+    {
+      "concept": "context aware access control",
+      "score": 0.7863,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Security",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "permission assignment policies context",
+      "score": 0.5753,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Security",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "rbac ensures authorized user",
+      "score": 0.5507,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Security",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "context information policy ontology",
+      "score": 0.5076,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Security",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "organization simplifies management access",
+      "score": 0.4822,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "resource profile environment centric",
+      "score": 0.4369,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "rbac contextual expressions called",
+      "score": 0.4346,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Security",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "hospital duty access information",
+      "score": 0.4154,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Healthcare",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "islam colman caac policy",
+      "score": 0.4129,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Security",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "paradigm managing enforcing",
+      "score": 0.4011,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "user allowed carry specific",
+      "score": 0.3991,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "dynamic attributes contextual",
+      "score": 0.3937,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "NLP",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "use req specification user",
+      "score": 0.3842,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "access decision values",
+      "score": 0.384,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "ict environments ability",
+      "score": 0.3779,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "request time user caura",
+      "score": 0.3723,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "organized caurapolicy hierarchy user",
+      "score": 0.371,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Security",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "framework users",
+      "score": 0.3636,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "example application scenario let",
+      "score": 0.3609,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "wants access appropriate parts",
+      "score": 0.3544,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    }
+  ],
+  "count": 20
+}

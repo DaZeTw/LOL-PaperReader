@@ -1,0 +1,231 @@
+{
+  "pdf": "public/1703.02162v1.pdf",
+  "keywords": [
+    {
+      "concept": "context information making access control",
+      "score": 0.7961,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "NLP",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "exp users roles resources operations",
+      "score": 0.4813,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "mechanisms needed protect resources",
+      "score": 0.4662,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "general practitioners able access",
+      "score": 0.4472,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "changes literature signi\ufb01cant number access",
+      "score": 0.4464,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "accessdecision hasoperation hasresource hasdecision",
+      "score": 0.4137,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "ict environments ability",
+      "score": 0.4057,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "control approach received broad support",
+      "score": 0.3963,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "rbac widely used",
+      "score": 0.3797,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "scheme need access controller evaluate",
+      "score": 0.36,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "permissions users contributions",
+      "score": 0.3593,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "permission assignment policies order dynamically",
+      "score": 0.3583,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "having static user",
+      "score": 0.3444,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "icy model restrictive support access",
+      "score": 0.3412,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "australia veri\ufb01es user allowed carry",
+      "score": 0.3355,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "access mission",
+      "score": 0.3349,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "organizations describing authorities",
+      "score": 0.3332,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "caurapolicy user hasuser hascontext role",
+      "score": 0.3298,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "NLP",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "conditions req enforcement",
+      "score": 0.3271,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "framework 11 domain range restrictions",
+      "score": 0.3031,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "concepts speci\ufb01ed line user speci\ufb01cation",
+      "score": 0.3021,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "senior roles role rh",
+      "score": 0.297,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "rpa notion introducing",
+      "score": 0.2905,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "based aspects",
+      "score": 0.2823,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "res set resources",
+      "score": 0.2811,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    }
+  ],
+  "count": 25
+}

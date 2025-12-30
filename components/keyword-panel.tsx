@@ -90,6 +90,34 @@ const CATEGORY_COLORS: Record<string, { bg: string; border: string; text: string
     hover: 'hover:bg-pink-100 dark:hover:bg-pink-900/50',
     accent: 'bg-pink-500'
   },
+  'Deep Learning': {
+    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    border: 'border-violet-200 dark:border-violet-800',
+    text: 'text-violet-700 dark:text-violet-300',
+    hover: 'hover:bg-violet-100 dark:hover:bg-violet-900/50',
+    accent: 'bg-violet-500'
+  },
+  'NLP': {
+    bg: 'bg-teal-50 dark:bg-teal-950/30',
+    border: 'border-teal-200 dark:border-teal-800',
+    text: 'text-teal-700 dark:text-teal-300',
+    hover: 'hover:bg-teal-100 dark:hover:bg-teal-900/50',
+    accent: 'bg-teal-500'
+  },
+  'Knowledge Representation': {
+    bg: 'bg-rose-50 dark:bg-rose-950/30',
+    border: 'border-rose-200 dark:border-rose-800',
+    text: 'text-rose-700 dark:text-rose-300',
+    hover: 'hover:bg-rose-100 dark:hover:bg-rose-900/50',
+    accent: 'bg-rose-500'
+  },
+  'Extracted': {
+    bg: 'bg-slate-50 dark:bg-slate-950/30',
+    border: 'border-slate-200 dark:border-slate-800',
+    text: 'text-slate-700 dark:text-slate-300',
+    hover: 'hover:bg-slate-100 dark:hover:bg-slate-900/50',
+    accent: 'bg-slate-500'
+  },
   'Other': {
     bg: 'bg-gray-50 dark:bg-gray-950/30',
     border: 'border-gray-200 dark:border-gray-800',
@@ -156,10 +184,11 @@ export function KeywordPanel({
   className,
   defaultShowRefined = true
 }: KeywordPanelProps) {
-  const { keywords, refinedConcepts, loading, error, stats, extractKeywords, reset } = useKeywordExtraction()
+  const { keywords, refinedConcepts, loading, error, stats, extractKeywords, extractKeywordsBackend, reset, useBackend, setUseBackend } = useKeywordExtraction()
   const [expandedKeyword, setExpandedKeyword] = useState<string | null>(null)
   const [showAllCategories, setShowAllCategories] = useState(false)
   const [showRefined, setShowRefined] = useState(defaultShowRefined)
+  const [pdfText, setPdfText] = useState<string>('')
 
   // Extract keywords when PDF URL changes
   useEffect(() => {

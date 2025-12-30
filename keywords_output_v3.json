@@ -1,0 +1,186 @@
+{
+  "pdf": "1706.03762v7.pdf",
+  "keywords": [
+    {
+      "concept": "attention translation tasks transformer",
+      "score": 0.7517,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Deep Learning",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "google neural machine translation",
+      "score": 0.6885,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Deep Learning",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "computational linguistics",
+      "score": 0.5979,
+      "is_ontology_aligned": true,
+      "frequency": 2,
+      "category": "Other",
+      "url": "https://concepedia.online/concept/computational%20linguistics",
+      "short_definition": "Computational linguistics is the study of language using computers. It combines knowledge from linguistics and computer science to understand how language works and to build systems that can process and generate language. This field aims to unlock the mysteries of human language by using computers to analyze and understand its structure and meaning."
+    },
+    {
+      "concept": "sequence learning minh thang",
+      "score": 0.5052,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Machine Learning",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "competitive neural sequence transduction",
+      "score": 0.4671,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Deep Learning",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "vaswani google brain",
+      "score": 0.4562,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "encoding compared word",
+      "score": 0.4056,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "NLP",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "deep att gnmt rl",
+      "score": 0.4055,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Deep Learning",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "proposed replacing rnns self",
+      "score": 0.3988,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Deep Learning",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "ginsburg factorization tricks lstm",
+      "score": 0.3946,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Deep Learning",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "conference learning representations iclr",
+      "score": 0.3887,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Machine Learning",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "decoder stacks base model",
+      "score": 0.3728,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "ensembles excited future attention",
+      "score": 0.3622,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Deep Learning",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "including reading comprehension abstractive",
+      "score": 0.3542,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "bengio structured self attentive",
+      "score": 0.3474,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "art translation quality",
+      "score": 0.3448,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "modeling transduc tion",
+      "score": 0.3288,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "subword units noam",
+      "score": 0.3262,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "NLP",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "wojna rethinking inception",
+      "score": 0.3237,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    },
+    {
+      "concept": "zhu fast accurate shift",
+      "score": 0.322,
+      "is_ontology_aligned": false,
+      "frequency": 1,
+      "category": "Extracted",
+      "url": "",
+      "short_definition": ""
+    }
+  ],
+  "count": 20
+}

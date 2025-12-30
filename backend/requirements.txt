@@ -75,3 +75,6 @@ docling-core>=2.50.0,<3.0.0
 docling>=2.60.0,<3.0.0
 # Pydantic AI for structured LLM outputs
 pydantic-ai>=1.27.0
+
+# KeyBERT for BERT-based keyword extraction
+keybert>=0.8.0
