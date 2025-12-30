@@ -128,6 +128,11 @@ class OpenAIGenerator(Generator):
                 "- When using chat history, add the marker [CHAT_HISTORY] in your answer.\n"
                 "- When referencing a document context, cite it as [cN] where N is the context number.\n"
                 "- Combine sources if needed and keep the response concise.\n"
+                "- Format your response using Markdown for better readability:\n"
+                "  * Use **bold** for important terms, author names, and key concepts\n"
+                "  * Use *italic* or `backticks` for document titles, paper names, and technical terms\n"
+                "  * Use proper markdown lists when listing multiple items\n"
+                "  * Example: The authors of *\"Paper Title\"* are **Author1**, **Author2** [c1]\n"
                 "- Finish with a confidence marker like [CONFIDENCE:0.85] indicating document-support confidence.\n"
                 f"{context_section}\n\n"
                 "Answer:"
@@ -255,7 +260,7 @@ class OpenAIGenerator(Generator):
             user_content.append({"type": "text", "text": f"[Reference Image {i+1}] {cap}"})
             user_content.append({"type": "image_url", "image_url": {"url": data_url}})
 
-        user_content.append({"type": "text", "text": f"Question: {question}\nAnswer: (IMPORTANT: When you use information from the {len(contexts)} contexts above, mark it with [cN] where N is the context number (1 to {len(contexts)}). If you use information from chat history, mark it with [CHAT_HISTORY]. For example: 'Based on context 1 [c1] and previous conversation [CHAT_HISTORY], the answer is...' At the end, provide a confidence score [CONFIDENCE:0.85] based on how well the document context supports your answer.)"})
+        user_content.append({"type": "text", "text": f"Question: {question}\nAnswer: (IMPORTANT: Format your response using Markdown for better readability. Use **bold** for important terms and author names, *italic* or `backticks` for document titles and technical terms, and proper markdown lists when listing items. When you use information from the {len(contexts)} contexts above, mark it with [cN] where N is the context number (1 to {len(contexts)}). If you use information from chat history, mark it with [CHAT_HISTORY]. For example: 'The authors of the document *\"CiteRead: Integrating Localized Citation Contexts into Scientific Paper Reading\"* are **Napol Rachatasumrit**, **Jonathan Bragg**, **Amy X. Zhang**, and **Daniel S. Weld** [c1].' At the end, provide a confidence score [CONFIDENCE:0.85] based on how well the document context supports your answer.)"})
         messages.append({"role": "user", "content": user_content})
 
         # --- Send request ---

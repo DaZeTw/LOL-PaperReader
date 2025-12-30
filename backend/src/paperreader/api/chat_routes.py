@@ -440,6 +440,13 @@ async def ask_question(request: ChatAskRequest):
             "\n- Never quote raw document text when answering."
             "\n- Focus on what is visible in images for image-related queries."
             "\n- Be concise and factual. Add [cN] markers ONLY when referencing document context."
+            "\n\nFORMATTING (IMPORTANT):"
+            "\n- Format your response using Markdown for better readability:"
+            "\n  * Use **bold** for important terms, author names, and key concepts"
+            "\n  * Use *italic* or `backticks` for document titles, paper names, and technical terms"
+            "\n  * Use proper markdown lists (bullets or numbered) when listing multiple items"
+            "\n  * Keep citations [cN] clearly visible and properly formatted"
+            "\n- Example format: The authors of the document *\"CiteRead: Integrating Localized Citation Contexts into Scientific Paper Reading\"* are **Napol Rachatasumrit**, **Jonathan Bragg**, **Amy X. Zhang**, and **Daniel S. Weld** [c1]."
             "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
         )
         history_for_generator.append({
@@ -1098,6 +1105,13 @@ async def ask_with_upload(
             "\n- Never quote raw document text when answering."
             "\n- Focus on what is visible in images for image-related queries."
             "\n- Be concise and factual. Add [cN] markers ONLY when referencing document context."
+            "\n\nFORMATTING (IMPORTANT):"
+            "\n- Format your response using Markdown for better readability:"
+            "\n  * Use **bold** for important terms, author names, and key concepts"
+            "\n  * Use *italic* or `backticks` for document titles, paper names, and technical terms"
+            "\n  * Use proper markdown lists (bullets or numbered) when listing multiple items"
+            "\n  * Keep citations [cN] clearly visible and properly formatted"
+            "\n- Example format: The authors of the document *\"CiteRead: Integrating Localized Citation Contexts into Scientific Paper Reading\"* are **Napol Rachatasumrit**, **Jonathan Bragg**, **Amy X. Zhang**, and **Daniel S. Weld** [c1]."
             "\n- At the end of your answer, provide a confidence score (0.0-1.0) based on how well the provided document context supports your answer. Format: [CONFIDENCE:0.85]"
         )
         history_for_generator.append({
