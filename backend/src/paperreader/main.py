@@ -31,10 +31,14 @@ from paperreader.api.summary_routes import (
 from paperreader.api.taxonomy_routes import (
     router as taxonomy_router,  # Taxonomy/keyword concept routes
 )
+from paperreader.api.annotation_routes import (
+    router as annotation_router,  # User annotations routes
+)
 from paperreader.database.mongodb import mongodb
 from paperreader.database.postgres import close_postgres_pool, init_postgres_pool
 from paperreader.services.qa.embeddings import get_embedder
 from paperreader.services.skimming.repository import create_skimming_indexes
+from paperreader.services.annotations.repository import create_annotation_indexes
 from starlette.middleware.sessions import SessionMiddleware
 
 # from paperreader.api.chat_embedding_routes import router as chat_embedding_router  # Chat embedding routes (removed as unused)
@@ -105,6 +109,7 @@ def create_app() -> FastAPI:
     app.include_router(
         taxonomy_router
     )  # Taxonomy routes (already has /api/taxonomy prefix)
+    app.include_router(annotation_router, prefix="/api/annotations", tags=["Annotations"])
     app.include_router(reference_routes.router, prefix="/api")
     app.include_router(documents_router)
     app.include_router(collections_router)
@@ -132,6 +137,15 @@ def create_app() -> FastAPI:
             await create_skimming_indexes()
         except Exception as e:
             print(f"[STARTUP] Warning: Failed to create skimming indexes: {e}")
+            import traceback
+
+            print(f"[STARTUP] Traceback: {traceback.format_exc()}")
+        
+        # Create indexes for user annotations collection
+        try:
+            await create_annotation_indexes()
+        except Exception as e:
+            print(f"[STARTUP] Warning: Failed to create annotation indexes: {e}")
             import traceback
 
             print(f"[STARTUP] Traceback: {traceback.format_exc()}")
