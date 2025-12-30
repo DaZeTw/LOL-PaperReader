@@ -30,7 +30,7 @@ interface SinglePDFReaderProps {
 }
 
 export function SinglePDFReader({
-  file, 
+  file,
   documentId,
   tabId,
   isActive,
@@ -39,6 +39,14 @@ export function SinglePDFReader({
   onOpenReferencePDF,
   mode = 'library',
 }: SinglePDFReaderProps) {
+
+  // For preview mode, auto enable open sidebar on first render
+  useEffect(() => {
+    if (mode === 'preview') {
+      onSidebarToggle(true)
+    }
+  }, [])
+
   // ============================================================================
   // PDF URL for keyword extraction
   // ============================================================================
@@ -59,7 +67,7 @@ export function SinglePDFReader({
   // PIPELINE STATUS - Only fetch if in library mode
   // ============================================================================
   const shouldFetchPipeline = mode === 'library'
-  
+
   const {
     isAllReady,
     isProcessing,
@@ -88,7 +96,7 @@ export function SinglePDFReader({
     referenceUpdatedAt,
     skimmingUpdatedAt,
     raw: pipelineStatus,
-  } = usePipelineStatus({ 
+  } = usePipelineStatus({
     documentId,
     enabled: shouldFetchPipeline
   })
@@ -109,7 +117,7 @@ export function SinglePDFReader({
     processing: highlightsProcessing,
     enableSkimming,
   } = useSkimmingHighlights()
-  
+
   const [visibleCategories, setVisibleCategories] = useState<Set<string>>(
     new Set(["objective", "method", "result"])
   )
@@ -252,9 +260,9 @@ export function SinglePDFReader({
 
   const getValidReferenceStatus = (): 'idle' | 'processing' | 'ready' | 'error' | undefined => {
     if (mode !== 'library') return undefined
-    
+
     const validStatuses = ['idle', 'processing', 'ready', 'error']
-    return validStatuses.includes(referenceStatus || '') 
+    return validStatuses.includes(referenceStatus || '')
       ? (referenceStatus as 'idle' | 'processing' | 'ready' | 'error')
       : 'idle'
   }
@@ -262,7 +270,7 @@ export function SinglePDFReader({
   return (
     <div className="relative flex h-full overflow-hidden">
       {/* Main PDF Viewer - resizes when sidebar opens */}
-      <div 
+      <div
         className="flex min-h-0 flex-1 flex-col transition-all duration-300 ease-in-out"
         style={{
           marginRight: sidebarOpen ? '384px' : '0px'
