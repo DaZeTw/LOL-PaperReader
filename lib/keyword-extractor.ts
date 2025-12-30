@@ -1,4 +1,12 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import {
+  TrieTermMatcher,
+  aggregateMatches,
+  categorizeTerm,
+  type DraftTerm,
+  type MatchedTerm,
+  type AggregatedMatch
+} from './trie-term-matcher';
 
 // Configure PDF.js worker
 if (typeof window !== 'undefined') {
@@ -6,53 +14,99 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Interface for a keyword category
- */
-export interface KeywordCategory {
-  name: string;
-  keywords: string[];
-}
-
-/**
- * Interface for an extracted keyword
+ * Interface for an extracted keyword with full term data
  */
 export interface ExtractedKeyword {
-  keyword: string;
-  count: number;
-  category: string;
+  keyword: string
+  count: number
+  category: string
+  url?: string
+  shortDefinition?: string
 }
 
 /**
  * Interface for the extraction result
  */
 export interface ExtractionResult {
-  keywords: ExtractedKeyword[];
-  totalKeywords: number;
-  numPages: number;
+  keywords: ExtractedKeyword[]
+  totalKeywords: number
+  numPages: number
+  matcherStats?: {
+    numTerms: number
+    maxDepth: number
+    buildTimeMs: number
+  }
 }
 
 /**
  * Interface for page text extraction result
  */
 export interface PageText {
-  pageNum: number;
-  text: string;
+  pageNum: number
+  text: string
 }
 
 /**
  * Interface for text extraction result
  */
 export interface TextExtractionResult {
-  pages: PageText[];
-  fullText: string;
-  numPages: number;
+  pages: PageText[]
+  fullText: string
+  numPages: number
+}
+
+// Cache for loaded draft terms
+let cachedDraftTerms: DraftTerm[] | null = null
+let cachedMatcher: TrieTermMatcher | null = null
+
+/**
+ * Load draft concepts from the JSON file
+ */
+async function loadDraftTerms(): Promise<DraftTerm[]> {
+  if (cachedDraftTerms) {
+    console.log('[KeywordExtractor] Using cached draft terms');
+    return cachedDraftTerms;
+  }
+
+  try {
+    console.log('[KeywordExtractor] Loading draft concepts...');
+    const response = await fetch('/draft_concepts_v1_lv0123.json');
+    if (!response.ok) {
+      throw new Error(`Failed to load draft concepts: ${response.status}`);
+    }
+    cachedDraftTerms = await response.json();
+    console.log(`[KeywordExtractor] Loaded ${cachedDraftTerms!.length} draft concepts`);
+    return cachedDraftTerms!;
+  } catch (error) {
+    console.error('[KeywordExtractor] Error loading draft concepts:', error);
+    // Return empty array - will use fallback matching
+    return [];
+  }
 }
 
 /**
- * Predefined keywords to search for in PDFs
+ * Get or create the Trie matcher instance
+ */
+async function getMatcher(): Promise<TrieTermMatcher | null> {
+  if (cachedMatcher) {
+    return cachedMatcher;
+  }
+
+  const terms = await loadDraftTerms();
+  if (terms.length === 0) {
+    return null;
+  }
+
+  console.log('[KeywordExtractor] Building Trie matcher...');
+  cachedMatcher = new TrieTermMatcher(terms);
+  return cachedMatcher;
+}
+
+/**
+ * Legacy keyword categories (fallback when draft terms unavailable)
  * Organized by category for better display
  */
-export const KEYWORD_CATEGORIES: Record<string, string[]> = {
+const FALLBACK_KEYWORD_CATEGORIES: Record<string, string[]> = {
   'Machine Learning': [
     'machine learning', 'deep learning', 'neural network', 'neural networks',
     'supervised learning', 'unsupervised learning', 'reinforcement learning',
@@ -85,28 +139,18 @@ export const KEYWORD_CATEGORIES: Record<string, string[]> = {
 };
 
 /**
- * Flatten all keywords for easy searching
- */
-export const ALL_KEYWORDS: string[] = Object.values(KEYWORD_CATEGORIES).flat();
-
-
-/**
  * Escape special regex characters in a string
- * @param str - The string to escape
- * @returns The escaped string safe for use in regex
  */
-export function escapeRegex(str: string): string {
+function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
- * Get the category for a keyword
- * @param keyword - The keyword to categorize
- * @returns The category name or 'Other' if not found
+ * Get the category for a keyword (fallback method)
  */
-export function getCategoryForKeyword(keyword: string): string {
+function getCategoryForKeyword(keyword: string): string {
   const lowerKeyword = keyword.toLowerCase();
-  for (const [category, keywords] of Object.entries(KEYWORD_CATEGORIES)) {
+  for (const [category, keywords] of Object.entries(FALLBACK_KEYWORD_CATEGORIES)) {
     if (keywords.some(k => k.toLowerCase() === lowerKeyword)) {
       return category;
     }
@@ -116,10 +160,8 @@ export function getCategoryForKeyword(keyword: string): string {
 
 /**
  * Convert a keyword to title case for display
- * @param keyword - The keyword to convert
- * @returns The keyword in title case
  */
-export function toTitleCase(keyword: string): string {
+function toTitleCase(keyword: string): string {
   return keyword
     .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -127,80 +169,43 @@ export function toTitleCase(keyword: string): string {
 }
 
 /**
- * Get the base form of a keyword by removing trailing 's' for singular/plural merging
- * @param keyword - The keyword to get base form of
- * @returns The base form of the keyword
+ * Find keywords using fallback method (when Trie matcher unavailable)
  */
-export function getBaseKeyword(keyword: string): string {
-  return keyword.replace(/s$/i, '');
-}
-
-/**
- * Find all keyword occurrences in text using word-boundary matching
- * @param text - The text to search in
- * @param keywords - Keywords to search for (defaults to ALL_KEYWORDS)
- * @returns Map of found keywords with their counts and categories
- */
-export function findKeywords(
-  text: string,
-  keywords: string[] = ALL_KEYWORDS
-): Map<string, ExtractedKeyword> {
+function findKeywordsFallback(text: string): ExtractedKeyword[] {
   const lowerText = text.toLowerCase();
   const foundKeywords = new Map<string, ExtractedKeyword>();
+  const allKeywords = Object.values(FALLBACK_KEYWORD_CATEGORIES).flat();
 
-  for (const keyword of keywords) {
+  for (const keyword of allKeywords) {
     const lowerKeyword = keyword.toLowerCase();
-    // Use word boundary matching to avoid partial matches
     const regex = new RegExp(`\\b${escapeRegex(lowerKeyword)}\\b`, 'gi');
     const matches = lowerText.match(regex);
 
     if (matches && matches.length > 0) {
-      // Normalize keyword to title case for display
       const displayName = toTitleCase(keyword);
+      const baseKeyword = displayName.replace(/s$/i, '');
 
-      // Get base keyword for singular/plural merging
-      const baseKeyword = getBaseKeyword(displayName);
-
-      // Check if we already have this keyword or its base form
       if (foundKeywords.has(baseKeyword)) {
-        // Merge with existing base form
         const existing = foundKeywords.get(baseKeyword)!;
         existing.count += matches.length;
       } else if (foundKeywords.has(displayName)) {
-        // Merge with existing display name
         const existing = foundKeywords.get(displayName)!;
         existing.count += matches.length;
       } else {
-        // Check if there's an existing entry that this is a base form of
-        const pluralForm = displayName + 's';
-        if (foundKeywords.has(pluralForm)) {
-          // Merge into the plural form entry
-          const existing = foundKeywords.get(pluralForm)!;
-          existing.count += matches.length;
-          // Re-key to base form
-          foundKeywords.delete(pluralForm);
-          existing.keyword = baseKeyword;
-          foundKeywords.set(baseKeyword, existing);
-        } else {
-          // Create new entry
-          foundKeywords.set(displayName, {
-            count: matches.length,
-            keyword: displayName,
-            category: getCategoryForKeyword(keyword)
-          });
-        }
+        foundKeywords.set(displayName, {
+          keyword: displayName,
+          count: matches.length,
+          category: getCategoryForKeyword(keyword)
+        });
       }
     }
   }
 
-  return foundKeywords;
+  return Array.from(foundKeywords.values()).sort((a, b) => b.count - a.count);
 }
-
 
 /**
  * Extract text from a PDF file
- * @param pdfUrl - URL or path to the PDF file
- * @returns Promise with pages array, full text, and page count
  */
 export async function extractTextFromPDF(pdfUrl: string): Promise<TextExtractionResult> {
   try {
@@ -232,21 +237,57 @@ export async function extractTextFromPDF(pdfUrl: string): Promise<TextExtraction
 }
 
 /**
- * Extract keywords from a PDF file
- * @param pdfUrl - URL or path to the PDF file
- * @returns Promise with keywords array, page count, and total keyword occurrences
+ * Extract keywords from a PDF file using Trie-based matching
+ * Falls back to legacy method if draft terms are unavailable
  */
 export async function extractKeywordsFromPDF(pdfUrl: string): Promise<ExtractionResult> {
+  console.log('[KeywordExtractor] Starting keyword extraction for:', pdfUrl);
+
+  // Extract text from PDF
   const { fullText, numPages } = await extractTextFromPDF(pdfUrl);
-  const keywordMap = findKeywords(fullText);
+  console.log(`[KeywordExtractor] Extracted ${fullText.length} characters from ${numPages} pages`);
 
-  // Convert map to sorted array (by count descending)
-  const keywords = Array.from(keywordMap.values())
-    .sort((a, b) => b.count - a.count);
+  // Try to get the Trie matcher
+  const matcher = await getMatcher();
 
-  return {
-    keywords,
-    numPages,
-    totalKeywords: keywords.reduce((sum, k) => sum + k.count, 0)
-  };
+  if (matcher) {
+    // Use Trie-based matching with draft concepts
+    console.log('[KeywordExtractor] Using Trie-based matching');
+    const matches = matcher.match(fullText);
+    const aggregated = aggregateMatches(matches);
+
+    // Convert to ExtractedKeyword format with categories
+    const keywords: ExtractedKeyword[] = aggregated.map(match => ({
+      keyword: match.termName,
+      count: match.count,
+      category: categorizeTerm(match),
+      url: match.url,
+      shortDefinition: match.shortDefinition
+    }));
+
+    const stats = matcher.getStats();
+    console.log(`[KeywordExtractor] Found ${keywords.length} unique keywords (${aggregated.reduce((sum, m) => sum + m.count, 0)} total)`);
+
+    return {
+      keywords,
+      numPages,
+      totalKeywords: aggregated.reduce((sum, m) => sum + m.count, 0),
+      matcherStats: stats
+    };
+  } else {
+    // Fallback to legacy keyword matching
+    console.log('[KeywordExtractor] Using fallback keyword matching');
+    const keywords = findKeywordsFallback(fullText);
+
+    return {
+      keywords,
+      numPages,
+      totalKeywords: keywords.reduce((sum, k) => sum + k.count, 0)
+    };
+  }
 }
+
+/**
+ * Re-export types for convenience
+ */
+export type { DraftTerm, MatchedTerm, AggregatedMatch };

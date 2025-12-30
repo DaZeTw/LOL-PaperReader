@@ -11,6 +11,11 @@ import {
 export interface ExtractionStats {
   total: number
   numPages: number
+  matcherStats?: {
+    numTerms: number
+    maxDepth: number
+    buildTimeMs: number
+  }
 }
 
 /**
@@ -36,8 +41,11 @@ const initialStats: ExtractionStats = {
 /**
  * React hook for managing keyword extraction state.
  * 
+ * Uses Trie-based term matching with draft concepts from Concepedia
+ * for efficient, accurate keyword recognition.
+ * 
  * Provides functionality to:
- * - Extract keywords from a PDF document
+ * - Extract keywords from a PDF document using Trie-based matching
  * - Track loading and error states
  * - Reset state when switching documents
  * 
@@ -75,18 +83,27 @@ export function useKeywordExtraction(): UseKeywordExtractionReturn {
     setError(null)
 
     try {
+      console.log('[useKeywordExtraction] Starting extraction for:', pdfUrl)
       const result: ExtractionResult = await extractKeywordsFromPDF(pdfUrl)
 
       setKeywords(result.keywords)
       setStats({
         total: result.totalKeywords,
         numPages: result.numPages,
+        matcherStats: result.matcherStats,
       })
 
       console.log(
         `[useKeywordExtraction] Extracted ${result.keywords.length} unique keywords ` +
         `(${result.totalKeywords} total occurrences) from ${result.numPages} pages`
       )
+
+      if (result.matcherStats) {
+        console.log(
+          `[useKeywordExtraction] Trie stats: ${result.matcherStats.numTerms} terms, ` +
+          `max depth ${result.matcherStats.maxDepth}, built in ${result.matcherStats.buildTimeMs.toFixed(2)}ms`
+        )
+      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to extract keywords'
       console.error('[useKeywordExtraction] Error extracting keywords:', err)
