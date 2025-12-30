@@ -153,13 +153,13 @@ export const LibraryView = forwardRef<
     // but schedule one for later if not already scheduled
     if (timeSinceLastRefresh < 2000) {
       if (!(window as any)._refreshTimeout) {
-        console.log('⏳ Metadata refresh debounced, scheduling for later...')
-          (window as any)._refreshTimeout = setTimeout(() => {
-            console.log('🔄 Executing delayed metadata refresh...')
-            refetchReferences();
-            (window as any)._lastMetadataRefresh = Date.now();
-            (window as any)._refreshTimeout = null
-          }, 2000)
+        console.log('⏳ Metadata refresh debounced, scheduling for later...');
+        (window as any)._refreshTimeout = setTimeout(() => {
+          console.log('🔄 Executing delayed metadata refresh...')
+          refetchReferences();
+          (window as any)._lastMetadataRefresh = Date.now();
+          (window as any)._refreshTimeout = null
+        }, 2000)
       }
       return
     }
