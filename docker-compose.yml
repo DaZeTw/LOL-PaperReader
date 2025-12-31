@@ -85,7 +85,7 @@ services:
     image: lfoppiano/grobid:0.8.0
     container_name: paperreader-grobid
     ports:
-      - "8070:8070"
+      - "18070:8070"
     environment:
       - JAVA_OPTS=-Xmx4g
     restart: unless-stopped
