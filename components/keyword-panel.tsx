@@ -3,9 +3,9 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { Search, AlertCircle, RefreshCw, ExternalLink, Info, ChevronDown, ChevronUp, Zap, Sparkles, List } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useKeywordExtraction, type RefinedConcept } from "@/hooks/useKeywordExtraction"
+import { useKeywordExtraction } from "@/hooks/useKeywordExtraction"
 import type { ExtractedKeyword } from "@/lib/keyword-extractor"
-
+import type { RefinedConcept } from "@/lib/concept-refiner"
 /**
  * Props for the KeywordPanel component
  */
@@ -15,7 +15,7 @@ interface KeywordPanelProps {
   /** Document ID for tracking */
   documentId: string
   /** Callback when a keyword chip is clicked */
-  onKeywordClick?: (keyword: ExtractedKeyword | RefinedConcept, event: React.MouseEvent) => void
+  onKeywordClick?: (keyword: ExtractedKeyword, event: React.MouseEvent) => void
   /** Additional CSS classes */
   className?: string
   /** Show refined concepts by default (default: true) */
@@ -341,11 +341,19 @@ export function KeywordPanel({
                             isExpanded && "shadow-sm"
                           )}
                         >
-                          {/* Main keyword button */}
-                          <button
+                          {/* Main keyword container */}
+                          <div
+                            role="button"
+                            tabIndex={0}
                             onClick={(e) => onKeywordClick?.(kw, e)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                onKeywordClick?.(kw, e as unknown as React.MouseEvent);
+                              }
+                            }}
                             className={cn(
-                              "flex items-center gap-2 w-full px-3 py-2 text-left transition-colors rounded-t-lg",
+                              "flex items-center gap-2 w-full px-3 py-2 text-left transition-colors rounded-t-lg cursor-pointer",
                               colors.hover
                             )}
                           >
@@ -374,6 +382,7 @@ export function KeywordPanel({
                               <button
                                 onClick={(e) => toggleKeywordExpansion(kw.keyword, e)}
                                 className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/10"
+                                aria-label={isExpanded ? "Collapse definition" : "Expand definition"}
                               >
                                 {isExpanded ? (
                                   <ChevronUp className="h-3 w-3" />
@@ -382,7 +391,7 @@ export function KeywordPanel({
                                 )}
                               </button>
                             )}
-                          </button>
+                          </div>
 
                           {/* Expanded definition */}
                           {isExpanded && hasDefinition && (

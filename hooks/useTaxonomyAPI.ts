@@ -52,6 +52,7 @@ export interface UseTaxonomyAPIReturn {
   fetchConceptById: (conceptId: string) => Promise<KeywordData>
   loading: boolean
   error: string | null
+  clearError: () => void
 }
 
 // ============================================================================
@@ -128,24 +129,37 @@ async function searchConcept(query: string, limit: number = 5): Promise<ConceptS
  * @returns Concept details
  */
 async function getConcept(id: string): Promise<ConceptData | null> {
-  const url = `${API_BASE}/concepts/${id}`
-  const res = await fetch(url, { headers: DEFAULT_HEADERS })
+  const url = `${API_BASE}/concepts/${encodeURIComponent(id)}`
 
-  if (!res.ok) {
+  try {
+    const res = await fetch(url, { headers: DEFAULT_HEADERS })
+
+    // Concept không tồn tại → expected
     if (res.status === 404) {
       return null
     }
-    const contentType = res.headers.get('content-type') || ''
-    if (!contentType.includes('application/json')) {
-      throw new Error(
-        `Concept fetch failed: Backend returned status ${res.status}. ` +
-        `Make sure the backend server is running at ${API_BASE}`
-      )
-    }
-    throw new Error(`Concept fetch failed: ${res.status}`)
-  }
 
-  return await parseJsonResponse(res, 'Concept fetch') as ConceptData
+    if (!res.ok) {
+      const contentType = res.headers.get('content-type') || ''
+
+      // Backend chết / trả HTML / không phải JSON
+      if (!contentType.includes('application/json')) {
+        console.warn(
+          `[getConcept] Backend not available (${res.status}) at ${API_BASE}`
+        )
+        return null
+      }
+
+      console.warn(`[getConcept] Fetch failed with status ${res.status}`)
+      return null
+    }
+
+    return (await parseJsonResponse(res, 'Concept fetch')) as ConceptData
+  } catch (err) {
+    // Network error / CORS / backend down
+    console.warn('[getConcept] Network error, fallback to null:', err)
+    return null
+  }
 }
 
 /**
@@ -361,10 +375,15 @@ export function useTaxonomyAPI(): UseTaxonomyAPIReturn {
     }
   }, [])
 
+  const clearError = useCallback(() => {
+    setError(null)
+  }, [])
+
   return {
     fetchKeywordData,
     fetchConceptById,
     loading,
     error,
+    clearError,
   }
 }

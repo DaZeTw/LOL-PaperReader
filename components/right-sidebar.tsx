@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { ChevronRight, MessageSquare, BookmarkIcon, Sparkles, FileText, Settings, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -12,7 +12,7 @@ import { KeywordPopup } from "@/components/keyword-popup"
 import { useTaxonomyAPI } from "@/hooks/useTaxonomyAPI"
 import type { SkimmingHighlight } from "@/components/pdf-highlight-overlay"
 import type { ExtractedKeyword } from "@/lib/keyword-extractor"
-import type { ConceptData, RelatedConcept } from "@/hooks/useTaxonomyAPI"
+import type { ConceptData, RelatedConcept, KeywordData } from "@/hooks/useTaxonomyAPI"
 
 interface RightSidebarProps {
   // Props for QA
@@ -21,10 +21,10 @@ interface RightSidebarProps {
   documentId: string
   onCitationClick: (page: number, text?: string) => void
   totalPages: number
-  
+
   // Props for Keywords
   pdfUrl?: string
-  
+
   // Props for Highlights/Skimming
   highlights: SkimmingHighlight[]
   highlightsLoading: boolean
@@ -34,17 +34,17 @@ interface RightSidebarProps {
   hiddenHighlightIds: Set<number>
   onHighlightToggle: (highlightId: number) => void
   activeHighlightIds: Set<number>
-  
+
   // Skimming controls
   skimmingEnabled: boolean
   onEnableSkimming: () => Promise<void>
   onDisableSkimming?: () => void
-  
+
   // Sidebar control
   isOpen: boolean
   onToggle: () => void
   className?: string
-  
+
   // Pipeline status (3 tasks: chat, summary, skimming)
   pipelineStatus?: {
     // Overall status
@@ -53,33 +53,33 @@ interface RightSidebarProps {
     overallProgress: number
     stage: string
     message: string
-    
+
     // Independent task readiness (3 tasks)
     isChatReady: boolean
     isSummaryReady: boolean
     isSkimmingReady: boolean
-    
+
     // Task statuses (3 tasks)
     embeddingStatus: string
     summaryStatus: string
     skimmingStatus: string
-    
+
     // Available features
     availableFeatures: string[]
-    
+
     // Metadata
     chunkCount: number
-    
+
     // Error tracking
     hasErrors: boolean
     errors: string[]
-    
+
     // Helper functions (3 tasks)
     getTaskMessage: (task: 'embedding' | 'summary' | 'skimming') => string
     getCompletedTasks: () => string[]
     getProcessingTasks: () => string[]
     isFeatureAvailable: (feature: 'chat' | 'summary' | 'skimming') => boolean
-    
+
     // Timestamps
     embeddingUpdatedAt?: string
     summaryUpdatedAt?: string
@@ -111,7 +111,7 @@ export function RightSidebar({
   pipelineStatus,
 }: RightSidebarProps) {
   const [activeTab, setActiveTab] = useState("qa")
-  
+
   // Keyword popup state
   const [popupOpen, setPopupOpen] = useState(false)
   const [selectedKeyword, setSelectedKeyword] = useState<ExtractedKeyword | null>(null)
@@ -119,9 +119,14 @@ export function RightSidebar({
   const [popupConcept, setPopupConcept] = useState<ConceptData | null>(null)
   const [popupSiblings, setPopupSiblings] = useState<RelatedConcept[]>([])
   const [popupDescendants, setPopupDescendants] = useState<RelatedConcept[]>([])
-  
+
+  // Cache for keyword data to avoid redundant API calls
+  const keywordCache = useRef<Map<string, KeywordData>>(new Map())
+  // Guard to handle race conditions when clicking keywords rapidly
+  const activeKeywordRef = useRef<string | null>(null)
+
   // Taxonomy API hook
-  const { fetchKeywordData, fetchConceptById, loading: taxonomyLoading, error: taxonomyError } = useTaxonomyAPI()
+  const { fetchKeywordData, fetchConceptById, loading: taxonomyLoading, error: taxonomyError, clearError } = useTaxonomyAPI()
 
   // Handle keyword click from KeywordPanel
   const handleKeywordClick = useCallback(async (keyword: ExtractedKeyword, event: React.MouseEvent) => {
@@ -129,13 +134,13 @@ export function RightSidebar({
     const rect = (event.target as HTMLElement).getBoundingClientRect()
     const popupWidth = 420
     const popupHeight = 500
-    
+
     // Position popup to the left of the sidebar if there's not enough space
     let left = rect.left - popupWidth - 10
     if (left < 10) {
       left = rect.right + 10
     }
-    
+
     // Ensure popup doesn't go off screen vertically
     let top = rect.top
     if (top + popupHeight > window.innerHeight) {
@@ -144,31 +149,77 @@ export function RightSidebar({
     if (top < 10) {
       top = 10
     }
-    
+
     setPopupPosition({ top, left })
     setSelectedKeyword(keyword)
     setPopupOpen(true)
-    
-    // Fetch taxonomy data for the keyword
-    const data = await fetchKeywordData(keyword.keyword)
+
+    const keywordName = keyword.keyword
+    activeKeywordRef.current = keywordName
+
+    // 1. Check cache first
+    if (keywordCache.current.has(keywordName)) {
+      const cached = keywordCache.current.get(keywordName)!
+      setPopupConcept(cached.concept)
+      setPopupSiblings(cached.siblings)
+      setPopupDescendants(cached.descendants)
+      clearError() // Reset any previous error state
+      console.log(`[RightSidebar] Cache hit for keyword: ${keywordName}`)
+      return
+    }
+
+    // 2. Fetch if not in cache
+    const data = await fetchKeywordData(keywordName)
+
+    // 3. Race condition guard: Ensure this is still the active keyword
+    if (activeKeywordRef.current !== keywordName) {
+      console.log(`[RightSidebar] Ignoring stale response for: ${keywordName}`)
+      return
+    }
+
     setPopupConcept(data.concept)
     setPopupSiblings(data.siblings)
     setPopupDescendants(data.descendants)
+
+    // 4. Store in cache if we got a valid concept
+    if (data.concept) {
+      keywordCache.current.set(keywordName, data)
+    }
   }, [fetchKeywordData])
 
   // Handle node click in the knowledge graph
   const handleNodeClick = useCallback(async (nodeId: string, nodeName: string) => {
-    // Fetch data for the clicked concept
+    // 1. Check cache by name (or we could use ID, but name is what we have from node click usually)
+    if (keywordCache.current.has(nodeName)) {
+      const cached = keywordCache.current.get(nodeName)!
+      setSelectedKeyword({
+        keyword: cached.concept!.name,
+        count: selectedKeyword?.count || 0,
+        category: cached.concept!.category || 'Other'
+      })
+      setPopupConcept(cached.concept)
+      setPopupSiblings(cached.siblings)
+      setPopupDescendants(cached.descendants)
+      clearError() // Reset any previous error state
+      console.log(`[RightSidebar] Cache hit for node: ${nodeName}`)
+      return
+    }
+
+    // 2. Fetch data for the clicked concept
     const data = await fetchConceptById(nodeId)
     if (data.concept) {
+      const keywordName = data.concept.name
       setSelectedKeyword({
-        keyword: data.concept.name,
+        keyword: keywordName,
         count: selectedKeyword?.count || 0,
         category: data.concept.category || 'Other'
       })
       setPopupConcept(data.concept)
       setPopupSiblings(data.siblings)
       setPopupDescendants(data.descendants)
+
+      // 3. Store in cache
+      keywordCache.current.set(keywordName, data)
     }
   }, [fetchConceptById, selectedKeyword?.count])
 
@@ -238,16 +289,16 @@ export function RightSidebar({
             tabId={tabId}
             pdfFile={pdfFile}
             documentId={documentId}
-            onHighlight={() => {}}
+            onHighlight={() => { }}
             onCitationClick={onCitationClick}
             totalPages={totalPages}
             isOpen={true}
-            onToggle={() => {}}
+            onToggle={() => { }}
             isActive={activeTab === "qa"}
             pipelineStatus={pipelineStatus}
           />
         )
-      
+
       case "highlights":
         return (
           <SkimmingInterface
@@ -265,7 +316,7 @@ export function RightSidebar({
             pipelineStatus={pipelineStatus}
           />
         )
-      
+
       case "keywords":
         return (
           <KeywordPanel
@@ -274,25 +325,25 @@ export function RightSidebar({
             onKeywordClick={handleKeywordClick}
           />
         )
-      
+
       case "summary":
         return (
           <SummaryInterface
             documentId={documentId}
             tabId={tabId}
             isOpen={true}
-            onToggle={() => {}}
+            onToggle={() => { }}
             isActive={activeTab === "summary"}
             pipelineStatus={pipelineStatus}
           />
         )
-      
+
       case "notes":
         return <div className="p-4 text-muted-foreground">Notes coming soon...</div>
-      
+
       case "settings":
         return <div className="p-4 text-muted-foreground">Settings coming soon...</div>
-      
+
       default:
         return null
     }
@@ -348,7 +399,7 @@ export function RightSidebar({
               </button>
             ))}
           </div>
-          
+
           {/* Close Button */}
           <Button
             onClick={onToggle}
