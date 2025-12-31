@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext } from "react"
-import { Viewer, Worker } from "@react-pdf-viewer/core"
+import { Viewer, Worker, SpecialZoomLevel } from "@react-pdf-viewer/core"
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
 import { zoomPlugin } from "@react-pdf-viewer/zoom"
 import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail"
@@ -43,11 +43,12 @@ export const CitationContext = createContext<{
 });
 
 // --- 2. INNER VIEWER (FIREWALL) ---
-const InnerViewer = React.memo(({ 
-  fileUrl, 
-  plugins, 
-  onDocumentLoad, 
-  onPageChange 
+const InnerViewer = React.memo(({
+  fileUrl,
+  plugins,
+  onDocumentLoad,
+  onPageChange,
+  onZoom
 }: any) => {
   return (
     <Viewer
@@ -55,6 +56,8 @@ const InnerViewer = React.memo(({
       plugins={plugins}
       onDocumentLoad={onDocumentLoad}
       onPageChange={onPageChange}
+      onZoom={onZoom}
+      defaultScale={SpecialZoomLevel.PageWidth}
     />
   )
 }, (prev, next) => {
@@ -123,22 +126,22 @@ export function PDFViewer({
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
 
   // Data Loading
-  const { 
-    annotations, 
-    isLoading: annotationsLoading, 
-    extractAnnotations 
+  const {
+    annotations,
+    isLoading: annotationsLoading,
+    extractAnnotations
   } = useAnnotations()
-  
+
   // Refs for stability
   const annotationsRef = useRef<PageAnnotations[]>([])
   useEffect(() => {
     annotationsRef.current = annotations
   }, [annotations])
 
-  const { 
-    annotations: userAnnotations, 
-    annotationCount, 
-    annotationPluginInstance, 
+  const {
+    annotations: userAnnotations,
+    annotationCount,
+    annotationPluginInstance,
   } = useAnnotation()
 
   const {
@@ -154,10 +157,11 @@ export function PDFViewer({
   const zoomRef = useRef(1)
   const zoomLabelRef = useRef<HTMLSpanElement>(null)
   const pendingPageNavigation = useRef<number | null>(null)
+  const initialZoomAdjusted = useRef(false)
 
   // --- PLUGINS ---
   const pageNavigationPluginInstance = useRef(pageNavigationPlugin()).current
-  const zoomPluginInstance = useRef(zoomPlugin()).current
+  const zoomPluginInstance = useRef(zoomPlugin({})).current
   const thumbnailPluginInstance = useRef(thumbnailPlugin()).current
   const bookmarkPluginInstance = useRef(bookmarkPlugin()).current
   const searchPluginInstance = useRef(searchPlugin({ keyword: "" })).current
@@ -165,19 +169,19 @@ export function PDFViewer({
   // 1. Citation Plugin (Stable)
   const citationAnnotationPluginInstance = useMemo(() => {
     return useCitationAnnotationPlugin({
-      annotationsRef: annotationsRef, 
+      annotationsRef: annotationsRef,
       onAnnotationClick: enableInteractions ? (annotation, event) => {
         setSelectedAnnotation(annotation)
         setPopupPosition({ x: event.clientX, y: event.clientY })
       } : undefined,
     })
-  }, [enableInteractions]) 
+  }, [enableInteractions])
 
   // 2. Highlight Plugin (Corrected Stabilization Pattern)
-  
+
   // A. Prepare Data
   const visibleHighlights = useMemo(() => {
-    return enableInteractions 
+    return enableInteractions
       ? highlights.filter((h) => activeHighlightIds.has(h.id) && !hiddenHighlightIds.has(h.id))
       : []
   }, [enableInteractions, highlights, activeHighlightIds, hiddenHighlightIds]);
@@ -197,7 +201,7 @@ export function PDFViewer({
   const highlightPluginInstance = useMemo(() => {
     return rawHighlightPluginInstance;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enableInteractions, visibleHighlights]) 
+  }, [enableInteractions, visibleHighlights])
 
   // 3. Master Plugins Array (Frozen)
   const plugins = useMemo(() => {
@@ -240,6 +244,7 @@ export function PDFViewer({
     if (file && documentId) {
       const url = URL.createObjectURL(file)
       setPdfUrl(url)
+      initialZoomAdjusted.current = false // Reset for new file
 
       if (enableInteractions && referenceStatus === 'ready') {
         extractAnnotations(file, documentId)
@@ -254,7 +259,7 @@ export function PDFViewer({
       }
       return () => URL.revokeObjectURL(url)
     }
-  }, [file, documentId, enableInteractions, referenceStatus]) 
+  }, [file, documentId, enableInteractions, referenceStatus])
 
   // --- HANDLERS ---
   const handleCopyText = useCallback((text: string) => {
@@ -295,12 +300,28 @@ export function PDFViewer({
     onPageChange?.(newPage)
   }, [onPageChange])
 
+  const handleZoomInternal = useCallback((e: any) => {
+    zoomRef.current = e.scale
+    requestAnimationFrame(() => {
+      if (zoomLabelRef.current) zoomLabelRef.current.textContent = `${Math.round(e.scale * 100)}%`
+    })
+    console.log("Current zoom level:", e.scale)
+
+    // Initial 90% adjustment logic
+    if (!initialZoomAdjusted.current && e.scale > 0) {
+      initialZoomAdjusted.current = true
+      const targetScale = e.scale * 0.9
+      // Small timeout to ensure the viewer has finished its internal initial layout
+      setTimeout(() => {
+        zoomTo(targetScale)
+      }, 100)
+    }
+  }, [zoomTo])
+
   const handleDocumentLoadInternal = useCallback((e: any) => {
     setNumPages(e.doc.numPages)
     currentPageRef.current = 1
-    zoomRef.current = 1
     if (pageLabelRef.current) pageLabelRef.current.textContent = "1"
-    if (zoomLabelRef.current) zoomLabelRef.current.textContent = "100%"
     onDocumentLoad?.(e.doc.numPages)
     e.doc.getOutline().then((outline: any) => {
       if (outline) setBookmarks(outline)
@@ -309,22 +330,14 @@ export function PDFViewer({
 
   const handleZoomIn = () => {
     const newScale = Math.min(2, zoomRef.current + 0.1)
-    zoomRef.current = newScale
     zoomTo(newScale)
-    requestAnimationFrame(() => {
-      if (zoomLabelRef.current) zoomLabelRef.current.textContent = `${Math.round(newScale * 100)}%`
-    })
   }
 
   const handleZoomOut = () => {
     const newScale = Math.max(0.5, zoomRef.current - 0.1)
-    zoomRef.current = newScale
     zoomTo(newScale)
-    requestAnimationFrame(() => {
-      if (zoomLabelRef.current) zoomLabelRef.current.textContent = `${Math.round(newScale * 100)}%`
-    })
   }
-  
+
   const handleNavigateToPage = useCallback((page: number) => {
     pendingPageNavigation.current = page
   }, [])
@@ -417,31 +430,31 @@ export function PDFViewer({
                   </Button>
                 </>
               )}
-              
+
               {/* STATUS INDICATORS */}
               {enableInteractions && (
                 <div className="flex items-center gap-2 ml-4 px-2 py-1 bg-muted/40 rounded-md">
-                   {referenceStatus === 'processing' && (
-                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                       <Loader2 className="h-3 w-3 animate-spin" />
-                       <span>Processing...</span>
-                     </div>
-                   )}
-                   {annotationsLoading && referenceStatus === 'ready' && (
-                     <div className="flex items-center gap-2 text-xs text-blue-600 font-medium">
-                       <Loader2 className="h-3 w-3 animate-spin" />
-                       <span>Fetching Citations...</span>
-                     </div>
-                   )}
-                   {!annotationsLoading && annotations.length > 0 && (
-                     <div className="flex items-center gap-2 text-xs text-green-600 font-medium">
-                       <span>{annotations.reduce((sum, p) => sum + p.annotations.length, 0)} Citations</span>
-                     </div>
-                   )}
+                  {referenceStatus === 'processing' && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <span>Processing...</span>
+                    </div>
+                  )}
+                  {annotationsLoading && referenceStatus === 'ready' && (
+                    <div className="flex items-center gap-2 text-xs text-blue-600 font-medium">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <span>Fetching Citations...</span>
+                    </div>
+                  )}
+                  {!annotationsLoading && annotations.length > 0 && (
+                    <div className="flex items-center gap-2 text-xs text-green-600 font-medium">
+                      <span>{annotations.reduce((sum, p) => sum + p.annotations.length, 0)} Citations</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-            
+
             {/* Zoom Controls */}
             {viewMode === "reading" && (
               <div className="flex items-center gap-2">
@@ -455,18 +468,24 @@ export function PDFViewer({
           {/* Main Content */}
           <div className="flex-1 overflow-hidden bg-muted/30">
             {viewMode === "reading" ? (
-              <div ref={pdfContainerRef} className="h-full p-4" onMouseUp={enableInteractions ? (e) => handleTextSelection(e.nativeEvent) : undefined}>
+              <div ref={pdfContainerRef} className="h-full" onMouseUp={enableInteractions ? (e) => handleTextSelection(e.nativeEvent) : undefined}>
                 {pdfUrl && (
-                  <div className="h-full mx-auto max-w-4xl">
+                  <div className="h-full mx-auto max-w-6xl">
                     <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                       <div className="bg-white shadow-lg rounded-lg overflow-hidden h-full">
-                        {/* ⚡️ USING INNER VIEWER (FIREWALL) */}
-                        <InnerViewer 
-                          fileUrl={pdfUrl}
-                          plugins={plugins}
-                          onDocumentLoad={handleDocumentLoadInternal}
-                          onPageChange={handlePageChangeInternal}
-                        />
+                        <div className="
+                          bg-white shadow-lg rounded-lg overflow-hidden h-full
+                          px-[clamp(2px,4%,10px)]
+                          py-[clamp(4px,2%,12px)]
+                        "> {/* ⚡️ USING INNER VIEWER (FIREWALL) */}
+                          <InnerViewer
+                            fileUrl={pdfUrl}
+                            plugins={plugins}
+                            onDocumentLoad={handleDocumentLoadInternal}
+                            onPageChange={handlePageChangeInternal}
+                            onZoom={handleZoomInternal}
+                          />
+                        </div>
                       </div>
                     </Worker>
                   </div>
@@ -482,12 +501,12 @@ export function PDFViewer({
       {/* Popups */}
       {enableInteractions && (
         <>
-          <CitationPopup 
-            annotation={selectedAnnotation} 
-            isOpen={!!selectedAnnotation} 
-            onClose={() => setSelectedAnnotation(null)} 
-            onCopyText={handleCopyText} 
-            onViewReference={handleViewReference} 
+          <CitationPopup
+            annotation={selectedAnnotation}
+            isOpen={!!selectedAnnotation}
+            onClose={() => setSelectedAnnotation(null)}
+            onCopyText={handleCopyText}
+            onViewReference={handleViewReference}
             position={popupPosition}
             citationCache={{
               set: setCitationCacheDict,
