@@ -137,7 +137,7 @@ export function useKeywordExtraction(): UseKeywordExtractionReturn {
 
       if (extractionMode === 'yake') {
         // Use backend YAKE extraction
-        const topN = options.topN || 20
+        const topN = options.topN || 30
         const yakeResult = await extractKeywordsFromPdfUrl(pdfUrl, topN, options.documentId)
 
         // Convert YAKE keywords to ExtractedKeyword format
