@@ -1,11 +1,10 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from "react"
-import { Search, AlertCircle, RefreshCw, ExternalLink, Info, ChevronDown, ChevronUp, Zap, Sparkles, List } from "lucide-react"
+import { Search, AlertCircle, RefreshCw, ExternalLink, Info, ChevronDown, ChevronUp, Zap, ToggleLeft, ToggleRight } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useKeywordExtraction } from "@/hooks/useKeywordExtraction"
+import { useKeywordExtraction, ExtractionMode } from "@/hooks/useKeywordExtraction"
 import type { ExtractedKeyword } from "@/lib/keyword-extractor"
-import type { RefinedConcept } from "@/lib/concept-refiner"
 /**
  * Props for the KeywordPanel component
  */
@@ -107,14 +106,6 @@ function getCategoryColors(category: string) {
 }
 
 /**
- * Truncate text to a maximum length
- */
-function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text
-  return text.slice(0, maxLength - 3) + '...'
-}
-
-/**
  * Unified display item for both keywords and refined concepts
  */
 interface DisplayItem {
@@ -156,10 +147,20 @@ export function KeywordPanel({
   className,
   defaultShowRefined = true
 }: KeywordPanelProps) {
-  const { keywords, refinedConcepts, loading, error, stats, extractKeywords, reset } = useKeywordExtraction()
+  const { keywords, refinedConcepts, loading, error, stats, mode, extractKeywords, setMode, reset } = useKeywordExtraction()
   const [expandedKeyword, setExpandedKeyword] = useState<string | null>(null)
   const [showAllCategories, setShowAllCategories] = useState(false)
   const [showRefined, setShowRefined] = useState(defaultShowRefined)
+
+  // Handle mode toggle
+  const handleModeToggle = () => {
+    const newMode: ExtractionMode = mode === 'yake' ? 'client' : 'yake'
+    setMode(newMode)
+    // Re-extract with new mode
+    if (pdfUrl) {
+      extractKeywords(pdfUrl, { mode: newMode })
+    }
+  }
 
   // Extract keywords when PDF URL changes
   useEffect(() => {
@@ -236,7 +237,7 @@ export function KeywordPanel({
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
             <Zap className="h-4 w-4 text-primary" />
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="font-semibold text-sm">AI-Detected Keywords</h3>
             {!loading && !error && keywords.length > 0 && (
               <p className="text-xs text-muted-foreground">
@@ -244,20 +245,49 @@ export function KeywordPanel({
               </p>
             )}
           </div>
+          {/* Mode toggle button */}
+          <button
+            onClick={handleModeToggle}
+            disabled={loading}
+            className={cn(
+              "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors",
+              "border border-border hover:bg-muted/50",
+              loading && "opacity-50 cursor-not-allowed"
+            )}
+            title={mode === 'yake' ? 'Using YAKE (backend). Click for Trie mode.' : 'Using Trie (client). Click for YAKE mode.'}
+          >
+            {mode === 'yake' ? (
+              <ToggleRight className="h-3.5 w-3.5 text-primary" />
+            ) : (
+              <ToggleLeft className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+            <span className={mode === 'yake' ? 'text-primary' : 'text-muted-foreground'}>
+              {mode === 'yake' ? 'YAKE' : 'Trie'}
+            </span>
+          </button>
         </div>
 
         {/* Statistics */}
         {!loading && !error && keywords.length > 0 && (
-          <div className="flex gap-4 text-xs text-muted-foreground mt-2">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-2">
             <span>
               <strong className="text-foreground">{keywords.length}</strong> concepts
             </span>
-            <span>
-              <strong className="text-foreground">{stats.total}</strong> occurrences
-            </span>
-            <span>
-              <strong className="text-foreground">{stats.numPages}</strong> pages
-            </span>
+            {stats.total > 0 && (
+              <span>
+                <strong className="text-foreground">{stats.total}</strong> {mode === 'yake' ? 'extracted' : 'occurrences'}
+              </span>
+            )}
+            {stats.numPages > 0 && (
+              <span>
+                <strong className="text-foreground">{stats.numPages}</strong> pages
+              </span>
+            )}
+            {stats.method && (
+              <span className="text-muted-foreground/70">
+                via {stats.method}
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -269,7 +299,9 @@ export function KeywordPanel({
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             <p className="text-sm text-muted-foreground">Analyzing document...</p>
-            <p className="text-xs text-muted-foreground">Using AI-powered concept matching</p>
+            <p className="text-xs text-muted-foreground">
+              {mode === 'yake' ? 'Using YAKE keyword extraction' : 'Using AI-powered concept matching'}
+            </p>
           </div>
         )}
 
