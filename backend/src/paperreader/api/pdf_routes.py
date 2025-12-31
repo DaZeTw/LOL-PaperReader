@@ -874,7 +874,14 @@ async def _process_references(
             "elapsed": elapsed,
         }
 
-
+# with the new logic, the proper skimming process is to
+"""
+1, sent the pdf file to skimming service using process_paper_v2 and recieve the job_id
+2, use the job_id to periodically check the status of the job
+3, once the job is completed, use the job_id to get the highlights
+4, save the highlights to database
+5, if the job is time out (after 5 minutes), cancel the job and return error
+"""
 async def _process_skimming(
     pdf_path: Path,
     document_id: Optional[str],
@@ -911,24 +918,71 @@ async def _process_skimming(
         pdf_bytes = pdf_path.read_bytes()
         file_stem = pdf_path.stem
 
-        # Step 2: Process and get highlights (using default medium preset)
+        # Step 2: Process and get highlights
         from paperreader.services.skimming.repository import save_skimming_highlights
         from paperreader.services.skimming.skimming_service import (
             get_preset_params,
-            process_and_highlight,
+            process_paper_v2,
+            get_job_status,
+            get_highlights,
+            cancel_job,
         )
 
+        # 1. Submit job
+        process_result = await process_paper_v2(file_name=file_stem, pdf_file=pdf_bytes)
+        job_id = process_result.get("job_id")
+        
+        if not job_id:
+             raise ValueError("Failed to get job_id from skimming service")
+
+        print(f"[SKIMMING] Submitted job {job_id} for {pdf_path.name}")
+
+        # 2. Poll for status
+        max_retries = 30  # 300 seconds total
+        retry_interval = 10
+        is_completed = False
+        
+        for i in range(max_retries):
+            # Check for cancellation
+            if _PARSE_CANCEL_FLAG.is_set():
+                await cancel_job(job_id)
+                raise RuntimeError("Operation was cancelled")
+                
+            status_result = await get_job_status(job_id)
+            status = status_result.get("status")
+            
+            if status == "completed":
+                is_completed = True
+                break
+            elif status == "cancelled":
+                raise RuntimeError(f"Job {job_id} was cancelled by remote service")
+            elif status == "failed" or status == "error":
+                raise RuntimeError(f"Job {job_id} failed: {status_result.get('message')}")
+            
+            # Still running/pending
+            print(f"[SKIMMING] Job {job_id} status: {status}. Waiting {retry_interval}s...")
+            await asyncio.sleep(retry_interval)
+            
+        if not is_completed:
+            # 5. if the job is time out (after 5 minutes), cancel the job and return error
+            print(f"[SKIMMING] Job {job_id} timed out. Cancelling...")
+            try:
+                await cancel_job(job_id)
+            except Exception as e:
+                print(f"[SKIMMING] Failed to cancel timed out job {job_id}: {e}")
+                
+            raise TimeoutError(f"Skimming job {job_id} timed out after {max_retries * retry_interval}s")
+
+        # 3. Get highlights
         preset = "medium"
         preset_params = get_preset_params(preset)
         alpha = preset_params["alpha"]
         ratio = preset_params["ratio"]
-
-        result = await process_and_highlight(
-            file_name=file_stem,
-            pdf_file=pdf_bytes,
+        
+        result = await get_highlights(
+            job_id=job_id,
             alpha=alpha,
             ratio=ratio,
-            cache_dir=None,  # No file system cache - only use MongoDB
         )
 
         highlights = result.get("highlights", [])

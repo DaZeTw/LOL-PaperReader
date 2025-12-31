@@ -82,63 +82,175 @@ def get_cache(cache_dir: Path) -> SkimmingCache:
         _cache = SkimmingCache(cache_dir)
     return _cache
 
-
-async def process_paper_v2(file_name: str, pdf_file: bytes) -> Dict:
+# New api for processing paper
+async def process_paper_v2(file_name: str, pdf_file: bytes, used_cache: bool = False) -> Dict:
     """
     Call /process_paperv2 to preprocess a paper.
+    Now this entry for file submitting only, after this function is called, the pdf will be enqueued for processing.
+    For processing progress, please use /jobs/{job_id}
 
     Args:
-        file_name: Name of the PDF file
+        file_name: Name of the PDF file (stem only)
         pdf_file: PDF file bytes
+        used_cache: If true, use cached result if available
 
     Returns:
-        Response from API with path_to_base64_image
+        {
+            "status": "queued",
+            "job_id": job_id,
+            "message": "Job submitted successfully. Poll /jobs/{job_id} for status."
+        }
     """
     url = f"{SKIMMING_API_BASE}/process_paperv2"
 
-    print(f"[SkimmingService] Processing paper: {file_name}")
+    print(f"[SkimmingService] Processing paper: {file_name} (used_cache={used_cache})")
+
+    # Headers to bypass ngrok browser warning
+    headers = {
+        "ngrok-skip-browser-warning": "true",
+        "User-Agent": "LOL-PaperReader/1.0"
+    }
 
     async with httpx.AsyncClient(timeout=300.0) as client:
+        # API expects field name "file" and filename with .pdf extension
         files = {
-            "pdf_file": (file_name, pdf_file, "application/pdf")
+            "file": (file_name + ".pdf", pdf_file, "application/pdf")
         }
         data = {
-            "file_name": file_name
+            "file_name": file_name,
+            "used_cache": str(used_cache).lower()
         }
 
         try:
-            response = await client.post(url, files=files, data=data)
+            response = await client.post(url, files=files, data=data, headers=headers)
             response.raise_for_status()
             result = response.json()
-            print(f"[SkimmingService] Paper processed successfully: {file_name}")
+            job_id = result.get("job_id")
+            print(f"[SkimmingService] Paper processing enqueued: {file_name}, job_id: {job_id}")
             return result
+        except httpx.HTTPStatusError as e:
+            print(f"[SkimmingService] HTTP Status Error processing paper: {e}")
+            print(f"[SkimmingService] Response status: {e.response.status_code}")
+            try:
+                print(f"[SkimmingService] Response body: {e.response.text[:500]}")
+            except:
+                pass
+            raise
         except httpx.HTTPError as e:
-            print(f"[SkimmingService] Error processing paper: {e}")
+            print(f"[SkimmingService] HTTP Error processing paper: {e}")
+            raise
+        except Exception as e:
+            print(f"[SkimmingService] Unexpected error processing paper: {type(e).__name__}: {e}")
             raise
 
+# New api for tracking the state of a job
+"""
+GET /jobs/{job_id}
+this endpoint return the status of a job
+
+the only input is job_id of the file
+on success:
+{
+  "job_id": "<job_id>",
+  "status": "pending/running/completed/cancelled",
+  "created_at": "<created_at>",
+  "file_name": "<file_name>",
+  "message": "<message>"
+}
+
+pending mean the pdf is enqueued but not started processing
+running mean the pdf is being processed
+completed mean the pdf is processed successfully and highlights are ready
+cancelled mean the pdf is cancelled by user
+"""
+async def get_job_status(job_id: str) -> Dict:
+    """
+    Call /jobs/{job_id} to retrieve the status of a job.
+
+    Args:
+        job_id: ID of the job
+
+    Returns:
+        Job status JSON data
+    """
+    url = f"{SKIMMING_API_BASE}/jobs/{job_id}"
+
+    print(f"[SkimmingService] Getting job status: {job_id}")
+
+    # Headers to bypass ngrok browser warning
+    headers = {
+        "ngrok-skip-browser-warning": "true",
+        "User-Agent": "LOL-PaperReader/1.0"
+    }
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        try:
+            response = await client.get(url, headers=headers)
+            response.raise_for_status()
+            result = response.json()
+            status = result.get("status")
+            print(f"[SkimmingService] Got status for job {job_id}: {status}")
+            return result
+        except httpx.HTTPStatusError as e:
+            print(f"[SkimmingService] HTTP Status Error getting job status: {e}")
+            print(f"[SkimmingService] Response status: {e.response.status_code}")
+            try:
+                print(f"[SkimmingService] Response body: {e.response.text[:500]}")
+            except:
+                pass
+            raise
+        except httpx.HTTPError as e:
+            print(f"[SkimmingService] HTTP Error getting job status: {e}")
+            raise
+        except Exception as e:
+            print(f"[SkimmingService] Unexpected error getting job status: {type(e).__name__}: {e}")
+            raise
 
 async def get_highlights(
-    file_name: str,
+    job_id: str,
     alpha: float = 0.5,
     ratio: float = 0.5,
-    cache_dir: Optional[Path] = None
 ) -> Dict:
     """
     Call /get_highlight to retrieve highlights for a processed paper.
 
     Args:
-        file_name: Name of the PDF file
+        job_id: hash returned from /process_paperv2
         alpha: Alpha parameter (for sparse mode)
         ratio: Ratio parameter (for sparse mode)
-        cache_dir: Directory for caching results (deprecated - not used, only MongoDB is used)
 
     Returns:
-        Highlight JSON data
+        {
+           "status": "success",
+           "result":{
+                "file_id": "<file_id>",
+                "highlights": [
+                    {
+                        "id": "<id>",
+                        "text": "This is a highlight",
+                        "section": "<section>",
+                        "label": "<label>",
+                        "score": "<score>",
+                        "boxes": [
+                            {
+                                "left": "<left>",
+                                "top": "<top>",
+                                "width": "<width>",
+                                "height": "<height>",
+                                "page": "<page>"
+                            }
+                        ]
+                    }
+                ],
+                "block_id": <block_id>,
+                "is_sparse": <boolean>
+           }
+        }
     """
 
     url = f"{SKIMMING_API_BASE}/get_highlight"
 
-    print(f"[SkimmingService] Getting highlights: {file_name} (alpha={alpha}, ratio={ratio})")
+    print(f"[SkimmingService] Getting highlights: {job_id} (alpha={alpha}, ratio={ratio})")
 
     # Headers to bypass ngrok browser warning
     headers = {
@@ -148,7 +260,7 @@ async def get_highlights(
 
     async with httpx.AsyncClient(timeout=60.0) as client:
         params = {
-            "file_name": file_name,
+            "job_id": job_id,
             "alpha": alpha,
             "ratio": ratio
         }
@@ -157,9 +269,19 @@ async def get_highlights(
             response = await client.get(url, params=params, headers=headers)
             response.raise_for_status()
             result = response.json()
-            print(f"[SkimmingService] Got {len(result.get('highlights', []))} highlights for {file_name}")
+            
+            # Check status of the response
+            if result.get("status") == "error":
+                message = result.get("message", "Unknown error")
+                print(f"[SkimmingService] API returned error for job {job_id}: {message}")
+                return {"highlights": [], "status": "error", "message": message}
 
-            return result
+            # The API returns structure: {"status": "success", "result": {...}}
+            inner_result = result.get("result", {})
+            highlights = inner_result.get("highlights", [])
+            print(f"[SkimmingService] Got {len(highlights)} highlights for job {job_id}")
+
+            return inner_result
         except httpx.HTTPStatusError as e:
             print(f"[SkimmingService] HTTP Status Error: {e}")
             print(f"[SkimmingService] Response status: {e.response.status_code}")
@@ -170,6 +292,49 @@ async def get_highlights(
             raise
         except httpx.HTTPError as e:
             print(f"[SkimmingService] HTTP Error: {e}")
+            raise
+
+async def cancel_job(job_id: str) -> Dict:
+    """
+    Call /jobs/{job_id}/cancel to cancel a job.
+    POST /jobs/{job_id}/cancel
+
+    Args:
+        job_id: ID of the job to cancel
+        
+    Returns:
+        JSON response from API
+    """
+    url = f"{SKIMMING_API_BASE}/jobs/{job_id}/cancel"
+    
+    print(f"[SkimmingService] Cancelling job: {job_id}")
+    
+    # Headers to bypass ngrok browser warning
+    headers = {
+        "ngrok-skip-browser-warning": "true",
+        "User-Agent": "LOL-PaperReader/1.0"
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            response = await client.post(url, headers=headers)
+            response.raise_for_status()
+            result = response.json()
+            print(f"[SkimmingService] Job {job_id} cancelled: {result.get('message')}")
+            return result
+        except httpx.HTTPStatusError as e:
+            print(f"[SkimmingService] HTTP Status Error cancelling job: {e}")
+            print(f"[SkimmingService] Response status: {e.response.status_code}")
+            try:
+                print(f"[SkimmingService] Response body: {e.response.text[:500]}")
+            except:
+                pass
+            raise
+        except httpx.HTTPError as e:
+            print(f"[SkimmingService] HTTP Error cancelling job: {e}")
+            raise
+        except Exception as e:
+            print(f"[SkimmingService] Unexpected error cancelling job: {type(e).__name__}: {e}")
             raise
 
 
