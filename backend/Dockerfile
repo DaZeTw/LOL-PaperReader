@@ -33,7 +33,8 @@ RUN pip install --no-cache-dir \
     PyJWT==2.9.0 \
     itsdangerous==2.1.2 \
     "lxml>=4.9.0" \
-    "beautifulsoup4>=4.12.0"
+    "beautifulsoup4>=4.12.0" \
+    "yake>=0.4.8"
 
 # ---- 4. Heavy ML libs (separate layer to preserve cache) ----
 # Use precompiled wheels (avoid source builds)
