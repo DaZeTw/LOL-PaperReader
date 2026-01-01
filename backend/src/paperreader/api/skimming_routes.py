@@ -10,7 +10,7 @@ from typing import Optional, Tuple
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, Query
 from paperreader.services.qa.config import PipelineConfig
-from paperreader.services.skimming import (
+from paperreader.services.skimming.skimming_service import (
     process_paper_v2,
     get_highlights,
     process_and_highlight,

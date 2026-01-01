@@ -234,7 +234,13 @@ export async function extractKeywordsFromPdfUrl(
   }
 
   const pdfBlob = await pdfRes.blob()
-  const fileName = pdfUrl.split('/').pop() || 'document.pdf'
+
+  // Extract filename from URL and ensure it ends with .pdf
+  let fileName = pdfUrl.split('/').pop()?.split('?')[0] || 'document.pdf'
+  if (!fileName.toLowerCase().endsWith('.pdf')) {
+    fileName = 'document.pdf'
+  }
+
   const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' })
 
   // Extract keywords using the file upload endpoint
